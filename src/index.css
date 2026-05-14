@@ -93,6 +93,12 @@
 .leaflet-container {
   background: hsl(var(--muted));
   font-family: inherit;
+  /* Force a stacking context. Leaflet's internal panes use z-indexes up to
+     800 (zoom control), 700 (popup), 650 (tooltip). Without z-index set on
+     the container, those propagate up and outrank our Dialog/Sheet (z-50)
+     in the root context — modals would render BEHIND the zoom buttons.
+     z-index: 0 + position: relative (set by leaflet.css) scopes them. */
+  z-index: 0;
 }
 .leaflet-control-zoom {
   border: 1px solid hsl(var(--border)) !important;
