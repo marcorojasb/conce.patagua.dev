@@ -127,7 +127,7 @@ function SourceList({ title, sources }: { title: string; sources: Source[] }) {
         {sources.map((s) => (
           <div key={s.title} className="rounded-md border bg-card p-3">
             <div className="text-sm font-medium">{s.title}</div>
-            <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{s.detail}</p>
+            <p className="mt-1 break-words text-[12px] leading-snug text-muted-foreground">{s.detail}</p>
             {s.count && (
               <div className="mt-1.5 font-mono text-[11px] text-muted-foreground">{s.count}</div>
             )}

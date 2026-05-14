@@ -12,6 +12,7 @@ import type { Route, RouteTypeId } from '@/types/transport';
 
 interface SidebarProps {
   open: boolean;
+  onClose: () => void;
   routes: Route[];
   visibleRouteIds: string[];
   onToggleVisible: (id: string) => void;
@@ -43,6 +44,7 @@ const NO_OPERATOR_LABEL = 'Sin operador registrado';
 
 export function Sidebar({
   open,
+  onClose,
   routes,
   visibleRouteIds,
   onToggleVisible,
@@ -129,13 +131,26 @@ export function Sidebar({
   const showFlat = query.trim().length > 0;
 
   return (
-    <aside
-      className={cn(
-        'relative z-20 flex h-full flex-col border-r bg-background transition-[width] duration-200 ease-out',
-        open ? 'w-[300px]' : 'w-0',
+    <>
+      {/* Mobile backdrop: dims the map and closes the drawer on tap. Only
+          rendered below md: where the sidebar overlays the map. */}
+      {open && (
+        <button
+          type="button"
+          aria-label="Cerrar barra lateral"
+          onClick={onClose}
+          className="absolute inset-0 z-10 bg-black/40 backdrop-blur-[1px] md:hidden"
+        />
       )}
-      data-state={open ? 'open' : 'closed'}
-    >
+      <aside
+        className={cn(
+          'absolute inset-y-0 left-0 z-20 flex h-full flex-col border-r bg-background shadow-xl transition-transform duration-200 ease-out',
+          'md:relative md:shadow-none md:transition-[width]',
+          'w-[85vw] max-w-[320px] md:w-[300px]',
+          open ? 'translate-x-0 md:w-[300px]' : '-translate-x-full md:translate-x-0 md:w-0',
+        )}
+        data-state={open ? 'open' : 'closed'}
+      >
       <div
         className={cn(
           'flex h-full flex-col overflow-hidden transition-opacity',
@@ -173,13 +188,13 @@ export function Sidebar({
                     type="button"
                     onClick={() => onToggleType(t.id)}
                     className={cn(
-                      'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors focus-ring',
+                      'inline-flex min-h-9 items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors focus-ring',
                       active
                         ? 'border-foreground/80 bg-foreground text-background'
                         : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                     )}
                   >
-                    <Icon className="h-3 w-3" />
+                    <Icon className="h-3.5 w-3.5" />
                     {t.short}
                     {stats && stats.total > 1 && (
                       <span className="opacity-70">
@@ -373,11 +388,12 @@ export function Sidebar({
             >
               Fuentes de datos
             </button>
-            <span>v0.4</span>
+            <span>v0.5</span>
           </div>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
 
@@ -394,7 +410,7 @@ function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProp
   return (
     <div
       className={cn(
-        'group flex items-center gap-2 rounded-md border border-transparent px-2 py-1.5 transition-colors',
+        'group flex min-h-11 items-center gap-2 rounded-md border border-transparent px-2 py-2 transition-colors',
         selected ? 'border-border bg-accent' : 'hover:bg-accent/60',
       )}
     >
@@ -444,7 +460,7 @@ interface LayerRowProps {
 
 function LayerRow({ icon, label, count, checked, onChange }: LayerRowProps) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded-md px-1 py-0.5 text-sm hover:bg-accent/40">
+    <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1.5 text-sm hover:bg-accent/40">
       <span className="text-muted-foreground">{icon}</span>
       <span className="flex-1 leading-tight">{label}</span>
       {count != null && (

@@ -73,6 +73,7 @@ export function Header({
           size="icon"
           onClick={onToggleSidebar}
           aria-label="Mostrar u ocultar barra lateral"
+          className="h-11 w-11 md:h-9 md:w-9"
         >
           <PanelLeft className="h-[18px] w-[18px]" />
         </Button>
@@ -101,12 +102,12 @@ export function Header({
       <button
         type="button"
         onClick={() => setCommandOpen(true)}
-        className="group relative flex h-9 w-full max-w-[280px] items-center gap-2 rounded-md border bg-background px-3 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-ring"
+        className="group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-md border bg-background text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-ring md:h-9 md:w-full md:max-w-[280px] md:justify-start md:gap-2 md:px-3"
+        aria-label="Buscar recorridos y paraderos"
       >
-        <Search className="h-[15px] w-[15px] opacity-60" />
-        <span className="hidden truncate sm:inline">Buscar recorridos, paraderos…</span>
-        <span className="inline sm:hidden">Buscar…</span>
-        <span className="ml-auto flex items-center gap-1">
+        <Search className="h-4 w-4 opacity-60 md:h-[15px] md:w-[15px]" />
+        <span className="hidden truncate md:inline">Buscar recorridos, paraderos…</span>
+        <span className="ml-auto hidden items-center gap-1 md:flex">
           <Kbd>⌘</Kbd>
           <Kbd>K</Kbd>
         </span>
@@ -118,15 +119,28 @@ export function Header({
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => window.open('https://github.com', '_blank', 'noopener')}
+          onClick={() =>
+            window.open(
+              'https://github.com/marcorojasb/conce.patagua.dev',
+              '_blank',
+              'noopener',
+            )
+          }
           aria-label="Repositorio en GitHub"
+          className="h-11 w-11 md:h-9 md:w-9"
         >
           <Github className="h-[18px] w-[18px]" />
         </Button>
       </Tooltip>
 
       <Tooltip content={theme === 'dark' ? 'Tema claro' : 'Tema oscuro'} side="bottom">
-        <Button variant="ghost" size="icon" onClick={onToggleTheme} aria-label="Cambiar tema">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleTheme}
+          aria-label="Cambiar tema"
+          className="h-11 w-11 md:h-9 md:w-9"
+        >
           {theme === 'dark' ? (
             <Sun className="h-[18px] w-[18px]" />
           ) : (

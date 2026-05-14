@@ -34,11 +34,20 @@ const sheetVariants = cva(
         top: 'inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top',
         bottom:
           'inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
-        // w-full on mobile (was w-3/4 — left content like card grids cropped
-        // on narrow viewports); sm:max-w-* caps the panel on larger screens.
         left: 'inset-y-0 left-0 h-full w-full border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm',
-        right:
-          'inset-y-0 right-0 h-full w-full border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-md',
+        // The right-side sheet is responsive: on mobile (<md) it docks at
+        // the BOTTOM with a peek of 80vh — preserving spatial context with
+        // the map. From md: up it returns to the right-side panel.
+        right: [
+          // mobile (bottom-sheet)
+          'inset-x-0 bottom-0 max-h-[85vh] rounded-t-2xl border-t',
+          'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
+          // desktop (right panel)
+          'md:inset-y-0 md:inset-x-auto md:right-0 md:bottom-auto',
+          'md:h-full md:max-h-none md:w-full md:max-w-md md:rounded-none md:border-l md:border-t-0',
+          'md:data-[state=closed]:slide-out-to-right md:data-[state=open]:slide-in-from-right',
+          'md:data-[state=closed]:slide-out-to-bottom-0 md:data-[state=open]:slide-in-from-bottom-0',
+        ].join(' '),
       },
     },
     defaultVariants: {
@@ -71,12 +80,20 @@ export const SheetContent = React.forwardRef<
       className={cn(sheetVariants({ side }), 'flex flex-col', className)}
       {...props}
     >
+      {/* Drag handle — visible only on mobile (bottom-sheet mode). Decorative
+          for now; full swipe-to-dismiss is a follow-up. */}
+      {side === 'right' && (
+        <div
+          className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-muted-foreground/30 md:hidden"
+          aria-hidden="true"
+        />
+      )}
       {children}
       <DialogPrimitive.Close
-        className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-ring disabled:pointer-events-none"
+        className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-md opacity-70 ring-offset-background transition-opacity hover:bg-accent hover:opacity-100 focus-ring disabled:pointer-events-none"
         aria-label="Cerrar"
       >
-        <X className="h-4 w-4" />
+        <X className="h-5 w-5" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </SheetPortal>

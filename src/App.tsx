@@ -26,7 +26,12 @@ const INITIAL_URL = readUrlState();
 
 export default function App() {
   const [theme, toggleTheme] = useTheme();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Default closed on mobile (sidebar overlays the map below md:), open on
+  // desktop where it docks alongside.
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return window.matchMedia('(min-width: 768px)').matches;
+  });
 
   const [visibleRouteIds, setVisibleRouteIds] = useState<string[]>(() => {
     // If a deep link selects a route, make sure it's visible too.
@@ -221,18 +226,29 @@ export default function App() {
     }
   }, []);
 
-  const onSelectRoute = useCallback((id: string) => {
-    const r = ROUTES.find((x) => x.id === id);
-    if (!r) return;
-    setVisibleRouteIds((cur) => (cur.includes(id) ? cur : [...cur, id]));
-    setTypeFilters((f) => ({ ...f, [r.type]: true }));
-    setSelectedRouteId(id);
-    setSelectedStopId(null);
-    setSelectedTerminalId(null);
-    setSelectedPoiId(null);
-    setSheetKind('route');
-    setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
+  const closeSidebarOnMobile = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (!window.matchMedia('(min-width: 768px)').matches) {
+      setSidebarOpen(false);
+    }
   }, []);
+
+  const onSelectRoute = useCallback(
+    (id: string) => {
+      const r = ROUTES.find((x) => x.id === id);
+      if (!r) return;
+      setVisibleRouteIds((cur) => (cur.includes(id) ? cur : [...cur, id]));
+      setTypeFilters((f) => ({ ...f, [r.type]: true }));
+      setSelectedRouteId(id);
+      setSelectedStopId(null);
+      setSelectedTerminalId(null);
+      setSelectedPoiId(null);
+      setSheetKind('route');
+      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
+      closeSidebarOnMobile();
+    },
+    [closeSidebarOnMobile],
+  );
 
   const onSelectStop = useCallback((id: string) => {
     const s = STOPS.find((x) => x.id === id);
@@ -329,6 +345,7 @@ export default function App() {
       <div className="relative flex min-h-0 flex-1">
         <Sidebar
           open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
           routes={ROUTES}
           visibleRouteIds={visibleRouteIds}
           onToggleVisible={onToggleVisible}
@@ -406,9 +423,13 @@ export default function App() {
                     Concepción · Biobío
                   </CardTitle>
                   <CardDescription className="text-[12px] leading-snug text-foreground">
-                    Toca una línea, paradero o terminal. Usa <Kbd>⌘</Kbd> <Kbd>K</Kbd> para
-                    buscar. Activa <span className="font-medium">Paraderos OSM</span> en la
-                    barra para ver los ~1.7k paraderos urbanos.
+                    Toca una línea, paradero o terminal.
+                    <span className="hidden md:inline">
+                      {' '}
+                      Usa <Kbd>⌘</Kbd> <Kbd>K</Kbd> para buscar.
+                    </span>{' '}
+                    Activa <span className="font-medium">Paraderos OSM</span> en la barra
+                    para ver los ~1.7k paraderos urbanos.
                   </CardDescription>
                 </CardHeader>
               </Card>
