@@ -12,7 +12,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { overpass } from './lib/overpass.ts';
 import { simplify } from './lib/simplify.ts';
-import { cumulativeDistances, nearestVertex } from './lib/geo.ts';
+import {
+  cumulativeDistances,
+  distanceMeters,
+  nearestVertex,
+} from './lib/geo.ts';
 import { PARADEROS } from '../src/data/paraderos.generated.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -95,26 +99,139 @@ function matchParaderos(path: Array<[number, number]>): string[] {
   return out;
 }
 
-function buildRoute(rel: OverpassRelation): Resolved | null {
+interface WayGeom {
+  geometry: Array<{ lat: number; lon: number }>;
+}
+
+const ENDPOINT_KEY_PRECISION = 6;
+const keyOf = (pt: { lat: number; lon: number }) =>
+  `${pt.lat.toFixed(ENDPOINT_KEY_PRECISION)},${pt.lon.toFixed(ENDPOINT_KEY_PRECISION)}`;
+
+/**
+ * Stitches a list of OSM way members into a single ordered polyline by
+ * walking the endpoint graph greedily. The relation's `members` order is
+ * NOT trusted — OSM data quality varies and many Concepción route=bus
+ * relations have ways listed out of sequence, which used to surface as
+ * long-distance jumps and polygon-like artefacts in the rendered map.
+ *
+ * Algorithm:
+ *  1. For each way, hash its start/end coords. An endpoint that appears in
+ *     only one way is a terminus — start the walk there if one exists.
+ *  2. From the chosen starting way, repeatedly pick the next unused way
+ *     whose nearest endpoint is closest to the current path tail. Flip the
+ *     way as needed so its start aligns with the tail.
+ *  3. Skip duplicate join points to keep adjacent ways stitched cleanly.
+ *
+ * Returns the stitched lat/lng polyline plus a count of any residual
+ * "gap" jumps (>250 m) that survived the walk — useful for diagnostics.
+ */
+function stitchWays(rawWays: WayGeom[]): {
+  path: Array<[number, number]>;
+  gaps: number;
+} {
+  const ways = rawWays.filter((w) => w.geometry && w.geometry.length >= 2);
+  if (ways.length === 0) return { path: [], gaps: 0 };
+  if (ways.length === 1) {
+    return {
+      path: ways[0].geometry.map((p) => [round5(p.lat), round5(p.lon)]),
+      gaps: 0,
+    };
+  }
+
+  type Endpoint = { wayIdx: number; atStart: boolean };
+  const endpoints = new Map<string, Endpoint[]>();
+  for (let i = 0; i < ways.length; i++) {
+    const g = ways[i].geometry;
+    const sk = keyOf(g[0]);
+    const ek = keyOf(g[g.length - 1]);
+    if (!endpoints.has(sk)) endpoints.set(sk, []);
+    if (!endpoints.has(ek)) endpoints.set(ek, []);
+    endpoints.get(sk)!.push({ wayIdx: i, atStart: true });
+    endpoints.get(ek)!.push({ wayIdx: i, atStart: false });
+  }
+
+  // Pick a terminus: an endpoint that appears in exactly one way. If none
+  // exists (route is a closed loop), fall back to way 0 anchored at its
+  // start point.
+  let firstIdx = 0;
+  let firstFlip = false;
+  for (const eps of endpoints.values()) {
+    if (eps.length === 1) {
+      firstIdx = eps[0].wayIdx;
+      firstFlip = !eps[0].atStart;
+      break;
+    }
+  }
+
+  const used = new Set<number>([firstIdx]);
+  const firstGeom = firstFlip
+    ? [...ways[firstIdx].geometry].reverse()
+    : ways[firstIdx].geometry;
+  const out: Array<[number, number]> = firstGeom.map((p) => [
+    round5(p.lat),
+    round5(p.lon),
+  ]);
+
+  let gaps = 0;
+  while (used.size < ways.length) {
+    const tail = out[out.length - 1];
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    let bestFlip = false;
+    for (let i = 0; i < ways.length; i++) {
+      if (used.has(i)) continue;
+      const g = ways[i].geometry;
+      const s = g[0];
+      const e = g[g.length - 1];
+      const dStart = distanceMeters([tail[0], tail[1]], [s.lat, s.lon]);
+      const dEnd = distanceMeters([tail[0], tail[1]], [e.lat, e.lon]);
+      if (dStart < bestDist) {
+        bestDist = dStart;
+        bestIdx = i;
+        bestFlip = false;
+      }
+      if (dEnd < bestDist) {
+        bestDist = dEnd;
+        bestIdx = i;
+        bestFlip = true;
+      }
+    }
+    if (bestIdx === -1) break;
+    if (bestDist > 250) gaps += 1;
+    used.add(bestIdx);
+    const g = bestFlip
+      ? [...ways[bestIdx].geometry].reverse()
+      : ways[bestIdx].geometry;
+    const startJ =
+      Math.abs(g[0].lat - tail[0]) < 1e-5 && Math.abs(g[0].lon - tail[1]) < 1e-5
+        ? 1
+        : 0;
+    for (let j = startJ; j < g.length; j++) {
+      out.push([round5(g[j].lat), round5(g[j].lon)]);
+    }
+  }
+  return { path: out, gaps };
+}
+
+function buildRoute(rel: OverpassRelation): {
+  resolved: Resolved | null;
+  gaps: number;
+} {
   const tags = rel.tags ?? {};
   const ref = tags.ref;
   const name = tags.name;
-  if (!ref || !name) return null;
+  if (!ref || !name) return { resolved: null, gaps: 0 };
 
-  // Collect all way geometries in the order they appear in the relation.
-  // Skip nodes (stop members) — paraderos.generated covers those.
-  const path: Array<[number, number]> = [];
-  for (const m of rel.members) {
-    if (m.type !== 'way' || !m.geometry) continue;
-    for (const pt of m.geometry) {
-      path.push([round5(pt.lat), round5(pt.lon)]);
-    }
-  }
+  const wayMembers: WayGeom[] = rel.members
+    .filter((m) => m.type === 'way' && !!m.geometry)
+    .map((m) => ({ geometry: m.geometry! }));
+
+  const { path, gaps } = stitchWays(wayMembers);
 
   // 1.5e-4 ≈ 16 m at Concepción latitude — invisible at city zoom, cuts
   // the bundle by ~85 %.
   const cleaned = simplify(dedupConsecutive(path), 1.5e-4);
-  if (cleaned.length < 2) return null;
+  if (cleaned.length < 2) return { resolved: null, gaps };
   const stopIds = matchParaderos(cleaned);
 
   const out: Resolved = {
@@ -128,7 +245,7 @@ function buildRoute(rel: OverpassRelation): Resolved | null {
   if (tags.operator) out.operator = tags.operator;
   if (tags.network) out.network = tags.network;
   if (tags.colour) out.colour = tags.colour;
-  return out;
+  return { resolved: out, gaps };
 }
 
 function render(routes: Resolved[]): string {
@@ -169,10 +286,16 @@ async function main() {
   console.log('Fetching bus route relations from Overpass…');
   const data = await queryOverpass();
   console.log(`  → ${data.elements.length} relations`);
-  const routes = data.elements
-    .map(buildRoute)
+
+  const built = data.elements.map(buildRoute);
+  const routes = built
+    .map((b) => b.resolved)
     .filter((r): r is Resolved => r !== null);
+  const totalGaps = built.reduce((acc, b) => acc + b.gaps, 0);
+  const routesWithGaps = built.filter((b) => b.gaps > 0).length;
+
   console.log(`  → ${routes.length} routes with usable geometry`);
+  console.log(`  → ${totalGaps} residual gaps >250 m across ${routesWithGaps} routes`);
 
   const totalPts = routes.reduce((acc, r) => acc + r.path.length, 0);
   const totalStops = routes.reduce((acc, r) => acc + r.stopIds.length, 0);

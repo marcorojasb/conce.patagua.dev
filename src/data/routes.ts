@@ -28,6 +28,7 @@ import {
 import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generated';
 import { BUS_ROUTES } from '@/data/bus-routes.generated';
 import { PARADEROS } from '@/data/paraderos.generated';
+import { ROUTE_OVERRIDES } from '@/data/route-overrides.curated';
 import type {
   BusRoute,
   MapCenter,
@@ -105,6 +106,12 @@ const BIOTREN_ROUTES: Route[] = [
 const PARADERO_BY_ID = new Map(PARADEROS.map((p) => [p.id, p]));
 
 function busRouteToRoute(b: BusRoute): Route {
+  // Apply curated override if present. The override fully replaces the OSM
+  // path; stopIds are then matched against PARADEROS by the original
+  // proximity rule (already done at sync time), so we re-resolve here.
+  const override = ROUTE_OVERRIDES[b.id];
+  const path = override?.path ?? b.path;
+
   const stops: Stop[] = [];
   for (const id of b.stopIds) {
     const p = PARADERO_BY_ID.get(id);
@@ -128,7 +135,7 @@ function busRouteToRoute(b: BusRoute): Route {
     hours: '—',
     frequencyByDay: {},
     stops,
-    path: b.path,
+    path,
   };
 }
 

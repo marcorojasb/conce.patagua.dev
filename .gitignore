@@ -16,3 +16,4 @@ conce-patagua-dev/
 !.env.example
 .vercel
 .claude/settings.local.json
+.claude/launch.json
