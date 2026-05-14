@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Building2, MapPin, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,6 +18,12 @@ interface SidebarProps {
   onSelectRoute: (id: string) => void;
   typeFilters: Record<RouteTypeId, boolean>;
   onToggleType: (typeId: RouteTypeId) => void;
+  terminalsCount: number;
+  paraderosCount: number;
+  showTerminals: boolean;
+  showParaderos: boolean;
+  onToggleTerminals: () => void;
+  onToggleParaderos: () => void;
 }
 
 export function Sidebar({
@@ -29,6 +35,12 @@ export function Sidebar({
   onSelectRoute,
   typeFilters,
   onToggleType,
+  terminalsCount,
+  paraderosCount,
+  showTerminals,
+  showParaderos,
+  onToggleTerminals,
+  onToggleParaderos,
 }: SidebarProps) {
   const [query, setQuery] = useState('');
 
@@ -105,6 +117,28 @@ export function Sidebar({
               })}
             </div>
           </div>
+
+          <div className="mt-3 border-t pt-3">
+            <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              Capas
+            </div>
+            <div className="space-y-1.5">
+              <LayerRow
+                icon={<Building2 className="h-3.5 w-3.5" />}
+                label="Terminales"
+                count={terminalsCount}
+                checked={showTerminals}
+                onChange={onToggleTerminals}
+              />
+              <LayerRow
+                icon={<MapPin className="h-3.5 w-3.5" />}
+                label="Paraderos OSM"
+                count={paraderosCount}
+                checked={showParaderos}
+                onChange={onToggleParaderos}
+              />
+            </div>
+          </div>
         </div>
 
         <ScrollArea className="flex-1">
@@ -166,13 +200,32 @@ export function Sidebar({
         <div className="border-t p-3">
           <div className="flex items-center justify-between text-[11px] text-muted-foreground">
             <span>
-              Datos: <span className="font-mono">mock</span>
+              Datos: <span className="font-mono">OSM + EFE</span>
             </span>
-            <span>v0.1</span>
+            <span>v0.2</span>
           </div>
-          {/* TODO: conectar fuentes reales (GTFS Biobío, EFE Biotrén, SEREMITT) */}
+          {/* TODO: conectar GTFS Gran Concepción cuando DTPR lo publique */}
         </div>
       </div>
     </aside>
+  );
+}
+
+interface LayerRowProps {
+  icon: React.ReactNode;
+  label: string;
+  count: number;
+  checked: boolean;
+  onChange: () => void;
+}
+
+function LayerRow({ icon, label, count, checked, onChange }: LayerRowProps) {
+  return (
+    <label className="flex cursor-pointer items-center gap-2 rounded-md px-1 py-0.5 text-sm hover:bg-accent/40">
+      <span className="text-muted-foreground">{icon}</span>
+      <span className="flex-1 leading-tight">{label}</span>
+      <span className="font-mono text-[11px] text-muted-foreground">{count}</span>
+      <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
+    </label>
   );
 }

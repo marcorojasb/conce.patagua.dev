@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import {
+  CircleMarker,
   MapContainer,
   Marker,
   Polyline,
@@ -11,7 +12,13 @@ import {
 import L, { type Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CONCE_CENTER } from '@/data/routes';
-import type { FlyToToken, Route, Theme } from '@/types/transport';
+import type {
+  FlyToToken,
+  Paradero,
+  Route,
+  Terminal,
+  Theme,
+} from '@/types/transport';
 
 interface ConceMapProps {
   theme: Theme;
@@ -22,6 +29,13 @@ interface ConceMapProps {
   onSelectRoute: (id: string) => void;
   onSelectStop: (id: string) => void;
   flyToToken: FlyToToken | null;
+  terminals: Terminal[];
+  showTerminals: boolean;
+  selectedTerminalId: string | null;
+  onSelectTerminal: (id: string) => void;
+  paraderos: Paradero[];
+  showParaderos: boolean;
+  onSelectParadero: (id: string) => void;
 }
 
 const TILE_URL = {
@@ -31,6 +45,9 @@ const TILE_URL = {
 
 const ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
+const BUILDING_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/></svg>';
 
 function FlyToOnToken({ token }: { token: FlyToToken | null }) {
   const map = useMap();
@@ -70,6 +87,15 @@ function stopIcon(color: string, active: boolean): L.DivIcon {
   });
 }
 
+function terminalIcon(active: boolean): L.DivIcon {
+  return L.divIcon({
+    className: 'terminal-marker-wrap',
+    html: `<div class="terminal-marker ${active ? 'is-active' : ''}">${BUILDING_SVG}</div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  });
+}
+
 export function ConceMap({
   theme,
   routes,
@@ -79,6 +105,13 @@ export function ConceMap({
   onSelectRoute,
   onSelectStop,
   flyToToken,
+  terminals,
+  showTerminals,
+  selectedTerminalId,
+  onSelectTerminal,
+  paraderos,
+  showParaderos,
+  onSelectParadero,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
 
@@ -105,6 +138,9 @@ export function ConceMap({
     return list;
   }, [visibleRoutes]);
 
+  // Shared canvas renderer keeps 1.7k paradero markers performant.
+  const paraderoRenderer = useMemo(() => L.canvas({ padding: 0.2 }), []);
+
   return (
     <MapContainer
       ref={(instance) => {
@@ -114,10 +150,34 @@ export function ConceMap({
       zoom={13}
       zoomControl={false}
       attributionControl
+      preferCanvas
       className="absolute inset-0"
     >
       <TileLayer key={theme} url={TILE_URL[theme]} attribution={ATTRIBUTION} maxZoom={19} />
       <ZoomControl position="bottomright" />
+
+      {showParaderos &&
+        paraderos.map((p) => (
+          <CircleMarker
+            key={p.id}
+            center={[p.lat, p.lng]}
+            radius={3}
+            pathOptions={{
+              color: 'hsl(var(--muted-foreground))',
+              weight: 1,
+              fillColor: 'hsl(var(--background))',
+              fillOpacity: 0.85,
+            }}
+            renderer={paraderoRenderer}
+            eventHandlers={{ click: () => onSelectParadero(p.id) }}
+          >
+            {p.name && (
+              <LeafletTooltip direction="top" offset={[0, -3]} opacity={0.9}>
+                {p.name}
+              </LeafletTooltip>
+            )}
+          </CircleMarker>
+        ))}
 
       {visibleRoutes.map((r) => {
         const isSelected = selectedRouteId === r.id;
@@ -150,6 +210,21 @@ export function ConceMap({
           </LeafletTooltip>
         </Marker>
       ))}
+
+      {showTerminals &&
+        terminals.map((t) => (
+          <Marker
+            key={t.id}
+            position={[t.lat, t.lng]}
+            icon={terminalIcon(selectedTerminalId === t.id)}
+            eventHandlers={{ click: () => onSelectTerminal(t.id) }}
+            keyboard={false}
+          >
+            <LeafletTooltip direction="top" offset={[0, -10]} opacity={0.95}>
+              {t.name}
+            </LeafletTooltip>
+          </Marker>
+        ))}
 
       <FlyToOnToken token={flyToToken} />
       <InvalidateOnResize trigger={visibleRoutes.length} />

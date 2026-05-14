@@ -43,6 +43,27 @@ export interface MapCenter {
   lng: number;
 }
 
+export interface Terminal {
+  id: string;
+  osmId: number;
+  name: string;
+  lat: number;
+  lng: number;
+  network?: string;
+  operator?: string;
+}
+
+export interface Paradero {
+  id: string;
+  osmId: number;
+  name?: string;
+  lat: number;
+  lng: number;
+  operator?: string;
+  shelter?: boolean;
+  ref?: string;
+}
+
 export type FlyToTarget =
   | { kind: 'bounds'; path: LatLngTuple[] }
   | { kind: 'point'; lat: number; lng: number; zoom?: number };
@@ -54,4 +75,4 @@ export interface FlyToToken {
 
 export type Theme = 'light' | 'dark';
 
-export type SheetKind = 'route' | 'stop' | null;
+export type SheetKind = 'route' | 'stop' | 'terminal' | null;

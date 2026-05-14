@@ -11,17 +11,10 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { overpass } from './lib/overpass.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../src/data/biotren.generated.ts');
-
-// Tried in order; first mirror to respond wins. overpass-api.de rate-limits
-// hard during peak hours, so we keep multiple endpoints as fallbacks.
-const OVERPASS_MIRRORS = [
-  'https://overpass.osm.ch/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-  'https://overpass-api.de/api/interpreter',
-];
 
 // Canonical line composition from EFE Trenes (efe.cl/biotren/servicio-y-trazado).
 // Order matters: it's the on-line traversal order.
@@ -74,10 +67,6 @@ interface OverpassNode {
   tags?: Record<string, string>;
 }
 
-interface OverpassResponse {
-  elements: OverpassNode[];
-}
-
 function normalize(s: string): string {
   return s
     .toLowerCase()
@@ -87,38 +76,13 @@ function normalize(s: string): string {
     .trim();
 }
 
-async function queryOverpass(): Promise<OverpassResponse> {
+async function queryOverpass() {
   // Bounding box covers all of greater Concepción + Coronel + Hualqui.
-  const query = `[out:json][timeout:30];
+  return overpass<OverpassNode>(`[out:json][timeout:30];
 (
   node["railway"~"^(station|halt)$"]["operator"~"EFE",i](-37.10,-73.25,-36.65,-72.80);
 );
-out body;`;
-
-  const encoded = encodeURIComponent(query);
-  const headers = {
-    'User-Agent': 'conce-patagua-dev/0.1 (https://github.com/marcorojasb/conce.patagua.dev)',
-    'Accept': 'application/json',
-  };
-
-  let lastError: unknown;
-  for (const mirror of OVERPASS_MIRRORS) {
-    try {
-      console.log(`  → trying ${new URL(mirror).host}`);
-      const res = await fetch(`${mirror}?data=${encoded}`, {
-        headers,
-        signal: AbortSignal.timeout(30_000),
-      });
-      if (!res.ok) {
-        lastError = new Error(`Overpass ${res.status} ${res.statusText}`);
-        continue;
-      }
-      return (await res.json()) as OverpassResponse;
-    } catch (err) {
-      lastError = err;
-    }
-  }
-  throw new Error(`All Overpass mirrors failed. Last error: ${String(lastError)}`);
+out body;`);
 }
 
 interface Resolved {

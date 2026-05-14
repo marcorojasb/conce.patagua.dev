@@ -9,7 +9,11 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "sync:biotren": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-biotren.ts"
+    "sync:biotren": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-biotren.ts",
+    "sync:terminals": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-terminals.ts",
+    "sync:paraderos": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-paraderos.ts",
+    "sync:biotren-track": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-biotren-track.ts",
+    "sync:all": "npm run sync:biotren && npm run sync:terminals && npm run sync:paraderos && npm run sync:biotren-track"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",

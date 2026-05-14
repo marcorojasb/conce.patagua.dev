@@ -138,3 +138,29 @@
   background: var(--stop-color, hsl(var(--foreground)));
   transform: scale(1.4);
 }
+
+.terminal-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: hsl(var(--background));
+  border: 2px solid hsl(var(--foreground));
+  color: hsl(var(--foreground));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+  transition: transform 120ms ease;
+}
+.terminal-marker:hover {
+  transform: scale(1.12);
+}
+.terminal-marker.is-active {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+  transform: scale(1.18);
+}
+.terminal-marker svg {
+  width: 13px;
+  height: 13px;
+}
