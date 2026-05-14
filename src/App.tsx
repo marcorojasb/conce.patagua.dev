@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { ConceMap } from '@/components/conce-map';
 import { Header } from '@/components/header';
@@ -6,34 +6,92 @@ import { RouteDetailSheet } from '@/components/route-detail-sheet';
 import { Sidebar } from '@/components/sidebar';
 import { StopDetailSheet } from '@/components/stop-detail-sheet';
 import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
+import { DataSourcesSheet } from '@/components/data-sources-sheet';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
 import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
 import { PARADEROS } from '@/data/paraderos.generated';
 import { useTheme } from '@/hooks/use-theme';
+import { readUrlState, useSyncUrlState } from '@/hooks/use-url-state';
+import { isRouteOperatingNow } from '@/lib/operating-hours';
 import type { FlyToToken, RouteTypeId, SheetKind } from '@/types/transport';
+
+const INITIAL_URL = readUrlState();
 
 export default function App() {
   const [theme, toggleTheme] = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const [visibleRouteIds, setVisibleRouteIds] = useState<string[]>(DEFAULT_VISIBLE_ROUTE_IDS);
+  const [visibleRouteIds, setVisibleRouteIds] = useState<string[]>(() => {
+    // If a deep link selects a route, make sure it's visible too.
+    if (INITIAL_URL.route && !DEFAULT_VISIBLE_ROUTE_IDS.includes(INITIAL_URL.route)) {
+      return [...DEFAULT_VISIBLE_ROUTE_IDS, INITIAL_URL.route];
+    }
+    return DEFAULT_VISIBLE_ROUTE_IDS;
+  });
   const [typeFilters, setTypeFilters] = useState<Record<RouteTypeId, boolean>>(() =>
     Object.fromEntries(
       (Object.keys(ROUTE_TYPES) as RouteTypeId[]).map((k) => [k, true]),
     ) as Record<RouteTypeId, boolean>,
   );
 
-  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
-  const [selectedStopId, setSelectedStopId] = useState<string | null>(null);
-  const [selectedTerminalId, setSelectedTerminalId] = useState<string | null>(null);
-  const [sheetKind, setSheetKind] = useState<SheetKind>(null);
+  const initialSheet: SheetKind = INITIAL_URL.route
+    ? 'route'
+    : INITIAL_URL.stop
+      ? 'stop'
+      : INITIAL_URL.terminal
+        ? 'terminal'
+        : null;
+
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(INITIAL_URL.route);
+  const [selectedStopId, setSelectedStopId] = useState<string | null>(INITIAL_URL.stop);
+  const [selectedTerminalId, setSelectedTerminalId] = useState<string | null>(INITIAL_URL.terminal);
+  const [sheetKind, setSheetKind] = useState<SheetKind>(initialSheet);
 
   const [showTerminals, setShowTerminals] = useState(true);
-  const [showParaderos, setShowParaderos] = useState(false);
+  const [showParaderos, setShowParaderos] = useState(INITIAL_URL.paraderos);
+  const [onlyOperatingNow, setOnlyOperatingNow] = useState(INITIAL_URL.activos);
 
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
+
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+
+  useSyncUrlState({
+    route: selectedRouteId,
+    stop: selectedStopId,
+    terminal: selectedTerminalId,
+    paraderos: showParaderos,
+    activos: onlyOperatingNow,
+  });
+
+  // Apply the initial fly-to once the map is mounted.
+  useEffect(() => {
+    if (INITIAL_URL.route) {
+      const r = ROUTES.find((x) => x.id === INITIAL_URL.route);
+      if (r) setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
+      return;
+    }
+    if (INITIAL_URL.stop) {
+      const s = STOPS.find((x) => x.id === INITIAL_URL.stop);
+      if (s) {
+        setFlyToToken({
+          key: Date.now(),
+          target: { kind: 'point', lat: s.lat, lng: s.lng, zoom: 16 },
+        });
+      }
+      return;
+    }
+    if (INITIAL_URL.terminal) {
+      const t = TERMINALS.find((x) => x.id === INITIAL_URL.terminal);
+      if (t) {
+        setFlyToToken({
+          key: Date.now(),
+          target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
+        });
+      }
+    }
+  }, []);
 
   const selectedRoute = useMemo(
     () => ROUTES.find((r) => r.id === selectedRouteId) ?? null,
@@ -51,9 +109,12 @@ export default function App() {
   const visibleIdsAfterTypeFilter = useMemo(() => {
     return visibleRouteIds.filter((id) => {
       const r = ROUTES.find((x) => x.id === id);
-      return r && typeFilters[r.type];
+      if (!r) return false;
+      if (!typeFilters[r.type]) return false;
+      if (onlyOperatingNow && !isRouteOperatingNow(r)) return false;
+      return true;
     });
-  }, [visibleRouteIds, typeFilters]);
+  }, [visibleRouteIds, typeFilters, onlyOperatingNow]);
 
   const onToggleVisible = useCallback((id: string) => {
     setVisibleRouteIds((cur) =>
@@ -194,6 +255,9 @@ export default function App() {
           showParaderos={showParaderos}
           onToggleTerminals={() => setShowTerminals((v) => !v)}
           onToggleParaderos={() => setShowParaderos((v) => !v)}
+          onlyOperatingNow={onlyOperatingNow}
+          onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
+          onOpenSources={() => setSourcesOpen(true)}
         />
 
         <main className="relative flex-1">
@@ -286,6 +350,7 @@ export default function App() {
         onOpenChange={(o) => (!o ? closeSheet() : undefined)}
         onFocus={onFocusTerminal}
       />
+      <DataSourcesSheet open={sourcesOpen} onOpenChange={setSourcesOpen} />
     </div>
   );
 }

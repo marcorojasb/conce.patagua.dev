@@ -10,6 +10,8 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { ROUTES, ROUTE_TYPES } from '@/data/routes';
+import { isRouteOperatingNow } from '@/lib/operating-hours';
+import { cn } from '@/lib/utils';
 import type { StopWithRoutes } from '@/types/transport';
 
 interface StopDetailSheetProps {
@@ -24,6 +26,11 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
     if (!stop) return [];
     return stop.routes.map((rid) => ROUTES.find((r) => r.id === rid)).filter((r) => !!r);
   }, [stop]);
+
+  const activeCount = useMemo(
+    () => routes.reduce((acc, r) => acc + (isRouteOperatingNow(r) ? 1 : 0), 0),
+    [routes],
+  );
 
   if (!stop) return null;
 
@@ -42,13 +49,17 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col px-5 pb-5">
-          <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Recorridos que pasan
+          <div className="mb-2 flex items-center justify-between gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            <span>Recorridos que pasan</span>
+            <span className="font-mono normal-case tracking-normal text-muted-foreground">
+              {activeCount}/{routes.length} operando ahora
+            </span>
           </div>
           <ScrollArea className="flex-1">
             <div className="space-y-1.5">
               {routes.map((r) => {
                 const Icon = ROUTE_TYPES[r.type].Icon;
+                const active = isRouteOperatingNow(r);
                 return (
                   <button
                     key={r.id}
@@ -66,9 +77,17 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
                       <div className="truncate text-sm font-medium">{r.name}</div>
                       <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <Icon className="h-[11px] w-[11px]" />
-                        {ROUTE_TYPES[r.type].short} · cada {r.headway}
+                        {ROUTE_TYPES[r.type].short}
+                        {r.headway !== '—' && ` · cada ${r.headway}`}
                       </div>
                     </div>
+                    <span
+                      className={cn(
+                        'inline-flex h-2 w-2 shrink-0 rounded-full',
+                        active ? 'bg-emerald-500' : 'bg-muted-foreground/40',
+                      )}
+                      aria-label={active ? 'Operando ahora' : 'Fuera de horario o sin datos'}
+                    />
                     <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                   </button>
                 );

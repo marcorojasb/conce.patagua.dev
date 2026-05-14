@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Building2, ChevronRight, MapPin, Search } from 'lucide-react';
+import { Building2, ChevronRight, Clock, MapPin, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,6 +26,9 @@ interface SidebarProps {
   showParaderos: boolean;
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
+  onlyOperatingNow: boolean;
+  onToggleOnlyOperatingNow: () => void;
+  onOpenSources: () => void;
 }
 
 const NO_OPERATOR_LABEL = 'Sin operador registrado';
@@ -47,6 +50,9 @@ export function Sidebar({
   showParaderos,
   onToggleTerminals,
   onToggleParaderos,
+  onlyOperatingNow,
+  onToggleOnlyOperatingNow,
+  onOpenSources,
 }: SidebarProps) {
   const [query, setQuery] = useState('');
   const [expandedOps, setExpandedOps] = useState<Set<string>>(new Set());
@@ -208,6 +214,12 @@ export function Sidebar({
                 checked={showParaderos}
                 onChange={onToggleParaderos}
               />
+              <LayerRow
+                icon={<Clock className="h-3.5 w-3.5" />}
+                label="Solo activos ahora"
+                checked={onlyOperatingNow}
+                onChange={onToggleOnlyOperatingNow}
+              />
             </div>
           </div>
         </div>
@@ -318,10 +330,14 @@ export function Sidebar({
 
         <div className="border-t p-3">
           <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>
-              Datos: <span className="font-mono">OSM + EFE</span>
-            </span>
-            <span>v0.3</span>
+            <button
+              type="button"
+              onClick={onOpenSources}
+              className="underline-offset-2 hover:text-foreground hover:underline focus-ring rounded-sm"
+            >
+              Fuentes de datos
+            </button>
+            <span>v0.4</span>
           </div>
         </div>
       </div>
@@ -385,7 +401,7 @@ function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProp
 interface LayerRowProps {
   icon: React.ReactNode;
   label: string;
-  count: number;
+  count?: number;
   checked: boolean;
   onChange: () => void;
 }
@@ -395,7 +411,9 @@ function LayerRow({ icon, label, count, checked, onChange }: LayerRowProps) {
     <label className="flex cursor-pointer items-center gap-2 rounded-md px-1 py-0.5 text-sm hover:bg-accent/40">
       <span className="text-muted-foreground">{icon}</span>
       <span className="flex-1 leading-tight">{label}</span>
-      <span className="font-mono text-[11px] text-muted-foreground">{count}</span>
+      {count != null && (
+        <span className="font-mono text-[11px] text-muted-foreground">{count}</span>
+      )}
       <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
     </label>
   );

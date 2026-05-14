@@ -1,0 +1,67 @@
+name: Sync OSM data
+
+on:
+  schedule:
+    # 06:30 UTC daily ≈ 03:30 Chile (CLT/CLST). Off-peak for both Overpass
+    # mirrors and Vercel build queues.
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Sync all OSM-backed datasets
+        run: npm run sync:all
+
+      - name: Detect changes
+        id: diff
+        run: |
+          if git diff --quiet -- src/data; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No data changes to commit."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat -- src/data
+          fi
+
+      - name: Open pull request with refreshed data
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: |
+            data: refresh OSM-backed datasets (automated sync)
+          branch: data/auto-sync
+          delete-branch: true
+          title: 'data: refresh OSM-backed datasets'
+          body: |
+            Automated nightly sync from OpenStreetMap (Overpass API).
+
+            Refreshed:
+            - `src/data/biotren.generated.ts` (railway=station, operator=EFE)
+            - `src/data/biotren-track.generated.ts` (railway=rail, Dijkstra)
+            - `src/data/terminals.generated.ts` (amenity=bus_station)
+            - `src/data/paraderos.generated.ts` (highway=bus_stop)
+            - `src/data/bus-routes.generated.ts` (route=bus relations + paradero match)
+
+            Review the diff: if it looks reasonable, merge and Vercel will redeploy.
+          labels: |
+            data
+            automated
