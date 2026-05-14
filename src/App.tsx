@@ -78,6 +78,25 @@ export default function App() {
     setTypeFilters((f) => ({ ...f, [typeId]: true }));
   }, []);
 
+  const onSetAllByOperator = useCallback((operator: string, on: boolean) => {
+    const idsOfOp = new Set(
+      ROUTES.filter((r) => r.operator === operator).map((r) => r.id),
+    );
+    setVisibleRouteIds((cur) => {
+      if (on) {
+        const next = new Set(cur);
+        for (const id of idsOfOp) next.add(id);
+        return Array.from(next);
+      }
+      return cur.filter((id) => !idsOfOp.has(id));
+    });
+    // Enable the relevant type filter so the operator's routes actually render.
+    const firstRoute = ROUTES.find((r) => r.operator === operator);
+    if (firstRoute) {
+      setTypeFilters((f) => ({ ...f, [firstRoute.type]: true }));
+    }
+  }, []);
+
   const onSelectRoute = useCallback((id: string) => {
     const r = ROUTES.find((x) => x.id === id);
     if (!r) return;
@@ -168,6 +187,7 @@ export default function App() {
           typeFilters={typeFilters}
           onToggleType={onToggleType}
           onSetAllByType={onSetAllByType}
+          onSetAllByOperator={onSetAllByOperator}
           terminalsCount={TERMINALS.length}
           paraderosCount={PARADEROS.length}
           showTerminals={showTerminals}

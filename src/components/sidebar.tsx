@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Building2, MapPin, Search } from 'lucide-react';
+import { Building2, ChevronRight, MapPin, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,6 +19,7 @@ interface SidebarProps {
   typeFilters: Record<RouteTypeId, boolean>;
   onToggleType: (typeId: RouteTypeId) => void;
   onSetAllByType: (typeId: RouteTypeId, on: boolean) => void;
+  onSetAllByOperator: (operator: string, on: boolean) => void;
   terminalsCount: number;
   paraderosCount: number;
   showTerminals: boolean;
@@ -26,6 +27,8 @@ interface SidebarProps {
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
 }
+
+const NO_OPERATOR_LABEL = 'Sin operador registrado';
 
 export function Sidebar({
   open,
@@ -37,6 +40,7 @@ export function Sidebar({
   typeFilters,
   onToggleType,
   onSetAllByType,
+  onSetAllByOperator,
   terminalsCount,
   paraderosCount,
   showTerminals,
@@ -45,8 +49,25 @@ export function Sidebar({
   onToggleParaderos,
 }: SidebarProps) {
   const [query, setQuery] = useState('');
+  const [expandedOps, setExpandedOps] = useState<Set<string>>(new Set());
 
-  const filtered = useMemo(() => {
+  const visibleSet = useMemo(() => new Set(visibleRouteIds), [visibleRouteIds]);
+
+  const visibleCount = visibleRouteIds.length;
+  const totalCount = routes.length;
+
+  const typeStats = useMemo(() => {
+    const stats: Partial<Record<RouteTypeId, { total: number; visible: number }>> = {};
+    for (const r of routes) {
+      const s = stats[r.type] ?? { total: 0, visible: 0 };
+      s.total += 1;
+      if (visibleSet.has(r.id)) s.visible += 1;
+      stats[r.type] = s;
+    }
+    return stats;
+  }, [routes, visibleSet]);
+
+  const filteredFlat = useMemo(() => {
     const q = query.trim().toLowerCase();
     return routes.filter((r) => {
       if (!typeFilters[r.type]) return false;
@@ -54,26 +75,37 @@ export function Sidebar({
       return (
         r.name.toLowerCase().includes(q) ||
         r.code.toLowerCase().includes(q) ||
-        ROUTE_TYPES[r.type].label.toLowerCase().includes(q)
+        ROUTE_TYPES[r.type].label.toLowerCase().includes(q) ||
+        (r.operator?.toLowerCase().includes(q) ?? false)
       );
     });
   }, [query, routes, typeFilters]);
 
-  const visibleCount = visibleRouteIds.length;
-  const totalCount = routes.length;
-
-  // Per-type counts let us show bulk toggles only where they're useful
-  // (e.g. "Activar todos los micros" when there are 100+ routes off).
-  const typeStats = useMemo(() => {
-    const stats: Partial<Record<RouteTypeId, { total: number; visible: number }>> = {};
-    for (const r of routes) {
-      const s = stats[r.type] ?? { total: 0, visible: 0 };
-      s.total += 1;
-      if (visibleRouteIds.includes(r.id)) s.visible += 1;
-      stats[r.type] = s;
+  // Group by operator (only relevant for micros — Biotrén stays flat).
+  const grouped = useMemo(() => {
+    const biotren: Route[] = [];
+    const byOp = new Map<string, Route[]>();
+    for (const r of filteredFlat) {
+      if (r.type === 'biotren') {
+        biotren.push(r);
+        continue;
+      }
+      const op = r.operator ?? NO_OPERATOR_LABEL;
+      const list = byOp.get(op) ?? [];
+      list.push(r);
+      byOp.set(op, list);
     }
-    return stats;
-  }, [routes, visibleRouteIds]);
+    const operators = Array.from(byOp.entries())
+      .map(([op, list]) => ({
+        operator: op,
+        routes: list,
+        visible: list.reduce((acc, r) => acc + (visibleSet.has(r.id) ? 1 : 0), 0),
+      }))
+      .sort((a, b) => b.routes.length - a.routes.length);
+    return { biotren, operators };
+  }, [filteredFlat, visibleSet]);
+
+  const showFlat = query.trim().length > 0;
 
   return (
     <aside
@@ -95,7 +127,7 @@ export function Sidebar({
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar recorrido…"
+              placeholder="Buscar recorrido u operador…"
               className="h-9 pl-8"
             />
           </div>
@@ -182,67 +214,105 @@ export function Sidebar({
 
         <ScrollArea className="flex-1">
           <div className="space-y-1 p-2">
-            {filtered.length === 0 && (
+            {filteredFlat.length === 0 && (
               <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                 Sin recorridos para los filtros actuales.
               </div>
             )}
-            {filtered.map((r) => {
-              const isSelected = selectedRouteId === r.id;
-              const isVisible = visibleRouteIds.includes(r.id);
-              const Icon = ROUTE_TYPES[r.type].Icon;
-              return (
-                <div
+
+            {showFlat &&
+              filteredFlat.map((r) => (
+                <RouteRow
                   key={r.id}
-                  className={cn(
-                    'group flex items-center gap-2 rounded-md border border-transparent px-2 py-1.5 transition-colors',
-                    isSelected ? 'border-border bg-accent' : 'hover:bg-accent/60',
-                  )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => onSelectRoute(r.id)}
-                    className="flex min-w-0 flex-1 items-center gap-2 rounded-sm text-left focus-ring"
-                  >
-                    <Badge
-                      className="shrink-0 border-transparent font-mono"
-                      style={{ backgroundColor: r.color, color: '#fff' }}
-                    >
-                      {r.code}
-                    </Badge>
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-medium leading-tight">{r.name}</div>
-                      <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                        <Icon className="h-[11px] w-[11px]" />
-                        <span>{ROUTE_TYPES[r.type].short}</span>
-                        {r.stops.length > 0 && (
-                          <>
-                            <span aria-hidden>·</span>
-                            <span>{r.stops.length} paraderos</span>
-                          </>
-                        )}
-                        {r.operator && r.stops.length === 0 && (
-                          <>
-                            <span aria-hidden>·</span>
-                            <span className="truncate">{r.operator}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                  <Tooltip
-                    content={isVisible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'}
-                    side="left"
-                  >
-                    <Switch
-                      checked={isVisible}
-                      onCheckedChange={() => onToggleVisible(r.id)}
-                      aria-label={isVisible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'}
-                    />
-                  </Tooltip>
+                  route={r}
+                  visible={visibleSet.has(r.id)}
+                  selected={selectedRouteId === r.id}
+                  onSelect={() => onSelectRoute(r.id)}
+                  onToggle={() => onToggleVisible(r.id)}
+                />
+              ))}
+
+            {!showFlat && grouped.biotren.length > 0 && (
+              <div className="pt-1">
+                <div className="px-2 pb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Biotrén
                 </div>
-              );
-            })}
+                {grouped.biotren.map((r) => (
+                  <RouteRow
+                    key={r.id}
+                    route={r}
+                    visible={visibleSet.has(r.id)}
+                    selected={selectedRouteId === r.id}
+                    onSelect={() => onSelectRoute(r.id)}
+                    onToggle={() => onToggleVisible(r.id)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {!showFlat &&
+              grouped.operators.map((g) => {
+                const isExpanded = expandedOps.has(g.operator);
+                const allVisible = g.visible === g.routes.length;
+                return (
+                  <div key={g.operator} className="pt-1">
+                    <div className="flex items-stretch gap-1 px-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedOps((cur) => {
+                            const next = new Set(cur);
+                            if (next.has(g.operator)) next.delete(g.operator);
+                            else next.add(g.operator);
+                            return next;
+                          })
+                        }
+                        className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[12px] hover:bg-accent/60 focus-ring"
+                        aria-expanded={isExpanded}
+                      >
+                        <ChevronRight
+                          className={cn(
+                            'h-3 w-3 shrink-0 text-muted-foreground transition-transform',
+                            isExpanded && 'rotate-90',
+                          )}
+                        />
+                        <span className="truncate font-medium">{g.operator}</span>
+                        <span className="ml-auto shrink-0 font-mono text-[10px] text-muted-foreground">
+                          {g.visible}/{g.routes.length}
+                        </span>
+                      </button>
+                      <Tooltip
+                        content={
+                          allVisible
+                            ? 'Quitar todos del operador'
+                            : 'Activar todos del operador'
+                        }
+                        side="left"
+                      >
+                        <Switch
+                          checked={allVisible}
+                          onCheckedChange={() => onSetAllByOperator(g.operator, !allVisible)}
+                          aria-label={`Alternar todos los recorridos de ${g.operator}`}
+                        />
+                      </Tooltip>
+                    </div>
+                    {isExpanded && (
+                      <div className="mt-0.5">
+                        {g.routes.map((r) => (
+                          <RouteRow
+                            key={r.id}
+                            route={r}
+                            visible={visibleSet.has(r.id)}
+                            selected={selectedRouteId === r.id}
+                            onSelect={() => onSelectRoute(r.id)}
+                            onToggle={() => onToggleVisible(r.id)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </div>
         </ScrollArea>
 
@@ -251,12 +321,64 @@ export function Sidebar({
             <span>
               Datos: <span className="font-mono">OSM + EFE</span>
             </span>
-            <span>v0.2</span>
+            <span>v0.3</span>
           </div>
-          {/* TODO: conectar GTFS Gran Concepción cuando DTPR lo publique */}
         </div>
       </div>
     </aside>
+  );
+}
+
+interface RouteRowProps {
+  route: Route;
+  visible: boolean;
+  selected: boolean;
+  onSelect: () => void;
+  onToggle: () => void;
+}
+
+function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProps) {
+  const Icon = ROUTE_TYPES[route.type].Icon;
+  return (
+    <div
+      className={cn(
+        'group flex items-center gap-2 rounded-md border border-transparent px-2 py-1.5 transition-colors',
+        selected ? 'border-border bg-accent' : 'hover:bg-accent/60',
+      )}
+    >
+      <button
+        type="button"
+        onClick={onSelect}
+        className="flex min-w-0 flex-1 items-center gap-2 rounded-sm text-left focus-ring"
+      >
+        <Badge
+          className="shrink-0 border-transparent font-mono"
+          style={{ backgroundColor: route.color, color: '#fff' }}
+        >
+          {route.code}
+        </Badge>
+        <div className="min-w-0">
+          <div className="truncate text-sm font-medium leading-tight">{route.name}</div>
+          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Icon className="h-[11px] w-[11px]" />
+            <span>{ROUTE_TYPES[route.type].short}</span>
+            {route.stops.length > 0 && (
+              <>
+                <span aria-hidden>·</span>
+                <span>{route.stops.length} paraderos</span>
+              </>
+            )}
+          </div>
+        </div>
+      </button>
+      <Tooltip content={visible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'} side="left">
+        <Switch
+          checked={visible}
+          onCheckedChange={onToggle}
+          aria-label={visible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'}
+        />
+      </Tooltip>
+    </div>
   );
 }
 
