@@ -54,9 +54,18 @@ export const SheetContent = React.forwardRef<
   SheetContentProps
 >(({ side = 'right', className, children, ...props }, ref) => (
   <SheetPortal>
-    <SheetOverlay />
+    {/* No overlay rendered here. The sheet is a side panel docked over the
+        map — dimming the whole viewport (including the sidebar) hides the
+        very controls the user is comparing against. Radix's onEscapeKeyDown
+        and the close button still handle dismissal. */}
     <DialogPrimitive.Content
       ref={ref}
+      onPointerDownOutside={(e) => {
+        // Allow clicking on the map/sidebar without auto-closing the sheet;
+        // the user can dismiss via the X button or Escape. This matches
+        // how transit map apps (Citymapper, Google Maps) behave.
+        e.preventDefault();
+      }}
       className={cn(sheetVariants({ side }), 'flex flex-col', className)}
       {...props}
     >

@@ -4,8 +4,12 @@
 //
 //  ✔ Biotrén L1 & L2 — stations from OpenStreetMap (Overpass), names + order
 //    from EFE Trenes (efe.cl/biotren/servicio-y-trazado), schedule from EFE.
-//    Track polyline stitched from OSM `railway=rail` ways operated by EFE Sur.
-//    Re-generate: `npm run sync:biotren && npm run sync:biotren-track`.
+//    Path is currently the straight-line polyline between consecutive
+//    stations. The script in scripts/fetch-biotren-track.ts CAN stitch the
+//    real `railway=rail` ways, but its greedy walker also picks up freight
+//    and industrial spurs that share the corridor. Until that walker is
+//    upgraded to a corridor-constrained Dijkstra (TODO), straight lines
+//    look cleaner than spaghetti.
 //
 //  ✔ Recorridos de micros — 133 `route=bus` relations from OpenStreetMap,
 //    each with full polyline geometry (simplified with Douglas–Peucker).
@@ -22,16 +26,21 @@ import {
   BIOTREN_L1_STOPS,
   BIOTREN_L2_STOPS,
 } from '@/data/biotren.generated';
-import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generated';
 import { BUS_ROUTES } from '@/data/bus-routes.generated';
 import type {
   BusRoute,
+  LatLngTuple,
   MapCenter,
   Route,
   RouteType,
   RouteTypeId,
+  Stop,
   StopWithRoutes,
 } from '@/types/transport';
+
+function stopsToPath(stops: Stop[]): LatLngTuple[] {
+  return stops.map((s) => [s.lat, s.lng]);
+}
 
 export const CONCE_CENTER: MapCenter = { lat: -36.8201, lng: -73.0444 };
 
@@ -80,7 +89,7 @@ const BIOTREN_ROUTES: Route[] = [
     hours: BIOTREN_HOURS,
     frequencyByDay: BIOTREN_FREQUENCY,
     stops: BIOTREN_L1_STOPS,
-    path: BIOTREN_L1_TRACK,
+    path: stopsToPath(BIOTREN_L1_STOPS),
   },
   {
     id: 'bt-l2',
@@ -93,7 +102,7 @@ const BIOTREN_ROUTES: Route[] = [
     hours: BIOTREN_HOURS,
     frequencyByDay: BIOTREN_FREQUENCY,
     stops: BIOTREN_L2_STOPS,
-    path: BIOTREN_L2_TRACK,
+    path: stopsToPath(BIOTREN_L2_STOPS),
   },
 ];
 
