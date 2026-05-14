@@ -1,0 +1,226 @@
+// Pulls Biotrén L1 and L2 station data from OpenStreetMap via the Overpass API
+// and writes a typed module the app imports statically.
+//
+// Run: npm run sync:biotren
+//
+// Why a build-time fetch instead of runtime?
+//  - OSM data for Biotrén is stable (stations rarely move).
+//  - Avoids Overpass dependency at request time + CORS/availability surprises.
+//  - The generated file is committed so changes are reviewable in diffs.
+
+import { writeFileSync, mkdirSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const OUT_PATH = resolve(__dirname, '../src/data/biotren.generated.ts');
+
+// Tried in order; first mirror to respond wins. overpass-api.de rate-limits
+// hard during peak hours, so we keep multiple endpoints as fallbacks.
+const OVERPASS_MIRRORS = [
+  'https://overpass.osm.ch/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass-api.de/api/interpreter',
+];
+
+// Canonical line composition from EFE Trenes (efe.cl/biotren/servicio-y-trazado).
+// Order matters: it's the on-line traversal order.
+const L1_STATIONS = [
+  'Hualqui',
+  'La Leonera',
+  'Manquimávida',
+  'Pedro Medina',
+  'Chiguayante',
+  'Concepción',
+  'Lorenzo Arenas',
+  'Universidad Técnica Federico Santa María',
+  'Los Cóndores',
+  'Hospital Las Higueras',
+  'El Arenal',
+  'Mercado',
+];
+
+const L2_STATIONS = [
+  'Coronel',
+  'Laguna Quiñenco',
+  'Cristo Redentor',
+  'Huinca',
+  'Los Canelos',
+  'Hito Galvarino',
+  'Cardenal Raúl Silva Henríquez',
+  'Lomas Coloradas',
+  'El Parque',
+  'Costa Mar',
+  'Alborada',
+  'Diagonal Biobío',
+  'Juan Pablo II',
+  'Concepción',
+];
+
+// Display name overrides — the OSM name is the source of truth for the coord
+// lookup, but some EFE-facing labels read better in the UI.
+const DISPLAY: Record<string, string> = {
+  Mercado: 'Mercado de Talcahuano',
+  'Universidad Técnica Federico Santa María': 'UTF Santa María',
+  'Hospital Las Higueras': 'Higueras',
+  'Diagonal Biobío': 'Diagonal Bío-Bío',
+};
+
+interface OverpassNode {
+  type: 'node';
+  id: number;
+  lat: number;
+  lon: number;
+  tags?: Record<string, string>;
+}
+
+interface OverpassResponse {
+  elements: OverpassNode[];
+}
+
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/^estaci[oó]n\s+/i, '')
+    .trim();
+}
+
+async function queryOverpass(): Promise<OverpassResponse> {
+  // Bounding box covers all of greater Concepción + Coronel + Hualqui.
+  const query = `[out:json][timeout:30];
+(
+  node["railway"~"^(station|halt)$"]["operator"~"EFE",i](-37.10,-73.25,-36.65,-72.80);
+);
+out body;`;
+
+  const encoded = encodeURIComponent(query);
+  const headers = {
+    'User-Agent': 'conce-patagua-dev/0.1 (https://github.com/marcorojasb/conce.patagua.dev)',
+    'Accept': 'application/json',
+  };
+
+  let lastError: unknown;
+  for (const mirror of OVERPASS_MIRRORS) {
+    try {
+      console.log(`  → trying ${new URL(mirror).host}`);
+      const res = await fetch(`${mirror}?data=${encoded}`, {
+        headers,
+        signal: AbortSignal.timeout(30_000),
+      });
+      if (!res.ok) {
+        lastError = new Error(`Overpass ${res.status} ${res.statusText}`);
+        continue;
+      }
+      return (await res.json()) as OverpassResponse;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw new Error(`All Overpass mirrors failed. Last error: ${String(lastError)}`);
+}
+
+interface Resolved {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  osmId: number;
+  ref?: string;
+}
+
+function buildIndex(elements: OverpassNode[]): Map<string, OverpassNode> {
+  const map = new Map<string, OverpassNode>();
+  for (const el of elements) {
+    const name = el.tags?.name;
+    if (!name) continue;
+    map.set(normalize(name), el);
+  }
+  return map;
+}
+
+function resolveStops(
+  names: string[],
+  _idPrefix: string,
+  index: Map<string, OverpassNode>,
+): Resolved[] {
+  const missing: string[] = [];
+  const stops = names.map((name): Resolved => {
+    const hit = index.get(normalize(name));
+    if (!hit) {
+      missing.push(name);
+      return { id: `osm-missing-${name}`, name: DISPLAY[name] ?? name, lat: 0, lng: 0, osmId: 0 };
+    }
+    // OSM node id as stop id ensures stations shared between lines (e.g.
+    // Concepción on L1 + L2) collapse to a single marker after `buildStopIndex`.
+    return {
+      id: `osm-${hit.id}`,
+      name: DISPLAY[name] ?? name,
+      lat: hit.lat,
+      lng: hit.lon,
+      osmId: hit.id,
+      ref: hit.tags?.['railway:ref'],
+    };
+  });
+  if (missing.length) {
+    throw new Error(`Could not resolve OSM coords for: ${missing.join(', ')}`);
+  }
+  return stops;
+}
+
+function renderFile(l1: Resolved[], l2: Resolved[]): string {
+  const banner = `// AUTO-GENERATED by scripts/fetch-biotren.ts on ${new Date().toISOString()}.
+// Source: OpenStreetMap (Overpass API) — node operator~EFE in Biobío bbox.
+// Station order is from EFE Trenes (efe.cl/biotren/servicio-y-trazado).
+// Re-generate: \`npm run sync:biotren\`. Do not edit by hand.
+
+import type { LatLngTuple, Stop } from '@/types/transport';
+`;
+
+  const stopsLiteral = (stops: Resolved[]): string =>
+    '[\n' +
+    stops
+      .map(
+        (s) =>
+          `  { id: '${s.id}', name: ${JSON.stringify(s.name)}, lat: ${s.lat}, lng: ${s.lng}${s.ref ? `, ref: '${s.ref}'` : ''} },`,
+      )
+      .join('\n') +
+    '\n]';
+
+  return `${banner}
+export const BIOTREN_L1_STOPS: Stop[] = ${stopsLiteral(l1)};
+
+export const BIOTREN_L2_STOPS: Stop[] = ${stopsLiteral(l2)};
+
+// Path geometry: stations connected in order. OSM does not currently have the
+// Biotrén lines as route relations, so for now we connect the dots. A future
+// iteration can replace this with the actual \`railway=rail\` ways.
+export const BIOTREN_L1_PATH: LatLngTuple[] = BIOTREN_L1_STOPS.map((s) => [s.lat, s.lng]);
+export const BIOTREN_L2_PATH: LatLngTuple[] = BIOTREN_L2_STOPS.map((s) => [s.lat, s.lng]);
+`;
+}
+
+async function main() {
+  console.log('Fetching Biotrén stations from Overpass…');
+  const data = await queryOverpass();
+  console.log(`  → ${data.elements.length} EFE-operated rail nodes in bbox`);
+
+  const index = buildIndex(data.elements);
+  console.log(`  → ${index.size} named stations indexed`);
+
+  const l1 = resolveStops(L1_STATIONS, 'bt1', index);
+  const l2 = resolveStops(L2_STATIONS, 'bt2', index);
+
+  console.log(`  → L1: ${l1.length} stations resolved`);
+  console.log(`  → L2: ${l2.length} stations resolved`);
+
+  mkdirSync(dirname(OUT_PATH), { recursive: true });
+  writeFileSync(OUT_PATH, renderFile(l1, l2));
+  console.log(`Wrote ${OUT_PATH}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

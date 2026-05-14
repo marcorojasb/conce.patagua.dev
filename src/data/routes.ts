@@ -1,10 +1,36 @@
-// Sample/mock data for Concepción.
-// TODO: Reemplazar por feed real (GTFS de la Región del Biobío,
-// API del Biotrén, datos abiertos de la SEREMITT, OSM Overpass para paraderos).
-// Estructura pensada para sustituir mocks sin tocar la UI.
+// Route + stop dataset for the Conce Transporte visor.
+//
+// Current sources (May 2026):
+//
+//  ✔ Biotrén L1 & L2 — stations from OpenStreetMap (Overpass), names + order
+//    from EFE Trenes (efe.cl/biotren/servicio-y-trazado), schedule from EFE.
+//    Data lives in `biotren.generated.ts` and is refreshable with
+//    `npm run sync:biotren`.
+//
+//  ✘ Micros (buses urbanos) — still mock. DTPR has not published an open
+//    GTFS feed for Gran Concepción yet (announced but not live on
+//    datos.gob.cl as of 2026-05). Once published, swap the mock route below
+//    for the GTFS shapes/trips.
+//    Intermediate option: load individual stops from OSM (`highway=bus_stop`)
+//    while waiting on full GTFS — leaves the legend honest about scope.
+//
+//  ✘ Taxibús / colectivo — mock. No open dataset; would need an aggregator
+//    or scraping operator sites. Low priority until micros are real.
 
 import { Bus, Train, Car } from 'lucide-react';
-import type { MapCenter, Route, RouteType, RouteTypeId, StopWithRoutes } from '@/types/transport';
+import {
+  BIOTREN_L1_PATH,
+  BIOTREN_L1_STOPS,
+  BIOTREN_L2_PATH,
+  BIOTREN_L2_STOPS,
+} from '@/data/biotren.generated';
+import type {
+  MapCenter,
+  Route,
+  RouteType,
+  RouteTypeId,
+  StopWithRoutes,
+} from '@/types/transport';
 
 export const CONCE_CENTER: MapCenter = { lat: -36.8201, lng: -73.0444 };
 
@@ -32,17 +58,54 @@ export const ROUTE_TYPES: Record<RouteTypeId, RouteType> = {
   },
 };
 
-// Recorridos ficticios. Coordenadas aproximadas dentro de Concepción/Talcahuano
-// para que las líneas se vean razonables sobre el mapa. NO corresponden a
-// recorridos reales: son de relleno para el prototipo.
+const BIOTREN_HOURS = {
+  L1: '05:45 — 23:10 (Lun-Vie)',
+  L2: '05:45 — 23:10 (Lun-Vie)',
+};
+
+const BIOTREN_FREQUENCY = {
+  'Lun – Vie': 'cada 6–12 min en punta · 15 min valle',
+  Sábado: 'cada 12–20 min',
+  Domingo: 'cada 20–30 min',
+};
+
 export const ROUTES: Route[] = [
+  // ── Biotrén — datos reales ──────────────────────────────────────────────
   {
-    id: 'l1',
+    id: 'bt-l1',
     code: 'L1',
-    name: 'Plaza Independencia ↔ Universidad de Concepción',
+    name: 'Biotrén L1 · Hualqui ↔ Mercado Talcahuano',
+    type: 'biotren',
+    color: '#0EA5E9',
+    operator: 'EFE Sur · Biotrén',
+    headway: '12 min',
+    hours: BIOTREN_HOURS.L1,
+    frequencyByDay: BIOTREN_FREQUENCY,
+    stops: BIOTREN_L1_STOPS,
+    path: BIOTREN_L1_PATH,
+  },
+  {
+    id: 'bt-l2',
+    code: 'L2',
+    name: 'Biotrén L2 · Coronel ↔ Concepción',
+    type: 'biotren',
+    color: '#0284C7',
+    operator: 'EFE Sur · Biotrén',
+    headway: '12 min',
+    hours: BIOTREN_HOURS.L2,
+    frequencyByDay: BIOTREN_FREQUENCY,
+    stops: BIOTREN_L2_STOPS,
+    path: BIOTREN_L2_PATH,
+  },
+
+  // ── Mock pendiente de GTFS oficial ──────────────────────────────────────
+  {
+    id: 'micro-demo',
+    code: 'M-Demo',
+    name: 'Plaza Independencia ↔ Universidad de Concepción (demo)',
     type: 'micro',
     color: '#E11D48',
-    operator: 'Línea Urbana Demo',
+    operator: 'Recorrido ficticio · pendiente GTFS Gran Concepción',
     headway: '8 min',
     hours: '06:00 — 23:30',
     frequencyByDay: {
@@ -51,12 +114,12 @@ export const ROUTES: Route[] = [
       Domingo: 'cada 15–20 min',
     },
     stops: [
-      { id: 'l1-s1', name: 'Plaza Independencia', lat: -36.827, lng: -73.0498 },
-      { id: 'l1-s2', name: 'Tribunales', lat: -36.8255, lng: -73.0467 },
-      { id: 'l1-s3', name: 'Mercado Central', lat: -36.8235, lng: -73.0438 },
-      { id: 'l1-s4', name: 'Plaza Perú', lat: -36.8294, lng: -73.0387 },
-      { id: 'l1-s5', name: 'Casa del Arte', lat: -36.8298, lng: -73.0353 },
-      { id: 'l1-s6', name: 'Universidad de Concepción', lat: -36.8311, lng: -73.0312 },
+      { id: 'mdemo-s1', name: 'Plaza Independencia', lat: -36.827, lng: -73.0498 },
+      { id: 'mdemo-s2', name: 'Tribunales', lat: -36.8255, lng: -73.0467 },
+      { id: 'mdemo-s3', name: 'Mercado Central', lat: -36.8235, lng: -73.0438 },
+      { id: 'mdemo-s4', name: 'Plaza Perú', lat: -36.8294, lng: -73.0387 },
+      { id: 'mdemo-s5', name: 'Casa del Arte', lat: -36.8298, lng: -73.0353 },
+      { id: 'mdemo-s6', name: 'Universidad de Concepción', lat: -36.8311, lng: -73.0312 },
     ],
     path: [
       [-36.827, -73.0498],
@@ -72,43 +135,12 @@ export const ROUTES: Route[] = [
     ],
   },
   {
-    id: 'b1',
-    code: 'BT',
-    name: 'Biotrén · Concepción ↔ Hualqui',
-    type: 'biotren',
-    color: '#0EA5E9',
-    operator: 'EFE Trenes (demo)',
-    headway: '20 min',
-    hours: '06:30 — 22:00',
-    frequencyByDay: {
-      'Lun – Vie': 'cada 12–20 min',
-      Sábado: 'cada 20–30 min',
-      Domingo: 'cada 30 min',
-    },
-    stops: [
-      { id: 'b1-s1', name: 'Estación Concepción', lat: -36.8275, lng: -73.0531 },
-      { id: 'b1-s2', name: 'Chiguayante (demo)', lat: -36.9213, lng: -73.0214 },
-      { id: 'b1-s3', name: 'Hualqui (demo)', lat: -36.974, lng: -72.942 },
-    ],
-    path: [
-      [-36.8275, -73.0531],
-      [-36.8362, -73.044],
-      [-36.853, -73.0345],
-      [-36.8767, -73.029],
-      [-36.905, -73.0235],
-      [-36.9213, -73.0214],
-      [-36.9456, -72.982],
-      [-36.962, -72.959],
-      [-36.974, -72.942],
-    ],
-  },
-  {
-    id: 't25',
-    code: 'T-25',
-    name: 'Talcahuano ↔ Centro Concepción',
+    id: 't-demo',
+    code: 'T-Demo',
+    name: 'Talcahuano ↔ Centro Concepción (demo)',
     type: 'taxibus',
     color: '#16A34A',
-    operator: 'Taxibuses del Litoral (demo)',
+    operator: 'Recorrido ficticio · sin fuente abierta',
     headway: '12 min',
     hours: '05:45 — 23:00',
     frequencyByDay: {
@@ -117,12 +149,12 @@ export const ROUTES: Route[] = [
       Domingo: 'cada 20 min',
     },
     stops: [
-      { id: 't25-s1', name: 'Plaza Talcahuano', lat: -36.722, lng: -73.117 },
-      { id: 't25-s2', name: 'Higueras', lat: -36.748, lng: -73.108 },
-      { id: 't25-s3', name: 'Las Salinas', lat: -36.7705, lng: -73.0945 },
-      { id: 't25-s4', name: 'Hualpén centro', lat: -36.792, lng: -73.084 },
-      { id: 't25-s5', name: 'Av. Jorge Alessandri', lat: -36.806, lng: -73.067 },
-      { id: 't25-s6', name: 'Plaza Independencia', lat: -36.827, lng: -73.0498 },
+      { id: 'tdemo-s1', name: 'Plaza Talcahuano', lat: -36.722, lng: -73.117 },
+      { id: 'tdemo-s2', name: 'Higueras', lat: -36.748, lng: -73.108 },
+      { id: 'tdemo-s3', name: 'Las Salinas', lat: -36.7705, lng: -73.0945 },
+      { id: 'tdemo-s4', name: 'Hualpén centro', lat: -36.792, lng: -73.084 },
+      { id: 'tdemo-s5', name: 'Av. Jorge Alessandri', lat: -36.806, lng: -73.067 },
+      { id: 'tdemo-s6', name: 'Plaza Independencia', lat: -36.827, lng: -73.0498 },
     ],
     path: [
       [-36.722, -73.117],

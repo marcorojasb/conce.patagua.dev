@@ -15,6 +15,7 @@ export interface Stop {
   name: string;
   lat: number;
   lng: number;
+  ref?: string;
 }
 
 export interface StopWithRoutes extends Stop {
