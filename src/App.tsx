@@ -6,12 +6,14 @@ import { RouteDetailSheet } from '@/components/route-detail-sheet';
 import { Sidebar } from '@/components/sidebar';
 import { StopDetailSheet } from '@/components/stop-detail-sheet';
 import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
+import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
 import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
 import { PARADEROS } from '@/data/paraderos.generated';
+import { POIS } from '@/data/pois.generated';
 import { useTheme } from '@/hooks/use-theme';
 import { readUrlState, useSyncUrlState } from '@/hooks/use-url-state';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
@@ -42,15 +44,19 @@ export default function App() {
       ? 'stop'
       : INITIAL_URL.terminal
         ? 'terminal'
-        : null;
+        : INITIAL_URL.poi
+          ? 'poi'
+          : null;
 
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(INITIAL_URL.route);
   const [selectedStopId, setSelectedStopId] = useState<string | null>(INITIAL_URL.stop);
   const [selectedTerminalId, setSelectedTerminalId] = useState<string | null>(INITIAL_URL.terminal);
+  const [selectedPoiId, setSelectedPoiId] = useState<string | null>(INITIAL_URL.poi);
   const [sheetKind, setSheetKind] = useState<SheetKind>(initialSheet);
 
   const [showTerminals, setShowTerminals] = useState(true);
   const [showParaderos, setShowParaderos] = useState(INITIAL_URL.paraderos);
+  const [showPois, setShowPois] = useState(INITIAL_URL.pois);
   const [onlyOperatingNow, setOnlyOperatingNow] = useState(INITIAL_URL.activos);
 
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
@@ -61,8 +67,10 @@ export default function App() {
     route: selectedRouteId,
     stop: selectedStopId,
     terminal: selectedTerminalId,
+    poi: selectedPoiId,
     paraderos: showParaderos,
     activos: onlyOperatingNow,
+    pois: showPois,
   });
 
   // Apply the initial fly-to once the map is mounted.
@@ -90,6 +98,16 @@ export default function App() {
           target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
         });
       }
+      return;
+    }
+    if (INITIAL_URL.poi) {
+      const p = POIS.find((x) => x.id === INITIAL_URL.poi);
+      if (p) {
+        setFlyToToken({
+          key: Date.now(),
+          target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
+        });
+      }
     }
   }, []);
 
@@ -104,6 +122,10 @@ export default function App() {
   const selectedTerminal = useMemo(
     () => TERMINALS.find((t) => t.id === selectedTerminalId) ?? null,
     [selectedTerminalId],
+  );
+  const selectedPoi = useMemo(
+    () => POIS.find((p) => p.id === selectedPoiId) ?? null,
+    [selectedPoiId],
   );
 
   const visibleIdsAfterTypeFilter = useMemo(() => {
@@ -166,6 +188,7 @@ export default function App() {
     setSelectedRouteId(id);
     setSelectedStopId(null);
     setSelectedTerminalId(null);
+    setSelectedPoiId(null);
     setSheetKind('route');
     setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
   }, []);
@@ -175,6 +198,7 @@ export default function App() {
     if (!s) return;
     setSelectedStopId(id);
     setSelectedTerminalId(null);
+    setSelectedPoiId(null);
     setSheetKind('stop');
     setFlyToToken({
       key: Date.now(),
@@ -188,10 +212,25 @@ export default function App() {
     setSelectedTerminalId(id);
     setSelectedRouteId(null);
     setSelectedStopId(null);
+    setSelectedPoiId(null);
     setSheetKind('terminal');
     setFlyToToken({
       key: Date.now(),
       target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
+    });
+  }, []);
+
+  const onSelectPoi = useCallback((id: string) => {
+    const p = POIS.find((x) => x.id === id);
+    if (!p) return;
+    setSelectedPoiId(id);
+    setSelectedRouteId(null);
+    setSelectedStopId(null);
+    setSelectedTerminalId(null);
+    setSheetKind('poi');
+    setFlyToToken({
+      key: Date.now(),
+      target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
     });
   }, []);
 
@@ -209,6 +248,7 @@ export default function App() {
     setSelectedRouteId(null);
     setSelectedStopId(null);
     setSelectedTerminalId(null);
+    setSelectedPoiId(null);
   }, []);
 
   const onFocusRoute = useCallback(() => {
@@ -226,6 +266,14 @@ export default function App() {
       target: { kind: 'point', lat: selectedTerminal.lat, lng: selectedTerminal.lng, zoom: 16 },
     });
   }, [selectedTerminal]);
+
+  const onFocusPoi = useCallback(() => {
+    if (!selectedPoi) return;
+    setFlyToToken({
+      key: Date.now(),
+      target: { kind: 'point', lat: selectedPoi.lat, lng: selectedPoi.lng, zoom: 16 },
+    });
+  }, [selectedPoi]);
 
   return (
     <div className="flex h-full w-full flex-col bg-background text-foreground">
@@ -251,10 +299,13 @@ export default function App() {
           onSetAllByOperator={onSetAllByOperator}
           terminalsCount={TERMINALS.length}
           paraderosCount={PARADEROS.length}
+          poisCount={POIS.length}
           showTerminals={showTerminals}
           showParaderos={showParaderos}
+          showPois={showPois}
           onToggleTerminals={() => setShowTerminals((v) => !v)}
           onToggleParaderos={() => setShowParaderos((v) => !v)}
+          onTogglePois={() => setShowPois((v) => !v)}
           onlyOperatingNow={onlyOperatingNow}
           onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
           onOpenSources={() => setSourcesOpen(true)}
@@ -277,6 +328,10 @@ export default function App() {
             paraderos={PARADEROS}
             showParaderos={showParaderos}
             onSelectParadero={onSelectParadero}
+            pois={POIS}
+            showPois={showPois}
+            selectedPoiId={selectedPoiId}
+            onSelectPoi={onSelectPoi}
           />
 
           {!sheetKind && (
@@ -349,6 +404,13 @@ export default function App() {
         terminal={selectedTerminal}
         onOpenChange={(o) => (!o ? closeSheet() : undefined)}
         onFocus={onFocusTerminal}
+      />
+      <PoiDetailSheet
+        open={sheetKind === 'poi'}
+        poi={selectedPoi}
+        onOpenChange={(o) => (!o ? closeSheet() : undefined)}
+        onFocus={onFocusPoi}
+        onSelectRoute={onSelectRoute}
       />
       <DataSourcesSheet open={sourcesOpen} onOpenChange={setSourcesOpen} />
     </div>

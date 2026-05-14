@@ -170,3 +170,27 @@
   width: 13px;
   height: 13px;
 }
+
+.poi-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--poi-bg, hsl(var(--accent)));
+  color: var(--poi-fg, hsl(var(--accent-foreground)));
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22);
+  transition: transform 120ms ease;
+}
+.poi-marker:hover {
+  transform: scale(1.12);
+}
+.poi-marker.is-active {
+  transform: scale(1.18);
+}
+.poi-marker svg {
+  width: 13px;
+  height: 13px;
+}

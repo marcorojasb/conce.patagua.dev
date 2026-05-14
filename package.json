@@ -14,7 +14,9 @@
     "sync:paraderos": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-paraderos.ts",
     "sync:biotren-track": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-biotren-track.ts",
     "sync:bus-routes": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-bus-routes.ts",
-    "sync:all": "npm run sync:biotren && npm run sync:terminals && npm run sync:paraderos && npm run sync:biotren-track && npm run sync:bus-routes"
+    "sync:pois": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-pois.ts",
+    "sync:wikidata": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-wikidata.ts",
+    "sync:all": "npm run sync:biotren && npm run sync:terminals && npm run sync:paraderos && npm run sync:biotren-track && npm run sync:bus-routes && npm run sync:pois && npm run sync:wikidata"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",

@@ -92,6 +92,9 @@ interface Resolved {
   lng: number;
   osmId: number;
   ref?: string;
+  wikidata?: string;
+  wheelchair?: 'yes' | 'limited' | 'no';
+  tactilePaving?: boolean;
 }
 
 function buildIndex(elements: OverpassNode[]): Map<string, OverpassNode> {
@@ -118,14 +121,20 @@ function resolveStops(
     }
     // OSM node id as stop id ensures stations shared between lines (e.g.
     // Concepción on L1 + L2) collapse to a single marker after `buildStopIndex`.
-    return {
+    const tags = hit.tags ?? {};
+    const wc = tags.wheelchair;
+    const out: Resolved = {
       id: `osm-${hit.id}`,
       name: DISPLAY[name] ?? name,
       lat: hit.lat,
       lng: hit.lon,
       osmId: hit.id,
-      ref: hit.tags?.['railway:ref'],
     };
+    if (tags['railway:ref']) out.ref = tags['railway:ref'];
+    if (tags.wikidata) out.wikidata = tags.wikidata;
+    if (wc === 'yes' || wc === 'limited' || wc === 'no') out.wheelchair = wc;
+    if (tags.tactile_paving === 'yes') out.tactilePaving = true;
+    return out;
   });
   if (missing.length) {
     throw new Error(`Could not resolve OSM coords for: ${missing.join(', ')}`);
@@ -145,10 +154,19 @@ import type { LatLngTuple, Stop } from '@/types/transport';
   const stopsLiteral = (stops: Resolved[]): string =>
     '[\n' +
     stops
-      .map(
-        (s) =>
-          `  { id: '${s.id}', name: ${JSON.stringify(s.name)}, lat: ${s.lat}, lng: ${s.lng}${s.ref ? `, ref: '${s.ref}'` : ''} },`,
-      )
+      .map((s) => {
+        const parts = [
+          `id:'${s.id}'`,
+          `name:${JSON.stringify(s.name)}`,
+          `lat:${s.lat}`,
+          `lng:${s.lng}`,
+        ];
+        if (s.ref) parts.push(`ref:'${s.ref}'`);
+        if (s.wikidata) parts.push(`wikidata:'${s.wikidata}'`);
+        if (s.wheelchair) parts.push(`wheelchair:'${s.wheelchair}'`);
+        if (s.tactilePaving) parts.push(`tactilePaving:true`);
+        return `  { ${parts.join(', ')} },`;
+      })
       .join('\n') +
     '\n]';
 

@@ -10,12 +10,24 @@ export interface RouteType {
   Icon: LucideIcon;
 }
 
+export interface WikidataEnrichment {
+  openedYear?: number;
+  imageUrl?: string;
+  wikipediaEs?: string;
+}
+
 export interface Stop {
   id: string;
   name: string;
   lat: number;
   lng: number;
   ref?: string;
+  /** OSM wikidata Q-id (only set for stations with one tagged). */
+  wikidata?: string;
+  /** OSM wheelchair=* value. */
+  wheelchair?: 'yes' | 'limited' | 'no';
+  /** OSM tactile_paving=yes presence. */
+  tactilePaving?: boolean;
 }
 
 export interface StopWithRoutes extends Stop {
@@ -77,6 +89,18 @@ export interface BusRoute {
   stopIds: string[];
 }
 
+export type PoiCategory = 'hospital' | 'university' | 'college' | 'mall';
+
+export interface Poi {
+  id: string;
+  osmId: number;
+  osmType: 'node' | 'way';
+  name: string;
+  category: PoiCategory;
+  lat: number;
+  lng: number;
+}
+
 export type FlyToTarget =
   | { kind: 'bounds'; path: LatLngTuple[] }
   | { kind: 'point'; lat: number; lng: number; zoom?: number };
@@ -88,4 +112,4 @@ export interface FlyToToken {
 
 export type Theme = 'light' | 'dark';
 
-export type SheetKind = 'route' | 'stop' | 'terminal' | null;
+export type SheetKind = 'route' | 'stop' | 'terminal' | 'poi' | null;

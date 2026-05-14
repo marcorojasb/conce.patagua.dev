@@ -15,6 +15,8 @@ import { CONCE_CENTER } from '@/data/routes';
 import type {
   FlyToToken,
   Paradero,
+  Poi,
+  PoiCategory,
   Route,
   Terminal,
   Theme,
@@ -36,6 +38,10 @@ interface ConceMapProps {
   paraderos: Paradero[];
   showParaderos: boolean;
   onSelectParadero: (id: string) => void;
+  pois: Poi[];
+  showPois: boolean;
+  selectedPoiId: string | null;
+  onSelectPoi: (id: string) => void;
 }
 
 const TILE_URL = {
@@ -48,6 +54,24 @@ const ATTRIBUTION =
 
 const BUILDING_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/></svg>';
+
+const POI_SVG: Record<PoiCategory, string> = {
+  hospital:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></svg>',
+  university:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+  college:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+  mall:
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
+};
+
+const POI_COLOR: Record<PoiCategory, string> = {
+  hospital: '#DC2626', // red-600
+  university: '#2563EB', // blue-600
+  college: '#7C3AED', // violet-600
+  mall: '#EA580C', // orange-600
+};
 
 function FlyToOnToken({ token }: { token: FlyToToken | null }) {
   const map = useMap();
@@ -96,6 +120,17 @@ function terminalIcon(active: boolean): L.DivIcon {
   });
 }
 
+function poiIcon(category: PoiCategory, active: boolean): L.DivIcon {
+  const color = POI_COLOR[category];
+  const html = `<div class="poi-marker ${active ? 'is-active' : ''}" style="--poi-bg:${color};--poi-fg:#fff">${POI_SVG[category]}</div>`;
+  return L.divIcon({
+    className: 'poi-marker-wrap',
+    html,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  });
+}
+
 export function ConceMap({
   theme,
   routes,
@@ -112,6 +147,10 @@ export function ConceMap({
   paraderos,
   showParaderos,
   onSelectParadero,
+  pois,
+  showPois,
+  selectedPoiId,
+  onSelectPoi,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
 
@@ -222,6 +261,21 @@ export function ConceMap({
           >
             <LeafletTooltip direction="top" offset={[0, -10]} opacity={0.95}>
               {t.name}
+            </LeafletTooltip>
+          </Marker>
+        ))}
+
+      {showPois &&
+        pois.map((p) => (
+          <Marker
+            key={p.id}
+            position={[p.lat, p.lng]}
+            icon={poiIcon(p.category, selectedPoiId === p.id)}
+            eventHandlers={{ click: () => onSelectPoi(p.id) }}
+            keyboard={false}
+          >
+            <LeafletTooltip direction="top" offset={[0, -10]} opacity={0.95}>
+              {p.name}
             </LeafletTooltip>
           </Marker>
         ))}

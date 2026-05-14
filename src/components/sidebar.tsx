@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Building2, ChevronRight, Clock, MapPin, Search } from 'lucide-react';
+import { Building2, ChevronRight, Clock, GraduationCap, MapPin, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,10 +22,13 @@ interface SidebarProps {
   onSetAllByOperator: (operator: string, on: boolean) => void;
   terminalsCount: number;
   paraderosCount: number;
+  poisCount: number;
   showTerminals: boolean;
   showParaderos: boolean;
+  showPois: boolean;
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
+  onTogglePois: () => void;
   onlyOperatingNow: boolean;
   onToggleOnlyOperatingNow: () => void;
   onOpenSources: () => void;
@@ -46,10 +49,13 @@ export function Sidebar({
   onSetAllByOperator,
   terminalsCount,
   paraderosCount,
+  poisCount,
   showTerminals,
   showParaderos,
+  showPois,
   onToggleTerminals,
   onToggleParaderos,
+  onTogglePois,
   onlyOperatingNow,
   onToggleOnlyOperatingNow,
   onOpenSources,
@@ -213,6 +219,13 @@ export function Sidebar({
                 count={paraderosCount}
                 checked={showParaderos}
                 onChange={onToggleParaderos}
+              />
+              <LayerRow
+                icon={<GraduationCap className="h-3.5 w-3.5" />}
+                label="POIs destino"
+                count={poisCount}
+                checked={showPois}
+                onChange={onTogglePois}
               />
               <LayerRow
                 icon={<Clock className="h-3.5 w-3.5" />}
