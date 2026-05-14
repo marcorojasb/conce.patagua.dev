@@ -18,6 +18,7 @@ interface SidebarProps {
   onSelectRoute: (id: string) => void;
   typeFilters: Record<RouteTypeId, boolean>;
   onToggleType: (typeId: RouteTypeId) => void;
+  onSetAllByType: (typeId: RouteTypeId, on: boolean) => void;
   terminalsCount: number;
   paraderosCount: number;
   showTerminals: boolean;
@@ -35,6 +36,7 @@ export function Sidebar({
   onSelectRoute,
   typeFilters,
   onToggleType,
+  onSetAllByType,
   terminalsCount,
   paraderosCount,
   showTerminals,
@@ -59,6 +61,19 @@ export function Sidebar({
 
   const visibleCount = visibleRouteIds.length;
   const totalCount = routes.length;
+
+  // Per-type counts let us show bulk toggles only where they're useful
+  // (e.g. "Activar todos los micros" when there are 100+ routes off).
+  const typeStats = useMemo(() => {
+    const stats: Partial<Record<RouteTypeId, { total: number; visible: number }>> = {};
+    for (const r of routes) {
+      const s = stats[r.type] ?? { total: 0, visible: 0 };
+      s.total += 1;
+      if (visibleRouteIds.includes(r.id)) s.visible += 1;
+      stats[r.type] = s;
+    }
+    return stats;
+  }, [routes, visibleRouteIds]);
 
   return (
     <aside
@@ -98,6 +113,7 @@ export function Sidebar({
               {Object.values(ROUTE_TYPES).map((t) => {
                 const active = !!typeFilters[t.id];
                 const Icon = t.Icon;
+                const stats = typeStats[t.id];
                 return (
                   <button
                     key={t.id}
@@ -112,10 +128,33 @@ export function Sidebar({
                   >
                     <Icon className="h-3 w-3" />
                     {t.short}
+                    {stats && stats.total > 1 && (
+                      <span className="opacity-70">
+                        {stats.visible}/{stats.total}
+                      </span>
+                    )}
                   </button>
                 );
               })}
             </div>
+
+            {Object.values(ROUTE_TYPES).map((t) => {
+              const stats = typeStats[t.id];
+              if (!stats || stats.total < 5) return null;
+              const allVisible = stats.visible === stats.total;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => onSetAllByType(t.id, !allVisible)}
+                  className="mt-1.5 inline-flex items-center gap-1 rounded-sm px-1 py-0.5 text-[11px] text-muted-foreground hover:text-foreground focus-ring"
+                >
+                  {allVisible
+                    ? `Quitar todos los ${t.short.toLowerCase()}s (${stats.total})`
+                    : `Activar todos los ${t.short.toLowerCase()}s (${stats.total})`}
+                </button>
+              );
+            })}
           </div>
 
           <div className="mt-3 border-t pt-3">
@@ -176,8 +215,18 @@ export function Sidebar({
                       <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                         <Icon className="h-[11px] w-[11px]" />
                         <span>{ROUTE_TYPES[r.type].short}</span>
-                        <span aria-hidden>·</span>
-                        <span>{r.stops.length} paraderos</span>
+                        {r.stops.length > 0 && (
+                          <>
+                            <span aria-hidden>·</span>
+                            <span>{r.stops.length} paraderos</span>
+                          </>
+                        )}
+                        {r.operator && r.stops.length === 0 && (
+                          <>
+                            <span aria-hidden>·</span>
+                            <span className="truncate">{r.operator}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </button>

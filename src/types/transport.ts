@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 
-export type RouteTypeId = 'micro' | 'biotren' | 'taxibus';
+export type RouteTypeId = 'micro' | 'biotren';
 
 export interface RouteType {
   id: RouteTypeId;
@@ -62,6 +62,17 @@ export interface Paradero {
   operator?: string;
   shelter?: boolean;
   ref?: string;
+}
+
+export interface BusRoute {
+  id: string;
+  osmId: number;
+  ref: string;
+  name: string;
+  operator?: string;
+  network?: string;
+  colour?: string;
+  path: LatLngTuple[];
 }
 
 export type FlyToTarget =

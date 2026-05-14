@@ -8,7 +8,7 @@ import { StopDetailSheet } from '@/components/stop-detail-sheet';
 import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
-import { ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
+import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
 import { useTheme } from '@/hooks/use-theme';
 import type { FlyToToken, Paradero, RouteTypeId, SheetKind } from '@/types/transport';
@@ -21,9 +21,7 @@ export default function App() {
   const [theme, toggleTheme] = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const [visibleRouteIds, setVisibleRouteIds] = useState<string[]>(() =>
-    ROUTES.map((r) => r.id),
-  );
+  const [visibleRouteIds, setVisibleRouteIds] = useState<string[]>(DEFAULT_VISIBLE_ROUTE_IDS);
   const [typeFilters, setTypeFilters] = useState<Record<RouteTypeId, boolean>>(() =>
     Object.fromEntries(
       (Object.keys(ROUTE_TYPES) as RouteTypeId[]).map((k) => [k, true]),
@@ -82,6 +80,19 @@ export default function App() {
 
   const onToggleType = useCallback((typeId: RouteTypeId) => {
     setTypeFilters((f) => ({ ...f, [typeId]: !f[typeId] }));
+  }, []);
+
+  const onSetAllByType = useCallback((typeId: RouteTypeId, on: boolean) => {
+    const idsOfType = new Set(ROUTES.filter((r) => r.type === typeId).map((r) => r.id));
+    setVisibleRouteIds((cur) => {
+      if (on) {
+        const next = new Set(cur);
+        for (const id of idsOfType) next.add(id);
+        return Array.from(next);
+      }
+      return cur.filter((id) => !idsOfType.has(id));
+    });
+    setTypeFilters((f) => ({ ...f, [typeId]: true }));
   }, []);
 
   const onSelectRoute = useCallback((id: string) => {
@@ -176,6 +187,7 @@ export default function App() {
           onSelectRoute={onSelectRoute}
           typeFilters={typeFilters}
           onToggleType={onToggleType}
+          onSetAllByType={onSetAllByType}
           terminalsCount={TERMINALS.length}
           paraderosCount={paraderos.length || PARADEROS_APPROX_COUNT}
           showTerminals={showTerminals}
@@ -222,25 +234,33 @@ export default function App() {
           )}
 
           <div className="pointer-events-none absolute bottom-4 left-3 z-10">
-            <div className="pointer-events-auto rounded-md border bg-background/90 px-3 py-2 text-[11px] shadow-sm backdrop-blur">
+            <div className="pointer-events-auto max-h-[40vh] overflow-y-auto thin-scroll rounded-md border bg-background/90 px-3 py-2 text-[11px] shadow-sm backdrop-blur">
               <div className="mb-1 font-medium uppercase tracking-wider text-muted-foreground">
-                Leyenda
+                Leyenda · {visibleIdsAfterTypeFilter.length} visible
+                {visibleIdsAfterTypeFilter.length === 1 ? '' : 's'}
               </div>
               <div className="flex flex-col gap-1">
-                {ROUTES.map((r) => (
-                  <div key={r.id} className="flex items-center gap-2">
-                    <span
-                      className="inline-block h-[3px] w-5 rounded-full"
-                      style={{ background: r.color }}
-                    />
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      {r.code}
-                    </span>
-                    <span className="max-w-[160px] truncate">
-                      {ROUTE_TYPES[r.type].short}
-                    </span>
+                {ROUTES.filter((r) => visibleIdsAfterTypeFilter.includes(r.id))
+                  .slice(0, 12)
+                  .map((r) => (
+                    <div key={r.id} className="flex items-center gap-2">
+                      <span
+                        className="inline-block h-[3px] w-5 rounded-full"
+                        style={{ background: r.color }}
+                      />
+                      <span className="font-mono text-[10px] text-muted-foreground">
+                        {r.code}
+                      </span>
+                      <span className="max-w-[160px] truncate">
+                        {ROUTE_TYPES[r.type].short}
+                      </span>
+                    </div>
+                  ))}
+                {visibleIdsAfterTypeFilter.length > 12 && (
+                  <div className="pt-1 text-muted-foreground">
+                    + {visibleIdsAfterTypeFilter.length - 12} más
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

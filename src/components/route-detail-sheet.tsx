@@ -22,6 +22,23 @@ interface RouteDetailSheetProps {
   onSelectStop: (id: string) => void;
 }
 
+function pathKilometers(path: Array<[number, number]>): number {
+  let km = 0;
+  for (let i = 1; i < path.length; i++) {
+    const [a, b] = [path[i - 1], path[i]];
+    const R = 6371;
+    const dLat = ((b[0] - a[0]) * Math.PI) / 180;
+    const dLng = ((b[1] - a[1]) * Math.PI) / 180;
+    const lat1 = (a[0] * Math.PI) / 180;
+    const lat2 = (b[0] * Math.PI) / 180;
+    const x =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+    km += 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+  }
+  return km;
+}
+
 export function RouteDetailSheet({
   open,
   route,
@@ -31,6 +48,9 @@ export function RouteDetailSheet({
 }: RouteDetailSheetProps) {
   if (!route) return null;
   const TypeIcon = ROUTE_TYPES[route.type].Icon;
+  const lengthKm = pathKilometers(route.path);
+  const hasStops = route.stops.length > 0;
+  const hasFrequency = Object.keys(route.frequencyByDay).length > 0;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -115,9 +135,11 @@ export function RouteDetailSheet({
                 <Card>
                   <CardHeader className="space-y-0.5 p-3">
                     <CardDescription className="text-[11px] uppercase tracking-wider">
-                      Paraderos
+                      {hasStops ? 'Paraderos' : 'Recorrido'}
                     </CardDescription>
-                    <CardTitle className="text-base">{route.stops.length}</CardTitle>
+                    <CardTitle className="text-base">
+                      {hasStops ? route.stops.length : `${lengthKm.toFixed(1)} km`}
+                    </CardTitle>
                   </CardHeader>
                 </Card>
                 <Card>
@@ -140,77 +162,103 @@ export function RouteDetailSheet({
               </div>
 
               <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-                <span className="font-mono">TODO</span> · sustituir datos demo por feed GTFS
-                de la Región del Biobío + API EFE Trenes. Esta vista está cableada a{' '}
-                <span className="font-mono">src/data/routes.ts</span>.
+                {hasStops ? (
+                  <>
+                    Datos: estaciones desde <span className="font-mono">OSM</span> · trazado{' '}
+                    <span className="font-mono">railway=rail</span> ways · horarios EFE Trenes.
+                  </>
+                ) : (
+                  <>
+                    Recorrido mapeado en OpenStreetMap como{' '}
+                    <span className="font-mono">route=bus</span>. Los paraderos
+                    individuales se ven activando la capa{' '}
+                    <span className="font-medium">Paraderos OSM</span> en la barra lateral.
+                  </>
+                )}
               </div>
             </ScrollArea>
           </TabsContent>
 
           <TabsContent value="recorrido" className="min-h-0 flex-1">
             <ScrollArea className="h-full pr-2">
-              <ol className="relative">
-                {route.stops.map((s, i) => (
-                  <li key={s.id} className="relative flex gap-3 pb-3">
-                    {i < route.stops.length - 1 && (
-                      <span
-                        className="absolute left-[7px] top-4 h-full w-px"
-                        style={{ background: route.color, opacity: 0.4 }}
-                      />
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => onSelectStop(s.id)}
-                      className="relative z-10 mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 bg-background"
-                      style={{ borderColor: route.color }}
-                      aria-label={`Centrar paradero ${s.name}`}
-                    />
-                    <div className="min-w-0 flex-1">
+              {hasStops ? (
+                <ol className="relative">
+                  {route.stops.map((s, i) => (
+                    <li key={s.id} className="relative flex gap-3 pb-3">
+                      {i < route.stops.length - 1 && (
+                        <span
+                          className="absolute left-[7px] top-4 h-full w-px"
+                          style={{ background: route.color, opacity: 0.4 }}
+                        />
+                      )}
                       <button
                         type="button"
                         onClick={() => onSelectStop(s.id)}
-                        className="block rounded-sm text-left focus-ring"
-                      >
-                        <div className="text-sm font-medium leading-tight">{s.name}</div>
-                        <div className="mt-0.5 text-[11px] text-muted-foreground">
-                          {s.lat.toFixed(4)}, {s.lng.toFixed(4)}
-                        </div>
-                      </button>
-                    </div>
-                    <span className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                  </li>
-                ))}
-              </ol>
+                        className="relative z-10 mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 bg-background"
+                        style={{ borderColor: route.color }}
+                        aria-label={`Centrar paradero ${s.name}`}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <button
+                          type="button"
+                          onClick={() => onSelectStop(s.id)}
+                          className="block rounded-sm text-left focus-ring"
+                        >
+                          <div className="text-sm font-medium leading-tight">{s.name}</div>
+                          <div className="mt-0.5 text-[11px] text-muted-foreground">
+                            {s.lat.toFixed(4)}, {s.lng.toFixed(4)}
+                          </div>
+                        </button>
+                      </div>
+                      <span className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+                  Esta ruta proviene de una relación{' '}
+                  <span className="font-mono">route=bus</span> de OpenStreetMap.
+                  Los paraderos individuales no están enlazados aún. Largo total
+                  del recorrido: <span className="font-semibold">{lengthKm.toFixed(1)} km</span>.
+                  Activa la capa <span className="font-medium">Paraderos OSM</span> para ver
+                  todos los paraderos en el área.
+                </div>
+              )}
             </ScrollArea>
           </TabsContent>
 
           <TabsContent value="horarios" className="min-h-0 flex-1">
             <ScrollArea className="h-full pr-2">
-              <div className="space-y-2">
-                {Object.entries(route.frequencyByDay).map(([day, freq]) => (
-                  <div
-                    key={day}
-                    className="flex items-center justify-between rounded-md border bg-card p-3"
-                  >
-                    <div>
-                      <div className="text-sm font-medium">{day}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        Operativo {route.hours}
+              {hasFrequency ? (
+                <div className="space-y-2">
+                  {Object.entries(route.frequencyByDay).map(([day, freq]) => (
+                    <div
+                      key={day}
+                      className="flex items-center justify-between rounded-md border bg-card p-3"
+                    >
+                      <div>
+                        <div className="text-sm font-medium">{day}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Operativo {route.hours}
+                        </div>
                       </div>
+                      <Badge variant="secondary" className="font-mono">
+                        {freq}
+                      </Badge>
                     </div>
-                    <Badge variant="secondary" className="font-mono">
-                      {freq}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-                <span className="font-mono">TODO</span> · cargar horarios programados desde
-                GTFS (<span className="font-mono">stop_times.txt</span>) y/o realtime con
-                GTFS-RT.
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+                  Los horarios y frecuencias no están publicados de forma abierta para
+                  este operador. <span className="font-mono">TODO</span> · cuando DTPR
+                  libere GTFS Gran Concepción se enchufa el campo{' '}
+                  <span className="font-mono">stop_times.txt</span> y se reemplaza este
+                  bloque.
+                </div>
+              )}
             </ScrollArea>
           </TabsContent>
         </Tabs>
