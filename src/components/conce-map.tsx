@@ -7,12 +7,14 @@ import {
   TileLayer,
   Tooltip as LeafletTooltip,
   useMap,
+  useMapEvents,
   ZoomControl,
 } from 'react-leaflet';
 import L, { type Map as LeafletMap } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CONCE_CENTER } from '@/data/routes';
 import type {
+  AirQualityStation,
   FlyToToken,
   Paradero,
   Poi,
@@ -21,6 +23,7 @@ import type {
   Terminal,
   Theme,
 } from '@/types/transport';
+import { categorize } from '@/hooks/use-air-quality';
 
 interface ConceMapProps {
   theme: Theme;
@@ -42,6 +45,12 @@ interface ConceMapProps {
   showPois: boolean;
   selectedPoiId: string | null;
   onSelectPoi: (id: string) => void;
+  airQuality: AirQualityStation[];
+  showAirQuality: boolean;
+  pickerMode: 'origin' | 'destination' | null;
+  onPickPoint: (latlng: { lat: number; lng: number }) => void;
+  plannerOrigin: { lat: number; lng: number } | null;
+  plannerDestination: { lat: number; lng: number } | null;
 }
 
 const TILE_URL = {
@@ -89,6 +98,33 @@ function FlyToOnToken({ token }: { token: FlyToToken | null }) {
   return null;
 }
 
+function MapClickCapture({
+  enabled,
+  onPick,
+}: {
+  enabled: boolean;
+  onPick: (latlng: { lat: number; lng: number }) => void;
+}) {
+  useMapEvents({
+    click(e) {
+      if (!enabled) return;
+      onPick({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+  });
+  return null;
+}
+
+function pinIcon(kind: 'origin' | 'destination'): L.DivIcon {
+  const color = kind === 'origin' ? '#16A34A' : '#DC2626';
+  const label = kind === 'origin' ? 'A' : 'B';
+  return L.divIcon({
+    className: 'planner-pin-wrap',
+    html: `<div class="planner-pin" style="--pin-bg:${color}">${label}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+  });
+}
+
 function InvalidateOnResize({ trigger }: { trigger: unknown }) {
   const map = useMap();
   useEffect(() => {
@@ -131,6 +167,17 @@ function poiIcon(category: PoiCategory, active: boolean): L.DivIcon {
   });
 }
 
+function aqIcon(pm25: number | null): L.DivIcon {
+  const { color } = categorize(pm25);
+  const label = pm25 == null ? '·' : String(Math.round(pm25));
+  return L.divIcon({
+    className: 'aq-marker-wrap',
+    html: `<div class="aq-marker" style="--aq-color:${color}">${label}</div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+}
+
 export function ConceMap({
   theme,
   routes,
@@ -151,6 +198,12 @@ export function ConceMap({
   showPois,
   selectedPoiId,
   onSelectPoi,
+  airQuality,
+  showAirQuality,
+  pickerMode,
+  onPickPoint,
+  plannerOrigin,
+  plannerDestination,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
 
@@ -280,6 +333,55 @@ export function ConceMap({
           </Marker>
         ))}
 
+      {showAirQuality &&
+        airQuality.map((s) => {
+          const cat = categorize(s.pm25);
+          return (
+            <Marker
+              key={s.id}
+              position={[s.lat, s.lng]}
+              icon={aqIcon(s.pm25)}
+              keyboard={false}
+            >
+              <LeafletTooltip direction="top" offset={[0, -10]} opacity={0.95}>
+                <div className="text-[11px]">
+                  <div className="font-medium">{s.name}</div>
+                  <div className="text-muted-foreground">
+                    {s.comuna} · {cat.label}
+                    {s.pm25 != null && ` · PM2.5 ${Math.round(s.pm25)} µg/m³`}
+                  </div>
+                </div>
+              </LeafletTooltip>
+            </Marker>
+          );
+        })}
+
+      {plannerOrigin && (
+        <Marker
+          key="planner-origin"
+          position={[plannerOrigin.lat, plannerOrigin.lng]}
+          icon={pinIcon('origin')}
+          keyboard={false}
+        >
+          <LeafletTooltip direction="top" offset={[0, -22]} opacity={0.95}>
+            Origen
+          </LeafletTooltip>
+        </Marker>
+      )}
+      {plannerDestination && (
+        <Marker
+          key="planner-destination"
+          position={[plannerDestination.lat, plannerDestination.lng]}
+          icon={pinIcon('destination')}
+          keyboard={false}
+        >
+          <LeafletTooltip direction="top" offset={[0, -22]} opacity={0.95}>
+            Destino
+          </LeafletTooltip>
+        </Marker>
+      )}
+
+      <MapClickCapture enabled={pickerMode !== null} onPick={onPickPoint} />
       <FlyToOnToken token={flyToToken} />
       <InvalidateOnResize trigger={visibleRoutes.length} />
     </MapContainer>

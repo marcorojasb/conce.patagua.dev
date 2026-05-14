@@ -101,6 +101,17 @@ export interface Poi {
   lng: number;
 }
 
+export interface AirQualityStation {
+  id: string;
+  name: string;
+  comuna: string;
+  operator: string;
+  lat: number;
+  lng: number;
+  pm25: number | null;
+  pm10: number | null;
+}
+
 export type FlyToTarget =
   | { kind: 'bounds'; path: LatLngTuple[] }
   | { kind: 'point'; lat: number; lng: number; zoom?: number };

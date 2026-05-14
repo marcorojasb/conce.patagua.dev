@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Building2, ChevronRight, Clock, GraduationCap, MapPin, Search } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Building2, ChevronRight, Clock, GraduationCap, Loader2, MapPin, Search, Wind } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -26,12 +27,16 @@ interface SidebarProps {
   showTerminals: boolean;
   showParaderos: boolean;
   showPois: boolean;
+  showAirQuality: boolean;
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
   onTogglePois: () => void;
+  onToggleAirQuality: () => void;
+  airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
   onlyOperatingNow: boolean;
   onToggleOnlyOperatingNow: () => void;
   onOpenSources: () => void;
+  plannerSlot?: ReactNode;
 }
 
 const NO_OPERATOR_LABEL = 'Sin operador registrado';
@@ -53,12 +58,16 @@ export function Sidebar({
   showTerminals,
   showParaderos,
   showPois,
+  showAirQuality,
   onToggleTerminals,
   onToggleParaderos,
   onTogglePois,
+  onToggleAirQuality,
+  airQualityStatus,
   onlyOperatingNow,
   onToggleOnlyOperatingNow,
   onOpenSources,
+  plannerSlot,
 }: SidebarProps) {
   const [query, setQuery] = useState('');
   const [expandedOps, setExpandedOps] = useState<Set<string>>(new Set());
@@ -228,6 +237,19 @@ export function Sidebar({
                 onChange={onTogglePois}
               />
               <LayerRow
+                icon={
+                  airQualityStatus.loading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Wind className="h-3.5 w-3.5" />
+                  )
+                }
+                label="Calidad del aire"
+                count={showAirQuality ? airQualityStatus.stations.length : undefined}
+                checked={showAirQuality}
+                onChange={onToggleAirQuality}
+              />
+              <LayerRow
                 icon={<Clock className="h-3.5 w-3.5" />}
                 label="Solo activos ahora"
                 checked={onlyOperatingNow}
@@ -239,6 +261,7 @@ export function Sidebar({
 
         <ScrollArea className="flex-1">
           <div className="space-y-1 p-2">
+            {plannerSlot && <div className="pb-1">{plannerSlot}</div>}
             {filteredFlat.length === 0 && (
               <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                 Sin recorridos para los filtros actuales.

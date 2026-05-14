@@ -14,6 +14,7 @@ export interface UrlState {
   paraderos: boolean;
   activos: boolean;
   pois: boolean;
+  aire: boolean;
 }
 
 export function readUrlState(): UrlState {
@@ -26,6 +27,7 @@ export function readUrlState(): UrlState {
       paraderos: false,
       activos: false,
       pois: false,
+      aire: false,
     };
   }
   const p = new URLSearchParams(window.location.search);
@@ -37,6 +39,7 @@ export function readUrlState(): UrlState {
     paraderos: p.get('paraderos') === '1',
     activos: p.get('activos') === '1',
     pois: p.get('pois') === '1',
+    aire: p.get('aire') === '1',
   };
 }
 
@@ -56,6 +59,7 @@ export function useSyncUrlState(state: UrlState): void {
     if (state.paraderos) p.set('paraderos', '1');
     if (state.activos) p.set('activos', '1');
     if (state.pois) p.set('pois', '1');
+    if (state.aire) p.set('aire', '1');
     const qs = p.toString();
     const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, '', next);
@@ -67,5 +71,6 @@ export function useSyncUrlState(state: UrlState): void {
     state.paraderos,
     state.activos,
     state.pois,
+    state.aire,
   ]);
 }

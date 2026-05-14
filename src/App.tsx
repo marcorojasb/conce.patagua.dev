@@ -8,12 +8,15 @@ import { StopDetailSheet } from '@/components/stop-detail-sheet';
 import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
 import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
+import { PlannerPanel } from '@/components/planner-panel';
+import { findRoutes } from '@/lib/planner';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
 import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
 import { PARADEROS } from '@/data/paraderos.generated';
 import { POIS } from '@/data/pois.generated';
+import { useAirQuality } from '@/hooks/use-air-quality';
 import { useTheme } from '@/hooks/use-theme';
 import { readUrlState, useSyncUrlState } from '@/hooks/use-url-state';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
@@ -57,7 +60,44 @@ export default function App() {
   const [showTerminals, setShowTerminals] = useState(true);
   const [showParaderos, setShowParaderos] = useState(INITIAL_URL.paraderos);
   const [showPois, setShowPois] = useState(INITIAL_URL.pois);
+  const [showAirQuality, setShowAirQuality] = useState(INITIAL_URL.aire);
   const [onlyOperatingNow, setOnlyOperatingNow] = useState(INITIAL_URL.activos);
+
+  const airQuality = useAirQuality(showAirQuality);
+
+  const [plannerOrigin, setPlannerOrigin] = useState<{ lat: number; lng: number } | null>(null);
+  const [plannerDestination, setPlannerDestination] = useState<{ lat: number; lng: number } | null>(null);
+  const [pickerMode, setPickerMode] = useState<'origin' | 'destination' | null>(null);
+
+  const plannerMatches = useMemo(() => {
+    if (!plannerOrigin || !plannerDestination) return [];
+    const visible = ROUTES.filter((r) => visibleRouteIds.includes(r.id));
+    const pool = visible.length > 0 ? visible : ROUTES;
+    return findRoutes(
+      [plannerOrigin.lat, plannerOrigin.lng],
+      [plannerDestination.lat, plannerDestination.lng],
+      pool,
+    );
+  }, [plannerOrigin, plannerDestination, visibleRouteIds]);
+
+  const onPickPoint = useCallback(
+    (latlng: { lat: number; lng: number }) => {
+      if (pickerMode === 'origin') {
+        setPlannerOrigin(latlng);
+        setPickerMode(plannerDestination ? null : 'destination');
+      } else if (pickerMode === 'destination') {
+        setPlannerDestination(latlng);
+        setPickerMode(null);
+      }
+    },
+    [pickerMode, plannerDestination],
+  );
+
+  const onClearPlanner = useCallback(() => {
+    setPlannerOrigin(null);
+    setPlannerDestination(null);
+    setPickerMode(null);
+  }, []);
 
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
 
@@ -71,6 +111,7 @@ export default function App() {
     paraderos: showParaderos,
     activos: onlyOperatingNow,
     pois: showPois,
+    aire: showAirQuality,
   });
 
   // Apply the initial fly-to once the map is mounted.
@@ -303,12 +344,28 @@ export default function App() {
           showTerminals={showTerminals}
           showParaderos={showParaderos}
           showPois={showPois}
+          showAirQuality={showAirQuality}
           onToggleTerminals={() => setShowTerminals((v) => !v)}
           onToggleParaderos={() => setShowParaderos((v) => !v)}
           onTogglePois={() => setShowPois((v) => !v)}
+          onToggleAirQuality={() => setShowAirQuality((v) => !v)}
+          airQualityStatus={airQuality}
           onlyOperatingNow={onlyOperatingNow}
           onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
           onOpenSources={() => setSourcesOpen(true)}
+          plannerSlot={
+            <PlannerPanel
+              origin={plannerOrigin}
+              destination={plannerDestination}
+              pickerMode={pickerMode}
+              matches={plannerMatches}
+              matchesAvailable={visibleRouteIds.length > 0}
+              onPickOrigin={() => setPickerMode('origin')}
+              onPickDestination={() => setPickerMode('destination')}
+              onClear={onClearPlanner}
+              onSelectRoute={onSelectRoute}
+            />
+          }
         />
 
         <main className="relative flex-1">
@@ -332,6 +389,12 @@ export default function App() {
             showPois={showPois}
             selectedPoiId={selectedPoiId}
             onSelectPoi={onSelectPoi}
+            airQuality={airQuality.stations}
+            showAirQuality={showAirQuality}
+            pickerMode={pickerMode}
+            onPickPoint={onPickPoint}
+            plannerOrigin={plannerOrigin}
+            plannerDestination={plannerDestination}
           />
 
           {!sheetKind && (
