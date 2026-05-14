@@ -73,6 +73,8 @@ export interface BusRoute {
   network?: string;
   colour?: string;
   path: LatLngTuple[];
+  /** Ordered paradero ids matched to this route by build-time proximity. */
+  stopIds: string[];
 }
 
 export type FlyToTarget =

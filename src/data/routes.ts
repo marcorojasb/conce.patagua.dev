@@ -13,10 +13,9 @@
 //
 //  ✔ Recorridos de micros — 133 `route=bus` relations from OpenStreetMap,
 //    each with full polyline geometry (simplified with Douglas–Peucker).
-//    Re-generate: `npm run sync:bus-routes`.
-//    Note: stops per route are NOT included — the city-wide paraderos layer
-//    (npm run sync:paraderos) already covers individual bus stops. A future
-//    tanda can match OSM `role=stop` members to those paraderos by id.
+//    Stops are matched at build time by snapping `highway=bus_stop` paraderos
+//    within 30 m of the route polyline, ordered by progress along the path.
+//    Re-generate: `npm run sync:bus-routes` (depends on paraderos.generated).
 //
 //  ✘ Taxibús / colectivo — out of scope; no open dataset for the metro area.
 //    The previous demo route has been removed.
@@ -27,6 +26,7 @@ import {
   BIOTREN_L2_STOPS,
 } from '@/data/biotren.generated';
 import { BUS_ROUTES } from '@/data/bus-routes.generated';
+import { PARADEROS } from '@/data/paraderos.generated';
 import type {
   BusRoute,
   LatLngTuple,
@@ -106,7 +106,21 @@ const BIOTREN_ROUTES: Route[] = [
   },
 ];
 
+const PARADERO_BY_ID = new Map(PARADEROS.map((p) => [p.id, p]));
+
 function busRouteToRoute(b: BusRoute): Route {
+  const stops: Stop[] = [];
+  for (const id of b.stopIds) {
+    const p = PARADERO_BY_ID.get(id);
+    if (!p) continue;
+    stops.push({
+      id: p.id,
+      name: p.name ?? `Paradero ${p.ref ?? p.osmId}`,
+      lat: p.lat,
+      lng: p.lng,
+      ref: p.ref,
+    });
+  }
   return {
     id: b.id,
     code: b.ref,
@@ -117,7 +131,7 @@ function busRouteToRoute(b: BusRoute): Route {
     headway: '—',
     hours: '—',
     frequencyByDay: {},
-    stops: [],
+    stops,
     path: b.path,
   };
 }

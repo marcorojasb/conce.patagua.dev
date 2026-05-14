@@ -12,6 +12,8 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { overpass } from './lib/overpass.ts';
 import { simplify } from './lib/simplify.ts';
+import { cumulativeDistances, nearestVertex } from './lib/geo.ts';
+import { PARADEROS } from '../src/data/paraderos.generated.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../src/data/bus-routes.generated.ts');
@@ -46,7 +48,11 @@ interface Resolved {
   colour?: string;
   /** Flat polyline of [lat, lng] pairs, stitched from way members in order. */
   path: Array<[number, number]>;
+  /** Paradero ids matched to this route by ≤30 m proximity, ordered along the path. */
+  stopIds: string[];
 }
+
+const MATCH_DISTANCE_M = 30;
 
 function dedupConsecutive(path: Array<[number, number]>): Array<[number, number]> {
   const out: Array<[number, number]> = [];
@@ -64,6 +70,29 @@ function dedupConsecutive(path: Array<[number, number]>): Array<[number, number]
 /** Rounds coords to 5 decimals (~1 m precision) to cut JSON size by ~30%. */
 function round5(n: number): number {
   return Math.round(n * 1e5) / 1e5;
+}
+
+/**
+ * Returns paradero ids whose nearest vertex on `path` is within
+ * MATCH_DISTANCE_M, sorted by their progress along the polyline. Consecutive
+ * duplicates are collapsed (a paradero can be the closest to several adjacent
+ * vertices after simplification).
+ */
+function matchParaderos(path: Array<[number, number]>): string[] {
+  const cum = cumulativeDistances(path);
+  const matched: Array<{ id: string; progress: number }> = [];
+  for (const p of PARADEROS) {
+    const { idx, d } = nearestVertex(path, [p.lat, p.lng]);
+    if (d <= MATCH_DISTANCE_M) {
+      matched.push({ id: p.id, progress: cum[idx] });
+    }
+  }
+  matched.sort((a, b) => a.progress - b.progress);
+  const out: string[] = [];
+  for (const m of matched) {
+    if (out[out.length - 1] !== m.id) out.push(m.id);
+  }
+  return out;
 }
 
 function buildRoute(rel: OverpassRelation): Resolved | null {
@@ -86,6 +115,7 @@ function buildRoute(rel: OverpassRelation): Resolved | null {
   // the bundle by ~85 %.
   const cleaned = simplify(dedupConsecutive(path), 1.5e-4);
   if (cleaned.length < 2) return null;
+  const stopIds = matchParaderos(cleaned);
 
   const out: Resolved = {
     id: `osm-bus-${rel.id}`,
@@ -93,6 +123,7 @@ function buildRoute(rel: OverpassRelation): Resolved | null {
     ref,
     name,
     path: cleaned,
+    stopIds,
   };
   if (tags.operator) out.operator = tags.operator;
   if (tags.network) out.network = tags.network;
@@ -123,6 +154,8 @@ import type { BusRoute } from '@/types/transport';
         if (r.colour) parts.push(`colour:${JSON.stringify(r.colour)}`);
         const pathStr = '[' + r.path.map(([la, ln]) => `[${la},${ln}]`).join(',') + ']';
         parts.push(`path:${pathStr}`);
+        const stopsStr = '[' + r.stopIds.map((id) => JSON.stringify(id)).join(',') + ']';
+        parts.push(`stopIds:${stopsStr}`);
         return `  {${parts.join(',')}},`;
       })
       .join('\n') +
@@ -142,7 +175,8 @@ async function main() {
   console.log(`  → ${routes.length} routes with usable geometry`);
 
   const totalPts = routes.reduce((acc, r) => acc + r.path.length, 0);
-  console.log(`  → ${totalPts} total polyline points`);
+  const totalStops = routes.reduce((acc, r) => acc + r.stopIds.length, 0);
+  console.log(`  → ${totalPts} polyline points · ${totalStops} stop matches`);
 
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, render(routes));
