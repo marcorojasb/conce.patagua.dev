@@ -344,8 +344,15 @@ export function Sidebar({
               >
                 Fuentes
               </button>
+              <span aria-hidden className="text-muted-foreground/50">·</span>
+              <a
+                href="/wiki"
+                className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-ring"
+              >
+                Wiki
+              </a>
             </div>
-            <span>v0.7</span>
+            <span>v0.8</span>
           </div>
           <div className="mt-2 text-[10px] leading-snug text-muted-foreground">
             Programado por{' '}

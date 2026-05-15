@@ -1,0 +1,157 @@
+// Recorridos interurbanos del Gran Concepción
+// Lista panorámica de servicios licitados que conectan el área urbana
+// con comunas rurales/satélite y que NO están en el GTFS urbano que
+// alimenta el visor principal.
+
+export default function RecorridosInterurbanos() {
+  return (
+    <div className="space-y-5 text-[14px] leading-relaxed">
+      <p>
+        El visor principal de <code className="font-mono">conce.patagua.dev</code> se
+        alimenta del feed <strong>GTFS estático Gran Concepción</strong> publicado por
+        la Subsecretaría de Transportes (CC&nbsp;BY&nbsp;4.0). Ese feed cubre el área
+        urbana metropolitana — Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante,
+        Penco/Lirquén, Coronel y Lota — y deja afuera los <strong>servicios
+        interurbanos licitados</strong> que conectan el Gran Concepción con comunas
+        rurales o satélite del Biobío.
+      </p>
+      <p>
+        Esta página es un índice abierto: información compilada desde fuentes
+        secundarias mientras esperamos un feed GTFS público para estos servicios.
+        Cuando aparezca, se enchufa al visor y este artículo queda como contexto
+        histórico.
+      </p>
+
+      <Section title="Servicios identificados">
+        <ServiceRow
+          code="201 · 201 AU"
+          title="Concepción ↔ Santa Juana"
+          notes="Ruta interurbana DTPR Biobío. AU = servicio anticipado/expreso. Operador en proceso de verificación."
+          slug="ruta-201-santa-juana"
+        />
+        <ServiceRow
+          code="—"
+          title="Concepción ↔ Tomé"
+          notes="Múltiples operadores. Conexión norte que pasa por Penco y Lirquén (estos sí están en el visor)."
+        />
+        <ServiceRow
+          code="—"
+          title="Concepción ↔ Florida"
+          notes="Servicio rural interior, frecuencia baja. Operador licitado, sin GTFS público conocido."
+        />
+        <ServiceRow
+          code="—"
+          title="Concepción ↔ Yumbel"
+          notes="Servicio interurbano hacia el sur-oriente. Pendiente identificar operador y horarios."
+        />
+        <ServiceRow
+          code="—"
+          title="Conexiones a Hualqui rural"
+          notes="Más allá de la estación Biotrén Hualqui — sectores rurales hacia el interior."
+        />
+      </Section>
+
+      <Section title="¿Por qué no están en el visor principal?">
+        <p>
+          El feed GTFS urbano del Gran Concepción es un producto técnico — un
+          archivo conformado a un estándar específico — que la Subsecretaría
+          publica con un alcance acotado al área metropolitana. Los servicios
+          interurbanos están bajo licitaciones distintas y no se reflejan en
+          ese feed. Sin un feed GTFS público para ellos, no hay forma directa
+          de validar trazado, frecuencia o paraderos en código.
+        </p>
+        <p>
+          Verificamos esto en la fuente: una consulta SQL al feed Gran
+          Concepción candidate no devuelve coincidencias para "201",
+          "Santa Juana", "Tomé", "Florida" ni "Yumbel". Los stops mencionados
+          como "Tomé" en el dataset son nombres de calles, no servicios.
+        </p>
+      </Section>
+
+      <Section title="Cómo contribuir">
+        <p>
+          Si conoces un servicio interurbano, sus horarios, su operador o su
+          trazado aproximado, abre un pull request al{' '}
+          <a
+            href="https://github.com/marcorojasb/conce.patagua.dev/tree/main/src/wiki/articles"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2"
+          >
+            repositorio del wiki
+          </a>
+          . El compromiso editorial: <strong>citar la fuente</strong> de cada
+          dato (foto de horario en paradero, ordenanza municipal, publicación
+          DTPR). Sin fuente, queda como "información pendiente de verificación".
+        </p>
+      </Section>
+
+      <Section title="Fuentes oficiales conocidas">
+        <ul className="ml-5 list-disc space-y-1">
+          <li>
+            <a
+              href="https://transformacion.dtpr.cl/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              DTPR Biobío
+            </a>{' '}
+            — bases de licitación y resoluciones por servicio.
+          </li>
+          <li>
+            <a
+              href="https://www.subtrans.gob.cl/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              Subsecretaría de Transportes
+            </a>{' '}
+            — feed GTFS Gran Concepción y otros documentos normativos.
+          </li>
+          <li>OSM Overpass — relaciones <code className="font-mono">route=bus</code> taggeadas con el ID del servicio cuando existen.</li>
+        </ul>
+      </Section>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="space-y-2">
+      <h2 className="mt-4 text-base font-semibold tracking-tight">{title}</h2>
+      <div className="space-y-2">{children}</div>
+    </section>
+  );
+}
+
+function ServiceRow({
+  code,
+  title,
+  notes,
+  slug,
+}: {
+  code: string;
+  title: string;
+  notes: string;
+  slug?: string;
+}) {
+  return (
+    <div className="rounded-md border bg-card p-3">
+      <div className="flex items-baseline gap-2">
+        <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{code}</span>
+        <span className="text-[14px] font-medium">{title}</span>
+      </div>
+      <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{notes}</p>
+      {slug && (
+        <a
+          href={`/wiki/${slug}`}
+          className="mt-1.5 inline-block text-[11px] underline underline-offset-2 hover:text-foreground"
+        >
+          Ver artículo →
+        </a>
+      )}
+    </div>
+  );
+}
