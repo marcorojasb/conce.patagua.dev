@@ -222,6 +222,9 @@ export function AnalysisToolsSheet({
                 visibleRouteIds={visibleRouteIds}
                 mapBounds={mapBounds}
                 theme={theme}
+                plannerMidpoint={plannerMidpoint}
+                plannerOrigin={plannerOrigin}
+                plannerDestination={plannerDestination}
               />
             </ScrollArea>
           </TabsContent>
@@ -381,44 +384,75 @@ interface WallpaperTabProps {
   visibleRouteIds: string[];
   mapBounds: [[number, number], [number, number]] | null;
   theme: Theme;
+  // The walking midpoint computed in the planner. Surfaced here so the user
+  // can include the A/M/B trace in the PNG without having to switch tabs.
+  plannerMidpoint: RoutingResult | null;
+  plannerOrigin: { lat: number; lng: number } | null;
+  plannerDestination: { lat: number; lng: number } | null;
 }
 
-function WallpaperTab({ visibleRouteIds, mapBounds, theme }: WallpaperTabProps) {
+interface LayerToggleState {
+  recorridos: boolean;
+  punto_medio: boolean;
+  paraderos: boolean;
+  terminales: boolean;
+  cobertura: boolean;
+}
+
+function WallpaperTab({
+  visibleRouteIds,
+  mapBounds,
+  theme,
+  plannerMidpoint,
+  plannerOrigin,
+  plannerDestination,
+}: WallpaperTabProps) {
   const [mode, setMode] = useState<'current' | 'curated'>('current');
   const [sizeId, setSizeId] = useState<string>(WALLPAPER_SIZES[0].id);
   const [curatedId, setCuratedId] = useState<string>(CURATED_VIEWS[0].id);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
 
+  // Layer toggles default to a sensible baseline per mode/curated view but
+  // the user can override anything. We don't reset on mode change — that's
+  // surprising. Only the "punto medio" toggle is force-off when there's no
+  // midpoint computed.
+  const [layers, setLayers] = useState<LayerToggleState>({
+    recorridos: true,
+    punto_medio: false,
+    paraderos: false,
+    terminales: false,
+    cobertura: false,
+  });
+  const setLayer = (key: keyof LayerToggleState) => () =>
+    setLayers((cur) => ({ ...cur, [key]: !cur[key] }));
+
   const size = WALLPAPER_SIZES.find((s) => s.id === sizeId) ?? WALLPAPER_SIZES[0];
   const curated = CURATED_VIEWS.find((c) => c.id === curatedId) ?? CURATED_VIEWS[0];
+  const midpointAvailable = !!plannerMidpoint;
 
   const generate = async () => {
     setBusy(true);
     setProgress('Calculando viewport…');
     try {
       let bbox: [[number, number], [number, number]];
-      let title: string;
-      let subtitle: string;
-      let useCoverage = false;
+      let headlineText: string;
       let includeAll = false;
       let onlyBiotren = false;
       if (mode === 'current') {
         if (!mapBounds) throw new Error('Aún no hay vista del mapa para capturar.');
         bbox = mapBounds;
-        title = 'Conce Transporte';
-        subtitle = `${visibleRouteIds.length} recorridos visibles · vista actual`;
+        headlineText = `Vista actual · ${visibleRouteIds.length} recorridos`;
         includeAll = true;
       } else {
         bbox = curated.bbox;
-        title = curated.label;
-        subtitle = curated.description;
-        useCoverage = curated.includeCoverage;
+        headlineText = curated.label;
         onlyBiotren = curated.includeBiotren && !curated.includeMicros;
         if (curated.includeBiotren && curated.includeMicros) includeAll = true;
       }
 
       const wantRoute = (r: (typeof ROUTES)[number]) => {
+        if (!layers.recorridos) return false;
         if (mode === 'current') return visibleRouteIds.includes(r.id);
         if (includeAll) return true;
         if (onlyBiotren) return r.type === 'biotren';
@@ -433,10 +467,26 @@ function WallpaperTab({ visibleRouteIds, mapBounds, theme }: WallpaperTabProps) 
       }));
 
       let coverageCells: Awaited<ReturnType<typeof loadCoverage>> | null = null;
-      if (useCoverage) {
+      if (layers.cobertura) {
         setProgress('Cargando cobertura territorial…');
         coverageCells = await loadCoverage();
       }
+
+      const paraderosLayer = layers.paraderos
+        ? GTFS_STOPS.map((p) => ({ lat: p.lat, lng: p.lng }))
+        : undefined;
+      const terminalesLayer = layers.terminales
+        ? TERMINALS.map((t) => ({ lat: t.lat, lng: t.lng }))
+        : undefined;
+      const midpointLayer =
+        layers.punto_medio && plannerMidpoint
+          ? {
+              path: plannerMidpoint.path,
+              midpoint: plannerMidpoint.midpoint,
+              origin: plannerOrigin ?? undefined,
+              destination: plannerDestination ?? undefined,
+            }
+          : undefined;
 
       setProgress('Renderizando tiles y trazados…');
       const blob = await buildWallpaper({
@@ -446,8 +496,10 @@ function WallpaperTab({ visibleRouteIds, mapBounds, theme }: WallpaperTabProps) 
         theme,
         routes: routesForRender,
         coverageCells: coverageCells ?? undefined,
-        title,
-        subtitle,
+        paraderos: paraderosLayer,
+        terminales: terminalesLayer,
+        midpoint: midpointLayer,
+        title: headlineText,
       });
 
       const stamp = new Date().toISOString().slice(0, 10);
@@ -522,6 +574,49 @@ function WallpaperTab({ visibleRouteIds, mapBounds, theme }: WallpaperTabProps) 
 
       <div className="space-y-1.5">
         <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          Capas a incluir
+        </div>
+        <div className="overflow-hidden rounded-md border">
+          <LayerToggle
+            label="Recorridos"
+            detail="Polilíneas de las rutas seleccionadas"
+            checked={layers.recorridos}
+            onChange={setLayer('recorridos')}
+          />
+          <LayerToggle
+            label="Punto medio caminando"
+            detail={
+              midpointAvailable
+                ? 'Trazado peatonal A → M → B y pines'
+                : 'Calcula primero un punto medio en el planificador'
+            }
+            checked={layers.punto_medio && midpointAvailable}
+            onChange={setLayer('punto_medio')}
+            disabled={!midpointAvailable}
+          />
+          <LayerToggle
+            label="Paraderos"
+            detail={`${GTFS_STOPS.length.toLocaleString('es-CL')} puntos GTFS (visibles a zoom 12+)`}
+            checked={layers.paraderos}
+            onChange={setLayer('paraderos')}
+          />
+          <LayerToggle
+            label="Terminales"
+            detail={`${TERMINALS.length} estaciones intermodales`}
+            checked={layers.terminales}
+            onChange={setLayer('terminales')}
+          />
+          <LayerToggle
+            label="Cobertura territorial"
+            detail="Heatmap por distancia al paradero más cercano"
+            checked={layers.cobertura}
+            onChange={setLayer('cobertura')}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Tamaño
         </div>
         <div className="overflow-hidden rounded-md border">
@@ -546,6 +641,39 @@ function WallpaperTab({ visibleRouteIds, mapBounds, theme }: WallpaperTabProps) 
         Concepción CC BY 4.0). Si lo publicas, mantén esa franja visible.
       </div>
     </div>
+  );
+}
+
+function LayerToggle({
+  label,
+  detail,
+  checked,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  detail: string;
+  checked: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer items-center gap-2 border-b px-3 py-2 transition-colors last:border-b-0 ${
+        disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-accent/40'
+      }`}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-medium">{label}</div>
+        <div className="text-[11px] text-muted-foreground">{detail}</div>
+      </div>
+      <Switch
+        checked={checked}
+        onCheckedChange={onChange}
+        disabled={disabled}
+        aria-label={label}
+      />
+    </label>
   );
 }
 

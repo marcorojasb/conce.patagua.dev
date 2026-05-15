@@ -24,6 +24,18 @@ export interface WallpaperCoverageCell {
   bucket: 'excelente' | 'buena' | 'marginal' | 'pobre' | 'muy-pobre';
 }
 
+export interface WallpaperPoint {
+  lat: number;
+  lng: number;
+}
+
+export interface WallpaperMidpoint {
+  path: Array<[number, number]>;
+  midpoint: [number, number];
+  origin?: WallpaperPoint;
+  destination?: WallpaperPoint;
+}
+
 export interface WallpaperConfig {
   bbox: [[number, number], [number, number]]; // [[minLat, minLng], [maxLat, maxLng]]
   width: number;
@@ -31,6 +43,12 @@ export interface WallpaperConfig {
   theme: WallpaperTheme;
   routes: WallpaperRoute[];
   coverageCells?: WallpaperCoverageCell[];
+  /** GTFS stops (paraderos) to dot on the map. */
+  paraderos?: WallpaperPoint[];
+  /** Bus terminals to mark with squares. */
+  terminales?: WallpaperPoint[];
+  /** Walking midpoint result drawn as dashed line + A/M/B markers. */
+  midpoint?: WallpaperMidpoint;
   title?: string;
   subtitle?: string;
 }
@@ -81,7 +99,19 @@ function loadTile(url: string): Promise<HTMLImageElement | null> {
 }
 
 export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
-  const { bbox, width, height, theme, routes, coverageCells, title, subtitle } = cfg;
+  const {
+    bbox,
+    width,
+    height,
+    theme,
+    routes,
+    coverageCells,
+    paraderos,
+    terminales,
+    midpoint,
+    title,
+    subtitle,
+  } = cfg;
   const [[latMin, lngMin], [latMax, lngMax]] = bbox;
   const centerLat = (latMin + latMax) / 2;
   const centerLng = (lngMin + lngMax) / 2;
@@ -156,33 +186,115 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     ctx.stroke();
   }
 
-  // Branding strip bottom-left. Keep small enough to leave the network visible.
+  // Paraderos as small filled circles. Skipped at very low zoom — wouldn't
+  // be readable anyway and they'd just blanket the map.
+  if (paraderos && paraderos.length > 0 && zoom >= 12) {
+    const r = 1.8 * lineScale;
+    ctx.fillStyle = theme === 'dark' ? 'rgba(250,250,250,0.85)' : 'rgba(15,15,15,0.7)';
+    ctx.strokeStyle = theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 0.6 * lineScale;
+    for (const p of paraderos) {
+      const [x, y] = toCanvas(p.lat, p.lng);
+      if (x < -r || x > width + r || y < -r || y > height + r) continue;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+  }
+
+  // Terminals as small filled squares — distinct shape from paraderos so the
+  // viewer can tell them apart at glance.
+  if (terminales && terminales.length > 0) {
+    const s = 5 * lineScale;
+    ctx.fillStyle = theme === 'dark' ? '#fafafa' : '#0f0f0f';
+    ctx.strokeStyle = theme === 'dark' ? '#000' : '#fff';
+    ctx.lineWidth = 1.2 * lineScale;
+    for (const t of terminales) {
+      const [x, y] = toCanvas(t.lat, t.lng);
+      if (x < -s || x > width + s || y < -s || y > height + s) continue;
+      ctx.fillRect(x - s / 2, y - s / 2, s, s);
+      ctx.strokeRect(x - s / 2, y - s / 2, s, s);
+    }
+  }
+
+  // Walking midpoint — dashed purple line + A/M/B labeled pins. Drawn last
+  // so it always reads on top regardless of underlying layer.
+  if (midpoint && midpoint.path.length >= 2) {
+    ctx.strokeStyle = '#7C3AED';
+    ctx.lineWidth = 3.5 * lineScale;
+    ctx.setLineDash([8 * lineScale, 6 * lineScale]);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < midpoint.path.length; i++) {
+      const [x, y] = toCanvas(midpoint.path[i][0], midpoint.path[i][1]);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const drawLabeledPin = (
+      lat: number,
+      lng: number,
+      label: string,
+      bg: string,
+    ) => {
+      const [x, y] = toCanvas(lat, lng);
+      const r = 11 * lineScale;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fillStyle = bg;
+      ctx.fill();
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5 * lineScale;
+      ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.font = `700 ${Math.round(11 * lineScale)}px Inter, system-ui, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, x, y + 0.5);
+      ctx.textAlign = 'start';
+      ctx.textBaseline = 'alphabetic';
+    };
+
+    if (midpoint.origin) drawLabeledPin(midpoint.origin.lat, midpoint.origin.lng, 'A', '#16A34A');
+    if (midpoint.destination) drawLabeledPin(midpoint.destination.lat, midpoint.destination.lng, 'B', '#DC2626');
+    drawLabeledPin(midpoint.midpoint[0], midpoint.midpoint[1], 'M', '#7C3AED');
+  }
+
+  // Branding strip bottom-left. We replaced the previous big "Conce
+  // Transporte" header with a compact stack: the optional content title
+  // (curated view name), then "conce.patagua.dev" in small, then attribution.
   const padX = Math.round(width * 0.035);
   const padY = Math.round(height * 0.035);
-  const titleSize = Math.round(Math.min(width, height) * 0.034);
-  const subtitleSize = Math.round(titleSize * 0.55);
-  const attrSize = Math.round(titleSize * 0.4);
+  const minDim = Math.min(width, height);
+  const subtitleSize = Math.round(minDim * 0.022);
+  const brandSize = Math.round(minDim * 0.016);
+  const attrSize = Math.round(minDim * 0.012);
 
-  ctx.fillStyle = theme === 'dark' ? 'rgba(255,255,255,0.92)' : 'rgba(0,0,0,0.85)';
-  ctx.font = `600 ${titleSize}px Inter, system-ui, sans-serif`;
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(title ?? 'Conce Transporte', padX, height - padY - subtitleSize - attrSize - 8);
 
-  ctx.fillStyle = theme === 'dark' ? 'rgba(255,255,255,0.75)' : 'rgba(0,0,0,0.65)';
-  ctx.font = `500 ${subtitleSize}px Inter, system-ui, sans-serif`;
-  ctx.fillText(
-    subtitle ?? 'Visor de transporte público del Gran Concepción · patagua.dev',
-    padX,
-    height - padY - attrSize - 4,
-  );
-
+  // Optional content subtitle (e.g. "Biotrén completo", "Vista actual ·
+  // N recorridos"). Skipped if caller passed nothing — the brand line
+  // alone is enough.
+  let cursor = height - padY;
   ctx.fillStyle = theme === 'dark' ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)';
   ctx.font = `400 ${attrSize}px Inter, system-ui, sans-serif`;
-  ctx.fillText(
-    'OSM contributors © CARTO · GTFS Gran Concepción CC BY 4.0',
-    padX,
-    height - padY,
-  );
+  ctx.fillText('OSM contributors © CARTO · GTFS Gran Concepción CC BY 4.0', padX, cursor);
+  cursor -= attrSize + 4;
+
+  ctx.fillStyle = theme === 'dark' ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.78)';
+  ctx.font = `600 ${brandSize}px Inter, system-ui, sans-serif`;
+  ctx.fillText('conce.patagua.dev', padX, cursor);
+  cursor -= brandSize + 4;
+
+  const headline = title ?? subtitle;
+  if (headline) {
+    ctx.fillStyle = theme === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.62)';
+    ctx.font = `500 ${subtitleSize}px Inter, system-ui, sans-serif`;
+    ctx.fillText(headline, padX, cursor);
+  }
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
