@@ -26,8 +26,9 @@ export default function RecorridosInterurbanos() {
         <ServiceRow
           code="201 · 201 AU"
           title="Concepción ↔ Santa Juana"
-          notes="Ruta interurbana DTPR Biobío. AU = servicio anticipado/expreso. Operador en proceso de verificación."
+          notes="Licitado bajo DTPR ELC0007, operado por Sociedad de Transporte de Pasajeros Santa Juana SpA desde julio 2024. AU = Accesibilidad Universal (piso bajo, rampa). 23 buses Agrale Euro V, tarifa adulto $1.000. Primera licitación del Biobío en 10+ años. Pago electrónico previsto fin de 2026."
           slug="ruta-201-santa-juana"
+          verified
         />
         <ServiceRow
           code="—"
@@ -131,17 +132,24 @@ function ServiceRow({
   title,
   notes,
   slug,
+  verified,
 }: {
   code: string;
   title: string;
   notes: string;
   slug?: string;
+  verified?: boolean;
 }) {
   return (
     <div className="rounded-md border bg-card p-3">
       <div className="flex items-baseline gap-2">
         <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{code}</span>
         <span className="text-[14px] font-medium">{title}</span>
+        {verified && (
+          <span className="ml-auto rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+            verificado
+          </span>
+        )}
       </div>
       <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{notes}</p>
       {slug && (

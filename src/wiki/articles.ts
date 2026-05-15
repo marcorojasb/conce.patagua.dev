@@ -29,7 +29,7 @@ export const ARTICLES: ArticleMeta[] = [
     slug: 'ruta-201-santa-juana',
     title: 'Ruta 201 y 201 AU · Concepción ↔ Santa Juana',
     summary:
-      'Servicio rural-interurbano que conecta Concepción con Santa Juana por la ruta 160 + 156. Información compilada desde fuentes secundarias mientras esperamos el GTFS oficial.',
+      'Servicio licitado bajo DTPR ELC0007, operado por Sociedad de Transporte de Pasajeros Santa Juana SpA desde julio 2024. 23 buses Agrale Euro V, tarifa $1.000, accesibilidad universal en 6 unidades. Primera licitación del Biobío en 10+ años.',
     section: 'interurbanos',
     updated: '2026-05-15',
     Component: lazy(() => import('./articles/ruta-201-santa-juana')),
