@@ -10,12 +10,14 @@ export const Switch = React.forwardRef<
     ref={ref}
     className={cn(
       'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50',
-      // Visible border on both states so the control reads as a control
-      // (not a hole) on dark backgrounds — previously bg-input was nearly
-      // identical to bg-card in dark mode and the unchecked switch
-      // disappeared next to each route row.
-      'border-transparent data-[state=checked]:bg-primary',
-      'data-[state=unchecked]:border-muted-foreground/40 data-[state=unchecked]:bg-muted-foreground/20',
+      // Solid colors instead of opacity-modulated. The previous attempt
+      // (bg-muted-foreground/20) composited with bg-background to ~9 %
+      // contrast in dark mode — basically invisible. Now: checked =
+      // filled primary, unchecked = card-colored fill with a hard
+      // muted-foreground border. Reads clearly as "empty toggle" vs
+      // "filled toggle" in both themes.
+      'data-[state=checked]:border-primary data-[state=checked]:bg-primary',
+      'data-[state=unchecked]:border-muted-foreground data-[state=unchecked]:bg-card',
       className,
     )}
     {...props}

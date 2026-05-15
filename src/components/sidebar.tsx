@@ -295,12 +295,14 @@ export function Sidebar({
                         }
                         side="left"
                       >
-                        <Switch
-                          checked={allVisible}
-                          onCheckedChange={() => onSetAllByOperator(g.operator, !allVisible)}
-                          aria-label={`Alternar todos los recorridos de ${g.operator}`}
-                          className="scale-90"
-                        />
+                        <span className="inline-flex">
+                          <Switch
+                            checked={allVisible}
+                            onCheckedChange={() => onSetAllByOperator(g.operator, !allVisible)}
+                            aria-label={`Alternar todos los recorridos de ${g.operator}`}
+                            className="scale-90"
+                          />
+                        </span>
                       </Tooltip>
                     </div>
                     {isExpanded && (
@@ -384,12 +386,16 @@ function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProp
         </div>
       </button>
       <Tooltip content={visible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'} side="left">
-        <Switch
-          checked={visible}
-          onCheckedChange={onToggle}
-          aria-label={visible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'}
-          className="shrink-0 scale-90"
-        />
+        {/* span absorbs the Tooltip's data-state so the Switch's own
+            data-state="checked|unchecked" can drive its bg/border CSS. */}
+        <span className="inline-flex">
+          <Switch
+            checked={visible}
+            onCheckedChange={onToggle}
+            aria-label={visible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'}
+            className="shrink-0 scale-90"
+          />
+        </span>
       </Tooltip>
     </div>
   );
