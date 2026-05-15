@@ -1,4 +1,5 @@
 import {
+  Bus,
   Building2,
   Crosshair,
   GraduationCap,
@@ -23,11 +24,14 @@ interface MapLayerControlProps {
   showParaderos: boolean;
   showPois: boolean;
   showAirQuality: boolean;
+  showSimulatedVehicles: boolean;
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
   onTogglePois: () => void;
   onToggleAirQuality: () => void;
+  onToggleSimulatedVehicles: () => void;
   airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
+  simulationStatus: { count: number; loading: boolean };
   onRecenter: () => void;
 }
 
@@ -39,15 +43,24 @@ export function MapLayerControl({
   showParaderos,
   showPois,
   showAirQuality,
+  showSimulatedVehicles,
   onToggleTerminals,
   onToggleParaderos,
   onTogglePois,
   onToggleAirQuality,
+  onToggleSimulatedVehicles,
   airQualityStatus,
+  simulationStatus,
   onRecenter,
 }: MapLayerControlProps) {
   const [open, setOpen] = useState(false);
-  const enabledCount = [showTerminals, showParaderos, showPois, showAirQuality].filter(Boolean).length;
+  const enabledCount = [
+    showTerminals,
+    showParaderos,
+    showPois,
+    showAirQuality,
+    showSimulatedVehicles,
+  ].filter(Boolean).length;
 
   const layers = useMemo(
     () => [
@@ -86,6 +99,19 @@ export function MapLayerControl({
         onToggle: onToggleAirQuality,
         loading: airQualityStatus.loading,
       },
+      {
+        id: 'simulated',
+        label: 'Servicios en curso',
+        detail: showSimulatedVehicles
+          ? simulationStatus.loading
+            ? 'Cargando horario…'
+            : `${simulationStatus.count.toLocaleString('es-CL')} programados · simulación`
+          : 'Proyección según horario GTFS',
+        icon: simulationStatus.loading ? Loader2 : Bus,
+        checked: showSimulatedVehicles,
+        onToggle: onToggleSimulatedVehicles,
+        loading: simulationStatus.loading,
+      },
     ],
     [
       airQualityStatus.loading,
@@ -93,13 +119,17 @@ export function MapLayerControl({
       onToggleAirQuality,
       onToggleParaderos,
       onTogglePois,
+      onToggleSimulatedVehicles,
       onToggleTerminals,
       paraderosCount,
       poisCount,
       showAirQuality,
       showParaderos,
       showPois,
+      showSimulatedVehicles,
       showTerminals,
+      simulationStatus.count,
+      simulationStatus.loading,
       terminalsCount,
     ],
   );

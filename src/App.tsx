@@ -11,6 +11,7 @@ import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
 import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
 import { AnalysisToolsSheet } from '@/components/analysis-tools-sheet';
+import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
 import { findRoutes } from '@/lib/planner';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
@@ -106,6 +107,41 @@ export default function App() {
     setPlannerDestination(null);
     setPickerMode(null);
   }, []);
+
+  const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(false);
+
+  // Pool of routes the simulator can project vehicles for. We feed all
+  // micro routes (Biotrén doesn't have GTFS schedule data in the feed).
+  const simulationRoutes = useMemo(
+    () =>
+      ROUTES.filter((r) => r.type === 'micro').map((r) => ({
+        id: r.id,
+        color: r.color,
+        path: r.path,
+      })),
+    [],
+  );
+  const routeColorById = useMemo(
+    () => new Map(ROUTES.map((r) => [r.id, r.color])),
+    [],
+  );
+  const { vehicles: simulatedVehicles, loading: simulationLoading } = useSimulatedVehicles({
+    enabled: showSimulatedVehicles,
+    routes: simulationRoutes,
+    intervalMs: 4000,
+  });
+
+  // Clicking a simulated vehicle pops the underlying route's detail sheet —
+  // saves us building a parallel "vehicle sheet" UI when the natural thing
+  // to know is which route the projected bus belongs to.
+  const onSelectSimulatedVehicle = useCallback(
+    (vehicleId: string) => {
+      const routeId = vehicleId.split('|')[0];
+      if (routeId) onSelectRoute(routeId);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
 
@@ -440,6 +476,9 @@ export default function App() {
             onPickPoint={onPickPoint}
             plannerOrigin={plannerOrigin}
             plannerDestination={plannerDestination}
+            simulatedVehicles={simulatedVehicles}
+            routeColorById={routeColorById}
+            onSelectSimulatedVehicle={onSelectSimulatedVehicle}
           />
 
           <MapLayerControl
@@ -450,11 +489,17 @@ export default function App() {
             showParaderos={showParaderos}
             showPois={showPois}
             showAirQuality={showAirQuality}
+            showSimulatedVehicles={showSimulatedVehicles}
             onToggleTerminals={() => setShowTerminals((v) => !v)}
             onToggleParaderos={() => setShowParaderos((v) => !v)}
             onTogglePois={() => setShowPois((v) => !v)}
             onToggleAirQuality={() => setShowAirQuality((v) => !v)}
+            onToggleSimulatedVehicles={() => setShowSimulatedVehicles((v) => !v)}
             airQualityStatus={airQuality}
+            simulationStatus={{
+              count: simulatedVehicles.length,
+              loading: simulationLoading,
+            }}
             onRecenter={onRecenterMap}
           />
 

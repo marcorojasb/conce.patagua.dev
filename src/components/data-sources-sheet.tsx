@@ -35,6 +35,13 @@ const SOURCES: Source[] = [
     license: { name: 'CC BY 4.0 · Subsecretaría de Transportes (Chile)', href: 'https://creativecommons.org/licenses/by/4.0/' },
   },
   {
+    title: 'Servicios en curso (simulación según horario)',
+    detail:
+      'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus según el horario GTFS estático para el día y hora actual — no es GPS real. Útil para entender el ritmo programado del servicio (cuántos buses circulan, frecuencias por corredor, picos por hora). Atrasos, cancelaciones y desvíos son invisibles desde acá hasta que DTPR libere GTFS-RT.',
+    count: 'Calculado en cliente cada 4 s desde los ~27 k trips del feed',
+    license: 'Capa derivada · misma licencia que el GTFS base',
+  },
+  {
     title: 'OpenStreetMap · Overpass API',
     detail:
       'Estaciones y trazado del Biotrén (railway=station + railway=rail + operator=EFE), terminales (amenity=bus_station) y puntos de interés urbanos.',

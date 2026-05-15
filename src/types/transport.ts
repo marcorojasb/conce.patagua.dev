@@ -78,6 +78,42 @@ export interface Paradero {
   ref?: string;
 }
 
+/**
+ * Per-route schedule: 7 buckets keyed by day of week (0=Monday, ..., 6=Sunday).
+ * Each bucket is a flat list of trips, each encoded as
+ * `[startMinutesFromMidnight, durationMinutes]`. Used by the simulated-vehicles
+ * layer to project where a bus *should* be right now according to its
+ * scheduled trip; not real GPS.
+ */
+export type ScheduledTrip = [number, number];
+export type RouteSchedule = [
+  ScheduledTrip[],
+  ScheduledTrip[],
+  ScheduledTrip[],
+  ScheduledTrip[],
+  ScheduledTrip[],
+  ScheduledTrip[],
+  ScheduledTrip[],
+];
+
+export interface SimulatedVehicle {
+  /** Stable id tied to `routeId|tripStartMin` so React keys/animations are stable per trip. */
+  id: string;
+  routeId: string;
+  /** 0..1 fraction along the polyline. */
+  progress: number;
+  lat: number;
+  lng: number;
+  /** Bearing in degrees, 0=N, 90=E. */
+  bearing: number;
+  /** Minutes since the trip's scheduled start. */
+  elapsedMin: number;
+  /** Total scheduled minutes for this trip. */
+  durationMin: number;
+  /** Scheduled departure as minutes from midnight (for display). */
+  startMin: number;
+}
+
 export interface BusRoute {
   id: string;
   osmId?: number;

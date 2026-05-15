@@ -20,6 +20,7 @@ import type {
   Poi,
   PoiCategory,
   Route,
+  SimulatedVehicle,
   Terminal,
   Theme,
 } from '@/types/transport';
@@ -52,6 +53,9 @@ interface ConceMapProps {
   onPickPoint: (latlng: { lat: number; lng: number }) => void;
   plannerOrigin: { lat: number; lng: number } | null;
   plannerDestination: { lat: number; lng: number } | null;
+  simulatedVehicles: SimulatedVehicle[];
+  routeColorById: Map<string, string>;
+  onSelectSimulatedVehicle: (id: string) => void;
 }
 
 const TILE_URL = {
@@ -218,6 +222,9 @@ export function ConceMap({
   onPickPoint,
   plannerOrigin,
   plannerDestination,
+  simulatedVehicles,
+  routeColorById,
+  onSelectSimulatedVehicle,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
   const [zoom, setZoom] = useState(13);
@@ -423,6 +430,35 @@ export function ConceMap({
           </LeafletTooltip>
         </Marker>
       )}
+
+      {simulatedVehicles.length > 0 &&
+        simulatedVehicles.map((v) => {
+          const color = routeColorById.get(v.routeId) ?? '#0ea5e9';
+          return (
+            <CircleMarker
+              key={v.id}
+              center={[v.lat, v.lng]}
+              radius={5}
+              pathOptions={{
+                color: '#ffffff',
+                weight: 1.5,
+                fillColor: color,
+                fillOpacity: 0.95,
+              }}
+              renderer={paraderoRenderer}
+              eventHandlers={{ click: () => onSelectSimulatedVehicle(v.id) }}
+            >
+              <LeafletTooltip
+                direction="top"
+                offset={[0, -6]}
+                opacity={0.95}
+                className="!text-[11px]"
+              >
+                Servicio en curso · {Math.round(v.progress * 100)}% del trayecto
+              </LeafletTooltip>
+            </CircleMarker>
+          );
+        })}
 
       <MapClickCapture enabled={pickerMode !== null} onPick={onPickPoint} />
       <FlyToOnToken token={flyToToken} />
