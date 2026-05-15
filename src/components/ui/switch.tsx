@@ -9,8 +9,13 @@ export const Switch = React.forwardRef<
   <SwitchPrimitives.Root
     ref={ref}
     className={cn(
-      'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50',
-      'data-[state=checked]:bg-primary data-[state=unchecked]:bg-input',
+      'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50',
+      // Visible border on both states so the control reads as a control
+      // (not a hole) on dark backgrounds — previously bg-input was nearly
+      // identical to bg-card in dark mode and the unchecked switch
+      // disappeared next to each route row.
+      'border-transparent data-[state=checked]:bg-primary',
+      'data-[state=unchecked]:border-muted-foreground/40 data-[state=unchecked]:bg-muted-foreground/20',
       className,
     )}
     {...props}

@@ -120,12 +120,15 @@ export function Sidebar({
       )}
       <aside
         className={cn(
-          'absolute inset-y-0 left-0 z-20 box-border flex h-full min-w-0 max-w-full shrink-0 flex-col overflow-hidden border-r bg-background shadow-xl transition-transform duration-200 ease-out',
-          'md:relative md:shadow-none md:transition-[width]',
-          'w-[88vw] max-w-[340px] md:w-[340px] lg:w-[360px]',
+          'box-border flex h-full min-w-0 shrink-0 flex-col overflow-hidden border-r bg-background transition-all duration-200 ease-out',
+          // Mobile: floats over the map as a drawer; Desktop: docks alongside.
+          'absolute inset-y-0 left-0 z-20 shadow-xl md:relative md:shadow-none',
+          // Width + slide. Putting width fully inside the conditional avoids
+          // the closed-state black-gap bug where md:w-0 conflicted with a
+          // heritage md:w-[340px] / lg:w-[360px] still in the base classes.
           open
-            ? 'translate-x-0 md:w-[340px] lg:w-[360px]'
-            : '-translate-x-full md:translate-x-0 md:w-0',
+            ? 'w-[88vw] max-w-[340px] translate-x-0 md:w-[340px] md:max-w-[340px] lg:w-[360px] lg:max-w-[360px]'
+            : 'w-0 max-w-0 -translate-x-full border-r-0 md:translate-x-0',
         )}
         data-state={open ? 'open' : 'closed'}
       >
