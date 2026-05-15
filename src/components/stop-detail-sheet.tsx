@@ -9,7 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { ROUTES, ROUTE_TYPES } from '@/data/routes';
+import { ROUTES_BY_ID, ROUTE_TYPES } from '@/data/routes';
 import { BIOTREN_WIKIDATA } from '@/data/wikidata.generated';
 import { isoDayOfWeek, useStopFrequency } from '@/hooks/use-stop-frequency';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
@@ -26,7 +26,7 @@ interface StopDetailSheetProps {
 export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: StopDetailSheetProps) {
   const routes = useMemo(() => {
     if (!stop) return [];
-    return stop.routes.map((rid) => ROUTES.find((r) => r.id === rid)).filter((r) => !!r);
+    return stop.routes.map((rid) => ROUTES_BY_ID.get(rid)).filter((r) => !!r);
   }, [stop]);
 
   const activeCount = useMemo(

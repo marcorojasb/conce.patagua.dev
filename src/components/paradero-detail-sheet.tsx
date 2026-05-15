@@ -10,7 +10,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
+import { ROUTES_BY_ID, ROUTE_TYPES, STOPS } from '@/data/routes';
 import type { Paradero } from '@/types/transport';
 
 interface ParaderoDetailSheetProps {
@@ -37,7 +37,7 @@ export function ParaderoDetailSheet({
 
   const routes = useMemo(() => {
     if (!stop) return [];
-    return stop.routes.map((id) => ROUTES.find((r) => r.id === id)).filter((r) => !!r);
+    return stop.routes.map((id) => ROUTES_BY_ID.get(id)).filter((r) => !!r);
   }, [stop]);
 
   if (!paradero) return null;
