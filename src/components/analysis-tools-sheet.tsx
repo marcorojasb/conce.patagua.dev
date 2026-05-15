@@ -34,9 +34,13 @@ import {
 } from '@/lib/wallpaper';
 import type { CoverageCell, Theme } from '@/types/transport';
 
+export type AnalysisTab = 'cobertura' | 'operadores' | 'export' | 'wallpaper';
+
 interface AnalysisToolsSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  tab: AnalysisTab;
+  onTabChange: (tab: AnalysisTab) => void;
   // Planner state lifted from App so it persists when the sheet closes.
   plannerOrigin: { lat: number; lng: number } | null;
   plannerDestination: { lat: number; lng: number } | null;
@@ -67,6 +71,8 @@ const micrCount = ROUTES.filter((r) => r.type === 'micro').length;
 export function AnalysisToolsSheet({
   open,
   onOpenChange,
+  tab,
+  onTabChange,
   plannerOrigin,
   plannerDestination,
   pickerMode,
@@ -97,7 +103,11 @@ export function AnalysisToolsSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue="cobertura" className="flex min-h-0 flex-1 flex-col px-5 pb-5">
+        <Tabs
+          value={tab}
+          onValueChange={(v) => onTabChange(v as AnalysisTab)}
+          className="flex min-h-0 flex-1 flex-col px-5 pb-5"
+        >
           <TabsList className="self-start">
             <TabsTrigger value="cobertura">
               <Compass className="h-3 w-3" />

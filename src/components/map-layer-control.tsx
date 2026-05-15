@@ -1,9 +1,12 @@
 import {
   Bus,
   Building2,
+  Compass,
   Crosshair,
+  Download,
   GraduationCap,
   Grid3x3,
+  ImageDown,
   Layers2,
   Loader2,
   MapPin,
@@ -16,6 +19,7 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import type { AnalysisTab } from '@/components/analysis-tools-sheet';
 
 interface MapLayerControlProps {
   terminalsCount: number;
@@ -39,7 +43,23 @@ interface MapLayerControlProps {
   simulationStatus: { count: number; loading: boolean };
   coverageStatus: { loading: boolean };
   onRecenter: () => void;
+  // Shortcut into each analysis tool — opens the analysis sheet on the given
+  // tab. Lifted to App because the sheet state lives there.
+  onOpenTool: (tab: AnalysisTab) => void;
 }
+
+interface ToolBtn {
+  id: AnalysisTab;
+  label: string;
+  Icon: typeof Compass;
+}
+
+const TOOLS: ToolBtn[] = [
+  { id: 'cobertura', label: 'Planificador (cobertura OD)', Icon: Compass },
+  { id: 'operadores', label: 'Operadores', Icon: Building2 },
+  { id: 'export', label: 'Export GeoJSON', Icon: Download },
+  { id: 'wallpaper', label: 'Fondo de pantalla', Icon: ImageDown },
+];
 
 export function MapLayerControl({
   terminalsCount,
@@ -63,6 +83,7 @@ export function MapLayerControl({
   simulationStatus,
   coverageStatus,
   onRecenter,
+  onOpenTool,
 }: MapLayerControlProps) {
   const [open, setOpen] = useState(false);
   const enabledCount = [
@@ -201,6 +222,28 @@ export function MapLayerControl({
           )}
         </Button>
       </Tooltip>
+
+      {/* Visual separator between view controls (recenter, layers) and
+          analysis tools (planner, operators, export, wallpaper). */}
+      <div aria-hidden className="pointer-events-none h-px w-6 bg-border/60" />
+
+      {TOOLS.map((t) => {
+        const Icon = t.Icon;
+        return (
+          <Tooltip key={t.id} content={t.label} side="left">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => onOpenTool(t.id)}
+              aria-label={t.label}
+              className="pointer-events-auto h-10 w-10 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85"
+            >
+              <Icon className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+        );
+      })}
 
       {open && (
         <Card className="pointer-events-auto w-[min(88vw,300px)] rounded-md border-border/80 bg-background/95 p-2 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90">

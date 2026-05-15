@@ -10,7 +10,7 @@ import { StopDetailSheet } from '@/components/stop-detail-sheet';
 import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
 import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
-import { AnalysisToolsSheet } from '@/components/analysis-tools-sheet';
+import { AnalysisToolsSheet, type AnalysisTab } from '@/components/analysis-tools-sheet';
 import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
 import { findRoutes } from '@/lib/planner';
 import { routeBetween, type RoutingResult } from '@/lib/routing';
@@ -210,6 +210,15 @@ export default function App() {
 
   const [sourcesOpen, setSourcesOpen] = useState(false);
   const [analysisOpen, setAnalysisOpen] = useState(false);
+  const [analysisTab, setAnalysisTab] = useState<AnalysisTab>('cobertura');
+
+  // Shortcut from the floating toolbar — opens the analysis sheet directly on
+  // the requested tool's tab. Keeps the sidebar "Análisis" link working as a
+  // generic "see all tools" entry that lands on whatever tab was last open.
+  const openAnalysisTool = useCallback((t: AnalysisTab) => {
+    setAnalysisTab(t);
+    setAnalysisOpen(true);
+  }, []);
 
   const onShowOperatorRoutes = useCallback(
     (operator: string) => {
@@ -574,6 +583,7 @@ export default function App() {
             }}
             coverageStatus={{ loading: coverageLoading }}
             onRecenter={onRecenterMap}
+            onOpenTool={openAnalysisTool}
           />
 
           {!sheetKind && (
@@ -687,6 +697,8 @@ export default function App() {
       <AnalysisToolsSheet
         open={analysisOpen}
         onOpenChange={setAnalysisOpen}
+        tab={analysisTab}
+        onTabChange={setAnalysisTab}
         plannerOrigin={plannerOrigin}
         plannerDestination={plannerDestination}
         pickerMode={pickerMode}
