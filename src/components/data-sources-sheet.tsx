@@ -18,21 +18,21 @@ interface Source {
   title: string;
   detail: string;
   link?: { href: string; label: string };
-  license?: string;
+  license?: string | { name: string; href: string };
   count?: string;
 }
 
 const SOURCES: Source[] = [
   {
-    title: 'GTFS estático Gran Concepción · fuente candidata',
+    title: 'GTFS estático Gran Concepción',
     detail:
-      'Recorridos de micros, paraderos, shapes y calendario programado cargados desde un feed GTFS funcional para Gran Concepción. La app lo consume como artefacto estático generado; no llama directo al mirror ni a endpoints internos.',
+      'Recorridos de micros, paraderos, shapes y calendario programado de los 169 servicios urbanos. Publicado por la Subsecretaría de Transportes de Chile. La app consume un artefacto estático generado a partir del feed; las shapes pasan por una simplificación Douglas–Peucker (~16 m) — el resto se sirve tal cual.',
     count: `${microCount} recorridos · ${GTFS_STOPS.length} paraderos · fuente ${GTFS_CONCEPCION_SOURCE.source}`,
     link: {
       href: 'https://busmaps.com/en/chile/Subsecretaria-de-Transporte/gran-concepcion',
-      label: 'busmaps.com/gran-concepcion',
+      label: 'busmaps.com (mirror)',
     },
-    license: 'Uso productivo sujeto a verificación de fuente primaria/licencia',
+    license: { name: 'CC BY 4.0 · Subsecretaría de Transportes (Chile)', href: 'https://creativecommons.org/licenses/by/4.0/' },
   },
   {
     title: 'OpenStreetMap · Overpass API',
@@ -63,12 +63,6 @@ const PENDING: Source[] = [
     detail:
       'Posiciones de buses en tiempo real, próximas llegadas a paradero y alertas de servicio. Aún no se verificó un feed público autorizado para producción.',
     link: { href: 'https://transformacion.dtpr.cl/', label: 'transformacion.dtpr.cl' },
-  },
-  {
-    title: 'Fuente primaria oficial del GTFS estático',
-    detail:
-      'El feed funciona técnicamente, pero antes de producción conviene confirmar el origen primario, versión vigente, atribución y condiciones de reutilización.',
-    link: { href: 'https://datos.gob.cl/dataset?q=gtfs+gran+concepcion', label: 'datos.gob.cl' },
   },
 ];
 
@@ -156,9 +150,19 @@ function SourceList({ title, sources }: { title: string; sources: Source[] }) {
                   {s.link.label}
                 </a>
               )}
-              {s.license && (
-                <span className="text-muted-foreground">{s.license}</span>
-              )}
+              {s.license &&
+                (typeof s.license === 'string' ? (
+                  <span className="text-muted-foreground">{s.license}</span>
+                ) : (
+                  <a
+                    className="text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                    href={s.license.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {s.license.name}
+                  </a>
+                ))}
             </div>
           </div>
         ))}
