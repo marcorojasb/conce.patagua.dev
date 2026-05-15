@@ -167,6 +167,7 @@ export function Sidebar({
                     key={t.id}
                     type="button"
                     onClick={() => onToggleType(t.id)}
+                    aria-pressed={active}
                     className={cn(
                       'inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs transition-colors focus-ring md:min-h-8 md:px-2.5 md:py-1.5',
                       active

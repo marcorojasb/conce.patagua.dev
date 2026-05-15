@@ -263,9 +263,9 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     drawLabeledPin(midpoint.midpoint[0], midpoint.midpoint[1], 'M', '#7C3AED');
   }
 
-  // Branding strip bottom-left. We replaced the previous big "Conce
-  // Transporte" header with a compact stack: the optional content title
-  // (curated view name), then "conce.patagua.dev" in small, then attribution.
+  // Branding strip bottom-left: optional content title (curated view name
+  // or "vista actual · N recorridos"), then "conce.patagua.dev" small, then
+  // the OSM/CARTO/GTFS attribution as fine print.
   const padX = Math.round(width * 0.035);
   const padY = Math.round(height * 0.035);
   const minDim = Math.min(width, height);

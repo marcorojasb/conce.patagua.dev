@@ -595,7 +595,8 @@ export default function App() {
                     Concepción · Biobío
                   </CardTitle>
                   <CardDescription className="text-[12px] leading-snug text-foreground">
-                    Visor técnico de recorridos, paraderos, terminales y capas urbanas.
+                    Capas de transporte público y, próximamente, planificación urbana y
+                    servicios para política pública del Gran Concepción.
                     <span className="hidden md:inline">
                       {' '}
                       Usa <Kbd>⌘</Kbd> <Kbd>K</Kbd> para buscar.

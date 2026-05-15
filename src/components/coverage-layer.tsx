@@ -101,5 +101,3 @@ export function CoverageLayer({
 
   return null;
 }
-
-export const COVERAGE_BINS = BINS;

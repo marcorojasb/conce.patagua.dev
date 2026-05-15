@@ -40,11 +40,3 @@ export function isRouteOperatingAt(route: Route, date: Date): boolean {
 export function isRouteOperatingNow(route: Route): boolean {
   return isRouteOperatingAt(route, new Date());
 }
-
-/** Human-readable label for the operating status. */
-export function operatingLabel(route: Route, date: Date = new Date()): string {
-  const parsed = parseHoursString(route.hours);
-  if (!parsed) return 'Horario no publicado';
-  const active = isRouteOperatingAt(route, date);
-  return active ? 'Operativo ahora' : 'Fuera de horario';
-}

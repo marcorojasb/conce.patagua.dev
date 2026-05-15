@@ -107,6 +107,11 @@ function FlyToOnToken({ token }: { token: FlyToToken | null }) {
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
+    // Respect users who asked the OS to reduce motion — vestibular sensitive
+    // users find auto-panning jarring. We skip the animation and snap.
+    const reduceMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     // Leaflet's flyTo/flyToBounds animate via requestAnimationFrame and
     // unproject coordinates against the map's pixel size. When the container
     // hasn't laid out yet (size = 0×0), unprojection produces NaN and the
@@ -120,13 +125,19 @@ function FlyToOnToken({ token }: { token: FlyToToken | null }) {
       }
       if (token.target.kind === 'bounds') {
         const bounds = L.latLngBounds(token.target.path);
-        map.flyToBounds(bounds, { padding: [60, 60], duration: 0.7 });
+        if (reduceMotion) {
+          map.fitBounds(bounds, { padding: [60, 60], animate: false });
+        } else {
+          map.flyToBounds(bounds, { padding: [60, 60], duration: 0.7 });
+        }
       } else {
-        map.flyTo(
-          [token.target.lat, token.target.lng],
-          token.target.zoom ?? map.getZoom(),
-          { duration: 0.7 },
-        );
+        const center: [number, number] = [token.target.lat, token.target.lng];
+        const zoom = token.target.zoom ?? map.getZoom();
+        if (reduceMotion) {
+          map.setView(center, zoom, { animate: false });
+        } else {
+          map.flyTo(center, zoom, { duration: 0.7 });
+        }
       }
     };
     tryFly();

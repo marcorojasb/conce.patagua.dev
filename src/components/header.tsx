@@ -86,11 +86,11 @@ export function Header({
         {/* min-w-0 + truncate keeps the title on a single line on narrow
             viewports even when the toolbar (search, github, theme) crowds it. */}
         <div className="min-w-0 leading-tight">
-          <div className="truncate text-sm font-semibold tracking-tight">
-            Conce Transporte
+          <div className="truncate font-mono text-sm font-semibold tracking-tight">
+            conce.patagua.dev
           </div>
           <div className="hidden truncate text-[11px] text-muted-foreground md:block">
-            Visor de transporte público del Gran Concepción
+            Visor del Gran Concepción
           </div>
         </div>
       </div>

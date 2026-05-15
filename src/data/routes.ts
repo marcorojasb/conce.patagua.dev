@@ -1,4 +1,4 @@
-// Route + stop dataset for the Conce Transporte visor.
+// Route + stop dataset for the conce.patagua.dev visor.
 //
 // Current sources (May 2026):
 //
@@ -144,11 +144,6 @@ export const ROUTES_BY_ID: ReadonlyMap<string, Route> = new Map(
 // Biotrén route ids are the only ones visible by default — the urban micros
 // would clutter the map. Users opt in via the sidebar.
 export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = BIOTREN_ROUTES.map((r) => r.id);
-
-// Unique operator list (for filter UI in future tandas).
-export const BUS_OPERATORS: string[] = Array.from(
-  new Set(GTFS_BUS_ROUTES.map((r) => r.operator).filter((o): o is string => !!o)),
-).sort((a, b) => a.localeCompare(b, 'es'));
 
 function buildStopIndex(routes: Route[]): StopWithRoutes[] {
   const map = new Map<string, StopWithRoutes>();

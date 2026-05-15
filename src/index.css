@@ -22,7 +22,10 @@
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 240 5% 64.9%;
+    /* Darkened from `240 5% 64.9%` (~2.6:1 against white, failed WCAG 1.4.11
+       non-text 3:1) to ~4.5:1 — keeps the gray hue but makes the focus ring
+       legible in light mode. */
+    --ring: 240 5% 35%;
     --radius: 0.5rem;
   }
 

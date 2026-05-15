@@ -96,7 +96,7 @@ export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) 
         <SheetHeader>
           <SheetTitle className="pr-8">Fuentes de datos</SheetTitle>
           <SheetDescription>
-            Todo lo que ves en este visor viene de fuentes abiertas. Conce Transporte es un
+            Todo lo que ves en este visor viene de fuentes abiertas. conce.patagua.dev es un
             proyecto open source.
           </SheetDescription>
         </SheetHeader>

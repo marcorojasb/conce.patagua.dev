@@ -22,7 +22,6 @@ import {
   CURATED_VIEWS,
   downloadBlob,
   WALLPAPER_SIZES,
-  type CuratedView,
   type WallpaperSizePreset,
 } from '@/lib/wallpaper';
 import type { CoverageCell, Theme } from '@/types/transport';
@@ -79,7 +78,7 @@ interface FloatingToolsPanelProps {
   onClearMidpoint: () => void;
 }
 
-const micrCount = ROUTES.filter((r) => r.type === 'micro').length;
+const microCount = ROUTES.filter((r) => r.type === 'micro').length;
 
 export function FloatingToolsPanel({
   tool,
@@ -222,7 +221,7 @@ export function FloatingToolsPanel({
                   Km totales se calculan sumando la distancia entre vértices del trazado
                   GTFS simplificado (Douglas–Peucker ~16 m). Aproximación al largo
                   operacional, no incluye recorridos en vacío. Total flota:
-                  {' '}<span className="font-mono">{micrCount}</span> servicios urbanos.
+                  {' '}<span className="font-mono">{microCount}</span> servicios urbanos.
                 </div>
               </div>
             )}
@@ -344,7 +343,7 @@ function ExportTab({ visibleRouteIds }: { visibleRouteIds: string[] }) {
         .toISOString()
         .replace(/[:.]/g, '-')
         .slice(0, 19);
-      downloadGeoJSON(fc, `conce-transporte-${stamp}.geojson`);
+      downloadGeoJSON(fc, `conce-patagua-dev-${stamp}.geojson`);
     } finally {
       setBusy(false);
     }
@@ -531,7 +530,7 @@ function WallpaperTab({
       });
 
       const stamp = new Date().toISOString().slice(0, 10);
-      const filename = `conce-transporte-${mode === 'current' ? 'vista' : curated.id}-${size.width}x${size.height}-${stamp}.png`;
+      const filename = `conce-patagua-dev-${mode === 'current' ? 'vista' : curated.id}-${size.width}x${size.height}-${stamp}.png`;
       downloadBlob(blob, filename);
     } catch (err) {
       console.error(err);
@@ -558,6 +557,7 @@ function WallpaperTab({
           variant={mode === 'current' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setMode('current')}
+          aria-pressed={mode === 'current'}
         >
           Vista actual
         </Button>
@@ -566,6 +566,7 @@ function WallpaperTab({
           variant={mode === 'curated' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setMode('curated')}
+          aria-pressed={mode === 'curated'}
         >
           Vistas curadas
         </Button>
@@ -761,7 +762,3 @@ async function loadCoverage() {
               : ('muy-pobre' as const),
   }));
 }
-
-// Curated views consume types from the wallpaper lib — keep the type
-// re-exported so consumers don't reach across the module boundary.
-export type { CuratedView };
