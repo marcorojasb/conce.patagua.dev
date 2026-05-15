@@ -15,7 +15,7 @@ import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
 import { findRoutes } from '@/lib/planner';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
-import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
+import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
@@ -23,7 +23,7 @@ import { useAirQuality } from '@/hooks/use-air-quality';
 import { useTheme } from '@/hooks/use-theme';
 import { readUrlState, useSyncUrlState } from '@/hooks/use-url-state';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
-import type { FlyToToken, RouteTypeId, SheetKind } from '@/types/transport';
+import type { FlyToToken, Route, RouteTypeId, SheetKind } from '@/types/transport';
 
 const INITIAL_URL = readUrlState();
 
@@ -80,7 +80,11 @@ export default function App() {
 
   const plannerMatches = useMemo(() => {
     if (!plannerOrigin || !plannerDestination) return [];
-    const visible = ROUTES.filter((r) => visibleRouteIds.includes(r.id));
+    const visible: Route[] = [];
+    for (const id of visibleRouteIds) {
+      const r = ROUTES_BY_ID.get(id);
+      if (r) visible.push(r);
+    }
     const pool = visible.length > 0 ? visible : ROUTES;
     return findRoutes(
       [plannerOrigin.lat, plannerOrigin.lng],
@@ -147,6 +151,10 @@ export default function App() {
   const [coverageThreshold, setCoverageThreshold] = useState<'all' | 'underserved'>('all');
   const [coverageLoading, setCoverageLoading] = useState(false);
 
+  // Last viewport reported by the map. Used by the wallpaper exporter so the
+  // "vista actual" mode captures exactly what the user is looking at.
+  const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
+
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
 
   const [sourcesOpen, setSourcesOpen] = useState(false);
@@ -175,7 +183,7 @@ export default function App() {
   // Apply the initial fly-to once the map is mounted.
   useEffect(() => {
     if (INITIAL_URL.route) {
-      const r = ROUTES.find((x) => x.id === INITIAL_URL.route);
+      const r = ROUTES_BY_ID.get(INITIAL_URL.route);
       if (r) setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
       return;
     }
@@ -211,7 +219,7 @@ export default function App() {
   }, []);
 
   const selectedRoute = useMemo(
-    () => ROUTES.find((r) => r.id === selectedRouteId) ?? null,
+    () => (selectedRouteId ? ROUTES_BY_ID.get(selectedRouteId) ?? null : null),
     [selectedRouteId],
   );
   const selectedStop = useMemo(
@@ -233,7 +241,7 @@ export default function App() {
 
   const visibleIdsAfterTypeFilter = useMemo(() => {
     return visibleRouteIds.filter((id) => {
-      const r = ROUTES.find((x) => x.id === id);
+      const r = ROUTES_BY_ID.get(id);
       if (!r) return false;
       if (!typeFilters[r.type]) return false;
       if (onlyOperatingNow && !isRouteOperatingNow(r)) return false;
@@ -305,7 +313,7 @@ export default function App() {
         clearSelection();
         return;
       }
-      const r = ROUTES.find((x) => x.id === id);
+      const r = ROUTES_BY_ID.get(id);
       if (!r) return;
       setVisibleRouteIds((cur) => (cur.includes(id) ? cur : [...cur, id]));
       setTypeFilters((f) => ({ ...f, [r.type]: true }));
@@ -486,6 +494,7 @@ export default function App() {
             showCoverage={showCoverage}
             coverageThreshold={coverageThreshold}
             onCoverageLoadingChange={setCoverageLoading}
+            onBoundsChange={setMapBounds}
           />
 
           <MapLayerControl
@@ -558,8 +567,10 @@ export default function App() {
                 {visibleIdsAfterTypeFilter.length === 1 ? '' : 's'}
               </div>
               <div className="flex flex-col gap-1">
-                {ROUTES.filter((r) => visibleIdsAfterTypeFilter.includes(r.id))
+                {visibleIdsAfterTypeFilter
                   .slice(0, 12)
+                  .map((id) => ROUTES_BY_ID.get(id))
+                  .filter((r): r is Route => !!r)
                   .map((r) => (
                     <div key={r.id} className="flex items-center gap-2">
                       <span
@@ -635,6 +646,8 @@ export default function App() {
         onSelectRoute={onSelectRoute}
         onShowOperatorRoutes={onShowOperatorRoutes}
         visibleRouteIds={visibleRouteIds}
+        mapBounds={mapBounds}
+        theme={theme}
       />
     </div>
   );

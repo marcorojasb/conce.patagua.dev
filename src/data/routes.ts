@@ -135,6 +135,12 @@ const MICRO_ROUTES: Route[] = GTFS_BUS_ROUTES.map(busRouteToRoute);
 
 export const ROUTES: Route[] = [...BIOTREN_ROUTES, ...MICRO_ROUTES];
 
+// O(1) lookup index used in hot paths (planner, visibility filters, deep
+// links). Avoids ROUTES.find() inside loops that walk hundreds of ids.
+export const ROUTES_BY_ID: ReadonlyMap<string, Route> = new Map(
+  ROUTES.map((r) => [r.id, r]),
+);
+
 // Biotrén route ids are the only ones visible by default — the urban micros
 // would clutter the map. Users opt in via the sidebar.
 export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = BIOTREN_ROUTES.map((r) => r.id);

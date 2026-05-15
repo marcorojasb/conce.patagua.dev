@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, Compass, Download } from 'lucide-react';
+import { Building2, Compass, Download, ImageDown } from 'lucide-react';
 import { PlannerPanel } from '@/components/planner-panel';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -23,7 +23,15 @@ import {
   downloadGeoJSON,
   type ExportLayer,
 } from '@/lib/geojson-export';
-import type { CoverageCell } from '@/types/transport';
+import {
+  buildWallpaper,
+  CURATED_VIEWS,
+  downloadBlob,
+  WALLPAPER_SIZES,
+  type CuratedView,
+  type WallpaperSizePreset,
+} from '@/lib/wallpaper';
+import type { CoverageCell, Theme } from '@/types/transport';
 
 interface AnalysisToolsSheetProps {
   open: boolean;
@@ -41,6 +49,9 @@ interface AnalysisToolsSheetProps {
   onShowOperatorRoutes: (operator: string) => void;
   // For the GeoJSON export tab — knows which routes the user has on the map.
   visibleRouteIds: string[];
+  // For the Wallpaper tab — current viewport + theme.
+  mapBounds: [[number, number], [number, number]] | null;
+  theme: Theme;
 }
 
 const micrCount = ROUTES.filter((r) => r.type === 'micro').length;
@@ -59,6 +70,8 @@ export function AnalysisToolsSheet({
   onSelectRoute,
   onShowOperatorRoutes,
   visibleRouteIds,
+  mapBounds,
+  theme,
 }: AnalysisToolsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -84,6 +97,10 @@ export function AnalysisToolsSheet({
             <TabsTrigger value="export">
               <Download className="h-3 w-3" />
               Export
+            </TabsTrigger>
+            <TabsTrigger value="wallpaper">
+              <ImageDown className="h-3 w-3" />
+              Wallpaper
             </TabsTrigger>
           </TabsList>
 
@@ -168,6 +185,16 @@ export function AnalysisToolsSheet({
           <TabsContent value="export" className="min-h-0 flex-1">
             <ScrollArea className="h-full pr-2">
               <ExportTab visibleRouteIds={visibleRouteIds} />
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="wallpaper" className="min-h-0 flex-1">
+            <ScrollArea className="h-full pr-2">
+              <WallpaperTab
+                visibleRouteIds={visibleRouteIds}
+                mapBounds={mapBounds}
+                theme={theme}
+              />
             </ScrollArea>
           </TabsContent>
         </Tabs>
@@ -321,3 +348,236 @@ function ExportTab({ visibleRouteIds }: { visibleRouteIds: string[] }) {
     </div>
   );
 }
+
+interface WallpaperTabProps {
+  visibleRouteIds: string[];
+  mapBounds: [[number, number], [number, number]] | null;
+  theme: Theme;
+}
+
+function WallpaperTab({ visibleRouteIds, mapBounds, theme }: WallpaperTabProps) {
+  const [mode, setMode] = useState<'current' | 'curated'>('current');
+  const [sizeId, setSizeId] = useState<string>(WALLPAPER_SIZES[0].id);
+  const [curatedId, setCuratedId] = useState<string>(CURATED_VIEWS[0].id);
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+
+  const size = WALLPAPER_SIZES.find((s) => s.id === sizeId) ?? WALLPAPER_SIZES[0];
+  const curated = CURATED_VIEWS.find((c) => c.id === curatedId) ?? CURATED_VIEWS[0];
+
+  const generate = async () => {
+    setBusy(true);
+    setProgress('Calculando viewport…');
+    try {
+      let bbox: [[number, number], [number, number]];
+      let title: string;
+      let subtitle: string;
+      let useCoverage = false;
+      let includeAll = false;
+      let onlyBiotren = false;
+      if (mode === 'current') {
+        if (!mapBounds) throw new Error('Aún no hay vista del mapa para capturar.');
+        bbox = mapBounds;
+        title = 'Conce Transporte';
+        subtitle = `${visibleRouteIds.length} recorridos visibles · vista actual`;
+        includeAll = true;
+      } else {
+        bbox = curated.bbox;
+        title = curated.label;
+        subtitle = curated.description;
+        useCoverage = curated.includeCoverage;
+        onlyBiotren = curated.includeBiotren && !curated.includeMicros;
+        if (curated.includeBiotren && curated.includeMicros) includeAll = true;
+      }
+
+      const wantRoute = (r: (typeof ROUTES)[number]) => {
+        if (mode === 'current') return visibleRouteIds.includes(r.id);
+        if (includeAll) return true;
+        if (onlyBiotren) return r.type === 'biotren';
+        return false;
+      };
+
+      setProgress('Preparando capas…');
+      const routesForRender = ROUTES.filter(wantRoute).map((r) => ({
+        path: r.path,
+        color: r.color,
+        weight: r.type === 'biotren' ? 5 : 2.5,
+      }));
+
+      let coverageCells: Awaited<ReturnType<typeof loadCoverage>> | null = null;
+      if (useCoverage) {
+        setProgress('Cargando cobertura territorial…');
+        coverageCells = await loadCoverage();
+      }
+
+      setProgress('Renderizando tiles y trazados…');
+      const blob = await buildWallpaper({
+        bbox,
+        width: size.width,
+        height: size.height,
+        theme,
+        routes: routesForRender,
+        coverageCells: coverageCells ?? undefined,
+        title,
+        subtitle,
+      });
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      const filename = `conce-transporte-${mode === 'current' ? 'vista' : curated.id}-${size.width}x${size.height}-${stamp}.png`;
+      downloadBlob(blob, filename);
+    } catch (err) {
+      console.error(err);
+      setProgress(err instanceof Error ? err.message : 'Error al generar.');
+      setTimeout(() => setProgress(null), 3500);
+      setBusy(false);
+      return;
+    }
+    setBusy(false);
+    setProgress(null);
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[12px] leading-snug text-muted-foreground">
+        Genera una imagen PNG de la red para usar como fondo de pantalla. Render
+        directo a canvas (tiles CARTO + trazados GTFS/OSM), sin recortar el
+        visor — la salida es nítida en pantallas retina.
+      </p>
+
+      <div className="grid grid-cols-2 gap-1.5">
+        <Button
+          type="button"
+          variant={mode === 'current' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setMode('current')}
+        >
+          Vista actual
+        </Button>
+        <Button
+          type="button"
+          variant={mode === 'curated' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setMode('curated')}
+        >
+          Vistas curadas
+        </Button>
+      </div>
+
+      {mode === 'curated' && (
+        <div className="space-y-1.5">
+          <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            Composición
+          </div>
+          <div className="overflow-hidden rounded-md border">
+            <ul className="divide-y">
+              {CURATED_VIEWS.map((v) => (
+                <li key={v.id}>
+                  <button
+                    type="button"
+                    onClick={() => setCuratedId(v.id)}
+                    className={`block w-full px-3 py-2 text-left transition-colors focus-ring ${
+                      v.id === curatedId ? 'bg-accent/60' : 'hover:bg-accent/30'
+                    }`}
+                    aria-pressed={v.id === curatedId}
+                  >
+                    <div className="text-sm font-medium">{v.label}</div>
+                    <div className="text-[11px] leading-snug text-muted-foreground">
+                      {v.description}
+                    </div>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          Tamaño
+        </div>
+        <div className="overflow-hidden rounded-md border">
+          <SizeGroup label="Teléfono" presets={WALLPAPER_SIZES.filter((s) => s.group === 'phone')} selectedId={sizeId} onSelect={setSizeId} />
+          <SizeGroup label="Computador" presets={WALLPAPER_SIZES.filter((s) => s.group === 'desktop')} selectedId={sizeId} onSelect={setSizeId} />
+        </div>
+      </div>
+
+      <Button type="button" onClick={generate} disabled={busy} className="w-full">
+        <ImageDown className="h-4 w-4" />
+        {busy ? progress ?? 'Generando…' : 'Descargar PNG'}
+      </Button>
+
+      {progress && !busy && (
+        <div className="rounded-md border bg-destructive/10 p-2 text-[11px] text-destructive">
+          {progress}
+        </div>
+      )}
+
+      <div className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
+        El PNG incluye atribución obligatoria embebida (OSM · CARTO · GTFS Gran
+        Concepción CC BY 4.0). Si lo publicas, mantén esa franja visible.
+      </div>
+    </div>
+  );
+}
+
+function SizeGroup({
+  label,
+  presets,
+  selectedId,
+  onSelect,
+}: {
+  label: string;
+  presets: WallpaperSizePreset[];
+  selectedId: string;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <div className="border-b last:border-b-0">
+      <div className="bg-muted/30 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <ul className="divide-y">
+        {presets.map((p) => (
+          <li key={p.id}>
+            <button
+              type="button"
+              onClick={() => onSelect(p.id)}
+              aria-pressed={p.id === selectedId}
+              className={`flex w-full items-center justify-between px-3 py-1.5 text-left transition-colors focus-ring ${
+                p.id === selectedId ? 'bg-accent/60' : 'hover:bg-accent/30'
+              }`}
+            >
+              <span className="text-sm">{p.label}</span>
+              <span className="font-mono text-[11px] text-muted-foreground">
+                {p.width}×{p.height}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+async function loadCoverage() {
+  const mod = await import('@/data/coverage.generated');
+  return mod.COVERAGE_CELLS.map(([lat, lng, dist]: CoverageCell) => ({
+    lat,
+    lng,
+    bucket:
+      dist <= 200
+        ? ('excelente' as const)
+        : dist <= 400
+          ? ('buena' as const)
+          : dist <= 600
+            ? ('marginal' as const)
+            : dist <= 1000
+              ? ('pobre' as const)
+              : ('muy-pobre' as const),
+  }));
+}
+
+// Curated views consume types from the wallpaper lib — keep the type
+// re-exported so consumers don't reach across the module boundary.
+export type { CuratedView };

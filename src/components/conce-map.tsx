@@ -60,6 +60,9 @@ interface ConceMapProps {
   showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
   onCoverageLoadingChange: (loading: boolean) => void;
+  // Optional: notifies the parent of the current visible bbox so features
+  // like wallpaper export can render the same frame the user is seeing.
+  onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
 }
 
 const TILE_URL = {
@@ -178,6 +181,31 @@ function ZoomWatcher({ onZoom }: { onZoom: (zoom: number) => void }) {
   return null;
 }
 
+function BoundsTracker({
+  onChange,
+}: {
+  onChange: (bounds: [[number, number], [number, number]]) => void;
+}) {
+  const fire = (b: L.LatLngBounds) =>
+    onChange([
+      [b.getSouth(), b.getWest()],
+      [b.getNorth(), b.getEast()],
+    ]);
+  const map = useMapEvents({
+    moveend() {
+      fire(map.getBounds());
+    },
+    zoomend() {
+      fire(map.getBounds());
+    },
+  });
+  useEffect(() => {
+    fire(map.getBounds());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+  return null;
+}
+
 function stopIcon(color: string, active: boolean): L.DivIcon {
   return L.divIcon({
     className: 'stop-marker-wrap',
@@ -251,6 +279,7 @@ export function ConceMap({
   showCoverage,
   coverageThreshold,
   onCoverageLoadingChange,
+  onBoundsChange,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
   const [zoom, setZoom] = useState(13);
@@ -496,6 +525,7 @@ export function ConceMap({
       <MapClickCapture enabled={pickerMode !== null} onPick={onPickPoint} />
       <FlyToOnToken token={flyToToken} />
       <InvalidateOnResize trigger={visibleRoutes.length} />
+      {onBoundsChange && <BoundsTracker onChange={onBoundsChange} />}
     </MapContainer>
   );
 }
