@@ -11,6 +11,8 @@ import {
   Layers2,
   Loader2,
   MapPin,
+  School,
+  Trees,
   Wind,
   X,
 } from 'lucide-react';
@@ -34,6 +36,8 @@ interface MapLayerControlProps {
   showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
   showCycleways: boolean;
+  showGreenspace: boolean;
+  showSchools: boolean;
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
   onTogglePois: () => void;
@@ -42,10 +46,14 @@ interface MapLayerControlProps {
   onToggleCoverage: () => void;
   onSetCoverageThreshold: (t: 'all' | 'underserved') => void;
   onToggleCycleways: () => void;
+  onToggleGreenspace: () => void;
+  onToggleSchools: () => void;
   airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
   simulationStatus: { count: number; loading: boolean };
   coverageStatus: { loading: boolean };
   cyclewaysStatus: { loading: boolean };
+  greenspaceStatus: { loading: boolean };
+  schoolsStatus: { loading: boolean };
   onRecenter: () => void;
   // Toggle the analysis tool panel. Click same = close, different = switch.
   onOpenTool: (tab: AnalysisTab) => void;
@@ -78,6 +86,8 @@ export function MapLayerControl({
   showCoverage,
   coverageThreshold,
   showCycleways,
+  showGreenspace,
+  showSchools,
   onToggleTerminals,
   onToggleParaderos,
   onTogglePois,
@@ -86,10 +96,14 @@ export function MapLayerControl({
   onToggleCoverage,
   onSetCoverageThreshold,
   onToggleCycleways,
+  onToggleGreenspace,
+  onToggleSchools,
   airQualityStatus,
   simulationStatus,
   coverageStatus,
   cyclewaysStatus,
+  greenspaceStatus,
+  schoolsStatus,
   onRecenter,
   onOpenTool,
   activeTool,
@@ -103,6 +117,8 @@ export function MapLayerControl({
     showSimulatedVehicles,
     showCoverage,
     showCycleways,
+    showGreenspace,
+    showSchools,
   ].filter(Boolean).length;
 
   const layers = useMemo(
@@ -183,6 +199,32 @@ export function MapLayerControl({
         onToggle: onToggleCycleways,
         loading: cyclewaysStatus.loading,
       },
+      {
+        id: 'greenspace',
+        label: 'Áreas verdes',
+        detail: showGreenspace
+          ? greenspaceStatus.loading
+            ? 'Cargando polígonos…'
+            : 'Parques, plazas, bosques y reservas (OSM)'
+          : 'Espacios verdes públicos',
+        icon: greenspaceStatus.loading ? Loader2 : Trees,
+        checked: showGreenspace,
+        onToggle: onToggleGreenspace,
+        loading: greenspaceStatus.loading,
+      },
+      {
+        id: 'schools',
+        label: 'Educación',
+        detail: showSchools
+          ? schoolsStatus.loading
+            ? 'Cargando establecimientos…'
+            : 'Jardines, colegios, liceos, universidades'
+          : 'Establecimientos educacionales (OSM)',
+        icon: schoolsStatus.loading ? Loader2 : School,
+        checked: showSchools,
+        onToggle: onToggleSchools,
+        loading: schoolsStatus.loading,
+      },
     ],
     [
       airQualityStatus.loading,
@@ -209,6 +251,12 @@ export function MapLayerControl({
       showCycleways,
       onToggleCycleways,
       cyclewaysStatus.loading,
+      showGreenspace,
+      onToggleGreenspace,
+      greenspaceStatus.loading,
+      showSchools,
+      onToggleSchools,
+      schoolsStatus.loading,
     ],
   );
 

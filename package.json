@@ -20,7 +20,9 @@
     "sync:pois": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-pois.ts",
     "sync:wikidata": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-wikidata.ts",
     "sync:cycleways": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-cycleways.ts",
-    "sync:all": "npm run sync:biotren && npm run sync:terminals && npm run sync:paraderos && npm run sync:biotren-track && npm run sync:gtfs-concepcion && npm run sync:pois && npm run sync:wikidata && npm run sync:cycleways"
+    "sync:greenspace": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-greenspace.ts",
+    "sync:schools": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-schools.ts",
+    "sync:all": "npm run sync:biotren && npm run sync:terminals && npm run sync:paraderos && npm run sync:biotren-track && npm run sync:gtfs-concepcion && npm run sync:pois && npm run sync:wikidata && npm run sync:cycleways && npm run sync:greenspace && npm run sync:schools"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",

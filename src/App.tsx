@@ -207,6 +207,10 @@ export default function App() {
   const [coverageLoading, setCoverageLoading] = useState(false);
   const [showCycleways, setShowCycleways] = useState(false);
   const [cyclewaysLoading, setCyclewaysLoading] = useState(false);
+  const [showGreenspace, setShowGreenspace] = useState(false);
+  const [greenspaceLoading, setGreenspaceLoading] = useState(false);
+  const [showSchools, setShowSchools] = useState(false);
+  const [schoolsLoading, setSchoolsLoading] = useState(false);
 
   // Last viewport reported by the map. Used by the wallpaper exporter so the
   // "vista actual" mode captures exactly what the user is looking at.
@@ -560,6 +564,10 @@ export default function App() {
             onCoverageLoadingChange={setCoverageLoading}
             showCycleways={showCycleways}
             onCyclewaysLoadingChange={setCyclewaysLoading}
+            showGreenspace={showGreenspace}
+            onGreenspaceLoadingChange={setGreenspaceLoading}
+            showSchools={showSchools}
+            onSchoolsLoadingChange={setSchoolsLoading}
             onBoundsChange={setMapBounds}
             plannerMidpoint={plannerMidpoint}
           />
@@ -584,6 +592,10 @@ export default function App() {
             onSetCoverageThreshold={setCoverageThreshold}
             showCycleways={showCycleways}
             onToggleCycleways={() => setShowCycleways((v) => !v)}
+            showGreenspace={showGreenspace}
+            onToggleGreenspace={() => setShowGreenspace((v) => !v)}
+            showSchools={showSchools}
+            onToggleSchools={() => setShowSchools((v) => !v)}
             airQualityStatus={airQuality}
             simulationStatus={{
               count: simulatedVehicles.length,
@@ -591,6 +603,8 @@ export default function App() {
             }}
             coverageStatus={{ loading: coverageLoading }}
             cyclewaysStatus={{ loading: cyclewaysLoading }}
+            greenspaceStatus={{ loading: greenspaceLoading }}
+            schoolsStatus={{ loading: schoolsLoading }}
             onRecenter={onRecenterMap}
             onOpenTool={toggleTool}
             activeTool={activeTool}

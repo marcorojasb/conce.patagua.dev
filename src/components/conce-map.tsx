@@ -28,7 +28,9 @@ import type { RoutingResult } from '@/lib/routing';
 import { categorize } from '@/hooks/use-air-quality';
 import { CoverageLayer } from '@/components/coverage-layer';
 import { CyclewaysLayer } from '@/components/cycleways-layer';
+import { GreenspaceLayer } from '@/components/greenspace-layer';
 import { ParaderosLayer } from '@/components/paraderos-layer';
+import { SchoolsLayer } from '@/components/schools-layer';
 
 interface ConceMapProps {
   theme: Theme;
@@ -65,6 +67,10 @@ interface ConceMapProps {
   onCoverageLoadingChange: (loading: boolean) => void;
   showCycleways: boolean;
   onCyclewaysLoadingChange: (loading: boolean) => void;
+  showGreenspace: boolean;
+  onGreenspaceLoadingChange: (loading: boolean) => void;
+  showSchools: boolean;
+  onSchoolsLoadingChange: (loading: boolean) => void;
   // Optional: notifies the parent of the current visible bbox so features
   // like wallpaper export can render the same frame the user is seeing.
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
@@ -313,6 +319,10 @@ export function ConceMap({
   onCoverageLoadingChange,
   showCycleways,
   onCyclewaysLoadingChange,
+  showGreenspace,
+  onGreenspaceLoadingChange,
+  showSchools,
+  onSchoolsLoadingChange,
   onBoundsChange,
   plannerMidpoint,
 }: ConceMapProps) {
@@ -379,6 +389,18 @@ export function ConceMap({
         enabled={showCycleways}
         canvasRenderer={paraderoRenderer}
         onLoadingChange={onCyclewaysLoadingChange}
+      />
+
+      <GreenspaceLayer
+        enabled={showGreenspace}
+        canvasRenderer={paraderoRenderer}
+        onLoadingChange={onGreenspaceLoadingChange}
+      />
+
+      <SchoolsLayer
+        enabled={showSchools}
+        canvasRenderer={paraderoRenderer}
+        onLoadingChange={onSchoolsLoadingChange}
       />
 
       <ParaderosLayer
