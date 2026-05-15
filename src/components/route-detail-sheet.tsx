@@ -89,7 +89,13 @@ export function RouteDetailSheet({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => window.open('https://github.com', '_blank', 'noopener')}
+              onClick={() =>
+                window.open(
+                  'https://github.com/marcorojasb/conce.patagua.dev/issues',
+                  '_blank',
+                  'noopener',
+                )
+              }
             >
               <Github className="h-3.5 w-3.5" />
               Reportar

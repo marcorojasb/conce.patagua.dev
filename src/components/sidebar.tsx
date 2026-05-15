@@ -188,7 +188,7 @@ export function Sidebar({
                     type="button"
                     onClick={() => onToggleType(t.id)}
                     className={cn(
-                      'inline-flex min-h-9 items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition-colors focus-ring',
+                      'inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3 py-2 text-xs transition-colors focus-ring md:min-h-9 md:px-2.5 md:py-1.5',
                       active
                         ? 'border-foreground/80 bg-foreground text-background'
                         : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground',

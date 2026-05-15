@@ -109,32 +109,93 @@ const keyOf = (pt: { lat: number; lon: number }) =>
 
 /**
  * Stitches a list of OSM way members into a single ordered polyline by
- * walking the endpoint graph greedily. The relation's `members` order is
- * NOT trusted — OSM data quality varies and many Concepción route=bus
- * relations have ways listed out of sequence, which used to surface as
- * long-distance jumps and polygon-like artefacts in the rendered map.
+ * walking the endpoint graph from a terminus.
  *
- * Algorithm:
- *  1. For each way, hash its start/end coords. An endpoint that appears in
- *     only one way is a terminus — start the walk there if one exists.
- *  2. From the chosen starting way, repeatedly pick the next unused way
- *     whose nearest endpoint is closest to the current path tail. Flip the
- *     way as needed so its start aligns with the tail.
- *  3. Skip duplicate join points to keep adjacent ways stitched cleanly.
+ * Hard cutoff: the walker refuses to bridge gaps wider than `MAX_GAP_M`.
+ * When the next unused way's nearest endpoint exceeds that distance, the
+ * walk stops and any remaining ways are dropped. Rationale: when the OSM
+ * relation has unrelated/missing ways, jumping across them creates the
+ * 10+ km "reach-back" artefacts that previously plagued routes like 16I
+ * and 81C. A shorter-but-clean polyline beats a complete-but-corrupt one.
  *
- * Returns the stitched lat/lng polyline plus a count of any residual
- * "gap" jumps (>250 m) that survived the walk — useful for diagnostics.
+ * Determinism: we try every endpoint that appears in exactly one way as a
+ * candidate start, plus a fallback (way 0 from its start). We pick the
+ * candidate whose resulting walk consumes the most ways before hitting the
+ * cutoff. Ties broken by total walk length. This makes the output stable
+ * across runs.
  */
+const MAX_GAP_M = 200;
+
+function walkFrom(
+  ways: WayGeom[],
+  startIdx: number,
+  startFlip: boolean,
+): { path: Array<[number, number]>; consumed: number; maxGap: number } {
+  const used = new Set<number>([startIdx]);
+  const firstGeom = startFlip
+    ? [...ways[startIdx].geometry].reverse()
+    : ways[startIdx].geometry;
+  const path: Array<[number, number]> = firstGeom.map((p) => [
+    round5(p.lat),
+    round5(p.lon),
+  ]);
+  let maxGap = 0;
+  while (used.size < ways.length) {
+    const tail = path[path.length - 1];
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    let bestFlip = false;
+    for (let i = 0; i < ways.length; i++) {
+      if (used.has(i)) continue;
+      const g = ways[i].geometry;
+      const dStart = distanceMeters([tail[0], tail[1]], [g[0].lat, g[0].lon]);
+      const dEnd = distanceMeters(
+        [tail[0], tail[1]],
+        [g[g.length - 1].lat, g[g.length - 1].lon],
+      );
+      if (dStart < bestDist) {
+        bestDist = dStart;
+        bestIdx = i;
+        bestFlip = false;
+      }
+      if (dEnd < bestDist) {
+        bestDist = dEnd;
+        bestIdx = i;
+        bestFlip = true;
+      }
+    }
+    if (bestIdx === -1 || bestDist > MAX_GAP_M) break;
+    if (bestDist > maxGap) maxGap = bestDist;
+    used.add(bestIdx);
+    const g = bestFlip
+      ? [...ways[bestIdx].geometry].reverse()
+      : ways[bestIdx].geometry;
+    const startJ =
+      Math.abs(g[0].lat - tail[0]) < 1e-5 && Math.abs(g[0].lon - tail[1]) < 1e-5
+        ? 1
+        : 0;
+    for (let j = startJ; j < g.length; j++) {
+      path.push([round5(g[j].lat), round5(g[j].lon)]);
+    }
+  }
+  return { path, consumed: used.size, maxGap };
+}
+
 function stitchWays(rawWays: WayGeom[]): {
   path: Array<[number, number]>;
-  gaps: number;
+  consumed: number;
+  total: number;
+  maxGap: number;
 } {
   const ways = rawWays.filter((w) => w.geometry && w.geometry.length >= 2);
-  if (ways.length === 0) return { path: [], gaps: 0 };
+  if (ways.length === 0)
+    return { path: [], consumed: 0, total: 0, maxGap: 0 };
   if (ways.length === 1) {
     return {
       path: ways[0].geometry.map((p) => [round5(p.lat), round5(p.lon)]),
-      gaps: 0,
+      consumed: 1,
+      total: 1,
+      maxGap: 0,
     };
   }
 
@@ -150,88 +211,67 @@ function stitchWays(rawWays: WayGeom[]): {
     endpoints.get(ek)!.push({ wayIdx: i, atStart: false });
   }
 
-  // Pick a terminus: an endpoint that appears in exactly one way. If none
-  // exists (route is a closed loop), fall back to way 0 anchored at its
-  // start point.
-  let firstIdx = 0;
-  let firstFlip = false;
+  // Collect every terminus candidate (endpoint that belongs to exactly one
+  // way). For each, attempt the walk; keep the result that consumed the
+  // most ways. Stable tie-break: shorter polyline first (favours tight
+  // stitching over scenic detours), then way-index ascending.
+  const candidates: Array<{ idx: number; flip: boolean }> = [];
   for (const eps of endpoints.values()) {
     if (eps.length === 1) {
-      firstIdx = eps[0].wayIdx;
-      firstFlip = !eps[0].atStart;
-      break;
+      candidates.push({ idx: eps[0].wayIdx, flip: !eps[0].atStart });
+    }
+  }
+  if (candidates.length === 0) {
+    candidates.push({ idx: 0, flip: false });
+  }
+  candidates.sort((a, b) => (a.idx - b.idx) || (Number(a.flip) - Number(b.flip)));
+
+  let best = walkFrom(ways, candidates[0].idx, candidates[0].flip);
+  for (let i = 1; i < candidates.length; i++) {
+    const r = walkFrom(ways, candidates[i].idx, candidates[i].flip);
+    if (
+      r.consumed > best.consumed ||
+      (r.consumed === best.consumed && r.path.length < best.path.length)
+    ) {
+      best = r;
     }
   }
 
-  const used = new Set<number>([firstIdx]);
-  const firstGeom = firstFlip
-    ? [...ways[firstIdx].geometry].reverse()
-    : ways[firstIdx].geometry;
-  const out: Array<[number, number]> = firstGeom.map((p) => [
-    round5(p.lat),
-    round5(p.lon),
-  ]);
-
-  let gaps = 0;
-  while (used.size < ways.length) {
-    const tail = out[out.length - 1];
-    let bestIdx = -1;
-    let bestDist = Infinity;
-    let bestFlip = false;
-    for (let i = 0; i < ways.length; i++) {
-      if (used.has(i)) continue;
-      const g = ways[i].geometry;
-      const s = g[0];
-      const e = g[g.length - 1];
-      const dStart = distanceMeters([tail[0], tail[1]], [s.lat, s.lon]);
-      const dEnd = distanceMeters([tail[0], tail[1]], [e.lat, e.lon]);
-      if (dStart < bestDist) {
-        bestDist = dStart;
-        bestIdx = i;
-        bestFlip = false;
-      }
-      if (dEnd < bestDist) {
-        bestDist = dEnd;
-        bestIdx = i;
-        bestFlip = true;
-      }
-    }
-    if (bestIdx === -1) break;
-    if (bestDist > 250) gaps += 1;
-    used.add(bestIdx);
-    const g = bestFlip
-      ? [...ways[bestIdx].geometry].reverse()
-      : ways[bestIdx].geometry;
-    const startJ =
-      Math.abs(g[0].lat - tail[0]) < 1e-5 && Math.abs(g[0].lon - tail[1]) < 1e-5
-        ? 1
-        : 0;
-    for (let j = startJ; j < g.length; j++) {
-      out.push([round5(g[j].lat), round5(g[j].lon)]);
-    }
-  }
-  return { path: out, gaps };
+  return {
+    path: best.path,
+    consumed: best.consumed,
+    total: ways.length,
+    maxGap: best.maxGap,
+  };
 }
 
-function buildRoute(rel: OverpassRelation): {
+interface BuildOutput {
   resolved: Resolved | null;
-  gaps: number;
-} {
+  truncated: boolean;
+  total: number;
+  consumed: number;
+  maxGap: number;
+}
+
+function buildRoute(rel: OverpassRelation): BuildOutput {
   const tags = rel.tags ?? {};
   const ref = tags.ref;
   const name = tags.name;
-  if (!ref || !name) return { resolved: null, gaps: 0 };
+  if (!ref || !name)
+    return { resolved: null, truncated: false, total: 0, consumed: 0, maxGap: 0 };
 
   const wayMembers: WayGeom[] = rel.members
     .filter((m) => m.type === 'way' && !!m.geometry)
     .map((m) => ({ geometry: m.geometry! }));
 
-  const { path, gaps } = stitchWays(wayMembers);
+  const { path, consumed, total, maxGap } = stitchWays(wayMembers);
+  const truncated = consumed < total;
 
   // 1.5e-4 ≈ 16 m at Concepción latitude — invisible at city zoom, cuts
   // the bundle by ~85 %.
   const cleaned = simplify(dedupConsecutive(path), 1.5e-4);
-  if (cleaned.length < 2) return { resolved: null, gaps };
+  if (cleaned.length < 2)
+    return { resolved: null, truncated, total, consumed, maxGap };
   const stopIds = matchParaderos(cleaned);
 
   const out: Resolved = {
@@ -245,7 +285,7 @@ function buildRoute(rel: OverpassRelation): {
   if (tags.operator) out.operator = tags.operator;
   if (tags.network) out.network = tags.network;
   if (tags.colour) out.colour = tags.colour;
-  return { resolved: out, gaps };
+  return { resolved: out, truncated, total, consumed, maxGap };
 }
 
 function render(routes: Resolved[]): string {
@@ -287,15 +327,33 @@ async function main() {
   const data = await queryOverpass();
   console.log(`  → ${data.elements.length} relations`);
 
-  const built = data.elements.map(buildRoute);
+  const built = data.elements.map((rel) => ({
+    rel,
+    ...buildRoute(rel),
+  }));
   const routes = built
     .map((b) => b.resolved)
     .filter((r): r is Resolved => r !== null);
-  const totalGaps = built.reduce((acc, b) => acc + b.gaps, 0);
-  const routesWithGaps = built.filter((b) => b.gaps > 0).length;
+  const truncated = built.filter((b) => b.truncated && b.resolved);
+  const truncatedDropped = built.reduce(
+    (acc, b) => (b.truncated ? acc + (b.total - b.consumed) : acc),
+    0,
+  );
 
   console.log(`  → ${routes.length} routes with usable geometry`);
-  console.log(`  → ${totalGaps} residual gaps >250 m across ${routesWithGaps} routes`);
+  console.log(
+    `  → ${truncated.length} routes truncated at MAX_GAP_M (${truncatedDropped} ways dropped total)`,
+  );
+  if (truncated.length > 0) {
+    console.log('  truncated routes (ref · osmId · consumed/total · maxGap m):');
+    for (const b of truncated.slice(0, 20)) {
+      const tags = b.rel.tags ?? {};
+      console.log(
+        `    ${(tags.ref ?? '?').padEnd(8)} ${b.rel.id}  ${b.consumed}/${b.total}  gap=${Math.round(b.maxGap)}`,
+      );
+    }
+    if (truncated.length > 20) console.log(`    + ${truncated.length - 20} more`);
+  }
 
   const totalPts = routes.reduce((acc, r) => acc + r.path.length, 0);
   const totalStops = routes.reduce((acc, r) => acc + r.stopIds.length, 0);
