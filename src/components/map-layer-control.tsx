@@ -1,4 +1,5 @@
 import {
+  Bike,
   Bus,
   Building2,
   Compass,
@@ -32,6 +33,7 @@ interface MapLayerControlProps {
   showSimulatedVehicles: boolean;
   showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
+  showCycleways: boolean;
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
   onTogglePois: () => void;
@@ -39,9 +41,11 @@ interface MapLayerControlProps {
   onToggleSimulatedVehicles: () => void;
   onToggleCoverage: () => void;
   onSetCoverageThreshold: (t: 'all' | 'underserved') => void;
+  onToggleCycleways: () => void;
   airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
   simulationStatus: { count: number; loading: boolean };
   coverageStatus: { loading: boolean };
+  cyclewaysStatus: { loading: boolean };
   onRecenter: () => void;
   // Toggle the analysis tool panel. Click same = close, different = switch.
   onOpenTool: (tab: AnalysisTab) => void;
@@ -73,6 +77,7 @@ export function MapLayerControl({
   showSimulatedVehicles,
   showCoverage,
   coverageThreshold,
+  showCycleways,
   onToggleTerminals,
   onToggleParaderos,
   onTogglePois,
@@ -80,9 +85,11 @@ export function MapLayerControl({
   onToggleSimulatedVehicles,
   onToggleCoverage,
   onSetCoverageThreshold,
+  onToggleCycleways,
   airQualityStatus,
   simulationStatus,
   coverageStatus,
+  cyclewaysStatus,
   onRecenter,
   onOpenTool,
   activeTool,
@@ -95,6 +102,7 @@ export function MapLayerControl({
     showAirQuality,
     showSimulatedVehicles,
     showCoverage,
+    showCycleways,
   ].filter(Boolean).length;
 
   const layers = useMemo(
@@ -162,6 +170,19 @@ export function MapLayerControl({
         onToggle: onToggleCoverage,
         loading: coverageStatus.loading,
       },
+      {
+        id: 'cycleways',
+        label: 'Infraestructura ciclista',
+        detail: showCycleways
+          ? cyclewaysStatus.loading
+            ? 'Cargando trazados…'
+            : 'Ciclovías, ciclobandas y rutas compartidas (OSM)'
+          : 'Red ciclista del Gran Concepción',
+        icon: cyclewaysStatus.loading ? Loader2 : Bike,
+        checked: showCycleways,
+        onToggle: onToggleCycleways,
+        loading: cyclewaysStatus.loading,
+      },
     ],
     [
       airQualityStatus.loading,
@@ -185,6 +206,9 @@ export function MapLayerControl({
       coverageThreshold,
       coverageStatus.loading,
       terminalsCount,
+      showCycleways,
+      onToggleCycleways,
+      cyclewaysStatus.loading,
     ],
   );
 
@@ -353,6 +377,28 @@ export function MapLayerControl({
                     {b.label}
                   </span>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {showCycleways && (
+            <div className="mt-2 rounded-md border bg-muted/30 p-2">
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Infraestructura ciclista
+              </div>
+              <div className="flex flex-col gap-1 text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <span aria-hidden className="inline-block h-[3px] w-5 rounded-full" style={{ background: '#2563eb' }} />
+                  Ciclovía segregada
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span aria-hidden className="inline-block h-[3px] w-5 rounded-full" style={{ background: '#06b6d4' }} />
+                  Ciclobanda en calzada
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span aria-hidden className="inline-block h-[3px] w-5 border-t-2 border-dashed" style={{ borderColor: '#6366f1' }} />
+                  Ruta compartida (peatón)
+                </span>
               </div>
             </div>
           )}

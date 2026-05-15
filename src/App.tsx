@@ -202,6 +202,8 @@ export default function App() {
   const [showCoverage, setShowCoverage] = useState(false);
   const [coverageThreshold, setCoverageThreshold] = useState<'all' | 'underserved'>('all');
   const [coverageLoading, setCoverageLoading] = useState(false);
+  const [showCycleways, setShowCycleways] = useState(false);
+  const [cyclewaysLoading, setCyclewaysLoading] = useState(false);
 
   // Last viewport reported by the map. Used by the wallpaper exporter so the
   // "vista actual" mode captures exactly what the user is looking at.
@@ -553,6 +555,8 @@ export default function App() {
             showCoverage={showCoverage}
             coverageThreshold={coverageThreshold}
             onCoverageLoadingChange={setCoverageLoading}
+            showCycleways={showCycleways}
+            onCyclewaysLoadingChange={setCyclewaysLoading}
             onBoundsChange={setMapBounds}
             plannerMidpoint={plannerMidpoint}
           />
@@ -575,12 +579,15 @@ export default function App() {
             coverageThreshold={coverageThreshold}
             onToggleCoverage={() => setShowCoverage((v) => !v)}
             onSetCoverageThreshold={setCoverageThreshold}
+            showCycleways={showCycleways}
+            onToggleCycleways={() => setShowCycleways((v) => !v)}
             airQualityStatus={airQuality}
             simulationStatus={{
               count: simulatedVehicles.length,
               loading: simulationLoading,
             }}
             coverageStatus={{ loading: coverageLoading }}
+            cyclewaysStatus={{ loading: cyclewaysLoading }}
             onRecenter={onRecenterMap}
             onOpenTool={toggleTool}
             activeTool={activeTool}

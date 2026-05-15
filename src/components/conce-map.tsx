@@ -27,6 +27,7 @@ import type {
 import type { RoutingResult } from '@/lib/routing';
 import { categorize } from '@/hooks/use-air-quality';
 import { CoverageLayer } from '@/components/coverage-layer';
+import { CyclewaysLayer } from '@/components/cycleways-layer';
 
 interface ConceMapProps {
   theme: Theme;
@@ -61,6 +62,8 @@ interface ConceMapProps {
   showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
   onCoverageLoadingChange: (loading: boolean) => void;
+  showCycleways: boolean;
+  onCyclewaysLoadingChange: (loading: boolean) => void;
   // Optional: notifies the parent of the current visible bbox so features
   // like wallpaper export can render the same frame the user is seeing.
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
@@ -307,6 +310,8 @@ export function ConceMap({
   showCoverage,
   coverageThreshold,
   onCoverageLoadingChange,
+  showCycleways,
+  onCyclewaysLoadingChange,
   onBoundsChange,
   plannerMidpoint,
 }: ConceMapProps) {
@@ -367,6 +372,12 @@ export function ConceMap({
         canvasRenderer={paraderoRenderer}
         threshold={coverageThreshold}
         onLoadingChange={onCoverageLoadingChange}
+      />
+
+      <CyclewaysLayer
+        enabled={showCycleways}
+        canvasRenderer={paraderoRenderer}
+        onLoadingChange={onCyclewaysLoadingChange}
       />
 
       {showParaderosAtCurrentZoom &&
