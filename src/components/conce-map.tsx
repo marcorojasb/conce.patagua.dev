@@ -28,6 +28,7 @@ import type { RoutingResult } from '@/lib/routing';
 import { categorize } from '@/hooks/use-air-quality';
 import { CoverageLayer } from '@/components/coverage-layer';
 import { CyclewaysLayer } from '@/components/cycleways-layer';
+import { ParaderosLayer } from '@/components/paraderos-layer';
 
 interface ConceMapProps {
   theme: Theme;
@@ -380,35 +381,14 @@ export function ConceMap({
         onLoadingChange={onCyclewaysLoadingChange}
       />
 
-      {showParaderosAtCurrentZoom &&
-        paraderos.map((p) => (
-          <CircleMarker
-            key={p.id}
-            center={[p.lat, p.lng]}
-            radius={selectedParaderoId === p.id ? 5 : 3}
-            pathOptions={{
-              color:
-                selectedParaderoId === p.id
-                  ? 'hsl(var(--foreground))'
-                  : 'hsl(var(--muted-foreground))',
-              weight: selectedParaderoId === p.id ? 2 : 1,
-              fillColor:
-                selectedParaderoId === p.id
-                  ? 'hsl(var(--foreground))'
-                  : 'hsl(var(--background))',
-              fillOpacity: selectedParaderoId === p.id ? 1 : 0.86,
-              opacity: shouldDimForSelectedRoute ? 0.55 : 0.9,
-            }}
-            renderer={paraderoRenderer}
-            eventHandlers={{ click: () => onSelectParadero(p.id) }}
-          >
-            {p.name && (
-              <LeafletTooltip direction="top" offset={[0, -3]} opacity={0.9}>
-                {p.name}
-              </LeafletTooltip>
-            )}
-          </CircleMarker>
-        ))}
+      <ParaderosLayer
+        enabled={showParaderosAtCurrentZoom}
+        paraderos={paraderos}
+        selectedId={selectedParaderoId}
+        shouldDim={shouldDimForSelectedRoute}
+        canvasRenderer={paraderoRenderer}
+        onSelect={onSelectParadero}
+      />
 
       {visibleRoutes.map((r) => {
         const isSelected = selectedRouteId === r.id;
