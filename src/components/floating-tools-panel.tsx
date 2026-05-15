@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Building2, Compass, Download, ImageDown, X } from 'lucide-react';
 import { PlannerPanel } from '@/components/planner-panel';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
 import { TERMINALS } from '@/data/terminals.generated';
 import type { PlannerMatch } from '@/lib/planner';
-import { OPERATOR_STATS } from '@/lib/operator-stats';
+import { useOperatorStats } from '@/lib/operator-stats';
 import {
   buildExport,
   downloadGeoJSON,
@@ -78,8 +78,6 @@ interface FloatingToolsPanelProps {
   onClearMidpoint: () => void;
 }
 
-const microCount = ROUTES.filter((r) => r.type === 'micro').length;
-
 export function FloatingToolsPanel({
   tool,
   onClose,
@@ -102,6 +100,15 @@ export function FloatingToolsPanel({
   onComputeMidpoint,
   onClearMidpoint,
 }: FloatingToolsPanelProps) {
+  // Hooks must run unconditionally; we early-return after they're called.
+  const operatorStats = useOperatorStats();
+  const microCount = useMemo(
+    () => ROUTES.filter((r) => r.type === 'micro').length,
+    // operatorStats recomputes only when the routes-version bumps, so we
+    // reuse it as a dependency hint that ROUTES has changed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [operatorStats],
+  );
   if (!tool) return null;
   const meta = TOOL_META[tool];
 
@@ -189,7 +196,7 @@ export function FloatingToolsPanel({
                     <span className="text-right">Km totales</span>
                   </div>
                   <ul className="divide-y">
-                    {OPERATOR_STATS.map((s) => (
+                    {operatorStats.map((s) => (
                       <li key={s.operator}>
                         <button
                           type="button"

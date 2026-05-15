@@ -1,10 +1,12 @@
-// Aggregates per-operator metrics across the micro routes for the operator
-// comparator in the analysis tools sheet. Computed once at module load —
-// ROUTES is static so there's no point memoizing per-render.
+// Aggregates per-operator metrics across the micro routes for the
+// operator comparator. Computed on demand from the live `ROUTES` array —
+// memoized against the routes-version subscription so it only recomputes
+// after the micros lazy-chunk lands.
 
-import { ROUTES } from '@/data/routes';
+import { ROUTES, useRoutesVersion } from '@/data/routes';
 import { distanceMeters } from '@/lib/geo';
 import type { LatLngTuple } from '@/types/transport';
+import { useMemo } from 'react';
 
 export interface OperatorStat {
   operator: string;
@@ -52,4 +54,11 @@ function compute(): OperatorStat[] {
     .sort((a, b) => b.routesCount - a.routesCount || b.totalKm - a.totalKm);
 }
 
-export const OPERATOR_STATS: OperatorStat[] = compute();
+/**
+ * Returns the operator stats for the current ROUTES state. Re-runs when
+ * micros load (via the routes-version subscription).
+ */
+export function useOperatorStats(): OperatorStat[] {
+  const version = useRoutesVersion();
+  return useMemo(() => compute(), [version]);
+}

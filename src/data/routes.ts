@@ -1,32 +1,32 @@
 // Route + stop dataset for the conce.patagua.dev visor.
 //
-// Current sources (May 2026):
+// Progressive loading model
+// -------------------------
+// On first paint we only have the two Biotrén routes (small, eager). The 169
+// micro routes (~250 KB gz with their full paths) are dynamically imported
+// from the split `gtfs-bus-routes.generated.ts` chunk a tick after mount —
+// no Suspense boundary, no loading spinner, the visor renders the map
+// immediately and the sidebar/search fills in once micros arrive.
 //
-//  ✔ Biotrén L1 & L2 — stations from OpenStreetMap (Overpass), names + order
-//    from EFE Trenes (efe.cl/biotren/servicio-y-trazado), schedule from EFE.
-//    Track polyline is stitched from OSM `railway=rail` ways operated by
-//    EFE Sur via corridor-constrained Dijkstra (see
-//    scripts/fetch-biotren-track.ts). Sections of the corridor with no
-//    nearby rail nodes (~ 7 of 24 segments) fall back to a straight line
-//    between the two adjacent stations.
+// Data sources
+//  ✔ Biotrén L1 & L2 — OSM stations + EFE Trenes (efe.cl/biotren); track
+//    polyline stitched from OSM railway=rail (see scripts/fetch-biotren-track.ts).
 //    Re-generate: `npm run sync:biotren-track`.
 //
-//  ✔ Recorridos de micros — GTFS estático Gran Concepción candidate, imported
-//    into the local legal_transit_backend SQLite cache. The frontend consumes a
-//    generated build artifact with routes.txt, stops.txt, stop_times.txt and
-//    shapes.txt data scoped to route_type=3.
-//    Re-generate: `npm run sync:gtfs-concepcion`.
+//  ✔ Recorridos de micros — GTFS estático Gran Concepción (Subsecretaría de
+//    Transportes). Generator emits two files; we eager-import stops, lazy-
+//    import bus routes. Re-generate: `npm run sync:gtfs-concepcion`.
 //
-//  ✘ Taxibús / colectivo — out of scope; no open dataset for the metro area.
-//    The previous demo route has been removed.
+//  ✘ Taxibús / colectivo — no open dataset exists for the metro area.
 
 import { Bus, Train } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
   BIOTREN_L1_STOPS,
   BIOTREN_L2_STOPS,
 } from '@/data/biotren.generated';
 import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generated';
-import { GTFS_BUS_ROUTES, GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
+import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
 import type {
   BusRoute,
   MapCenter,
@@ -131,19 +131,14 @@ function busRouteToRoute(b: BusRoute): Route {
   };
 }
 
-const MICRO_ROUTES: Route[] = GTFS_BUS_ROUTES.map(busRouteToRoute);
-
-export const ROUTES: Route[] = [...BIOTREN_ROUTES, ...MICRO_ROUTES];
-
-// O(1) lookup index used in hot paths (planner, visibility filters, deep
-// links). Avoids ROUTES.find() inside loops that walk hundreds of ids.
-export const ROUTES_BY_ID: ReadonlyMap<string, Route> = new Map(
-  ROUTES.map((r) => [r.id, r]),
+// Mutable arrays/Maps: start with Biotrén; micros are pushed in once the
+// lazy chunk resolves. Same array identity throughout — consumers that
+// hold a reference see the new entries; the version counter + subscription
+// model below tells React to re-render.
+export const ROUTES: Route[] = [...BIOTREN_ROUTES];
+export const ROUTES_BY_ID = new Map<string, Route>(
+  BIOTREN_ROUTES.map((r) => [r.id, r]),
 );
-
-// Biotrén route ids are the only ones visible by default — the urban micros
-// would clutter the map. Users opt in via the sidebar.
-export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = BIOTREN_ROUTES.map((r) => r.id);
 
 function buildStopIndex(routes: Route[]): StopWithRoutes[] {
   const map = new Map<string, StopWithRoutes>();
@@ -161,3 +156,80 @@ function buildStopIndex(routes: Route[]): StopWithRoutes[] {
 }
 
 export const STOPS: StopWithRoutes[] = buildStopIndex(ROUTES);
+
+// Biotrén route ids are the only ones visible by default — the urban micros
+// would clutter the map. Users opt in via the sidebar.
+export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = BIOTREN_ROUTES.map((r) => r.id);
+
+// Tiny subscription store: bump a counter and notify so consumers
+// re-render the moment micros land. (Not using useSyncExternalStore to
+// keep the file dependency-light — useState + useEffect mirror it.)
+let routesVersion = 0;
+const listeners = new Set<() => void>();
+function subscribe(cb: () => void): () => void {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+/**
+ * `true` once the micro routes have loaded. Use `useRoutesVersion()` (or
+ * any state that derives from ROUTES) to get re-rendered automatically.
+ */
+export let microRoutesReady = false;
+
+function appendMicros(routes: Route[]): void {
+  if (microRoutesReady) return;
+  ROUTES.push(...routes);
+  for (const r of routes) ROUTES_BY_ID.set(r.id, r);
+  // Extend the stops index with the new routes' stops in place — same
+  // array identity so paradero detail sheets keep working.
+  const stopIndex = new Map(STOPS.map((s) => [s.id, s]));
+  for (const r of routes) {
+    for (const s of r.stops) {
+      const existing = stopIndex.get(s.id);
+      if (existing) {
+        if (!existing.routes.includes(r.id)) existing.routes.push(r.id);
+      } else {
+        const entry: StopWithRoutes = { ...s, routes: [r.id] };
+        stopIndex.set(s.id, entry);
+        STOPS.push(entry);
+      }
+    }
+  }
+  microRoutesReady = true;
+  routesVersion += 1;
+  for (const cb of listeners) cb();
+}
+
+// Kick off the lazy load on module init. The browser typically starts
+// fetching this in parallel with the rest of the main chunk, so it lands
+// within ~200ms after first paint on a fast connection. We swallow errors
+// to keep the initial UI alive — the user just won't see micros.
+function startMicroLoad(): void {
+  void import('@/data/gtfs-bus-routes.generated')
+    .then((mod) => {
+      const micros = mod.GTFS_BUS_ROUTES.map(busRouteToRoute);
+      appendMicros(micros);
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error('[routes] Failed to load micro routes:', err);
+    });
+}
+startMicroLoad();
+
+/**
+ * Re-renders the calling component when the micro routes load. Returns
+ * the version counter (0 before micros land, 1 after) so consumers can
+ * pick branches if they want, but most just need the trigger.
+ */
+export function useRoutesVersion(): number {
+  // useSyncExternalStore would be the idiomatic choice but adds a
+  // dependency on React 18 features that are already in use; we mirror it
+  // with useState + useEffect to keep the file dependency-light.
+  const [v, setV] = useState(routesVersion);
+  useEffect(() => subscribe(() => setV(routesVersion)), []);
+  return v;
+}

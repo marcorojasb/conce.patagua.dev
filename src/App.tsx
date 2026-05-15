@@ -16,7 +16,7 @@ import { findRoutes } from '@/lib/planner';
 import { routeBetween, type RoutingResult } from '@/lib/routing';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
-import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS } from '@/data/routes';
+import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
@@ -30,6 +30,9 @@ import type { FlyToToken, Route, RouteTypeId, SheetKind } from '@/types/transpor
 const INITIAL_URL = readUrlState();
 
 export default function App() {
+  // Subscribes to the micros-loaded event so the sidebar/search/etc.
+  // re-render the moment the bus-routes lazy chunk lands.
+  useRoutesVersion();
   const [theme, toggleTheme] = useTheme();
   // Default closed on mobile (sidebar overlays the map below md:), open on
   // desktop where it docks alongside.
