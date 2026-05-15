@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { ConceMap } from '@/components/conce-map';
 import { Header } from '@/components/header';
+import { MapLayerControl } from '@/components/map-layer-control';
+import { ParaderoDetailSheet } from '@/components/paradero-detail-sheet';
 import { RouteDetailSheet } from '@/components/route-detail-sheet';
 import { Sidebar } from '@/components/sidebar';
 import { StopDetailSheet } from '@/components/stop-detail-sheet';
@@ -14,7 +16,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/ca
 import { Kbd } from '@/components/ui/kbd';
 import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
-import { PARADEROS } from '@/data/paraderos.generated';
+import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
 import { useAirQuality } from '@/hooks/use-air-quality';
 import { useTheme } from '@/hooks/use-theme';
@@ -58,6 +60,7 @@ export default function App() {
 
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(INITIAL_URL.route);
   const [selectedStopId, setSelectedStopId] = useState<string | null>(INITIAL_URL.stop);
+  const [selectedParaderoId, setSelectedParaderoId] = useState<string | null>(null);
   const [selectedTerminalId, setSelectedTerminalId] = useState<string | null>(INITIAL_URL.terminal);
   const [selectedPoiId, setSelectedPoiId] = useState<string | null>(INITIAL_URL.poi);
   const [sheetKind, setSheetKind] = useState<SheetKind>(initialSheet);
@@ -165,6 +168,10 @@ export default function App() {
     () => STOPS.find((s) => s.id === selectedStopId) ?? null,
     [selectedStopId],
   );
+  const selectedParadero = useMemo(
+    () => GTFS_STOPS.find((p) => p.id === selectedParaderoId) ?? null,
+    [selectedParaderoId],
+  );
   const selectedTerminal = useMemo(
     () => TERMINALS.find((t) => t.id === selectedTerminalId) ?? null,
     [selectedTerminalId],
@@ -233,27 +240,42 @@ export default function App() {
     }
   }, []);
 
+  const clearSelection = useCallback(() => {
+    setSheetKind(null);
+    setSelectedRouteId(null);
+    setSelectedStopId(null);
+    setSelectedParaderoId(null);
+    setSelectedTerminalId(null);
+    setSelectedPoiId(null);
+  }, []);
+
   const onSelectRoute = useCallback(
     (id: string) => {
+      if (selectedRouteId === id && sheetKind === 'route') {
+        clearSelection();
+        return;
+      }
       const r = ROUTES.find((x) => x.id === id);
       if (!r) return;
       setVisibleRouteIds((cur) => (cur.includes(id) ? cur : [...cur, id]));
       setTypeFilters((f) => ({ ...f, [r.type]: true }));
       setSelectedRouteId(id);
       setSelectedStopId(null);
+      setSelectedParaderoId(null);
       setSelectedTerminalId(null);
       setSelectedPoiId(null);
       setSheetKind('route');
       setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
       closeSidebarOnMobile();
     },
-    [closeSidebarOnMobile],
+    [clearSelection, closeSidebarOnMobile, selectedRouteId, sheetKind],
   );
 
   const onSelectStop = useCallback((id: string) => {
     const s = STOPS.find((x) => x.id === id);
     if (!s) return;
     setSelectedStopId(id);
+    setSelectedParaderoId(null);
     setSelectedTerminalId(null);
     setSelectedPoiId(null);
     setSheetKind('stop');
@@ -269,6 +291,7 @@ export default function App() {
     setSelectedTerminalId(id);
     setSelectedRouteId(null);
     setSelectedStopId(null);
+    setSelectedParaderoId(null);
     setSelectedPoiId(null);
     setSheetKind('terminal');
     setFlyToToken({
@@ -283,6 +306,7 @@ export default function App() {
     setSelectedPoiId(id);
     setSelectedRouteId(null);
     setSelectedStopId(null);
+    setSelectedParaderoId(null);
     setSelectedTerminalId(null);
     setSheetKind('poi');
     setFlyToToken({
@@ -292,21 +316,21 @@ export default function App() {
   }, []);
 
   const onSelectParadero = useCallback((id: string) => {
-    const p = PARADEROS.find((x) => x.id === id);
+    const p = GTFS_STOPS.find((x) => x.id === id);
     if (!p) return;
+    setSelectedParaderoId(id);
+    setSelectedRouteId(null);
+    setSelectedStopId(null);
+    setSelectedTerminalId(null);
+    setSelectedPoiId(null);
+    setSheetKind('paradero');
     setFlyToToken({
       key: Date.now(),
       target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 17 },
     });
   }, []);
 
-  const closeSheet = useCallback(() => {
-    setSheetKind(null);
-    setSelectedRouteId(null);
-    setSelectedStopId(null);
-    setSelectedTerminalId(null);
-    setSelectedPoiId(null);
-  }, []);
+  const closeSheet = clearSelection;
 
   const onFocusRoute = useCallback(() => {
     if (!selectedRoute) return;
@@ -332,6 +356,23 @@ export default function App() {
     });
   }, [selectedPoi]);
 
+  const onRecenterMap = useCallback(() => {
+    setFlyToToken({
+      key: Date.now(),
+      target: { kind: 'point', lat: -36.8201, lng: -73.0444, zoom: 12 },
+    });
+  }, []);
+
+  const onUseParaderoAsOrigin = useCallback((point: { lat: number; lng: number }) => {
+    setPlannerOrigin(point);
+    setPickerMode(plannerDestination ? null : 'destination');
+  }, [plannerDestination]);
+
+  const onUseParaderoAsDestination = useCallback((point: { lat: number; lng: number }) => {
+    setPlannerDestination(point);
+    setPickerMode(plannerOrigin ? null : 'origin');
+  }, [plannerOrigin]);
+
   return (
     <div className="flex h-full w-full flex-col bg-background text-foreground">
       <Header
@@ -355,18 +396,6 @@ export default function App() {
           onToggleType={onToggleType}
           onSetAllByType={onSetAllByType}
           onSetAllByOperator={onSetAllByOperator}
-          terminalsCount={TERMINALS.length}
-          paraderosCount={PARADEROS.length}
-          poisCount={POIS.length}
-          showTerminals={showTerminals}
-          showParaderos={showParaderos}
-          showPois={showPois}
-          showAirQuality={showAirQuality}
-          onToggleTerminals={() => setShowTerminals((v) => !v)}
-          onToggleParaderos={() => setShowParaderos((v) => !v)}
-          onTogglePois={() => setShowPois((v) => !v)}
-          onToggleAirQuality={() => setShowAirQuality((v) => !v)}
-          airQualityStatus={airQuality}
           onlyOperatingNow={onlyOperatingNow}
           onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
           onOpenSources={() => setSourcesOpen(true)}
@@ -399,8 +428,9 @@ export default function App() {
             showTerminals={showTerminals}
             selectedTerminalId={selectedTerminalId}
             onSelectTerminal={onSelectTerminal}
-            paraderos={PARADEROS}
+            paraderos={GTFS_STOPS}
             showParaderos={showParaderos}
+            selectedParaderoId={selectedParaderoId}
             onSelectParadero={onSelectParadero}
             pois={POIS}
             showPois={showPois}
@@ -414,6 +444,22 @@ export default function App() {
             plannerDestination={plannerDestination}
           />
 
+          <MapLayerControl
+            terminalsCount={TERMINALS.length}
+            paraderosCount={GTFS_STOPS.length}
+            poisCount={POIS.length}
+            showTerminals={showTerminals}
+            showParaderos={showParaderos}
+            showPois={showPois}
+            showAirQuality={showAirQuality}
+            onToggleTerminals={() => setShowTerminals((v) => !v)}
+            onToggleParaderos={() => setShowParaderos((v) => !v)}
+            onTogglePois={() => setShowPois((v) => !v)}
+            onToggleAirQuality={() => setShowAirQuality((v) => !v)}
+            airQualityStatus={airQuality}
+            onRecenter={onRecenterMap}
+          />
+
           {!sheetKind && (
             <div className="pointer-events-none absolute left-3 top-3 z-10 animate-fade-in">
               <Card className="pointer-events-auto max-w-[260px] border-border/80 backdrop-blur supports-[backdrop-filter]:bg-background/85">
@@ -423,13 +469,27 @@ export default function App() {
                     Concepción · Biobío
                   </CardTitle>
                   <CardDescription className="text-[12px] leading-snug text-foreground">
-                    Toca una línea, paradero o terminal.
+                    Visor técnico de recorridos, paraderos, terminales y capas urbanas.
                     <span className="hidden md:inline">
                       {' '}
                       Usa <Kbd>⌘</Kbd> <Kbd>K</Kbd> para buscar.
-                    </span>{' '}
-                    Activa <span className="font-medium">Paraderos OSM</span> en la barra
-                    para ver los ~1.7k paraderos urbanos.
+                    </span>
+                    <span className="mt-2 grid grid-cols-3 gap-1.5">
+                      <span className="rounded border bg-background/70 px-1.5 py-1">
+                        <span className="block font-mono text-[11px]">171</span>
+                        <span className="text-[10px] text-muted-foreground">recorridos</span>
+                      </span>
+                      <span className="rounded border bg-background/70 px-1.5 py-1">
+                        <span className="block font-mono text-[11px]">
+                          {GTFS_STOPS.length.toLocaleString('es-CL')}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">paraderos</span>
+                      </span>
+                      <span className="rounded border bg-background/70 px-1.5 py-1">
+                        <span className="block font-mono text-[11px]">GTFS</span>
+                        <span className="text-[10px] text-muted-foreground">estático</span>
+                      </span>
+                    </span>
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -475,6 +535,7 @@ export default function App() {
         route={selectedRoute}
         onOpenChange={(o) => (!o ? closeSheet() : undefined)}
         onFocusRoute={onFocusRoute}
+        onDeselectRoute={closeSheet}
         onSelectStop={onSelectStop}
       />
       <StopDetailSheet
@@ -482,6 +543,14 @@ export default function App() {
         stop={selectedStop}
         onOpenChange={(o) => (!o ? closeSheet() : undefined)}
         onSelectRoute={onSelectRoute}
+      />
+      <ParaderoDetailSheet
+        open={sheetKind === 'paradero'}
+        paradero={selectedParadero}
+        onOpenChange={(o) => (!o ? closeSheet() : undefined)}
+        onSelectRoute={onSelectRoute}
+        onUseAsOrigin={onUseParaderoAsOrigin}
+        onUseAsDestination={onUseParaderoAsDestination}
       />
       <TerminalDetailSheet
         open={sheetKind === 'terminal'}

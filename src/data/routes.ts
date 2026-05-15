@@ -11,11 +11,11 @@
 //    between the two adjacent stations.
 //    Re-generate: `npm run sync:biotren-track`.
 //
-//  ✔ Recorridos de micros — 133 `route=bus` relations from OpenStreetMap,
-//    each with full polyline geometry (simplified with Douglas–Peucker).
-//    Stops are matched at build time by snapping `highway=bus_stop` paraderos
-//    within 30 m of the route polyline, ordered by progress along the path.
-//    Re-generate: `npm run sync:bus-routes` (depends on paraderos.generated).
+//  ✔ Recorridos de micros — GTFS estático Gran Concepción candidate, imported
+//    into the local legal_transit_backend SQLite cache. The frontend consumes a
+//    generated build artifact with routes.txt, stops.txt, stop_times.txt and
+//    shapes.txt data scoped to route_type=3.
+//    Re-generate: `npm run sync:gtfs-concepcion`.
 //
 //  ✘ Taxibús / colectivo — out of scope; no open dataset for the metro area.
 //    The previous demo route has been removed.
@@ -26,9 +26,7 @@ import {
   BIOTREN_L2_STOPS,
 } from '@/data/biotren.generated';
 import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generated';
-import { BUS_ROUTES } from '@/data/bus-routes.generated';
-import { PARADEROS } from '@/data/paraderos.generated';
-import { ROUTE_OVERRIDES } from '@/data/route-overrides.curated';
+import { GTFS_BUS_ROUTES, GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import type {
   BusRoute,
   MapCenter,
@@ -103,15 +101,9 @@ const BIOTREN_ROUTES: Route[] = [
   },
 ];
 
-const PARADERO_BY_ID = new Map(PARADEROS.map((p) => [p.id, p]));
+const PARADERO_BY_ID = new Map(GTFS_STOPS.map((p) => [p.id, p]));
 
 function busRouteToRoute(b: BusRoute): Route {
-  // Apply curated override if present. The override fully replaces the OSM
-  // path; stopIds are then matched against PARADEROS by the original
-  // proximity rule (already done at sync time), so we re-resolve here.
-  const override = ROUTE_OVERRIDES[b.id];
-  const path = override?.path ?? b.path;
-
   const stops: Stop[] = [];
   for (const id of b.stopIds) {
     const p = PARADERO_BY_ID.get(id);
@@ -130,26 +122,26 @@ function busRouteToRoute(b: BusRoute): Route {
     name: b.name,
     type: 'micro',
     color: b.colour ?? operatorColor(b.operator, b.id),
-    operator: b.operator ?? 'Operador no registrado (OSM)',
-    headway: '—',
-    hours: '—',
+    operator: b.operator ?? 'Operador no registrado (GTFS)',
+    headway: 'Programado GTFS',
+    hours: 'Según calendario GTFS',
     frequencyByDay: {},
     stops,
-    path,
+    path: b.path,
   };
 }
 
-const MICRO_ROUTES: Route[] = BUS_ROUTES.map(busRouteToRoute);
+const MICRO_ROUTES: Route[] = GTFS_BUS_ROUTES.map(busRouteToRoute);
 
 export const ROUTES: Route[] = [...BIOTREN_ROUTES, ...MICRO_ROUTES];
 
 // Biotrén route ids are the only ones visible by default — the urban micros
-// (133 routes) would clutter the map. Users opt in via the sidebar.
+// would clutter the map. Users opt in via the sidebar.
 export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = BIOTREN_ROUTES.map((r) => r.id);
 
 // Unique operator list (for filter UI in future tandas).
 export const BUS_OPERATORS: string[] = Array.from(
-  new Set(BUS_ROUTES.map((r) => r.operator).filter((o): o is string => !!o)),
+  new Set(GTFS_BUS_ROUTES.map((r) => r.operator).filter((o): o is string => !!o)),
 ).sort((a, b) => a.localeCompare(b, 'es'));
 
 function buildStopIndex(routes: Route[]): StopWithRoutes[] {

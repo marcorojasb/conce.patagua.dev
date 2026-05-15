@@ -67,7 +67,9 @@ export interface Terminal {
 
 export interface Paradero {
   id: string;
-  osmId: number;
+  osmId?: number;
+  source?: 'gtfs' | 'osm';
+  sourceId?: string;
   name?: string;
   lat: number;
   lng: number;
@@ -78,14 +80,16 @@ export interface Paradero {
 
 export interface BusRoute {
   id: string;
-  osmId: number;
+  osmId?: number;
+  source?: 'gtfs' | 'osm';
+  sourceId?: string;
   ref: string;
   name: string;
   operator?: string;
   network?: string;
   colour?: string;
   path: LatLngTuple[];
-  /** Ordered paradero ids matched to this route by build-time proximity. */
+  /** Ordered paradero ids matched or loaded for this route at build time. */
   stopIds: string[];
 }
 
@@ -123,4 +127,4 @@ export interface FlyToToken {
 
 export type Theme = 'light' | 'dark';
 
-export type SheetKind = 'route' | 'stop' | 'terminal' | 'poi' | null;
+export type SheetKind = 'route' | 'stop' | 'terminal' | 'poi' | 'paradero' | null;

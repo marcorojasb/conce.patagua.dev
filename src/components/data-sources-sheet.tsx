@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ROUTES } from '@/data/routes';
-import { PARADEROS } from '@/data/paraderos.generated';
+import { GTFS_CONCEPCION_SOURCE, GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { TERMINALS } from '@/data/terminals.generated';
 
 const microCount = ROUTES.filter((r) => r.type === 'micro').length;
@@ -24,10 +24,21 @@ interface Source {
 
 const SOURCES: Source[] = [
   {
+    title: 'GTFS estático Gran Concepción · fuente candidata',
+    detail:
+      'Recorridos de micros, paraderos, shapes y calendario programado cargados desde un feed GTFS funcional para Gran Concepción. La app lo consume como artefacto estático generado; no llama directo al mirror ni a endpoints internos.',
+    count: `${microCount} recorridos · ${GTFS_STOPS.length} paraderos · fuente ${GTFS_CONCEPCION_SOURCE.source}`,
+    link: {
+      href: 'https://busmaps.com/en/chile/Subsecretaria-de-Transporte/gran-concepcion',
+      label: 'busmaps.com/gran-concepcion',
+    },
+    license: 'Uso productivo sujeto a verificación de fuente primaria/licencia',
+  },
+  {
     title: 'OpenStreetMap · Overpass API',
     detail:
-      'Estaciones y trazado del Biotrén (railway=station + railway=rail + operator=EFE), recorridos de micros (route=bus relations), paraderos urbanos (highway=bus_stop), terminales (amenity=bus_station).',
-    count: `${biotrenCount} líneas Biotrén · ${microCount} recorridos · ${PARADEROS.length} paraderos · ${TERMINALS.length} terminales`,
+      'Estaciones y trazado del Biotrén (railway=station + railway=rail + operator=EFE), terminales (amenity=bus_station) y puntos de interés urbanos.',
+    count: `${biotrenCount} líneas Biotrén · ${TERMINALS.length} terminales`,
     link: { href: 'https://www.openstreetmap.org/about', label: 'openstreetmap.org' },
     license: 'Open Database License (ODbL)',
   },
@@ -50,14 +61,14 @@ const PENDING: Source[] = [
   {
     title: 'DTPR · GTFS-RT Gran Concepción',
     detail:
-      'Posiciones de buses en tiempo real, próximas llegadas a paradero y alertas de servicio. DTPR convocó la publicación pero aún no la libera. Cuando esté, se enchufa sin tocar la UI.',
+      'Posiciones de buses en tiempo real, próximas llegadas a paradero y alertas de servicio. Aún no se verificó un feed público autorizado para producción.',
     link: { href: 'https://transformacion.dtpr.cl/', label: 'transformacion.dtpr.cl' },
   },
   {
-    title: 'GTFS estático Gran Concepción',
+    title: 'Fuente primaria oficial del GTFS estático',
     detail:
-      'Horarios programados de micros (stop_times.txt) por servicio y operador. Sin publicar todavía en datos.gob.cl.',
-    link: { href: 'https://datos.gob.cl/dataset?q=concepcion+transporte', label: 'datos.gob.cl' },
+      'El feed funciona técnicamente, pero antes de producción conviene confirmar el origen primario, versión vigente, atribución y condiciones de reutilización.',
+    link: { href: 'https://datos.gob.cl/dataset?q=gtfs+gran+concepcion', label: 'datos.gob.cl' },
   },
 ];
 
@@ -84,7 +95,9 @@ export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) 
             <SourceList title="Pendientes (esperando publicación oficial)" sources={PENDING} />
 
             <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-              Si encuentras un error en un paradero o recorrido, lo más rápido es{' '}
+              Si encuentras un error en un paradero o recorrido de micro, corrígelo en la
+              fuente GTFS primaria cuando esté confirmada. Para terminales, POIs o Biotrén,
+              sigue siendo útil{' '}
               <a
                 className="underline underline-offset-2 hover:text-foreground"
                 href="https://www.openstreetmap.org/edit"

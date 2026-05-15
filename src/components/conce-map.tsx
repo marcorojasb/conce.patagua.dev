@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   CircleMarker,
   MapContainer,
@@ -40,6 +40,7 @@ interface ConceMapProps {
   onSelectTerminal: (id: string) => void;
   paraderos: Paradero[];
   showParaderos: boolean;
+  selectedParaderoId: string | null;
   onSelectParadero: (id: string) => void;
   pois: Poi[];
   showPois: boolean;
@@ -138,6 +139,18 @@ function InvalidateOnResize({ trigger }: { trigger: unknown }) {
   return null;
 }
 
+function ZoomWatcher({ onZoom }: { onZoom: (zoom: number) => void }) {
+  const map = useMapEvents({
+    zoomend() {
+      onZoom(map.getZoom());
+    },
+  });
+  useEffect(() => {
+    onZoom(map.getZoom());
+  }, [map, onZoom]);
+  return null;
+}
+
 function stopIcon(color: string, active: boolean): L.DivIcon {
   return L.divIcon({
     className: 'stop-marker-wrap',
@@ -193,6 +206,7 @@ export function ConceMap({
   onSelectTerminal,
   paraderos,
   showParaderos,
+  selectedParaderoId,
   onSelectParadero,
   pois,
   showPois,
@@ -206,6 +220,7 @@ export function ConceMap({
   plannerDestination,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
+  const [zoom, setZoom] = useState(13);
 
   useEffect(() => {
     const id = window.setTimeout(() => mapRef.current?.invalidateSize(), 50);
@@ -216,11 +231,16 @@ export function ConceMap({
     () => routes.filter((r) => visibleRouteIds.includes(r.id)),
     [routes, visibleRouteIds],
   );
+  const selectedRoute = useMemo(
+    () => visibleRoutes.find((r) => r.id === selectedRouteId) ?? null,
+    [selectedRouteId, visibleRoutes],
+  );
 
   const drawnStops = useMemo(() => {
     const seen = new Set<string>();
     const list: Array<{ stop: Route['stops'][number]; color: string }> = [];
-    for (const r of visibleRoutes) {
+    const stopRoutes = selectedRoute ? [selectedRoute] : visibleRoutes;
+    for (const r of stopRoutes) {
       for (const s of r.stops) {
         if (seen.has(s.id)) continue;
         seen.add(s.id);
@@ -228,10 +248,12 @@ export function ConceMap({
       }
     }
     return list;
-  }, [visibleRoutes]);
+  }, [selectedRoute, visibleRoutes]);
 
   // Shared canvas renderer keeps 1.7k paradero markers performant.
   const paraderoRenderer = useMemo(() => L.canvas({ padding: 0.2 }), []);
+  const showParaderosAtCurrentZoom = showParaderos && zoom >= 14;
+  const shouldDimForSelectedRoute = !!selectedRouteId;
 
   return (
     <MapContainer
@@ -247,18 +269,26 @@ export function ConceMap({
     >
       <TileLayer key={theme} url={TILE_URL[theme]} attribution={ATTRIBUTION} maxZoom={19} />
       <ZoomControl position="bottomright" />
+      <ZoomWatcher onZoom={setZoom} />
 
-      {showParaderos &&
+      {showParaderosAtCurrentZoom &&
         paraderos.map((p) => (
           <CircleMarker
             key={p.id}
             center={[p.lat, p.lng]}
-            radius={3}
+            radius={selectedParaderoId === p.id ? 5 : 3}
             pathOptions={{
-              color: 'hsl(var(--muted-foreground))',
-              weight: 1,
-              fillColor: 'hsl(var(--background))',
-              fillOpacity: 0.85,
+              color:
+                selectedParaderoId === p.id
+                  ? 'hsl(var(--foreground))'
+                  : 'hsl(var(--muted-foreground))',
+              weight: selectedParaderoId === p.id ? 2 : 1,
+              fillColor:
+                selectedParaderoId === p.id
+                  ? 'hsl(var(--foreground))'
+                  : 'hsl(var(--background))',
+              fillOpacity: selectedParaderoId === p.id ? 1 : 0.86,
+              opacity: shouldDimForSelectedRoute ? 0.55 : 0.9,
             }}
             renderer={paraderoRenderer}
             eventHandlers={{ click: () => onSelectParadero(p.id) }}
@@ -273,19 +303,32 @@ export function ConceMap({
 
       {visibleRoutes.map((r) => {
         const isSelected = selectedRouteId === r.id;
+        const muted = shouldDimForSelectedRoute && !isSelected;
         return (
-          <Polyline
-            key={r.id}
-            positions={r.path}
-            pathOptions={{
-              color: r.color,
-              weight: isSelected ? 6 : 4,
-              opacity: isSelected ? 1 : 0.85,
-              lineCap: 'round',
-              lineJoin: 'round',
-            }}
-            eventHandlers={{ click: () => onSelectRoute(r.id) }}
-          />
+          <Fragment key={r.id}>
+            <Polyline
+              positions={r.path}
+              pathOptions={{
+                color: theme === 'dark' ? '#020617' : '#ffffff',
+                weight: isSelected ? 10 : 7,
+                opacity: muted ? 0.08 : isSelected ? 0.7 : 0.35,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+              interactive={false}
+            />
+            <Polyline
+              positions={r.path}
+              pathOptions={{
+                color: r.color,
+                weight: isSelected ? 6 : 4,
+                opacity: muted ? 0.16 : isSelected ? 1 : 0.82,
+                lineCap: 'round',
+                lineJoin: 'round',
+              }}
+              eventHandlers={{ click: () => onSelectRoute(r.id) }}
+            />
+          </Fragment>
         );
       })}
 

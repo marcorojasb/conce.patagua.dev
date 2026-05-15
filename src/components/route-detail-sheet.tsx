@@ -1,4 +1,4 @@
-import { Clock, Github, Info, Route as RouteIcon } from 'lucide-react';
+import { Clock, Github, Info, Route as RouteIcon, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +19,7 @@ interface RouteDetailSheetProps {
   route: Route | null;
   onOpenChange: (open: boolean) => void;
   onFocusRoute: () => void;
+  onDeselectRoute: () => void;
   onSelectStop: (id: string) => void;
 }
 
@@ -44,6 +45,7 @@ export function RouteDetailSheet({
   route,
   onOpenChange,
   onFocusRoute,
+  onDeselectRoute,
   onSelectStop,
 }: RouteDetailSheetProps) {
   if (!route) return null;
@@ -85,6 +87,10 @@ export function RouteDetailSheet({
             <Button size="sm" variant="outline" onClick={onFocusRoute}>
               <RouteIcon className="h-3.5 w-3.5" />
               Centrar en mapa
+            </Button>
+            <Button size="sm" variant="secondary" onClick={onDeselectRoute}>
+              <XCircle className="h-3.5 w-3.5" />
+              Deseleccionar
             </Button>
             <Button
               size="sm"
@@ -168,17 +174,18 @@ export function RouteDetailSheet({
               </div>
 
               <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-                {hasStops ? (
+                {route.type === 'biotren' ? (
                   <>
                     Datos: estaciones desde <span className="font-mono">OSM</span> · trazado{' '}
                     <span className="font-mono">railway=rail</span> ways · horarios EFE Trenes.
                   </>
                 ) : (
                   <>
-                    Recorrido mapeado en OpenStreetMap como{' '}
-                    <span className="font-mono">route=bus</span>. Los paraderos
-                    individuales se ven activando la capa{' '}
-                    <span className="font-medium">Paraderos OSM</span> en la barra lateral.
+                    Datos estáticos desde <span className="font-mono">GTFS</span> Gran
+                    Concepción: <span className="font-mono">routes.txt</span>,{' '}
+                    <span className="font-mono">shapes.txt</span>,{' '}
+                    <span className="font-mono">stops.txt</span> y horarios programados.
+                    Sin posiciones en vivo ni ETA hasta verificar un GTFS-RT público.
                   </>
                 )}
               </div>
@@ -225,11 +232,9 @@ export function RouteDetailSheet({
               ) : (
                 <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
                   Esta ruta proviene de una relación{' '}
-                  <span className="font-mono">route=bus</span> de OpenStreetMap.
-                  Los paraderos individuales no están enlazados aún. Largo total
+                  <span className="font-mono">route=bus</span> de OpenStreetMap. Largo total
                   del recorrido: <span className="font-semibold">{lengthKm.toFixed(1)} km</span>.
-                  Activa la capa <span className="font-medium">Paraderos OSM</span> para ver
-                  todos los paraderos en el área.
+                  Activa la capa de paraderos para ver todos los puntos cargados.
                 </div>
               )}
             </ScrollArea>

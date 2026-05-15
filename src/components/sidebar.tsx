@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Building2, ChevronRight, Clock, GraduationCap, Loader2, MapPin, Search, Wind } from 'lucide-react';
+import { ChevronRight, Clock, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,18 +22,6 @@ interface SidebarProps {
   onToggleType: (typeId: RouteTypeId) => void;
   onSetAllByType: (typeId: RouteTypeId, on: boolean) => void;
   onSetAllByOperator: (operator: string, on: boolean) => void;
-  terminalsCount: number;
-  paraderosCount: number;
-  poisCount: number;
-  showTerminals: boolean;
-  showParaderos: boolean;
-  showPois: boolean;
-  showAirQuality: boolean;
-  onToggleTerminals: () => void;
-  onToggleParaderos: () => void;
-  onTogglePois: () => void;
-  onToggleAirQuality: () => void;
-  airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
   onlyOperatingNow: boolean;
   onToggleOnlyOperatingNow: () => void;
   onOpenSources: () => void;
@@ -54,18 +42,6 @@ export function Sidebar({
   onToggleType,
   onSetAllByType,
   onSetAllByOperator,
-  terminalsCount,
-  paraderosCount,
-  poisCount,
-  showTerminals,
-  showParaderos,
-  showPois,
-  showAirQuality,
-  onToggleTerminals,
-  onToggleParaderos,
-  onTogglePois,
-  onToggleAirQuality,
-  airQualityStatus,
   onlyOperatingNow,
   onToggleOnlyOperatingNow,
   onOpenSources,
@@ -144,20 +120,22 @@ export function Sidebar({
       )}
       <aside
         className={cn(
-          'absolute inset-y-0 left-0 z-20 flex h-full flex-col border-r bg-background shadow-xl transition-transform duration-200 ease-out',
+          'absolute inset-y-0 left-0 z-20 box-border flex h-full min-w-0 max-w-full shrink-0 flex-col overflow-hidden border-r bg-background shadow-xl transition-transform duration-200 ease-out',
           'md:relative md:shadow-none md:transition-[width]',
-          'w-[85vw] max-w-[320px] md:w-[300px]',
-          open ? 'translate-x-0 md:w-[300px]' : '-translate-x-full md:translate-x-0 md:w-0',
+          'w-[88vw] max-w-[340px] md:w-[340px] lg:w-[360px]',
+          open
+            ? 'translate-x-0 md:w-[340px] lg:w-[360px]'
+            : '-translate-x-full md:translate-x-0 md:w-0',
         )}
         data-state={open ? 'open' : 'closed'}
       >
       <div
         className={cn(
-          'flex h-full flex-col overflow-hidden transition-opacity',
+          'flex h-full min-w-0 flex-col overflow-hidden transition-opacity',
           open ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
       >
-        <div className="border-b p-3">
+        <div className="min-w-0 border-b p-3">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -177,7 +155,7 @@ export function Sidebar({
                 {visibleCount}/{totalCount} visibles
               </span>
             </div>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="grid min-w-0 grid-cols-2 gap-1.5">
               {Object.values(ROUTE_TYPES).map((t) => {
                 const active = !!typeFilters[t.id];
                 const Icon = t.Icon;
@@ -188,9 +166,9 @@ export function Sidebar({
                     type="button"
                     onClick={() => onToggleType(t.id)}
                     className={cn(
-                      'inline-flex min-h-11 items-center gap-1.5 rounded-md border px-3 py-2 text-xs transition-colors focus-ring md:min-h-9 md:px-2.5 md:py-1.5',
+                      'inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs transition-colors focus-ring md:min-h-8 md:px-2.5 md:py-1.5',
                       active
-                        ? 'border-foreground/80 bg-foreground text-background'
+                        ? 'border-foreground/70 bg-foreground text-background shadow-sm'
                         : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground',
                     )}
                   >
@@ -224,59 +202,21 @@ export function Sidebar({
               );
             })}
           </div>
-
-          <div className="mt-3 border-t pt-3">
-            <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Capas
-            </div>
-            <div className="space-y-1.5">
-              <LayerRow
-                icon={<Building2 className="h-3.5 w-3.5" />}
-                label="Terminales"
-                count={terminalsCount}
-                checked={showTerminals}
-                onChange={onToggleTerminals}
-              />
-              <LayerRow
-                icon={<MapPin className="h-3.5 w-3.5" />}
-                label="Paraderos OSM"
-                count={paraderosCount}
-                checked={showParaderos}
-                onChange={onToggleParaderos}
-              />
-              <LayerRow
-                icon={<GraduationCap className="h-3.5 w-3.5" />}
-                label="POIs destino"
-                count={poisCount}
-                checked={showPois}
-                onChange={onTogglePois}
-              />
-              <LayerRow
-                icon={
-                  airQualityStatus.loading ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Wind className="h-3.5 w-3.5" />
-                  )
-                }
-                label="Calidad del aire"
-                count={showAirQuality ? airQualityStatus.stations.length : undefined}
-                checked={showAirQuality}
-                onChange={onToggleAirQuality}
-              />
-              <LayerRow
-                icon={<Clock className="h-3.5 w-3.5" />}
-                label="Solo activos ahora"
-                checked={onlyOperatingNow}
-                onChange={onToggleOnlyOperatingNow}
-              />
-            </div>
-          </div>
+          <label className="mt-3 flex min-h-9 cursor-pointer items-center gap-2 rounded-md border bg-muted/30 px-2.5 py-1.5 text-[12px] hover:bg-accent/40">
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="min-w-0 flex-1 truncate leading-tight">Solo activos ahora</span>
+            <Switch
+              checked={onlyOperatingNow}
+              onCheckedChange={onToggleOnlyOperatingNow}
+              aria-label="Solo recorridos activos ahora"
+              className="shrink-0 scale-90"
+            />
+          </label>
         </div>
 
-        <ScrollArea className="flex-1">
-          <div className="space-y-1 p-2">
-            {plannerSlot && <div className="pb-1">{plannerSlot}</div>}
+        <ScrollArea className="min-w-0 flex-1">
+          <div className="min-w-0 max-w-full space-y-1 overflow-hidden px-2 py-2 pr-4">
+            {plannerSlot && <div className="min-w-0 max-w-full pb-1">{plannerSlot}</div>}
             {filteredFlat.length === 0 && (
               <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                 Sin recorridos para los filtros actuales.
@@ -318,8 +258,8 @@ export function Sidebar({
                 const isExpanded = expandedOps.has(g.operator);
                 const allVisible = g.visible === g.routes.length;
                 return (
-                  <div key={g.operator} className="pt-1">
-                    <div className="flex items-stretch gap-1 px-1">
+                  <div key={g.operator} className="min-w-0 pt-1">
+                    <div className="grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-1 px-1">
                       <button
                         type="button"
                         onClick={() =>
@@ -330,17 +270,17 @@ export function Sidebar({
                             return next;
                           })
                         }
-                        className="flex min-w-0 flex-1 items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[12px] hover:bg-accent/60 focus-ring"
+                        className="flex min-w-0 overflow-hidden rounded-md px-1.5 py-1 text-left text-[12px] hover:bg-accent/60 focus-ring"
                         aria-expanded={isExpanded}
                       >
                         <ChevronRight
                           className={cn(
-                            'h-3 w-3 shrink-0 text-muted-foreground transition-transform',
+                            'mr-1 h-3 w-3 shrink-0 text-muted-foreground transition-transform',
                             isExpanded && 'rotate-90',
                           )}
                         />
-                        <span className="truncate font-medium">{g.operator}</span>
-                        <span className="ml-auto shrink-0 font-mono text-[10px] text-muted-foreground">
+                        <span className="min-w-0 flex-1 truncate font-medium">{g.operator}</span>
+                        <span className="ml-2 shrink-0 rounded border bg-muted/30 px-1 font-mono text-[10px] text-muted-foreground">
                           {g.visible}/{g.routes.length}
                         </span>
                       </button>
@@ -356,6 +296,7 @@ export function Sidebar({
                           checked={allVisible}
                           onCheckedChange={() => onSetAllByOperator(g.operator, !allVisible)}
                           aria-label={`Alternar todos los recorridos de ${g.operator}`}
+                          className="scale-90"
                         />
                       </Tooltip>
                     </div>
@@ -410,14 +351,14 @@ function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProp
   return (
     <div
       className={cn(
-        'group flex min-h-11 items-center gap-2 rounded-md border border-transparent px-2 py-2 transition-colors',
+        'group flex min-h-11 min-w-0 max-w-full overflow-hidden rounded-md border border-transparent px-2 py-2 transition-colors',
         selected ? 'border-border bg-accent' : 'hover:bg-accent/60',
       )}
     >
       <button
         type="button"
         onClick={onSelect}
-        className="flex min-w-0 flex-1 items-center gap-2 rounded-sm text-left focus-ring"
+        className="flex min-w-0 flex-1 basis-0 items-center gap-2 overflow-hidden rounded-sm text-left focus-ring"
       >
         <Badge
           className="shrink-0 border-transparent font-mono"
@@ -425,15 +366,15 @@ function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProp
         >
           {route.code}
         </Badge>
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1 basis-0">
           <div className="truncate text-sm font-medium leading-tight">{route.name}</div>
-          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
             <Icon className="h-[11px] w-[11px]" />
-            <span>{ROUTE_TYPES[route.type].short}</span>
+            <span className="shrink-0">{ROUTE_TYPES[route.type].short}</span>
             {route.stops.length > 0 && (
               <>
                 <span aria-hidden>·</span>
-                <span>{route.stops.length} paraderos</span>
+                <span className="truncate">{route.stops.length} paraderos</span>
               </>
             )}
           </div>
@@ -444,29 +385,9 @@ function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProp
           checked={visible}
           onCheckedChange={onToggle}
           aria-label={visible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'}
+          className="shrink-0 scale-90"
         />
       </Tooltip>
     </div>
-  );
-}
-
-interface LayerRowProps {
-  icon: React.ReactNode;
-  label: string;
-  count?: number;
-  checked: boolean;
-  onChange: () => void;
-}
-
-function LayerRow({ icon, label, count, checked, onChange }: LayerRowProps) {
-  return (
-    <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md px-1.5 py-1.5 text-sm hover:bg-accent/40">
-      <span className="text-muted-foreground">{icon}</span>
-      <span className="flex-1 leading-tight">{label}</span>
-      {count != null && (
-        <span className="font-mono text-[11px] text-muted-foreground">{count}</span>
-      )}
-      <Switch checked={checked} onCheckedChange={onChange} aria-label={label} />
-    </label>
   );
 }
