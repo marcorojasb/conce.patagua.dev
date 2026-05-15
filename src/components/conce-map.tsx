@@ -95,14 +95,33 @@ function FlyToOnToken({ token }: { token: FlyToToken | null }) {
   const map = useMap();
   useEffect(() => {
     if (!token) return;
-    if (token.target.kind === 'bounds') {
-      const bounds = L.latLngBounds(token.target.path);
-      map.flyToBounds(bounds, { padding: [60, 60], duration: 0.7 });
-    } else {
-      map.flyTo([token.target.lat, token.target.lng], token.target.zoom ?? map.getZoom(), {
-        duration: 0.7,
-      });
-    }
+    let cancelled = false;
+    // Leaflet's flyTo/flyToBounds animate via requestAnimationFrame and
+    // unproject coordinates against the map's pixel size. When the container
+    // hasn't laid out yet (size = 0×0), unprojection produces NaN and the
+    // whole tree crashes. We poll briefly for a non-zero size before flying.
+    const tryFly = () => {
+      if (cancelled) return;
+      const size = map.getSize();
+      if (size.x === 0 || size.y === 0) {
+        requestAnimationFrame(tryFly);
+        return;
+      }
+      if (token.target.kind === 'bounds') {
+        const bounds = L.latLngBounds(token.target.path);
+        map.flyToBounds(bounds, { padding: [60, 60], duration: 0.7 });
+      } else {
+        map.flyTo(
+          [token.target.lat, token.target.lng],
+          token.target.zoom ?? map.getZoom(),
+          { duration: 0.7 },
+        );
+      }
+    };
+    tryFly();
+    return () => {
+      cancelled = true;
+    };
   }, [token, map]);
   return null;
 }
