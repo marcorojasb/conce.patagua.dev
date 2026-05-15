@@ -82,7 +82,7 @@ export function PoiDetailSheet({
         <SheetHeader>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <CategoryIcon className="h-3.5 w-3.5" />
-            {CATEGORY_LABEL[poi.category]}
+            <span>Centro de atracción · {CATEGORY_LABEL[poi.category]}</span>
           </div>
           <SheetTitle className="pr-8">{poi.name}</SheetTitle>
           <SheetDescription className="font-mono text-xs">

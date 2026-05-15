@@ -10,7 +10,7 @@ import { StopDetailSheet } from '@/components/stop-detail-sheet';
 import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
 import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
-import { PlannerPanel } from '@/components/planner-panel';
+import { AnalysisToolsSheet } from '@/components/analysis-tools-sheet';
 import { findRoutes } from '@/lib/planner';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
@@ -110,6 +110,16 @@ export default function App() {
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
 
   const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [analysisOpen, setAnalysisOpen] = useState(false);
+
+  const onShowOperatorRoutes = useCallback(
+    (operator: string) => {
+      onSetAllByOperator(operator, true);
+      setAnalysisOpen(false);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   useSyncUrlState({
     route: selectedRouteId,
@@ -399,19 +409,7 @@ export default function App() {
           onlyOperatingNow={onlyOperatingNow}
           onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
           onOpenSources={() => setSourcesOpen(true)}
-          plannerSlot={
-            <PlannerPanel
-              origin={plannerOrigin}
-              destination={plannerDestination}
-              pickerMode={pickerMode}
-              matches={plannerMatches}
-              matchesAvailable={visibleRouteIds.length > 0}
-              onPickOrigin={() => setPickerMode('origin')}
-              onPickDestination={() => setPickerMode('destination')}
-              onClear={onClearPlanner}
-              onSelectRoute={onSelectRoute}
-            />
-          }
+          onOpenAnalysis={() => setAnalysisOpen(true)}
         />
 
         <main className="relative flex-1">
@@ -566,6 +564,20 @@ export default function App() {
         onSelectRoute={onSelectRoute}
       />
       <DataSourcesSheet open={sourcesOpen} onOpenChange={setSourcesOpen} />
+      <AnalysisToolsSheet
+        open={analysisOpen}
+        onOpenChange={setAnalysisOpen}
+        plannerOrigin={plannerOrigin}
+        plannerDestination={plannerDestination}
+        pickerMode={pickerMode}
+        plannerMatches={plannerMatches}
+        matchesAvailable={visibleRouteIds.length > 0}
+        onPickOrigin={() => setPickerMode('origin')}
+        onPickDestination={() => setPickerMode('destination')}
+        onClearPlanner={onClearPlanner}
+        onSelectRoute={onSelectRoute}
+        onShowOperatorRoutes={onShowOperatorRoutes}
+      />
     </div>
   );
 }

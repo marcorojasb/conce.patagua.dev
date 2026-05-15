@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import { ChevronRight, Clock, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -25,7 +24,7 @@ interface SidebarProps {
   onlyOperatingNow: boolean;
   onToggleOnlyOperatingNow: () => void;
   onOpenSources: () => void;
-  plannerSlot?: ReactNode;
+  onOpenAnalysis: () => void;
 }
 
 const NO_OPERATOR_LABEL = 'Sin operador registrado';
@@ -45,7 +44,7 @@ export function Sidebar({
   onlyOperatingNow,
   onToggleOnlyOperatingNow,
   onOpenSources,
-  plannerSlot,
+  onOpenAnalysis,
 }: SidebarProps) {
   const [query, setQuery] = useState('');
   const [expandedOps, setExpandedOps] = useState<Set<string>>(new Set());
@@ -219,7 +218,6 @@ export function Sidebar({
 
         <ScrollArea className="min-w-0 flex-1">
           <div className="min-w-0 max-w-full space-y-1 overflow-hidden px-2 py-2 pr-4">
-            {plannerSlot && <div className="min-w-0 max-w-full pb-1">{plannerSlot}</div>}
             {filteredFlat.length === 0 && (
               <div className="px-3 py-8 text-center text-sm text-muted-foreground">
                 Sin recorridos para los filtros actuales.
@@ -326,15 +324,27 @@ export function Sidebar({
         </ScrollArea>
 
         <div className="border-t p-3">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <button
-              type="button"
-              onClick={onOpenSources}
-              className="underline-offset-2 hover:text-foreground hover:underline focus-ring rounded-sm"
-            >
-              Fuentes de datos
-            </button>
-            <span>v0.5</span>
+          <div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onOpenAnalysis}
+                className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-ring"
+              >
+                Análisis
+              </button>
+              <span aria-hidden className="text-muted-foreground/50">
+                ·
+              </span>
+              <button
+                type="button"
+                onClick={onOpenSources}
+                className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-ring"
+              >
+                Fuentes
+              </button>
+            </div>
+            <span>v0.6</span>
           </div>
         </div>
       </div>

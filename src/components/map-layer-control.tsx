@@ -69,8 +69,8 @@ export function MapLayerControl({
       },
       {
         id: 'destinos',
-        label: 'Destinos útiles',
-        detail: `${poisCount.toLocaleString('es-CL')} POIs`,
+        label: 'Centros de atracción',
+        detail: `${poisCount.toLocaleString('es-CL')} puntos`,
         icon: GraduationCap,
         checked: showPois,
         onToggle: onTogglePois,
