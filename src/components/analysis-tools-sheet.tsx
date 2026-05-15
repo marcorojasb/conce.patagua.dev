@@ -1,5 +1,7 @@
-import { Building2, Compass } from 'lucide-react';
+import { useState } from 'react';
+import { Building2, Compass, Download } from 'lucide-react';
 import { PlannerPanel } from '@/components/planner-panel';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
@@ -8,10 +10,20 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ROUTES } from '@/data/routes';
+import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
+import { POIS } from '@/data/pois.generated';
+import { TERMINALS } from '@/data/terminals.generated';
 import type { PlannerMatch } from '@/lib/planner';
 import { OPERATOR_STATS } from '@/lib/operator-stats';
+import {
+  buildExport,
+  downloadGeoJSON,
+  type ExportLayer,
+} from '@/lib/geojson-export';
+import type { CoverageCell } from '@/types/transport';
 
 interface AnalysisToolsSheetProps {
   open: boolean;
@@ -27,6 +39,8 @@ interface AnalysisToolsSheetProps {
   onClearPlanner: () => void;
   onSelectRoute: (id: string) => void;
   onShowOperatorRoutes: (operator: string) => void;
+  // For the GeoJSON export tab — knows which routes the user has on the map.
+  visibleRouteIds: string[];
 }
 
 const micrCount = ROUTES.filter((r) => r.type === 'micro').length;
@@ -44,6 +58,7 @@ export function AnalysisToolsSheet({
   onClearPlanner,
   onSelectRoute,
   onShowOperatorRoutes,
+  visibleRouteIds,
 }: AnalysisToolsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -65,6 +80,10 @@ export function AnalysisToolsSheet({
             <TabsTrigger value="operadores">
               <Building2 className="h-3 w-3" />
               Operadores
+            </TabsTrigger>
+            <TabsTrigger value="export">
+              <Download className="h-3 w-3" />
+              Export
             </TabsTrigger>
           </TabsList>
 
@@ -145,8 +164,160 @@ export function AnalysisToolsSheet({
               </div>
             </ScrollArea>
           </TabsContent>
+
+          <TabsContent value="export" className="min-h-0 flex-1">
+            <ScrollArea className="h-full pr-2">
+              <ExportTab visibleRouteIds={visibleRouteIds} />
+            </ScrollArea>
+          </TabsContent>
         </Tabs>
       </SheetContent>
     </Sheet>
+  );
+}
+
+interface ExportRow {
+  key: ExportLayer;
+  label: string;
+  detail: string;
+  defaultChecked: boolean;
+  size?: () => number;
+}
+
+const EXPORT_ROWS: ExportRow[] = [
+  {
+    key: 'routes-visible',
+    label: 'Recorridos visibles',
+    detail: 'Solo los recorridos actualmente activos en el mapa',
+    defaultChecked: true,
+  },
+  {
+    key: 'routes-all',
+    label: 'Todos los recorridos',
+    detail: `${ROUTES.length} líneas, ignora filtros del visor`,
+    defaultChecked: false,
+  },
+  {
+    key: 'paraderos',
+    label: 'Paraderos',
+    detail: `${GTFS_STOPS.length.toLocaleString('es-CL')} puntos GTFS`,
+    defaultChecked: true,
+  },
+  {
+    key: 'terminales',
+    label: 'Terminales',
+    detail: `${TERMINALS.length} estaciones intermodales`,
+    defaultChecked: false,
+  },
+  {
+    key: 'centros',
+    label: 'Centros de atracción',
+    detail: `${POIS.length} POIs urbanos`,
+    defaultChecked: false,
+  },
+  {
+    key: 'cobertura',
+    label: 'Cobertura territorial',
+    detail: '7.649 polígonos · ~10 MB sin gzip',
+    defaultChecked: false,
+  },
+];
+
+function ExportTab({ visibleRouteIds }: { visibleRouteIds: string[] }) {
+  const [selected, setSelected] = useState<Set<ExportLayer>>(
+    () => new Set(EXPORT_ROWS.filter((r) => r.defaultChecked).map((r) => r.key)),
+  );
+  const [busy, setBusy] = useState(false);
+
+  const toggle = (key: ExportLayer) => {
+    setSelected((cur) => {
+      const next = new Set(cur);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+        // Mutual exclusion between "solo visibles" y "todos": tener ambos
+        // activos resultaría en duplicados.
+        if (key === 'routes-visible') next.delete('routes-all');
+        if (key === 'routes-all') next.delete('routes-visible');
+      }
+      return next;
+    });
+  };
+
+  const download = async () => {
+    setBusy(true);
+    try {
+      let coverageCells: readonly CoverageCell[] | null = null;
+      if (selected.has('cobertura')) {
+        const mod = await import('@/data/coverage.generated');
+        coverageCells = mod.COVERAGE_CELLS;
+      }
+      const fc = buildExport(selected, { visibleRouteIds, coverageCells });
+      const stamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-')
+        .slice(0, 19);
+      downloadGeoJSON(fc, `conce-transporte-${stamp}.geojson`);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <p className="text-[12px] leading-snug text-muted-foreground">
+        Exporta la selección actual como un FeatureCollection{' '}
+        <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
+          .geojson
+        </code>{' '}
+        para abrirlo en QGIS, Python (geopandas), R (sf), o cualquier herramienta
+        de análisis SIG. Cada feature lleva sus propias{' '}
+        <code className="font-mono text-[11px]">properties</code> incluyendo un
+        campo <code className="font-mono text-[11px]">layer</code> para filtrar.
+      </p>
+
+      <div className="overflow-hidden rounded-md border">
+        <ul className="divide-y">
+          {EXPORT_ROWS.map((row) => {
+            const checked = selected.has(row.key);
+            return (
+              <li key={row.key}>
+                <label className="flex cursor-pointer items-center gap-2 px-3 py-2 transition-colors hover:bg-accent/40">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium">{row.label}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {row.detail}
+                    </div>
+                  </div>
+                  <Switch
+                    checked={checked}
+                    onCheckedChange={() => toggle(row.key)}
+                    aria-label={row.label}
+                  />
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <Button
+        type="button"
+        onClick={download}
+        disabled={selected.size === 0 || busy}
+        className="w-full"
+      >
+        <Download className="h-4 w-4" />
+        {busy ? 'Generando…' : 'Descargar GeoJSON'}
+      </Button>
+
+      <div className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
+        Atribución requerida en cualquier publicación: los recorridos y paraderos
+        vienen del GTFS Gran Concepción CC BY 4.0 de la Subsecretaría de
+        Transportes; terminales, POIs y trazado del Biotrén de OpenStreetMap
+        bajo ODbL.
+      </div>
+    </div>
   );
 }

@@ -634,6 +634,7 @@ export default function App() {
         onClearPlanner={onClearPlanner}
         onSelectRoute={onSelectRoute}
         onShowOperatorRoutes={onShowOperatorRoutes}
+        visibleRouteIds={visibleRouteIds}
       />
     </div>
   );
