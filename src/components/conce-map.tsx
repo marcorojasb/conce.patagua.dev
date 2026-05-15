@@ -24,6 +24,7 @@ import type {
   Terminal,
   Theme,
 } from '@/types/transport';
+import type { RoutingResult } from '@/lib/routing';
 import { categorize } from '@/hooks/use-air-quality';
 import { CoverageLayer } from '@/components/coverage-layer';
 
@@ -63,6 +64,8 @@ interface ConceMapProps {
   // Optional: notifies the parent of the current visible bbox so features
   // like wallpaper export can render the same frame the user is seeing.
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
+  // Walking midpoint result drawn on top of the route layer (path + M marker).
+  plannerMidpoint?: RoutingResult | null;
 }
 
 const TILE_URL = {
@@ -151,6 +154,15 @@ function pinIcon(kind: 'origin' | 'destination'): L.DivIcon {
   return L.divIcon({
     className: 'planner-pin-wrap',
     html: `<div class="planner-pin" style="--pin-bg:${color}">${label}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+  });
+}
+
+function midpointIcon(): L.DivIcon {
+  return L.divIcon({
+    className: 'planner-pin-wrap',
+    html: `<div class="planner-pin" style="--pin-bg:#7C3AED">M</div>`,
     iconSize: [24, 24],
     iconAnchor: [12, 24],
   });
@@ -280,6 +292,7 @@ export function ConceMap({
   coverageThreshold,
   onCoverageLoadingChange,
   onBoundsChange,
+  plannerMidpoint,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
   const [zoom, setZoom] = useState(13);
@@ -467,6 +480,32 @@ export function ConceMap({
             </Marker>
           );
         })}
+
+      {plannerMidpoint && plannerMidpoint.path.length >= 2 && (
+        <Polyline
+          key="planner-midpoint-path"
+          positions={plannerMidpoint.path}
+          pathOptions={{
+            color: '#7C3AED',
+            weight: 4,
+            opacity: 0.85,
+            dashArray: '6 6',
+            lineCap: 'round',
+          }}
+        />
+      )}
+      {plannerMidpoint && (
+        <Marker
+          key="planner-midpoint"
+          position={plannerMidpoint.midpoint}
+          icon={midpointIcon()}
+          keyboard={false}
+        >
+          <LeafletTooltip direction="top" offset={[0, -22]} opacity={0.95}>
+            Punto medio caminando
+          </LeafletTooltip>
+        </Marker>
+      )}
 
       {plannerOrigin && (
         <Marker

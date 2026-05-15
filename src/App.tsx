@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { ConceMap } from '@/components/conce-map';
 import { Header } from '@/components/header';
@@ -13,6 +13,7 @@ import { DataSourcesSheet } from '@/components/data-sources-sheet';
 import { AnalysisToolsSheet } from '@/components/analysis-tools-sheet';
 import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
 import { findRoutes } from '@/lib/planner';
+import { routeBetween, type RoutingResult } from '@/lib/routing';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
 import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS } from '@/data/routes';
@@ -106,11 +107,61 @@ export default function App() {
     [pickerMode, plannerDestination],
   );
 
+  // Walking midpoint between A and B, fetched from OSRM. Path + marker live
+  // here so the user can close the analysis sheet and still see them on the
+  // map. Any change to A or B invalidates the cached result.
+  const [plannerMidpoint, setPlannerMidpoint] = useState<RoutingResult | null>(null);
+  const [plannerMidpointLoading, setPlannerMidpointLoading] = useState(false);
+  const [plannerMidpointError, setPlannerMidpointError] = useState<string | null>(null);
+  const midpointAbortRef = useRef<AbortController | null>(null);
+
+  const clearMidpointState = useCallback(() => {
+    midpointAbortRef.current?.abort();
+    midpointAbortRef.current = null;
+    setPlannerMidpoint(null);
+    setPlannerMidpointLoading(false);
+    setPlannerMidpointError(null);
+  }, []);
+
   const onClearPlanner = useCallback(() => {
     setPlannerOrigin(null);
     setPlannerDestination(null);
     setPickerMode(null);
-  }, []);
+    clearMidpointState();
+  }, [clearMidpointState]);
+
+  // Invalidate midpoint when either endpoint moves — the previous path is
+  // stale immediately, no point keeping it around.
+  useEffect(() => {
+    clearMidpointState();
+  }, [plannerOrigin, plannerDestination, clearMidpointState]);
+
+  const onComputeMidpoint = useCallback(async () => {
+    if (!plannerOrigin || !plannerDestination) return;
+    midpointAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    midpointAbortRef.current = ctrl;
+    setPlannerMidpointLoading(true);
+    setPlannerMidpointError(null);
+    try {
+      const result = await routeBetween(
+        [plannerOrigin.lat, plannerOrigin.lng],
+        [plannerDestination.lat, plannerDestination.lng],
+        { signal: ctrl.signal },
+      );
+      if (ctrl.signal.aborted) return;
+      setPlannerMidpoint(result);
+      setPlannerMidpointLoading(false);
+    } catch (err) {
+      if (ctrl.signal.aborted) return;
+      setPlannerMidpointLoading(false);
+      setPlannerMidpointError(
+        err instanceof Error
+          ? `No se pudo calcular: ${err.message}`
+          : 'No se pudo calcular el trazado',
+      );
+    }
+  }, [plannerOrigin, plannerDestination]);
 
   const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(false);
 
@@ -495,6 +546,7 @@ export default function App() {
             coverageThreshold={coverageThreshold}
             onCoverageLoadingChange={setCoverageLoading}
             onBoundsChange={setMapBounds}
+            plannerMidpoint={plannerMidpoint}
           />
 
           <MapLayerControl
@@ -648,6 +700,11 @@ export default function App() {
         visibleRouteIds={visibleRouteIds}
         mapBounds={mapBounds}
         theme={theme}
+        plannerMidpoint={plannerMidpoint}
+        plannerMidpointLoading={plannerMidpointLoading}
+        plannerMidpointError={plannerMidpointError}
+        onComputeMidpoint={onComputeMidpoint}
+        onClearMidpoint={clearMidpointState}
       />
     </div>
   );

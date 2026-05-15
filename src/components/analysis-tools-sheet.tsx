@@ -23,6 +23,7 @@ import {
   downloadGeoJSON,
   type ExportLayer,
 } from '@/lib/geojson-export';
+import type { RoutingResult } from '@/lib/routing';
 import {
   buildWallpaper,
   CURATED_VIEWS,
@@ -52,6 +53,13 @@ interface AnalysisToolsSheetProps {
   // For the Wallpaper tab — current viewport + theme.
   mapBounds: [[number, number], [number, number]] | null;
   theme: Theme;
+  // Walking midpoint between origin and destination (lifted to App so the
+  // route/marker survive while the user closes and reopens this sheet).
+  plannerMidpoint: RoutingResult | null;
+  plannerMidpointLoading: boolean;
+  plannerMidpointError: string | null;
+  onComputeMidpoint: () => void;
+  onClearMidpoint: () => void;
 }
 
 const micrCount = ROUTES.filter((r) => r.type === 'micro').length;
@@ -72,6 +80,11 @@ export function AnalysisToolsSheet({
   visibleRouteIds,
   mapBounds,
   theme,
+  plannerMidpoint,
+  plannerMidpointLoading,
+  plannerMidpointError,
+  onComputeMidpoint,
+  onClearMidpoint,
 }: AnalysisToolsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -123,6 +136,11 @@ export function AnalysisToolsSheet({
                   onPickDestination={onPickDestination}
                   onClear={onClearPlanner}
                   onSelectRoute={onSelectRoute}
+                  midpoint={plannerMidpoint}
+                  midpointLoading={plannerMidpointLoading}
+                  midpointError={plannerMidpointError}
+                  onComputeMidpoint={onComputeMidpoint}
+                  onClearMidpoint={onClearMidpoint}
                 />
               </div>
             </ScrollArea>

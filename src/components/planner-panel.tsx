@@ -1,9 +1,14 @@
-import { LocateFixed, MapPin, Route, X } from 'lucide-react';
+import { Footprints, LocateFixed, MapPin, Route, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ROUTE_TYPES } from '@/data/routes';
 import { cn } from '@/lib/utils';
 import type { PlannerMatch } from '@/lib/planner';
+import {
+  formatDistanceMeters,
+  formatDurationSeconds,
+  type RoutingResult,
+} from '@/lib/routing';
 
 interface PlannerPanelProps {
   origin: { lat: number; lng: number } | null;
@@ -15,6 +20,11 @@ interface PlannerPanelProps {
   onPickDestination: () => void;
   onClear: () => void;
   onSelectRoute: (id: string) => void;
+  midpoint: RoutingResult | null;
+  midpointLoading: boolean;
+  midpointError: string | null;
+  onComputeMidpoint: () => void;
+  onClearMidpoint: () => void;
 }
 
 export function PlannerPanel({
@@ -27,6 +37,11 @@ export function PlannerPanel({
   onPickDestination,
   onClear,
   onSelectRoute,
+  midpoint,
+  midpointLoading,
+  midpointError,
+  onComputeMidpoint,
+  onClearMidpoint,
 }: PlannerPanelProps) {
   const hasAny = !!origin || !!destination;
   return (
@@ -75,6 +90,13 @@ export function PlannerPanel({
 
       {origin && destination && (
         <div className="border-t px-2 pb-2 pt-2">
+          <MidpointSection
+            midpoint={midpoint}
+            loading={midpointLoading}
+            error={midpointError}
+            onCompute={onComputeMidpoint}
+            onClear={onClearMidpoint}
+          />
           <div className="mb-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>{matches.length === 0 ? 'Sin coincidencias' : `${matches.length} recorridos cubren ambos`}</span>
             <span className="font-mono">≤400 m</span>
@@ -116,6 +138,101 @@ export function PlannerPanel({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MidpointSection({
+  midpoint,
+  loading,
+  error,
+  onCompute,
+  onClear,
+}: {
+  midpoint: RoutingResult | null;
+  loading: boolean;
+  error: string | null;
+  onCompute: () => void;
+  onClear: () => void;
+}) {
+  return (
+    <div className="mb-2 space-y-1.5">
+      <div className="flex items-center justify-between gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Footprints className="h-3 w-3" />
+          Punto medio caminando
+        </span>
+        {midpoint && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="rounded-sm p-0.5 normal-case tracking-normal text-[10px] text-muted-foreground hover:text-foreground focus-ring"
+          >
+            limpiar
+          </button>
+        )}
+      </div>
+
+      {!midpoint && !loading && (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="h-8 w-full justify-center text-[11px]"
+          onClick={onCompute}
+        >
+          <Footprints className="h-3.5 w-3.5" />
+          Calcular trazado por calles
+        </Button>
+      )}
+
+      {loading && (
+        <div className="rounded-md border bg-muted/40 p-2 text-[11px] text-muted-foreground">
+          Consultando OSRM (ruteo peatonal)…
+        </div>
+      )}
+
+      {error && !loading && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-[11px] text-destructive">
+          {error}
+        </div>
+      )}
+
+      {midpoint && !loading && (
+        <div className="space-y-1.5 rounded-md border bg-card p-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Stat label="Distancia" value={formatDistanceMeters(midpoint.distanceMeters)} />
+            <Stat label="Tiempo a pie" value={formatDurationSeconds(midpoint.durationSeconds)} />
+            <Stat
+              label="A → M"
+              value={formatDistanceMeters(midpoint.distanceFromAMeters)}
+            />
+            <Stat
+              label="M → B"
+              value={formatDistanceMeters(midpoint.distanceToBMeters)}
+            />
+          </div>
+          <div className="border-t pt-1.5 text-[10px] text-muted-foreground">
+            Punto medio:{' '}
+            <span className="font-mono">
+              {midpoint.midpoint[0].toFixed(5)}, {midpoint.midpoint[1].toFixed(5)}
+            </span>
+          </div>
+          <div className="text-[10px] leading-snug text-muted-foreground">
+            Trazado a pie según OSRM público (OSM). El punto medio es exacto sobre
+            la mitad del recorrido peatonal — no la línea recta entre A y B.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-sm border bg-muted/30 px-2 py-1">
+      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="font-mono text-[12px] leading-tight">{value}</div>
     </div>
   );
 }
