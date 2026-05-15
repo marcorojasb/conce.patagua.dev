@@ -25,6 +25,7 @@ import type {
   Theme,
 } from '@/types/transport';
 import { categorize } from '@/hooks/use-air-quality';
+import { CoverageLayer } from '@/components/coverage-layer';
 
 interface ConceMapProps {
   theme: Theme;
@@ -56,6 +57,9 @@ interface ConceMapProps {
   simulatedVehicles: SimulatedVehicle[];
   routeColorById: Map<string, string>;
   onSelectSimulatedVehicle: (id: string) => void;
+  showCoverage: boolean;
+  coverageThreshold: 'all' | 'underserved';
+  onCoverageLoadingChange: (loading: boolean) => void;
 }
 
 const TILE_URL = {
@@ -225,6 +229,9 @@ export function ConceMap({
   simulatedVehicles,
   routeColorById,
   onSelectSimulatedVehicle,
+  showCoverage,
+  coverageThreshold,
+  onCoverageLoadingChange,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
   const [zoom, setZoom] = useState(13);
@@ -277,6 +284,13 @@ export function ConceMap({
       <TileLayer key={theme} url={TILE_URL[theme]} attribution={ATTRIBUTION} maxZoom={19} />
       <ZoomControl position="bottomright" />
       <ZoomWatcher onZoom={setZoom} />
+
+      <CoverageLayer
+        enabled={showCoverage}
+        canvasRenderer={paraderoRenderer}
+        threshold={coverageThreshold}
+        onLoadingChange={onCoverageLoadingChange}
+      />
 
       {showParaderosAtCurrentZoom &&
         paraderos.map((p) => (

@@ -3,6 +3,7 @@ import {
   Building2,
   Crosshair,
   GraduationCap,
+  Grid3x3,
   Layers2,
   Loader2,
   MapPin,
@@ -25,13 +26,18 @@ interface MapLayerControlProps {
   showPois: boolean;
   showAirQuality: boolean;
   showSimulatedVehicles: boolean;
+  showCoverage: boolean;
+  coverageThreshold: 'all' | 'underserved';
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
   onTogglePois: () => void;
   onToggleAirQuality: () => void;
   onToggleSimulatedVehicles: () => void;
+  onToggleCoverage: () => void;
+  onSetCoverageThreshold: (t: 'all' | 'underserved') => void;
   airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
   simulationStatus: { count: number; loading: boolean };
+  coverageStatus: { loading: boolean };
   onRecenter: () => void;
 }
 
@@ -44,13 +50,18 @@ export function MapLayerControl({
   showPois,
   showAirQuality,
   showSimulatedVehicles,
+  showCoverage,
+  coverageThreshold,
   onToggleTerminals,
   onToggleParaderos,
   onTogglePois,
   onToggleAirQuality,
   onToggleSimulatedVehicles,
+  onToggleCoverage,
+  onSetCoverageThreshold,
   airQualityStatus,
   simulationStatus,
+  coverageStatus,
   onRecenter,
 }: MapLayerControlProps) {
   const [open, setOpen] = useState(false);
@@ -60,6 +71,7 @@ export function MapLayerControl({
     showPois,
     showAirQuality,
     showSimulatedVehicles,
+    showCoverage,
   ].filter(Boolean).length;
 
   const layers = useMemo(
@@ -112,6 +124,21 @@ export function MapLayerControl({
         onToggle: onToggleSimulatedVehicles,
         loading: simulationStatus.loading,
       },
+      {
+        id: 'coverage',
+        label: 'Cobertura territorial',
+        detail: showCoverage
+          ? coverageStatus.loading
+            ? 'Cargando grilla…'
+            : coverageThreshold === 'underserved'
+              ? 'Solo zonas > 600 m del paradero'
+              : 'Distancia al paradero más cercano'
+          : 'Heatmap por distancia',
+        icon: coverageStatus.loading ? Loader2 : Grid3x3,
+        checked: showCoverage,
+        onToggle: onToggleCoverage,
+        loading: coverageStatus.loading,
+      },
     ],
     [
       airQualityStatus.loading,
@@ -121,15 +148,19 @@ export function MapLayerControl({
       onTogglePois,
       onToggleSimulatedVehicles,
       onToggleTerminals,
+      onToggleCoverage,
       paraderosCount,
       poisCount,
       showAirQuality,
+      showCoverage,
       showParaderos,
       showPois,
       showSimulatedVehicles,
       showTerminals,
       simulationStatus.count,
       simulationStatus.loading,
+      coverageThreshold,
+      coverageStatus.loading,
       terminalsCount,
     ],
   );
@@ -196,30 +227,83 @@ export function MapLayerControl({
             {layers.map((layer) => {
               const Icon = layer.icon;
               return (
-                <label
-                  key={layer.id}
-                  className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent/50"
-                >
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
-                    <Icon className={cn('h-4 w-4', layer.loading && 'animate-spin')} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-medium leading-tight">
-                      {layer.label}
+                <div key={layer.id}>
+                  <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent/50">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
+                      <Icon className={cn('h-4 w-4', layer.loading && 'animate-spin')} />
                     </span>
-                    <span className="block truncate text-[11px] text-muted-foreground">
-                      {layer.detail}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium leading-tight">
+                        {layer.label}
+                      </span>
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {layer.detail}
+                      </span>
                     </span>
-                  </span>
-                  <Switch
-                    checked={layer.checked}
-                    onCheckedChange={layer.onToggle}
-                    aria-label={layer.label}
-                  />
-                </label>
+                    <Switch
+                      checked={layer.checked}
+                      onCheckedChange={layer.onToggle}
+                      aria-label={layer.label}
+                    />
+                  </label>
+                  {layer.id === 'coverage' && layer.checked && (
+                    <div className="ml-10 flex gap-1 pb-1 pl-2">
+                      <button
+                        type="button"
+                        onClick={() => onSetCoverageThreshold('all')}
+                        className={cn(
+                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                          coverageThreshold === 'all'
+                            ? 'bg-foreground text-background'
+                            : 'border bg-background text-muted-foreground hover:text-foreground',
+                        )}
+                      >
+                        Heatmap completo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onSetCoverageThreshold('underserved')}
+                        className={cn(
+                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                          coverageThreshold === 'underserved'
+                            ? 'bg-foreground text-background'
+                            : 'border bg-background text-muted-foreground hover:text-foreground',
+                        )}
+                      >
+                        Solo zonas mal servidas
+                      </button>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
+
+          {showCoverage && (
+            <div className="mt-2 rounded-md border bg-muted/30 p-2">
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                Distancia al paradero
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                {[
+                  { color: '#15803d', label: '≤200 m' },
+                  { color: '#65a30d', label: '200–400' },
+                  { color: '#facc15', label: '400–600' },
+                  { color: '#f97316', label: '600–1000' },
+                  { color: '#dc2626', label: '>1 km' },
+                ].map((b) => (
+                  <span key={b.label} className="inline-flex items-center gap-1">
+                    <span
+                      aria-hidden
+                      className="inline-block h-2.5 w-3 rounded-sm"
+                      style={{ background: b.color }}
+                    />
+                    {b.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>

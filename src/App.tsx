@@ -143,6 +143,10 @@ export default function App() {
     [],
   );
 
+  const [showCoverage, setShowCoverage] = useState(false);
+  const [coverageThreshold, setCoverageThreshold] = useState<'all' | 'underserved'>('all');
+  const [coverageLoading, setCoverageLoading] = useState(false);
+
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
 
   const [sourcesOpen, setSourcesOpen] = useState(false);
@@ -479,6 +483,9 @@ export default function App() {
             simulatedVehicles={simulatedVehicles}
             routeColorById={routeColorById}
             onSelectSimulatedVehicle={onSelectSimulatedVehicle}
+            showCoverage={showCoverage}
+            coverageThreshold={coverageThreshold}
+            onCoverageLoadingChange={setCoverageLoading}
           />
 
           <MapLayerControl
@@ -495,11 +502,16 @@ export default function App() {
             onTogglePois={() => setShowPois((v) => !v)}
             onToggleAirQuality={() => setShowAirQuality((v) => !v)}
             onToggleSimulatedVehicles={() => setShowSimulatedVehicles((v) => !v)}
+            showCoverage={showCoverage}
+            coverageThreshold={coverageThreshold}
+            onToggleCoverage={() => setShowCoverage((v) => !v)}
+            onSetCoverageThreshold={setCoverageThreshold}
             airQualityStatus={airQuality}
             simulationStatus={{
               count: simulatedVehicles.length,
               loading: simulationLoading,
             }}
+            coverageStatus={{ loading: coverageLoading }}
             onRecenter={onRecenterMap}
           />
 

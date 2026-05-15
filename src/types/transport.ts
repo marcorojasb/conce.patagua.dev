@@ -79,6 +79,13 @@ export interface Paradero {
 }
 
 /**
+ * Coverage grid cell: paradero-density measurement for a 300 × 300 m square
+ * of metro area. `[lat, lng, distanceToNearestParaderoMeters]`. Used by the
+ * "Cobertura territorial" layer.
+ */
+export type CoverageCell = [number, number, number];
+
+/**
  * Per-route schedule: 7 buckets keyed by day of week (0=Monday, ..., 6=Sunday).
  * Each bucket is a flat list of trips, each encoded as
  * `[startMinutesFromMidnight, durationMinutes]`. Used by the simulated-vehicles
