@@ -19,7 +19,7 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import type { AnalysisTab } from '@/components/analysis-tools-sheet';
+import type { AnalysisTab } from '@/components/floating-tools-panel';
 
 interface MapLayerControlProps {
   terminalsCount: number;
@@ -43,9 +43,10 @@ interface MapLayerControlProps {
   simulationStatus: { count: number; loading: boolean };
   coverageStatus: { loading: boolean };
   onRecenter: () => void;
-  // Shortcut into each analysis tool — opens the analysis sheet on the given
-  // tab. Lifted to App because the sheet state lives there.
+  // Toggle the analysis tool panel. Click same = close, different = switch.
   onOpenTool: (tab: AnalysisTab) => void;
+  /** Active tool — drives the pressed state on toolbar buttons. */
+  activeTool: AnalysisTab | null;
 }
 
 interface ToolBtn {
@@ -84,6 +85,7 @@ export function MapLayerControl({
   coverageStatus,
   onRecenter,
   onOpenTool,
+  activeTool,
 }: MapLayerControlProps) {
   const [open, setOpen] = useState(false);
   const enabledCount = [
@@ -229,6 +231,7 @@ export function MapLayerControl({
 
       {TOOLS.map((t) => {
         const Icon = t.Icon;
+        const isActive = activeTool === t.id;
         return (
           <Tooltip key={t.id} content={t.label} side="left">
             <Button
@@ -237,7 +240,11 @@ export function MapLayerControl({
               size="icon"
               onClick={() => onOpenTool(t.id)}
               aria-label={t.label}
-              className="pointer-events-auto h-10 w-10 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85"
+              aria-pressed={isActive}
+              className={cn(
+                'pointer-events-auto h-10 w-10 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85',
+                isActive && 'bg-accent text-accent-foreground border-foreground/40',
+              )}
             >
               <Icon className="h-4 w-4" />
             </Button>

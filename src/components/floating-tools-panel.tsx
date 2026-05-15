@@ -1,17 +1,10 @@
 import { useState } from 'react';
-import { Building2, Compass, Download, ImageDown } from 'lucide-react';
+import { Building2, Compass, Download, ImageDown, X } from 'lucide-react';
 import { PlannerPanel } from '@/components/planner-panel';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { ROUTES } from '@/data/routes';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
@@ -36,11 +29,31 @@ import type { CoverageCell, Theme } from '@/types/transport';
 
 export type AnalysisTab = 'cobertura' | 'operadores' | 'export' | 'wallpaper';
 
-interface AnalysisToolsSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  tab: AnalysisTab;
-  onTabChange: (tab: AnalysisTab) => void;
+const TOOL_META: Record<AnalysisTab, { label: string; description: string }> = {
+  cobertura: {
+    label: 'Cobertura OD · Planificador',
+    description:
+      'Marca dos puntos en el mapa para ver recorridos que pasan a ≤400 m de ambos y/o calcular el punto medio caminando.',
+  },
+  operadores: {
+    label: 'Operadores',
+    description: 'Distribución del servicio entre operadores con recorridos en el feed GTFS.',
+  },
+  export: {
+    label: 'Exportar GeoJSON',
+    description: 'Descarga capas como FeatureCollection para QGIS / Python / R.',
+  },
+  wallpaper: {
+    label: 'Fondo de pantalla',
+    description: 'Genera un PNG de la red para usar como wallpaper.',
+  },
+};
+
+interface FloatingToolsPanelProps {
+  /** Active tool. `null` hides the panel entirely (it doesn't render). */
+  tool: AnalysisTab | null;
+  /** Close handler — sets tool to null on the App side. */
+  onClose: () => void;
   // Planner state lifted from App so it persists when the sheet closes.
   plannerOrigin: { lat: number; lng: number } | null;
   plannerDestination: { lat: number; lng: number } | null;
@@ -68,11 +81,9 @@ interface AnalysisToolsSheetProps {
 
 const micrCount = ROUTES.filter((r) => r.type === 'micro').length;
 
-export function AnalysisToolsSheet({
-  open,
-  onOpenChange,
-  tab,
-  onTabChange,
+export function FloatingToolsPanel({
+  tool,
+  onClose,
   plannerOrigin,
   plannerDestination,
   pickerMode,
@@ -91,79 +102,77 @@ export function AnalysisToolsSheet({
   plannerMidpointError,
   onComputeMidpoint,
   onClearMidpoint,
-}: AnalysisToolsSheetProps) {
+}: FloatingToolsPanelProps) {
+  if (!tool) return null;
+  const meta = TOOL_META[tool];
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full gap-0 sm:max-w-md sm:w-[460px]">
-        <SheetHeader>
-          <SheetTitle className="pr-8">Herramientas de análisis</SheetTitle>
-          <SheetDescription>
-            Estudios técnicos sobre la red de transporte público. Usa estas vistas para
-            mirar cobertura, conectividad y distribución del servicio.
-          </SheetDescription>
-        </SheetHeader>
+    // pointer-events-none on the wrapper so clicks fall through to the map
+    // anywhere outside the card. The card itself reclaims them.
+    <div
+      className={cn(
+        'pointer-events-none absolute z-10',
+        // Mobile: bottom-anchored card with margins, max 65vh height.
+        'left-2 right-2 bottom-2 max-h-[65vh]',
+        // Desktop: detach from left, anchor to the right just left of the
+        // toolbar buttons (which are right-3 + 40px wide).
+        'sm:left-auto sm:right-[64px] sm:top-3 sm:bottom-3 sm:w-[380px] sm:max-h-none',
+      )}
+      aria-live="polite"
+    >
+      <div
+        role="dialog"
+        aria-modal={false}
+        aria-label={meta.label}
+        className="pointer-events-auto flex h-full max-h-[inherit] min-h-0 flex-col overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90 animate-fade-in"
+      >
+        <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <ToolIcon tool={tool} />
+              <h2 className="truncate text-sm font-semibold tracking-tight">
+                {meta.label}
+              </h2>
+            </div>
+            <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
+              {meta.description}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Cerrar herramienta"
+            className="-mr-1 -mt-1 h-8 w-8 shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
 
-        <Tabs
-          value={tab}
-          onValueChange={(v) => onTabChange(v as AnalysisTab)}
-          className="flex min-h-0 flex-1 flex-col px-5 pb-5"
-        >
-          <TabsList className="self-start">
-            <TabsTrigger value="cobertura">
-              <Compass className="h-3 w-3" />
-              Cobertura OD
-            </TabsTrigger>
-            <TabsTrigger value="operadores">
-              <Building2 className="h-3 w-3" />
-              Operadores
-            </TabsTrigger>
-            <TabsTrigger value="export">
-              <Download className="h-3 w-3" />
-              Export
-            </TabsTrigger>
-            <TabsTrigger value="wallpaper">
-              <ImageDown className="h-3 w-3" />
-              Wallpaper
-            </TabsTrigger>
-          </TabsList>
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="px-4 py-3">
+            {tool === 'cobertura' && (
+              <PlannerPanel
+                origin={plannerOrigin}
+                destination={plannerDestination}
+                pickerMode={pickerMode}
+                matches={plannerMatches}
+                matchesAvailable={matchesAvailable}
+                onPickOrigin={onPickOrigin}
+                onPickDestination={onPickDestination}
+                onClear={onClearPlanner}
+                onSelectRoute={onSelectRoute}
+                midpoint={plannerMidpoint}
+                midpointLoading={plannerMidpointLoading}
+                midpointError={plannerMidpointError}
+                onComputeMidpoint={onComputeMidpoint}
+                onClearMidpoint={onClearMidpoint}
+              />
+            )}
 
-          <TabsContent value="cobertura" className="min-h-0 flex-1">
-            <ScrollArea className="h-full pr-2">
+            {tool === 'operadores' && (
               <div className="space-y-3">
-                <p className="text-[12px] leading-snug text-muted-foreground">
-                  Marca dos puntos en el mapa (origen y destino). El estudio devuelve los
-                  recorridos cargados cuya polilínea pasa a ≤400 m de ambos —
-                  aproximación de conectividad por proximidad, sin considerar transbordo
-                  ni distancia caminable real.
-                </p>
-                <PlannerPanel
-                  origin={plannerOrigin}
-                  destination={plannerDestination}
-                  pickerMode={pickerMode}
-                  matches={plannerMatches}
-                  matchesAvailable={matchesAvailable}
-                  onPickOrigin={onPickOrigin}
-                  onPickDestination={onPickDestination}
-                  onClear={onClearPlanner}
-                  onSelectRoute={onSelectRoute}
-                  midpoint={plannerMidpoint}
-                  midpointLoading={plannerMidpointLoading}
-                  midpointError={plannerMidpointError}
-                  onComputeMidpoint={onComputeMidpoint}
-                  onClearMidpoint={onClearMidpoint}
-                />
-              </div>
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="operadores" className="min-h-0 flex-1">
-            <ScrollArea className="h-full pr-2">
-              <div className="space-y-3">
-                <p className="text-[12px] leading-snug text-muted-foreground">
-                  Distribución del servicio entre los {OPERATOR_STATS.length} operadores
-                  con recorridos en el feed GTFS. Toca un operador para mostrar todos sus
-                  recorridos en el mapa.
-                </p>
                 <div className="overflow-hidden rounded-md border">
                   <div className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-b bg-muted/30 px-3 py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                     <span>Operador</span>
@@ -201,23 +210,16 @@ export function AnalysisToolsSheet({
                 </div>
                 <div className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
                   Km totales se calculan sumando la distancia entre vértices del trazado
-                  GTFS simplificado (Douglas–Peucker ~16 m). Es una aproximación al
-                  largo operacional, no incluye recorridos en vacío. Total flota:
-                  {' '}<span className="font-mono">{micrCount}</span> servicios urbanos
-                  registrados.
+                  GTFS simplificado (Douglas–Peucker ~16 m). Aproximación al largo
+                  operacional, no incluye recorridos en vacío. Total flota:
+                  {' '}<span className="font-mono">{micrCount}</span> servicios urbanos.
                 </div>
               </div>
-            </ScrollArea>
-          </TabsContent>
+            )}
 
-          <TabsContent value="export" className="min-h-0 flex-1">
-            <ScrollArea className="h-full pr-2">
-              <ExportTab visibleRouteIds={visibleRouteIds} />
-            </ScrollArea>
-          </TabsContent>
+            {tool === 'export' && <ExportTab visibleRouteIds={visibleRouteIds} />}
 
-          <TabsContent value="wallpaper" className="min-h-0 flex-1">
-            <ScrollArea className="h-full pr-2">
+            {tool === 'wallpaper' && (
               <WallpaperTab
                 visibleRouteIds={visibleRouteIds}
                 mapBounds={mapBounds}
@@ -226,11 +228,27 @@ export function AnalysisToolsSheet({
                 plannerOrigin={plannerOrigin}
                 plannerDestination={plannerDestination}
               />
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
-      </SheetContent>
-    </Sheet>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
+    </div>
+  );
+}
+
+function ToolIcon({ tool }: { tool: AnalysisTab }) {
+  const Icon =
+    tool === 'cobertura'
+      ? Compass
+      : tool === 'operadores'
+        ? Building2
+        : tool === 'export'
+          ? Download
+          : ImageDown;
+  return (
+    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
+      <Icon className="h-3.5 w-3.5" />
+    </span>
   );
 }
 

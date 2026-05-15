@@ -10,7 +10,7 @@ import { StopDetailSheet } from '@/components/stop-detail-sheet';
 import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
 import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
-import { AnalysisToolsSheet, type AnalysisTab } from '@/components/analysis-tools-sheet';
+import { FloatingToolsPanel, type AnalysisTab } from '@/components/floating-tools-panel';
 import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
 import { findRoutes } from '@/lib/planner';
 import { routeBetween, type RoutingResult } from '@/lib/routing';
@@ -209,21 +209,19 @@ export default function App() {
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
 
   const [sourcesOpen, setSourcesOpen] = useState(false);
-  const [analysisOpen, setAnalysisOpen] = useState(false);
-  const [analysisTab, setAnalysisTab] = useState<AnalysisTab>('cobertura');
+  // Single active tool — null means no panel is open. Floating, non-modal:
+  // the user can keep interacting with the map while a tool is on screen.
+  const [activeTool, setActiveTool] = useState<AnalysisTab | null>(null);
 
-  // Shortcut from the floating toolbar — opens the analysis sheet directly on
-  // the requested tool's tab. Keeps the sidebar "Análisis" link working as a
-  // generic "see all tools" entry that lands on whatever tab was last open.
-  const openAnalysisTool = useCallback((t: AnalysisTab) => {
-    setAnalysisTab(t);
-    setAnalysisOpen(true);
+  // Toolbar button behavior: click same tool = close; different = switch.
+  const toggleTool = useCallback((t: AnalysisTab) => {
+    setActiveTool((cur) => (cur === t ? null : t));
   }, []);
 
   const onShowOperatorRoutes = useCallback(
     (operator: string) => {
       onSetAllByOperator(operator, true);
-      setAnalysisOpen(false);
+      setActiveTool(null);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
@@ -517,7 +515,7 @@ export default function App() {
           onlyOperatingNow={onlyOperatingNow}
           onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
           onOpenSources={() => setSourcesOpen(true)}
-          onOpenAnalysis={() => setAnalysisOpen(true)}
+          onOpenAnalysis={() => setActiveTool('cobertura')}
         />
 
         <main className="relative flex-1">
@@ -583,7 +581,8 @@ export default function App() {
             }}
             coverageStatus={{ loading: coverageLoading }}
             onRecenter={onRecenterMap}
-            onOpenTool={openAnalysisTool}
+            onOpenTool={toggleTool}
+            activeTool={activeTool}
           />
 
           {!sheetKind && (
@@ -655,6 +654,29 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          <FloatingToolsPanel
+            tool={activeTool}
+            onClose={() => setActiveTool(null)}
+            plannerOrigin={plannerOrigin}
+            plannerDestination={plannerDestination}
+            pickerMode={pickerMode}
+            plannerMatches={plannerMatches}
+            matchesAvailable={visibleRouteIds.length > 0}
+            onPickOrigin={() => setPickerMode('origin')}
+            onPickDestination={() => setPickerMode('destination')}
+            onClearPlanner={onClearPlanner}
+            onSelectRoute={onSelectRoute}
+            onShowOperatorRoutes={onShowOperatorRoutes}
+            visibleRouteIds={visibleRouteIds}
+            mapBounds={mapBounds}
+            theme={theme}
+            plannerMidpoint={plannerMidpoint}
+            plannerMidpointLoading={plannerMidpointLoading}
+            plannerMidpointError={plannerMidpointError}
+            onComputeMidpoint={onComputeMidpoint}
+            onClearMidpoint={clearMidpointState}
+          />
         </main>
       </div>
 
@@ -694,30 +716,6 @@ export default function App() {
         onSelectRoute={onSelectRoute}
       />
       <DataSourcesSheet open={sourcesOpen} onOpenChange={setSourcesOpen} />
-      <AnalysisToolsSheet
-        open={analysisOpen}
-        onOpenChange={setAnalysisOpen}
-        tab={analysisTab}
-        onTabChange={setAnalysisTab}
-        plannerOrigin={plannerOrigin}
-        plannerDestination={plannerDestination}
-        pickerMode={pickerMode}
-        plannerMatches={plannerMatches}
-        matchesAvailable={visibleRouteIds.length > 0}
-        onPickOrigin={() => setPickerMode('origin')}
-        onPickDestination={() => setPickerMode('destination')}
-        onClearPlanner={onClearPlanner}
-        onSelectRoute={onSelectRoute}
-        onShowOperatorRoutes={onShowOperatorRoutes}
-        visibleRouteIds={visibleRouteIds}
-        mapBounds={mapBounds}
-        theme={theme}
-        plannerMidpoint={plannerMidpoint}
-        plannerMidpointLoading={plannerMidpointLoading}
-        plannerMidpointError={plannerMidpointError}
-        onComputeMidpoint={onComputeMidpoint}
-        onClearMidpoint={clearMidpointState}
-      />
     </div>
   );
 }
