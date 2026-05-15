@@ -13,7 +13,6 @@
     "sync:terminals": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-terminals.ts",
     "sync:paraderos": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-paraderos.ts",
     "sync:biotren-track": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-biotren-track.ts",
-    "sync:bus-routes": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-bus-routes.ts",
     "sync:gtfs-concepcion": "node --experimental-strip-types --no-warnings scripts/generate-gtfs-concepcion.ts",
     "sync:pois": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-pois.ts",
     "sync:wikidata": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-wikidata.ts",
