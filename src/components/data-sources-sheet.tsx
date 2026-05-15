@@ -71,6 +71,17 @@ const PENDING: Source[] = [
       'Posiciones de buses en tiempo real, próximas llegadas a paradero y alertas de servicio. Aún no se verificó un feed público autorizado para producción.',
     link: { href: 'https://transformacion.dtpr.cl/', label: 'transformacion.dtpr.cl' },
   },
+  {
+    title: 'Servicios interurbanos licitados (Tomé, Santa Juana, Florida)',
+    detail:
+      'El feed GTFS Gran Concepción cubre el área metropolitana urbana — Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante, Penco/Lirquén, Coronel, Lota. Quedan fuera servicios licitados que conectan con Tomé, Santa Juana, Florida, Yumbel, etc. (incluyendo los 201 / 201 AU a Santa Juana). Pendiente: incorporar estos recorridos cuando estén en un GTFS público o vía Wikidata + OSM.',
+    count: 'Rutas conocidas pendientes: ~12 servicios interurbanos del Biobío',
+  },
+  {
+    title: 'Tarifa y pago electrónico DTPR',
+    detail:
+      'Tarifa adulto urbana referencial $750 CLP (efectivo); rangos por tramo en Biotrén. DTPR anunció que el pago electrónico se activará en buses urbanos del Gran Concepción durante el ciclo 2026 — los valores oficiales por tarjeta integrada y reglas de transbordo se sumarán al visor cuando la resolución se publique.',
+  },
 ];
 
 interface DataSourcesSheetProps {

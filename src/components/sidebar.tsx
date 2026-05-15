@@ -344,7 +344,19 @@ export function Sidebar({
                 Fuentes
               </button>
             </div>
-            <span>v0.6</span>
+            <span>v0.7</span>
+          </div>
+          <div className="mt-2 text-[10px] leading-snug text-muted-foreground">
+            Programado por{' '}
+            <a
+              href="https://patagua.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline-offset-2 hover:text-foreground hover:underline"
+            >
+              mrcr en patagua.dev
+            </a>
+            . Visión: aporte a la comunidad y a la política pública del Gran Concepción.
           </div>
         </div>
       </div>

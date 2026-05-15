@@ -14,7 +14,7 @@ import {
   CommandList,
   CommandShortcut,
 } from '@/components/ui/command';
-import { ROUTES, ROUTE_TYPES, STOPS } from '@/data/routes';
+import { ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS } from '@/data/routes';
 import type { Theme } from '@/types/transport';
 
 interface HeaderProps {
@@ -86,7 +86,7 @@ export function Header({
         <div className="leading-tight">
           <div className="text-sm font-semibold tracking-tight">Conce Transporte</div>
           <div className="hidden text-[11px] text-muted-foreground md:block">
-            Visor de transporte público · Concepción
+            Visor de transporte público del Gran Concepción
           </div>
         </div>
       </div>
@@ -203,7 +203,7 @@ export function Header({
                   <span className="font-medium">{s.name}</span>
                   <CommandShortcut>
                     {s.routes
-                      .map((rid) => ROUTES.find((x) => x.id === rid)?.code)
+                      .map((rid) => ROUTES_BY_ID.get(rid)?.code)
                       .filter(Boolean)
                       .join(' · ')}
                   </CommandShortcut>

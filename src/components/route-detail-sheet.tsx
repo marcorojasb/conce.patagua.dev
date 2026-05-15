@@ -1,4 +1,4 @@
-import { Clock, Github, Info, Route as RouteIcon, XCircle } from 'lucide-react';
+import { Clock, CreditCard, Github, Info, Route as RouteIcon, Wallet, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -164,6 +164,34 @@ export function RouteDetailSheet({
                     </CardTitle>
                   </CardHeader>
                 </Card>
+              </div>
+
+              <div className="mt-4">
+                <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Tarifa
+                </div>
+                <div className="rounded-md border bg-card p-3">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <div className="flex items-center gap-1.5 text-sm font-medium">
+                      <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+                      {route.type === 'biotren'
+                        ? '$680 – $2.400'
+                        : '$750'}
+                      <span className="text-[11px] font-normal text-muted-foreground">
+                        CLP {route.type === 'biotren' ? 'por tramo' : 'adulto'}
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="gap-1 font-normal">
+                      <CreditCard className="h-3 w-3" />
+                      Pago electrónico próximamente
+                    </Badge>
+                  </div>
+                  <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
+                    {route.type === 'biotren'
+                      ? 'Boletería EFE: tarifa variable por tramo origen-destino. Tarjeta integrada urbana aún no anunciada.'
+                      : 'Valor referencial efectivo en buses urbanos del Gran Concepción. DTPR anunció pago electrónico integrado para el ciclo 2026; reglas oficiales y descuentos pendientes de publicación.'}
+                  </p>
+                </div>
               </div>
 
               <div className="mt-4">
