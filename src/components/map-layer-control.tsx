@@ -188,8 +188,13 @@ export function MapLayerControl({
     ],
   );
 
+  // Sized smaller in mobile so 6 stacked buttons + separator fit comfortably
+  // without dominating the right edge of the map.
+  const BTN_CLASS =
+    'pointer-events-auto h-9 w-9 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85 md:h-10 md:w-10';
+
   return (
-    <div className="pointer-events-none absolute right-3 top-3 z-10 flex flex-col items-end gap-2">
+    <div className="pointer-events-none absolute right-2 top-2 z-10 flex flex-col items-end gap-1.5 md:right-3 md:top-3 md:gap-2">
       <Tooltip content="Centrar Gran Concepción" side="left">
         <Button
           type="button"
@@ -197,7 +202,7 @@ export function MapLayerControl({
           size="icon"
           onClick={onRecenter}
           aria-label="Centrar Gran Concepción"
-          className="pointer-events-auto h-10 w-10 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85"
+          className={BTN_CLASS}
         >
           <Crosshair className="h-4 w-4" />
         </Button>
@@ -211,10 +216,7 @@ export function MapLayerControl({
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-label="Abrir capas del mapa"
-          className={cn(
-            'pointer-events-auto h-10 w-10 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85',
-            open && 'bg-accent text-accent-foreground',
-          )}
+          className={cn(BTN_CLASS, open && 'bg-accent text-accent-foreground')}
         >
           <Layers2 className="h-4 w-4" />
           {enabledCount > 0 && (
@@ -227,7 +229,7 @@ export function MapLayerControl({
 
       {/* Visual separator between view controls (recenter, layers) and
           analysis tools (planner, operators, export, wallpaper). */}
-      <div aria-hidden className="pointer-events-none h-px w-6 bg-border/60" />
+      <div aria-hidden className="pointer-events-none h-px w-5 bg-border/60 md:w-6" />
 
       {TOOLS.map((t) => {
         const Icon = t.Icon;
@@ -242,7 +244,7 @@ export function MapLayerControl({
               aria-label={t.label}
               aria-pressed={isActive}
               className={cn(
-                'pointer-events-auto h-10 w-10 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85',
+                BTN_CLASS,
                 isActive && 'bg-accent text-accent-foreground border-foreground/40',
               )}
             >

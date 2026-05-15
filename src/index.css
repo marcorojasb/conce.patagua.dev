@@ -127,6 +127,13 @@
 .leaflet-control-attribution a {
   color: hsl(var(--foreground)) !important;
 }
+/* Long-form license disclaimer is hidden in narrow viewports — full credit
+   lives in the Data Sources sheet so license requirements are still met. */
+@media (max-width: 640px) {
+  .leaflet-control-attribution .attr-long {
+    display: none;
+  }
+}
 
 .stop-marker {
   background: hsl(var(--background));

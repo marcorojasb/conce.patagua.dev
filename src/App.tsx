@@ -24,6 +24,7 @@ import { useAirQuality } from '@/hooks/use-air-quality';
 import { useTheme } from '@/hooks/use-theme';
 import { readUrlState, useSyncUrlState } from '@/hooks/use-url-state';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
+import { cn } from '@/lib/utils';
 import type { FlyToToken, Route, RouteTypeId, SheetKind } from '@/types/transport';
 
 const INITIAL_URL = readUrlState();
@@ -585,9 +586,9 @@ export default function App() {
             activeTool={activeTool}
           />
 
-          {!sheetKind && (
-            <div className="pointer-events-none absolute left-3 top-3 z-10 animate-fade-in">
-              <Card className="pointer-events-auto max-w-[260px] border-border/80 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+          {!sheetKind && !activeTool && (
+            <div className="pointer-events-none absolute left-2 top-2 z-10 animate-fade-in md:left-3 md:top-3">
+              <Card className="pointer-events-auto max-w-[220px] border-border/80 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:max-w-[260px]">
                 <CardHeader className="space-y-1 p-3">
                   <CardTitle className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
                     <MapPin className="h-3 w-3" />
@@ -621,8 +622,16 @@ export default function App() {
             </div>
           )}
 
-          <div className="pointer-events-none absolute bottom-4 left-3 z-10">
-            <div className="pointer-events-auto max-h-[40vh] overflow-y-auto thin-scroll rounded-md border bg-background/90 px-3 py-2 text-[11px] shadow-sm backdrop-blur">
+          {/* Legend hides on mobile when a tool panel is open (bottom-anchored,
+              would overlap). On desktop both can coexist (sidebar/legend left,
+              tool panel right) so we keep it visible. */}
+          <div
+            className={cn(
+              'pointer-events-none absolute bottom-10 left-2 z-10 md:bottom-6 md:left-3',
+              activeTool && 'hidden md:block',
+            )}
+          >
+            <div className="pointer-events-auto max-h-[35vh] overflow-y-auto thin-scroll rounded-md border bg-background/90 px-3 py-2 text-[11px] shadow-sm backdrop-blur md:max-h-[40vh]">
               <div className="mb-1 font-medium uppercase tracking-wider text-muted-foreground">
                 Leyenda · {visibleIdsAfterTypeFilter.length} visible
                 {visibleIdsAfterTypeFilter.length === 1 ? '' : 's'}

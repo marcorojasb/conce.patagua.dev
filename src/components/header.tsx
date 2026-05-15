@@ -66,26 +66,30 @@ export function Header({
   const BrandIcon = ROUTE_TYPES.micro.Icon;
 
   return (
-    <header className="relative z-30 flex h-14 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:gap-3 md:px-4">
+    <header className="relative z-30 flex h-12 items-center gap-1.5 border-b bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:h-14 md:gap-3 md:px-4">
       <Tooltip content="Mostrar/ocultar barra lateral" side="bottom">
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggleSidebar}
           aria-label="Mostrar u ocultar barra lateral"
-          className="h-11 w-11 md:h-9 md:w-9"
+          className="h-10 w-10 shrink-0 md:h-9 md:w-9"
         >
           <PanelLeft className="h-[18px] w-[18px]" />
         </Button>
       </Tooltip>
 
-      <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <BrandIcon className="h-4 w-4" />
         </div>
-        <div className="leading-tight">
-          <div className="text-sm font-semibold tracking-tight">Conce Transporte</div>
-          <div className="hidden text-[11px] text-muted-foreground md:block">
+        {/* min-w-0 + truncate keeps the title on a single line on narrow
+            viewports even when the toolbar (search, github, theme) crowds it. */}
+        <div className="min-w-0 leading-tight">
+          <div className="truncate text-sm font-semibold tracking-tight">
+            Conce Transporte
+          </div>
+          <div className="hidden truncate text-[11px] text-muted-foreground md:block">
             Visor de transporte público del Gran Concepción
           </div>
         </div>
@@ -102,7 +106,7 @@ export function Header({
       <button
         type="button"
         onClick={() => setCommandOpen(true)}
-        className="group relative flex h-11 w-11 shrink-0 items-center justify-center rounded-md border bg-background text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-ring md:h-9 md:w-full md:max-w-[280px] md:justify-start md:gap-2 md:px-3"
+        className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-background text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-ring md:h-9 md:w-full md:max-w-[280px] md:justify-start md:gap-2 md:px-3"
         aria-label="Buscar recorridos y paraderos"
       >
         <Search className="h-4 w-4 opacity-60 md:h-[15px] md:w-[15px]" />
@@ -127,7 +131,7 @@ export function Header({
             )
           }
           aria-label="Repositorio en GitHub"
-          className="h-11 w-11 md:h-9 md:w-9"
+          className="h-10 w-10 shrink-0 md:h-9 md:w-9"
         >
           <Github className="h-[18px] w-[18px]" />
         </Button>
@@ -139,7 +143,7 @@ export function Header({
           size="icon"
           onClick={onToggleTheme}
           aria-label="Cambiar tema"
-          className="h-11 w-11 md:h-9 md:w-9"
+          className="h-10 w-10 shrink-0 md:h-9 md:w-9"
         >
           {theme === 'dark' ? (
             <Sun className="h-[18px] w-[18px]" />

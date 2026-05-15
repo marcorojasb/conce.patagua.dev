@@ -112,11 +112,12 @@ export function FloatingToolsPanel({
     <div
       className={cn(
         'pointer-events-none absolute z-10',
-        // Mobile: bottom-anchored card with margins, max 65vh height.
-        'left-2 right-2 bottom-2 max-h-[65vh]',
+        // Mobile: bottom-anchored card. 58vh leaves ~40% of viewport for the
+        // map above — enough to keep context while reading the panel.
+        'left-2 right-2 bottom-2 h-[58vh]',
         // Desktop: detach from left, anchor to the right just left of the
-        // toolbar buttons (which are right-3 + 40px wide).
-        'sm:left-auto sm:right-[64px] sm:top-3 sm:bottom-3 sm:w-[380px] sm:max-h-none',
+        // toolbar buttons (right-3 + 40px wide). Top/bottom 12px.
+        'sm:left-auto sm:right-[64px] sm:top-3 sm:bottom-3 sm:w-[380px] sm:h-auto',
       )}
       aria-live="polite"
     >
@@ -124,8 +125,17 @@ export function FloatingToolsPanel({
         role="dialog"
         aria-modal={false}
         aria-label={meta.label}
-        className="pointer-events-auto flex h-full max-h-[inherit] min-h-0 flex-col overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90 animate-fade-in"
+        // Grid layout instead of flex so the ScrollArea row has a definite
+        // (not "computed via flex") height — required for Radix ScrollArea's
+        // h-full viewport to size correctly inside on iOS Safari.
+        className="pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90 animate-fade-in"
       >
+        {/* Cosmetic drag handle, mobile only — communicates "this is a
+            dismissable bottom sheet" the same way iOS does. Closing is
+            actually done via the X button or the toolbar toggle. */}
+        <div className="flex justify-center py-1.5 sm:hidden" aria-hidden>
+          <span className="h-1 w-10 rounded-full bg-muted-foreground/40" />
+        </div>
         <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
