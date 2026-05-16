@@ -1,16 +1,15 @@
-// Biotrén y sus extensiones — tren urbano del Gran Concepción.
+// Biotrén — tren urbano operacional vigente del Gran Concepción.
 //
-// Es el único tren urbano de Chile fuera de la red Metro de Santiago en
-// operación regular (Merval Valparaíso es interurbano de cercanías; Tren
-// Limache-Puerto comparte status, debatible). Lo opera EFE Trenes
-// Metropolitanos S.A. (filial de EFE Sur, antes FESUR), sobre el corredor
-// histórico Concepción-Talcahuano (Línea Sur del antiguo sistema EFE).
+// Esta ficha cubre el servicio EFE Biobío operado HOY: dos líneas (L1
+// Hualqui ↔ Mercado de Talcahuano, L2 Coronel ↔ Concepción), 26
+// estaciones digitalizadas desde OSM, tarifas por zona vigentes
+// desde 2-ene-2026 (alza promedio $60, rango Z1-Z10 $420-$850),
+// frecuencias y operación. Para extensiones y proyectos futuros
+// (Penco, Tomé, Lota, Carriel Sur), ver `biotren-extensiones-proyectos`.
 //
-// El artículo verifica datos contra OSM (estaciones en
-// `src/data/biotren.generated.ts`, way `railway=rail` operator=EFE en
-// `biotren-track.generated.ts`) y prensa regional. Las extensiones
-// (Penco, Tomé, Lota, Carriel Sur) están en distintos grados de estudio
-// y debate y por eso van con banners ámbar.
+// Verificación contra OSM (`src/data/biotren.generated.ts`, way
+// `railway=rail` operator=EFE en `biotren-track.generated.ts`),
+// EFE Sur (efe.cl) y prensa regional.
 
 import {
   KeyValueList,
@@ -23,7 +22,7 @@ import {
 } from './_components';
 import { MapLink } from '@/wiki/map-link';
 
-export default function BiotrenExtensiones() {
+export default function Biotren() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
@@ -33,12 +32,9 @@ export default function BiotrenExtensiones() {
         proyecto Biotrén 2005, electrificación, 27F-2010) están citados.
         Tarifas por zona vigentes desde 2-ene-2026 (alza promedio $60,
         rango Z1-Z10 $420-$850) también verificadas con EFE Sur.{' '}
-        <strong>Pendientes</strong>: demanda diaria 2025-2026, estado
-        exacto del estudio de prefactibilidad de la extensión a Penco,
-        decreto MTT del subsidio operacional. Las <em>extensiones</em> a Penco, Tomé,
-        Lota y Carriel Sur están en debate público pero ninguna está
-        adjudicada ni con RS (recomendación social) vigente en MIDESO al
-        cierre 2025-2026 — toda esa sección lleva banner ámbar.
+        <strong>Pendientes</strong>: demanda diaria 2025-2026, decreto MTT
+        del subsidio operacional, integración tarifaria proyectada con
+        BusPay 2026.
       </VerifiedBanner>
 
       <Section title="Qué es y por qué importa">
@@ -69,24 +65,28 @@ export default function BiotrenExtensiones() {
             <strong>Infraestructura ya construida</strong>: la línea
             férrea Concepción-Talcahuano existe desde 1872; la
             electrificación 3 kV DC y la doble vía urbana son inversiones
-            hundidas. Extender el servicio es órdenes de magnitud más
-            barato que construir un metro nuevo.
+            hundidas. El servicio Biotrén corre sobre traza histórica
+            consolidada.
           </li>
           <li>
-            <strong>Punto de tensión con el electrocorredor MOP Ruta
-            150</strong>: la inversión más grande de transporte público
-            en el Gran Concepción de la última década (UF 4,4 millones,
-            ≈USD 172M) corre por la <em>carretera</em>, no por el riel.
-            La decisión de mover dinero a bus eléctrico en vez de
-            extender el Biotrén a Penco/Tomé es la disputa de política
-            pública más jugosa del corredor norte (cubierta en detalle
-            en{' '}
-            <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
-              Concepción ↔ Tomé
+            <strong>Capa nativa del visor</strong>: a diferencia de los
+            buses urbanos (que entran por el feed{' '}
+            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+              GTFS Gran Concepción
             </a>
-            ).
+            ), el Biotrén se procesa desde OSM (relations 6857222 / 6857223
+            + nodos <code>railway=station</code>) y vive en el visor sin
+            depender del GTFS urbano.
           </li>
         </ul>
+        <p className="text-[12px] text-muted-foreground">
+          Para extensiones discutidas (Penco, Tomé, Lota, Carriel Sur) y
+          la tensión política con el electrocorredor MOP Ruta 150, ver{' '}
+          <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
+            Biotrén · extensiones y proyectos
+          </a>
+          .
+        </p>
         <Sources>
           <SourceLink href="https://www.efetrenes.cl/biotren">
             EFE Trenes · sitio oficial Biotrén
@@ -138,14 +138,6 @@ export default function BiotrenExtensiones() {
           desplomó; el servicio se mantuvo con frecuencia reducida y
           ventanas operativas acortadas.
         </p>
-        <p>
-          Las <strong>extensiones a Penco</strong> y a Tomé entraron al
-          debate público desde la década de 2010. La Línea 2 a Lota no
-          ha avanzado en estudios formales recientes. En paralelo, el
-          MOP licitó en <strong>2025</strong> el electrocorredor de bus
-          eléctrico sobre la Ruta 150, planteando la pregunta política:
-          ¿tren extendido o BRT eléctrico?
-        </p>
         <Timeline
           items={[
             {
@@ -180,14 +172,9 @@ export default function BiotrenExtensiones() {
               event: 'Pandemia COVID-19: demanda colapsa, servicio reducido en frecuencia y ventana horaria.',
             },
             {
-              date: '13-nov-2024',
-              event: 'CGR visa licitaciones MOP de corredores de transporte público para Rutas 150 / 160 / Conce-Talcahuano. Empieza la disputa política tren-vs-bus eléctrico.',
-              source: { href: 'https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html', label: 'Diario Concepción' },
-            },
-            {
-              date: '10-dic-2025',
-              event: 'Oferta única (Electro Cointer II) para concesión Ruta 150 + Conce-Talcahuano II (UF 4.431.000). La extensión Biotrén-Penco queda postergada otra vez.',
-              source: { href: 'https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/', label: 'MOP Concesiones' },
+              date: '2-ene-2026',
+              event: 'Entra en vigencia nueva estructura tarifaria por zonas Z1-Z10 ($420-$850 adulto), alza promedio $60 por viaje. EFE Sur cita "alza acumulada por inflación no aplicada en pandemia" como fundamento.',
+              source: { href: 'https://www.efe.cl/efe-sur-informa-nueva-estructura-tarifaria-del-biotren-a-partir-del-2-de-enero-de-2026/', label: 'EFE Sur · 30-dic-2025' },
             },
           ]}
         />
@@ -247,8 +234,8 @@ export default function BiotrenExtensiones() {
               'Trenes eléctricos Xtrapolis (fabricados por Alstom Brasil) y unidades ABe históricas. Composiciones de 3 coches articulados. Electrificación 3 kV DC catenaria.',
             ],
             [
-              'Tarifa adulto',
-              'Por tramo (zonas), no plana. El visor anota "CLP por tramo" para diferenciar de buses (que cobran por viaje). Reajuste vigente desde 2-ene-2026: alza promedio de $60 por viaje (rango $40-$70 según zona).',
+              'Estructura tarifaria',
+              'Por zonas Z1-Z10, no plana. Reajuste vigente desde 2-ene-2026: alza promedio $60 por viaje (rango $40-$70 según zona). Detalle del cuadro en sección "Tarifas vigentes 2026".',
             ],
             [
               'Información en tiempo real',
@@ -256,18 +243,120 @@ export default function BiotrenExtensiones() {
             ],
           ]}
         />
+        <Sources>
+          <SourceLink href="https://www.efetrenes.cl/biotren">
+            EFE Trenes · sitio oficial Biotrén
+          </SourceLink>
+          <SourceLink href="https://es.wikipedia.org/wiki/Biotr%C3%A9n">
+            Wikipedia · Biotrén (frecuencias, material rodante)
+          </SourceLink>
+        </Sources>
+      </Section>
+
+      <Section title="Tarifas vigentes 2026">
+        <p>
+          Estructura tarifaria por <strong>zonas Z1-Z10</strong> vigente
+          desde el <strong>2 de enero de 2026</strong>. Alza promedio
+          de $60 por viaje respecto del cuadro anterior (rango $40-$70
+          según zona). EFE Sur cita "alza acumulada por inflación no
+          aplicada en pandemia" como fundamento del ajuste.
+        </p>
+        <div className="overflow-x-auto rounded-md border">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+                <th className="px-3 py-2 font-medium">Zona</th>
+                <th className="px-3 py-2 font-medium">Estaciones incluidas (extracto)</th>
+                <th className="px-3 py-2 font-medium">Tarifa adulto</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y align-top text-[12px]">
+              <tr>
+                <td className="px-3 py-2 font-mono">Z1</td>
+                <td className="px-3 py-2">Hualqui (terminal sur L1)</td>
+                <td className="px-3 py-2 font-mono">$550</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z2</td>
+                <td className="px-3 py-2">La Leonera, Manquimávida, Pedro Medina, Chiguayante</td>
+                <td className="px-3 py-2 font-mono">$510</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z3</td>
+                <td className="px-3 py-2">Concepción (estación central), Lorenzo Arenas</td>
+                <td className="px-3 py-2 font-mono">$420</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z4</td>
+                <td className="px-3 py-2">UTFSM, Los Cóndores, Higueras</td>
+                <td className="px-3 py-2 font-mono">$500</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z5</td>
+                <td className="px-3 py-2">El Arenal, Mercado de Talcahuano (terminal norte L1)</td>
+                <td className="px-3 py-2 text-muted-foreground">por confirmar</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z6</td>
+                <td className="px-3 py-2">Juan Pablo II, Diagonal Bío-Bío (L2)</td>
+                <td className="px-3 py-2 font-mono">$570</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z7</td>
+                <td className="px-3 py-2">Alborada, Costa Mar (L2)</td>
+                <td className="px-3 py-2 text-muted-foreground">por confirmar</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z8</td>
+                <td className="px-3 py-2">El Parque, Lomas Coloradas (L2)</td>
+                <td className="px-3 py-2 text-muted-foreground">por confirmar</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z9</td>
+                <td className="px-3 py-2">Cardenal Raúl Silva Henríquez, Hito Galvarino (L2)</td>
+                <td className="px-3 py-2 text-muted-foreground">por confirmar</td>
+              </tr>
+              <tr>
+                <td className="px-3 py-2 font-mono">Z10</td>
+                <td className="px-3 py-2">Coronel (terminal sur L2)</td>
+                <td className="px-3 py-2 font-mono">$850</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <p className="text-[12px]">
-          <strong>Tarifas vigentes 2026 (extracto · adulto sin descuento):</strong>{' '}
-          Zona 1 Hualqui $550, Zona 2 Leonera / Manquimávida / Pedro
-          Medina / Chiguayante $510, Zona 3 Lorenzo Arenas $420, Zona 4
-          UTFSM / Los Cóndores / Higueras $500, Zona 6 Juan Pablo II /
-          Diagonal Biobío $570, Zona 10 Coronel $850. Estudiantes con TNE
+          <strong>Descuentos vigentes:</strong> Estudiantes con TNE
           activa: <strong>67% de descuento</strong> en enseñanza media y
           superior (básica liberada). Adultos mayores: <strong>50% de
-          descuento</strong>, los 365 días del año. EFE Sur cita "alza
-          acumulada por inflación no aplicada en pandemia" como
-          fundamento del ajuste.
+          descuento</strong>, los 365 días del año.
         </p>
+        <KeyValueList
+          items={[
+            [
+              'Pago',
+              'Tarjeta del Biotrén (Conecta, sucesora de la tarjeta Biotrén 2005) en validadores de estación. No es la misma tarjeta que usan los buses urbanos.',
+            ],
+            [
+              'Integración con buses urbanos',
+              'NO hay integración tarifaria con buses urbanos del Gran Concepción al cierre 2025-2026. Un viaje bus + Biotrén paga dos veces.',
+            ],
+            [
+              'BusPay 2026',
+              <>
+                BusPay es el sistema de pago electrónico para buses del
+                Perímetro de Exclusión del Gran Concepción + Santa Juana
+                + Tomé (marcha blanca Q3 2026). El Biotrén <strong>NO</strong>{' '}
+                está dentro del perímetro inicial de BusPay según la
+                información SUBTRANS publicada — la integración con tren
+                es pendiente de definición. Ver{' '}
+                <a href="/wiki/buspay" className="underline underline-offset-2">
+                  BusPay
+                </a>
+                .
+              </>,
+            ],
+          ]}
+        />
         <Sources>
           <SourceLink href="https://www.efe.cl/efe-sur-informa-nueva-estructura-tarifaria-del-biotren-a-partir-del-2-de-enero-de-2026/">
             EFE Trenes · 30-dic-2025 — Nueva estructura tarifaria Biotrén vigente 2-ene-2026
@@ -278,10 +367,17 @@ export default function BiotrenExtensiones() {
           <SourceLink href="https://www.efe.cl/nuestros-servicios/biotren/tarifas-del-servicio/">
             EFE Trenes · Tarifas del servicio Biotrén (cuadro vigente)
           </SourceLink>
-          <SourceLink href="https://es.wikipedia.org/wiki/Biotr%C3%A9n">
-            Wikipedia · Biotrén (frecuencias, material rodante)
+          <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
+            Subtrans · Perímetro inicial BusPay = Gran Concepción + Santa Juana + Tomé
           </SourceLink>
         </Sources>
+        <PendingBanner>
+          <strong>Por confirmar:</strong> tarifas exactas de Z5, Z7, Z8
+          y Z9 (no aparecen explicitadas en la cobertura de prensa con
+          el mismo nivel de detalle que Z1-Z4, Z6 y Z10). Cierre por
+          foto del cuadro tarifario completo en estación Concepción o
+          PDF oficial EFE Sur.
+        </PendingBanner>
       </Section>
 
       <Section title="Estaciones">
@@ -504,125 +600,6 @@ export default function BiotrenExtensiones() {
         </Sources>
       </Section>
 
-      <Section title="Extensiones propuestas">
-        <PendingBanner>
-          <strong>Toda esta sección es debate público, no obra
-          adjudicada.</strong> Ninguna de las extensiones que siguen
-          tiene contrato firmado, RS vigente en MIDESO ni decreto MOP /
-          MTT al cierre de 2025-2026. Las cifras son referenciales de
-          prensa regional y declaraciones públicas, no de bases de
-          licitación. Verificación a fondo requiere acceso a estudios
-          de prefactibilidad de EFE Trenes (Ley de Transparencia).
-        </PendingBanner>
-
-        <div className="rounded-md border bg-card p-3 space-y-2">
-          <div className="text-[13px] font-semibold">
-            Extensión norte a Penco (Línea 1)
-          </div>
-          <p className="text-[12px] leading-snug">
-            Es la extensión más debatida. La L1 termina hoy en{' '}
-            <strong>Mercado de Talcahuano</strong>; la propuesta es
-            extender por el corredor costero hasta Penco aprovechando
-            trazas férreas existentes (algunas en desuso, otras
-            compartidas con el ramal de carga al puerto de Lirquén). La
-            comuna de Penco (47.367 hab. Censo 2017) hoy depende del bus
-            urbano (líneas 17M, 30B/C/E, 31F, 57Y, 62H del{' '}
-            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-              feed GTFS Gran Concepción
-            </a>
-            ) o de buses interurbanos de Transportes Tomé
-            (servicios 401/411/421).
-          </p>
-          <p className="text-[12px] leading-snug">
-            El alcalde de Penco <strong>Víctor Hugo Figueroa</strong>{' '}
-            advirtió en noviembre 2022 que el corredor MOP Ruta 150
-            puede <em>frenar</em> la llegada del Biotrén porque baja la
-            demanda potencial del tren al mejorar el bus por carretera.
-            EFE Trenes tiene un estudio de prefactibilidad en curso —
-            estado y resultado al cierre 2025-2026 no han sido
-            publicados.
-          </p>
-          <div className="text-[11px] text-muted-foreground">
-            <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-              Diario Concepción · 1-nov-2022 — Ruta 150 puede frenar Biotrén-Penco
-            </SourceLink>
-          </div>
-        </div>
-
-        <div className="rounded-md border bg-card p-3 space-y-2">
-          <div className="text-[13px] font-semibold">
-            Extensión norte a Tomé (continuación de la anterior)
-          </div>
-          <p className="text-[12px] leading-snug">
-            Una vez en Penco, una segunda fase llevaría el riel hasta
-            Tomé (54.946 hab. Censo 2017) por la costa. Es la propuesta
-            alternativa al electrocorredor Ruta 150: en vez de un BRT
-            eléctrico sobre asfalto, recuperar la conexión ferroviaria
-            histórica. El argumento técnico es que la traza Penco-Tomé
-            tuvo riel hasta la década de 1980 (servicio textil hacia
-            Bellavista Oveja Tomé) y rehabilitarla sería menos invasivo
-            que ensanchar la carretera. Sin proyecto formal de EFE ni
-            recomendación MIDESO.
-          </p>
-          <p className="text-[12px] leading-snug">
-            La municipalidad de Tomé pidió en noviembre 2025 que el
-            beneficio del proyecto MOP se extienda hasta Tomé, no sólo
-            hasta el Enlace Penco — pero esa petición es sobre el
-            corredor de buses, no sobre el tren. Para el detalle político
-            ver{' '}
-            <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
-              Concepción ↔ Tomé
-            </a>
-            .
-          </p>
-          <div className="text-[11px] text-muted-foreground">
-            <SourceLink href="http://www.tomealdia.com/2025/11/tome-tambien-se-beneficara-con-proyecto.html">
-              Tomé al día · nov-2025 — Tomé pide extensión del beneficio
-            </SourceLink>
-          </div>
-        </div>
-
-        <div className="rounded-md border bg-card p-3 space-y-2">
-          <div className="text-[13px] font-semibold">
-            Extensión sur a Lota (Línea 2)
-          </div>
-          <p className="text-[12px] leading-snug">
-            La L2 termina hoy en <strong>Coronel</strong> (urbano).
-            Continuar 8-10 km al sur hasta Lota (~43.535 hab. Censo
-            2017) por la traza histórica del ramal del carbón es una
-            propuesta recurrente de autoridades locales — el ramal
-            existió hasta el cierre de la minería del carbón (Schwager
-            cerró 1994, Lota Verde 1997). No hay proyecto EFE formal en
-            curso. La traza está parcialmente desarmada, parcialmente
-            ocupada por usos urbanos.
-          </p>
-        </div>
-
-        <div className="rounded-md border bg-card p-3 space-y-2">
-          <div className="text-[13px] font-semibold">
-            Ramal al Aeropuerto Carriel Sur (especulativo)
-          </div>
-          <p className="text-[12px] leading-snug">
-            Concepción es uno de los pocos aeropuertos chilenos
-            relevantes <em>sin</em> conexión por tren. Carriel Sur
-            (Talcahuano) está a ~3 km de la estación El Arenal de la L1.
-            Un ramal corto cerraría esa brecha, pero <strong>no existe
-            propuesta formal documentada</strong> al cierre 2025-2026.
-            Es una idea recurrente de columnas de opinión y proyectos
-            académicos, no de la planificación de EFE ni MOP.
-          </p>
-        </div>
-
-        <PendingBanner>
-          <strong>Datos por confirmar para cada extensión:</strong>{' '}
-          inversión estimada (UF / USD), fecha de RS MIDESO, estado del
-          estudio de prefactibilidad / ingeniería básica, ventana de
-          ejecución proyectada. Cierre por solicitud de Ley de
-          Transparencia a EFE Trenes Metropolitanos y a la SUBTRANS
-          Biobío.
-        </PendingBanner>
-      </Section>
-
       <Section title="Material rodante y operación">
         <KeyValueList
           items={[
@@ -652,7 +629,7 @@ export default function BiotrenExtensiones() {
             ],
             [
               'Subsidio operacional',
-              'EFE Trenes Metropolitanos recibe subsidio MTT vía Ley de Presupuestos anual. Monto y polinomio pendientes de cita.',
+              'EFE Trenes Metropolitanos recibe subsidio MTT vía Ley de Presupuestos anual. Monto y polinomio pendientes de cita. Nota: EFE no se financia con Ley 20.378.',
             ],
             [
               'Accidentes en pasos a nivel',
@@ -673,128 +650,6 @@ export default function BiotrenExtensiones() {
           </SourceLink>
           <SourceLink href="https://www.efetrenes.cl/">
             EFE Trenes · estructura corporativa (Trenes Metropolitanos como filial)
-          </SourceLink>
-        </Sources>
-      </Section>
-
-      <Section title="Tarifa e integración">
-        <KeyValueList
-          items={[
-            [
-              'Estructura tarifaria',
-              'Por tramo (zonas), no plana. El visor anota "CLP por tramo" en la sheet de detalle de la línea. Adulto, estudiante, adulto mayor / persona con discapacidad — distintas tarifas.',
-            ],
-            [
-              'Pago',
-              'Tarjeta del Biotrén (sistema histórico EFE) en validadores de estación. No es la misma tarjeta que usan los buses urbanos.',
-            ],
-            [
-              'Integración con buses urbanos',
-              'NO hay integración tarifaria con buses urbanos del Gran Concepción al cierre 2025-2026. Un viaje bus + Biotrén paga dos veces.',
-            ],
-            [
-              'BusPay 2026',
-              'BusPay es el sistema de pago electrónico para buses del Perímetro de Exclusión del Gran Concepción + Santa Juana + Tomé (puesta en marcha proyectada 2026). El Biotrén NO está dentro del perímetro inicial de BusPay según la información SUBTRANS publicada — la integración con tren es pendiente de definición.',
-            ],
-            [
-              'Tarifa adulto vigente 2026',
-              'Pendiente. Cierre por foto del cuadro tarifario en cualquier estación.',
-            ],
-          ]}
-        />
-        <PendingBanner>
-          <strong>Hueco editorial conocido:</strong> el cuadro tarifario
-          completo del Biotrén por zona y por categoría no está
-          replicado en este artículo. Sin la tabla oficial, evitamos
-          poner valores aproximados que envejecen mal.
-        </PendingBanner>
-        <Sources>
-          <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
-            Subtrans · Perímetro inicial BusPay = Gran Concepción + Santa Juana + Tomé
-          </SourceLink>
-        </Sources>
-      </Section>
-
-      <Section title="Tensión con el electrocorredor Ruta 150">
-        <p>
-          Esta es la disputa de política pública más fuerte del corredor
-          norte y vale documentarla en su propio bloque. Los datos del{' '}
-          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
-            electrocorredor MOP
-          </a>{' '}
-          están desarrollados en su artículo propio y referenciados en{' '}
-          <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
-            Concepción ↔ Tomé
-          </a>
-          ; aquí los resumimos en clave Biotrén.
-        </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">Extensión Biotrén Penco</th>
-                <th className="px-3 py-2 font-medium">Electrocorredor MOP Ruta 150</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top text-[12px]">
-              <tr>
-                <td className="px-3 py-2 font-medium">Modo</td>
-                <td className="px-3 py-2">Tren eléctrico sobre riel (3 kV DC)</td>
-                <td className="px-3 py-2">Buses (eléctricos y diésel) sobre pista exclusiva en carretera</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Inversión referencial</td>
-                <td className="px-3 py-2">No publicada — estudio de prefactibilidad en EFE</td>
-                <td className="px-3 py-2">UF 4.431.000 ≈ USD 172M (Ruta 150 + Conce-Talcahuano II)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Estado 2025-2026</td>
-                <td className="px-3 py-2">Estudio EFE, sin RS MIDESO ni licitación abierta</td>
-                <td className="px-3 py-2">Oferta única recibida 10-dic-2025 · apertura económica 15-ene-2026 · adjudicación 1S 2026 esperada</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Capacidad estructural</td>
-                <td className="px-3 py-2">Cientos de pax por composición; orden de magnitud sobre el bus</td>
-                <td className="px-3 py-2">Buses 18-26 m articulados; capacidad agregada vía frecuencia</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Cobertura territorial</td>
-                <td className="px-3 py-2">Punto a punto (estaciones); cobertura de "última milla" insuficiente sin alimentadores</td>
-                <td className="px-3 py-2">Buses pueden seguir hasta Lirquén / Tomé / Dichato; mejor cobertura</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Horizonte de puesta en servicio</td>
-                <td className="px-3 py-2">No comprometido</td>
-                <td className="px-3 py-2">2032 proyectado (obras 2S 2029 — 1S 2030)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Veto político</td>
-                <td className="px-3 py-2">Alcalde Penco (2022): el corredor puede "frenar" la llegada del tren</td>
-                <td className="px-3 py-2">Municipalidad Tomé (2025) pide extender el beneficio hasta Tomé</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p className="text-[12px] text-muted-foreground">
-          La lectura editorial: el electrocorredor <em>desplaza
-          políticamente</em> a la extensión Biotrén — no son
-          incompatibles técnicamente, pero el presupuesto público no
-          alcanza para ambos y la priorización MOP es por carretera. Si
-          el electrocorredor se ejecuta y absorbe la demanda, la
-          demanda residual no justifica el riel a Penco. Si la
-          extensión a Penco hubiera entrado antes en la cola de
-          inversión MIDESO, el orden podría haberse invertido.
-        </p>
-        <Sources>
-          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-            Diario Concepción · 1-nov-2022 — Ruta 150 vs Biotrén
-          </SourceLink>
-          <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-            MOP Concesiones · 10-dic-2025 — Ofertas Ruta 150
-          </SourceLink>
-          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-            Diario Concepción · 7-nov-2025 — Electrocorredores
           </SourceLink>
         </Sources>
       </Section>
@@ -835,8 +690,11 @@ export default function BiotrenExtensiones() {
               Algunos gremios de buses urbanos del Gran Concepción
               perciben al Biotrén como competencia desleal por su
               subsidio operacional. La tensión sube cuando se discuten
-              extensiones (Penco, Tomé): los operadores que sirven hoy
-              esos corredores pierden demanda si el tren llega.
+              extensiones — ver{' '}
+              <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
+                Biotrén · extensiones y proyectos
+              </a>
+              .
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -888,13 +746,17 @@ export default function BiotrenExtensiones() {
               global aparece en la sheet).
             </li>
             <li>
-              Cuadro tarifario por zona y por categoría — el visor
-              anota "CLP por tramo" sin valor exacto.
+              Cuadro tarifario completo por zona en el visor — los
+              valores Z1-Z10 viven sólo en esta ficha.
             </li>
             <li>
               Las extensiones propuestas (Penco, Tomé, Lota, Carriel
               Sur) — son <em>proyectos</em> sin trazado oficial
-              digitalizable.
+              digitalizable. Ver{' '}
+              <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
+                ficha de proyectos
+              </a>
+              .
             </li>
           </ul>
         </div>
@@ -903,12 +765,34 @@ export default function BiotrenExtensiones() {
       <Section title="Vínculos con otros artículos">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>
-            <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
-              Concepción ↔ Tomé
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
+              Biotrén · extensiones y proyectos
             </a>{' '}
-            — el corredor norte completo, con la cobertura más detallada
-            del electrocorredor MOP y del transbordo bus-tren en
-            Lirquén / Penco.
+            — Tren a Lota, ramales a Penco / Tomé, eventual conexión al
+            Aeropuerto Carriel Sur. Estado, debates, tensión con el
+            electrocorredor MOP Ruta 150. Ficha hermana de ésta, dedicada
+            al <em>futuro</em>.
+          </li>
+          <li>
+            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+              GTFS Gran Concepción
+            </a>{' '}
+            — el feed urbano de buses NO incluye al Biotrén; el visor lo
+            arma desde OSM.
+          </li>
+          <li>
+            <a href="/wiki/openstreetmap-fuente-visor" className="underline underline-offset-2">
+              OpenStreetMap como fuente del visor
+            </a>{' '}
+            — ficha metodológica de la fuente que alimenta las
+            estaciones y el trazado del Biotrén.
+          </li>
+          <li>
+            <a href="/wiki/buspay" className="underline underline-offset-2">
+              BusPay · pago electrónico del Gran Concepción
+            </a>{' '}
+            — el Biotrén NO entra en el perímetro inicial de BusPay
+            2026. Sigue con tarjeta propia (Conecta / Biotrén).
           </li>
           <li>
             <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
@@ -917,42 +801,40 @@ export default function BiotrenExtensiones() {
             — transbordo natural en la estación Juan Pablo II (L2).
           </li>
           <li>
-            <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
-              Corredor de El Pimentón
+            <a href="/wiki/concepcion-coronel-lota" className="underline underline-offset-2">
+              Concepción ↔ Coronel ↔ Lota
             </a>{' '}
-            — Florida y la zona sur-oriente no tienen Biotrén y dependen
-            100% del bus interurbano; cita cruzada útil para el contraste
-            de cobertura.
+            — la L2 cubre la espina dorsal sur hasta Coronel; los buses
+            urbanos hacen la red capilar y llegan a Lota (donde el tren
+            no entra).
           </li>
           <li>
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Índice de recorridos interurbanos
             </a>{' '}
-            — ese índice menciona que Talcamávida, Unihue y Quilacoya
-            conectan por ferrocarril, no por bus. Esa función la cumple
-            la cabecera sur de la L1 (Hualqui) y servicios EFE Sur
-            interurbanos que comparten traza.
+            — Talcamávida, Unihue y Quilacoya conectan por ferrocarril,
+            no por bus. Esa función la cumple la cabecera sur de la L1
+            (Hualqui) y servicios EFE Sur interurbanos que comparten
+            traza.
           </li>
         </ul>
       </Section>
 
       <Section title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Tarifa adulto vigente 2026 por zona y por categoría.</li>
+          <li>Tarifas exactas de zonas Z5, Z7, Z8 y Z9 (las no listadas en la cobertura inicial de prensa).</li>
           <li>Demanda diaria declarada 2025-2026 por línea.</li>
-          <li>Estado y resultado del estudio de prefactibilidad EFE para extensión a Penco.</li>
-          <li>Inversión estimada y RS MIDESO de cada extensión (Penco, Tomé, Lota, Carriel Sur).</li>
           <li>Fechas exactas de inauguración comercial L1 (1999 vs 2005) y L2 (2009).</li>
           <li>Subsidio operacional MTT al Biotrén — monto anual y polinomio.</li>
           <li>Capacidad por composición Xtrapolis (norma de aforo aplicada).</li>
           <li>Detalle de accidentalidad histórica en pasos a nivel (campañas EFE, estadísticas).</li>
-          <li>Integración tarifaria proyectada entre BusPay 2026 y la tarjeta Biotrén.</li>
+          <li>Integración tarifaria proyectada entre BusPay 2026 y la tarjeta Conecta / Biotrén.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
           Vías de cierre: Ley de Transparencia a EFE Trenes
           Metropolitanos S.A. y a la SUBTRANS Biobío, foto del cuadro
-          tarifario en estación Concepción, consulta a MIDESO por
-          fichas IDI de las extensiones.
+          tarifario completo en estación Concepción, consulta a MIDESO
+          por fichas IDI de las extensiones.
         </p>
       </Section>
 
@@ -964,6 +846,21 @@ export default function BiotrenExtensiones() {
             </SourceLink>
           </li>
           <li>
+            <SourceLink href="https://www.efe.cl/efe-sur-informa-nueva-estructura-tarifaria-del-biotren-a-partir-del-2-de-enero-de-2026/">
+              EFE Sur · 30-dic-2025 — Nueva estructura tarifaria Biotrén vigente 2-ene-2026
+            </SourceLink>
+          </li>
+          <li>
+            <SourceLink href="https://www.efe.cl/nuestros-servicios/biotren/tarifas-del-servicio/">
+              EFE Trenes · Tarifas del servicio Biotrén (cuadro vigente)
+            </SourceLink>
+          </li>
+          <li>
+            <SourceLink href="https://www.biobiochile.cl/noticias/servicios/toma-nota/2025/12/30/efe-sur-anuncia-alza-en-la-tarifa-del-biotren-para-2026-revisa-a-cuanto-subira-el-pasaje.shtml">
+              BioBioChile · 30-dic-2025 — Alza promedio $60, tabla por zona
+            </SourceLink>
+          </li>
+          <li>
             <SourceLink href="https://es.wikipedia.org/wiki/Biotr%C3%A9n">
               Wikipedia · Biotrén (historia, material rodante)
             </SourceLink>
@@ -971,26 +868,6 @@ export default function BiotrenExtensiones() {
           <li>
             <SourceLink href="https://es.wikipedia.org/wiki/Ferrocarril_Concepci%C3%B3n-Talcahuano">
               Wikipedia · Ferrocarril Concepción-Talcahuano (línea 1872)
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-              Diario Concepción · 1-nov-2022 — Ruta 150 puede frenar Biotrén a Penco
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-              MOP Concesiones · 10-dic-2025 — Ofertas Ruta 150 + Conce-Talcahuano II
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-              Diario Concepción · 7-nov-2025 — Electrocorredores Gran Concepción
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="http://www.tomealdia.com/2025/11/tome-tambien-se-beneficara-con-proyecto.html">
-              Tomé al día · nov-2025 — Petición de extensión del beneficio
             </SourceLink>
           </li>
           <li>
@@ -1013,12 +890,11 @@ export default function BiotrenExtensiones() {
       <Section title="Para contribuir">
         <p>
           Si tienes foto del cuadro tarifario vigente en la estación
-          Concepción, conoces el estado del estudio de prefactibilidad
-          de la extensión Biotrén-Penco, o tienes copia de la última
-          memoria anual de EFE Trenes Metropolitanos — abre un pull
-          request en{' '}
-          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/biotren-extensiones.tsx">
-            github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/biotren-extensiones.tsx
+          Concepción (con todos los Z1-Z10 explicitados), conoces la
+          demanda diaria 2025-2026, o tienes copia de la última memoria
+          anual de EFE Trenes Metropolitanos — abre un pull request en{' '}
+          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/biotren.tsx">
+            github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/biotren.tsx
           </SourceLink>
           . Toda contribución se cita en el commit con autoría.
         </p>

@@ -39,13 +39,6 @@ export default function RecorridosInterurbanos() {
           extra={<MapLink route="201">Ver la 201 en el mapa →</MapLink>}
         />
         <ServiceRow
-          code="corredor"
-          title="Corredor por El Pimentón (panorámico)"
-          notes="Espina dorsal interurbana sur-oriente: cruce de la Cordillera de la Costa entre Concepción y Florida / Yumbel / rural Hualqui. Cuatro operadores privados, ~40 buses combinados, regulación fragmentada, capas subsidiadas nuevas en 2025."
-          slug="corredor-el-pimenton"
-          verified
-        />
-        <ServiceRow
           code="401 · 411 · 421"
           title="Concepción ↔ Tomé"
           notes={<>Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022). Operador único Transportes Tomé (fusión de operadores previos, representante Bernardo Montoya), 71 buses, tarifa $750 base (vigencia 2026 sin polinomio publicado). Servicios 401 (Tomé Alto), 411 (Dichato), 421 (Av. Estadio). El tramo Concepción↔Penco↔Lirquén sí está en el visor (líneas 17M/30B/30C/30E/31F/57Y/62H del GTFS urbano); Lirquén↔Tomé↔Dichato no. <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">Electrocorredor MOP Ruta 150</a> en licitación.</>}
@@ -55,8 +48,8 @@ export default function RecorridosInterurbanos() {
         />
         <ServiceRow
           code="4 op."
-          title="Concepción ↔ Florida"
-          notes="Troncal privado con 4 operadores (Delsal, Nueva Libertadores, Biocosta, Trinidad). El MTT reconoce que no puede obligar a aumentar frecuencias. Desde 2025 hay capas subsidiadas (zona norte oct-2025, Rahuil, Poñén-Roa, nocturno)."
+          title="Concepción ↔ Florida (corredor de El Pimentón)"
+          notes="Troncal privado con 4 operadores (Delsal, Nueva Libertadores, Biocosta, Trinidad), conocido coloquialmente como 'corredor de El Pimentón' por la cuesta interior de la Cordillera de la Costa. ~40 buses combinados; el MTT reconoce que no puede obligar a aumentar frecuencias. Desde 2025 hay capas subsidiadas (zona norte oct-2025, Rahuil, Poñén-Roa, nocturno)."
           slug="concepcion-florida"
           verified
           extra={

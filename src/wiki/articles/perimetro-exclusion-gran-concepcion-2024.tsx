@@ -96,11 +96,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           </a>
           ,{' '}
           <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
-            Concepción ↔ Florida
-          </a>
-          ,{' '}
-          <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
-            corredor de El Pimentón
+            Concepción ↔ Florida (corredor de El Pimentón)
           </a>
           {' '}— lo nombran sin desarrollarlo. Aquí está el desarrollo.
         </p>
@@ -673,13 +669,10 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <p className="mt-1 text-[12px] text-muted-foreground">
             Servicios privados sin perímetro ni licitación: Concepción ↔
             Florida (operadores Delsal, Nueva Libertadores, Biocosta,
-            Trinidad), Concepción ↔ Yumbel, corredor de El Pimentón. Ver{' '}
+            Trinidad; corredor coloquialmente "de El Pimentón") y
+            Concepción ↔ Yumbel. Ver{' '}
             <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
-              artículo Florida
-            </a>{' '}
-            y{' '}
-            <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
-              corredor de El Pimentón
+              artículo Concepción ↔ Florida
             </a>
             .
           </p>
@@ -828,23 +821,15 @@ export default function PerimetroExclusionGranConcepcion2024() {
           </li>
           <li>
             <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
-              Concepción ↔ Florida
+              Concepción ↔ Florida (corredor de El Pimentón)
             </a>{' '}
             — el contraejemplo: corredor metropolitano todavía{' '}
             <em>sin</em> régimen formal. Cuatro privados (Delsal,
             Nueva Libertadores, Biocosta, Trinidad) operan sin
-            licitación, tarifa libre. Capas subsidiadas nuevas
-            (zona norte oct-2025) suman piezas pero no resuelven el
-            modelo.
-          </li>
-          <li>
-            <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
-              Corredor de El Pimentón
-            </a>{' '}
-            — la espina dorsal interurbana sur-oriente. Trazado vía
-            cordillera de la costa, combina la troncal Florida con
-            servicios a Yumbel y rural Hualqui. Cuatro operadores
-            privados, 40 buses combinados, sin régimen unificado.
+            licitación, tarifa libre, ~40 buses combinados; trazado vía
+            cordillera de la costa. Capas subsidiadas nuevas (zona
+            norte oct-2025, Rahuil, Poñén-Roa, nocturno) suman piezas
+            pero no resuelven el modelo.
           </li>
           <li>
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">

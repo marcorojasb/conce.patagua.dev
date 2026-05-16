@@ -1,11 +1,15 @@
-// Concepción ↔ Florida — el servicio principal del corredor de El Pimentón.
+// Concepción ↔ Florida — único artículo del corredor (también conocido
+// coloquialmente como "el corredor de El Pimentón").
 //
 // El servicio troncal sigue siendo PRIVADO al cierre de 2025: cuatro
 // operadores (Delsal, Nueva Libertadores, Biocosta, Trinidad) compiten en
 // la misma franja sin un decreto único. En paralelo, desde 2025 hay
 // servicios subsidiados nuevos para tramos rurales específicos y un
-// servicio nocturno. Este artículo concentra la ficha técnica del
-// servicio diurno troncal y enlaza con el corredor para el contexto.
+// servicio nocturno. Este artículo concentra la ficha del servicio
+// (troncal diurno + capas subsidiadas) y absorbe lo que antes vivía en
+// la ficha separada "corredor-el-pimenton" (fusionada 2026-05-16): el
+// topónimo coloquial, la geografía de la cuesta y la fragmentación
+// regulatoria del corredor.
 
 import {
   KeyValueList,
@@ -33,24 +37,31 @@ export default function ConcepcionFlorida() {
 
       <Section title="Resumen ejecutivo">
         <p>
-          Servicio <strong>rural-interurbano privado</strong> con cuatro
-          operadores que conectan la comuna de Florida (~10.624 hab.,
-          60,19% rural) con Concepción metropolitana. Distancia ~42 km
-          por la Ruta del Itata, ~50 km por la Ruta 148 histórica. Tiempo
-          referencial 50 min - 1 h 10 min según trazado y tráfico. El
-          MTT no puede obligar a estos operadores privados a aumentar
-          frecuencia: regulación genérica. A partir de 2025 se sumaron{' '}
+          Servicio <strong>rural-interurbano privado</strong> Concepción ↔
+          Florida (conocido coloquialmente como{' '}
+          <em>"el corredor de El Pimentón"</em> por la cuesta de la
+          Cordillera de la Costa que atraviesa) con cuatro operadores que
+          conectan la comuna de Florida (~10.624 hab., 60,19% rural) con
+          Concepción metropolitana. Distancia ~42 km por la Ruta del
+          Itata, ~50 km por la Ruta 148 histórica; el trazado trepa la
+          cuesta interior entre Concepción y Florida (altitudes 4-677 m
+          en la franja Hualqui-Florida). Tiempo referencial 50 min - 1 h
+          10 min según trazado y tráfico. El MTT no puede obligar a
+          estos operadores privados a aumentar frecuencia: regulación
+          genérica. A partir de 2025 se sumaron{' '}
           <strong>servicios subsidiados</strong> para tramos rurales
           (Rahuil, Poñén-Roa, zona norte) y un servicio nocturno
           Concepción-Florida — pero el troncal diurno sigue privado.
         </p>
         <p>
-          Cliente principal del{' '}
-          <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
-            corredor de El Pimentón
+          Pieza de movilidad <em>no</em> integrada al GTFS Gran Concepción
+          ni al sistema BusPay 2026. Pasa por la cuesta interior, no por
+          la costa (Ruta 156, Madera) — esa es la diferencia clave con el
+          eje Conce ↔ Santa Juana (ver{' '}
+          <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
+            201 Santa Juana
           </a>
-          . Pieza de movilidad <em>no</em> integrada al GTFS Gran
-          Concepción ni al sistema BusPay 2026.
+          ).
         </p>
       </Section>
 
@@ -561,6 +572,35 @@ export default function ConcepcionFlorida() {
             },
           ]}
         />
+      </Section>
+
+      <Section title="Nota sobre el topónimo &quot;El Pimentón&quot;">
+        <p>
+          El corredor se conoce coloquialmente como{' '}
+          <em>"el corredor de El Pimentón"</em> por la cuesta que cruza la
+          Cordillera de la Costa entre Concepción y Florida. El topónimo
+          es <strong>uso popular</strong>, no oficial: una búsqueda en{' '}
+          <SourceLink href="https://nominatim.openstreetmap.org/search?q=Pimenton&countrycodes=cl&format=json&limit=10">
+            Nominatim/OpenStreetMap (Chile)
+          </SourceLink>{' '}
+          devuelve sólo resultados en la Región de Valparaíso (Quebrada
+          del Pimentón en San Esteban, Mina Pimentón) y ningún feature
+          con ese nombre en la Región del Biobío. Las monografías
+          históricas consultadas (Archivo Histórico de Concepción sobre
+          los 7 puentes, municipalidad de Hualqui) tampoco mencionan el
+          rótulo. Tratamos <em>"El Pimentón"</em> como nombre paraguas
+          del corredor —válido para búsqueda y memoria oral— hasta que
+          aparezca una fuente IGM, municipal o comunitaria que lo
+          confirme o reasigne.
+        </p>
+        <Sources>
+          <SourceLink href="https://nominatim.openstreetmap.org/search?q=Pimenton&countrycodes=cl&format=json&limit=10">
+            Nominatim · Búsqueda "Pimenton" en Chile
+          </SourceLink>
+          <SourceLink href="https://hualqui.com/caracteristicas/">
+            Municipalidad de Hualqui · Geografía local (altitudes 4-677 m)
+          </SourceLink>
+        </Sources>
       </Section>
 
       <Section title="Datos pendientes">

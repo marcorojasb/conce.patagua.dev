@@ -89,19 +89,10 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/ruta-201-santa-juana')),
   },
   {
-    slug: 'corredor-el-pimenton',
-    title: 'Corredor interurbano por El Pimentón',
-    summary:
-      'Panorama del corredor sur-oriente que cruza la Cordillera de la Costa entre Concepción y la zona de Florida / Yumbel / Hualqui rural. Cuatro operadores privados, 40 buses combinados, regulación fragmentada y una capa de servicios subsidiados nueva en 2025.',
-    section: 'interurbanos',
-    updated: '2026-05-16',
-    Component: lazy(() => import('./articles/corredor-el-pimenton')),
-  },
-  {
     slug: 'concepcion-florida',
-    title: 'Concepción ↔ Florida · servicio troncal',
+    title: 'Concepción ↔ Florida · corredor de El Pimentón',
     summary:
-      'Cuatro operadores privados (Delsal, Nueva Libertadores, Biocosta, Trinidad) en la troncal, más capas subsidiadas nuevas (zona norte oct-2025, Rahuil, Poñén-Roa, nocturno) que el MTT sumó desde 2025 sin licitar todavía el reemplazo del troncal.',
+      'Servicio troncal Concepción ↔ Florida (conocido coloquialmente como "corredor de El Pimentón" por la cuesta que cruza la Cordillera de la Costa) operado por cuatro empresas privadas (Delsal, Nueva Libertadores, Biocosta, Trinidad), con flota combinada de ~40 buses. El MTT reconoce que no puede obligarlas a aumentar frecuencias. Desde 2025 se sumaron capas subsidiadas (zona norte oct-2025, Rahuil, Poñén-Roa, nocturno) sin licitar todavía el reemplazo del troncal.',
     section: 'interurbanos',
     updated: '2026-05-16',
     Component: lazy(() => import('./articles/concepcion-florida')),
@@ -134,13 +125,22 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/concepcion-coronel-lota')),
   },
   {
-    slug: 'biotren-extensiones',
-    title: 'Biotrén y sus extensiones',
+    slug: 'biotren',
+    title: 'Biotrén',
     summary:
-      'Tren urbano del Gran Concepción operado por EFE Trenes Metropolitanos. Línea 1 Hualqui ↔ Mercado de Talcahuano (12 estaciones) y Línea 2 Coronel ↔ Concepción (14 estaciones), trazado y estaciones digitalizados desde OSM. Único tren urbano de Chile fuera de Santiago. Extensiones discutidas a Penco, Tomé, Lota y Carriel Sur — y la tensión con el electrocorredor MOP Ruta 150 que se licita en paralelo.',
+      'Servicio EFE Biobío en operación: tren urbano del Gran Concepción operado por EFE Trenes Metropolitanos S.A. (filial de EFE Sur). Línea 1 Hualqui ↔ Mercado de Talcahuano (12 estaciones) y Línea 2 Coronel ↔ Concepción (14 estaciones), trazado y estaciones digitalizados desde OSM. Tarifas por zonas Z1-Z10 vigentes desde 2-ene-2026 (rango $420-$850 adulto, alza promedio $60 por viaje). Frecuencias, material rodante Xtrapolis, electrificación 3 kV DC, descuentos TNE 67% / adulto mayor 50%. Único tren urbano de Chile fuera de Santiago en operación regular. No integra tarifariamente con BusPay 2026.',
     section: 'urbanos',
     updated: '2026-05-16',
-    Component: lazy(() => import('./articles/biotren-extensiones')),
+    Component: lazy(() => import('./articles/biotren')),
+  },
+  {
+    slug: 'biotren-extensiones-proyectos',
+    title: 'Biotrén · extensiones y proyectos',
+    summary:
+      'Extensiones y proyectos futuros del Biotrén en distintas etapas de estudio y debate: extensión norte a Penco (L1, más debatida), continuación a Tomé, extensión sur a Lota (L2, traza del ramal del carbón) y eventual ramal al Aeropuerto Carriel Sur. Ninguna con RS MIDESO ni licitación abierta al cierre 2025-2026. Documenta la tensión política con el electrocorredor MOP Ruta 150 (USD 172M, oferta única 10-dic-2025) — la disputa de política pública más jugosa del corredor norte.',
+    section: 'urbanos',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/biotren-extensiones-proyectos')),
   },
   {
     slug: 'taxis-colectivos-gran-concepcion',

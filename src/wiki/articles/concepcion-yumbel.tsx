@@ -832,18 +832,16 @@ export default function ConcepcionYumbel() {
           </table>
         </div>
         <p className="text-[12px] text-muted-foreground">
-          Lectura complementaria recomendada: el{' '}
-          <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
-            corredor de El Pimentón
-          </a>{' '}
-          (artículo paraguas Concepción ↔ Florida / Yumbel / Hualqui
-          rural) describe el contexto sur-oriente cordillerano y trata
-          Yumbel como nodo secundario; este artículo lo trata como
-          nodo protagonista. La diferencia geográfica clave: el
-          Pimentón sube por la Cordillera de la Costa interior y
-          desemboca en Florida, mientras que Yumbel se alcanza
-          principalmente por el corredor de <strong>valle</strong>{' '}
-          (Ruta 146), no por la cuesta. Ver también el{' '}
+          Lectura complementaria recomendada:{' '}
+          <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
+            Concepción ↔ Florida (corredor de El Pimentón)
+          </a>
+          {' '}— describe el contexto sur-oriente cordillerano del
+          corredor que cruza la Cordillera de la Costa interior. La
+          diferencia geográfica clave con este artículo: el Pimentón
+          sube por la cordillera interior y desemboca en Florida,
+          mientras que Yumbel se alcanza principalmente por el corredor
+          de <strong>valle</strong> (Ruta 146), no por la cuesta. Ver también el{' '}
           <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
             índice de recorridos interurbanos
           </a>{' '}

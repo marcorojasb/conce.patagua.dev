@@ -506,12 +506,12 @@ export default function SeremittDtprBiobio() {
               Recorridos interurbanos privados sin licitación moderna
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Concepción ↔ Florida, Concepción ↔ Yumbel y el corredor
-              de El Pimentón siguen operando bajo régimen privado con
-              autorización individual a cada empresa. La SEREMITT ha
-              sumado capas subsidiadas a Florida (oct-2025, Rahuil,
-              Poñén-Roa, nocturno) pero no ha llamado a licitación
-              integral del corredor.
+              Concepción ↔ Florida (corredor coloquialmente llamado "de
+              El Pimentón") y Concepción ↔ Yumbel siguen operando bajo
+              régimen privado con autorización individual a cada
+              empresa. La SEREMITT ha sumado capas subsidiadas a Florida
+              (oct-2025, Rahuil, Poñén-Roa, nocturno) pero no ha llamado
+              a licitación integral del corredor.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -717,8 +717,8 @@ export default function SeremittDtprBiobio() {
             individuales a cada operador.
           </li>
           <li>
-            <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
-              Corredor de El Pimentón
+            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
+              Concepción ↔ Florida (corredor de El Pimentón)
             </a>{' '}
             — corredor interurbano sin régimen unificado bajo
             cuatro operadores privados.

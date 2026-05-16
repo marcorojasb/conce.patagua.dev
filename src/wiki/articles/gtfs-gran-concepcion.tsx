@@ -698,9 +698,8 @@ export default function GtfsGranConcepcion() {
           <li>
             <a href="/wiki/concepcion-tome" className="underline underline-offset-2">Concepción ↔ Tomé</a>,{' '}
             <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ruta 201 Santa Juana</a>,{' '}
-            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">Concepción ↔ Florida</a>,{' '}
-            <a href="/wiki/concepcion-yumbel" className="underline underline-offset-2">Concepción ↔ Yumbel</a>,{' '}
-            <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">Corredor El Pimentón</a>
+            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">Concepción ↔ Florida (corredor de El Pimentón)</a>,{' '}
+            <a href="/wiki/concepcion-yumbel" className="underline underline-offset-2">Concepción ↔ Yumbel</a>
             {' '}— corredores que documentan por qué el feed los deja
             afuera y cómo el visor los integra (o no) de otra manera.
           </li>

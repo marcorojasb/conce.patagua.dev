@@ -26,7 +26,7 @@ export interface InterurbanCorridor {
    * ID estable usado en URLs (`?focus=corridor:…`) y como ancla desde el
    * wiki (`<MapLink corridor="ruta-201" />`). Se elige por código de
    * servicio cuando existe (ej.: "ruta-201"), y por par origen-destino
-   * cuando no (ej.: "el-pimenton" para Concepción ↔ Florida).
+   * cuando no (ej.: "concepcion-florida" para el corredor Conce ↔ Florida).
    */
   id: string;
   /** Slug del artículo del wiki que documenta el corredor. */
@@ -58,8 +58,9 @@ export interface InterurbanCorridor {
 // 201 Santa Juana y 401/411/421 Tomé se integraron como rutas nativas del
 // visor (ver `src/data/interurban-routes.generated.ts` y `src/data/routes.ts`).
 // El sistema de corredores queda en pie para futuros servicios licitados
-// que aún no tienen trazado verificable: Florida (corredor El Pimentón),
-// Yumbel, etc. Cuando aparezca su trazado, se mueven al dataset principal
+// que aún no tienen trazado verificable: Concepción ↔ Florida (corredor
+// coloquialmente "de El Pimentón"), Yumbel, etc. Cuando aparezca su
+// trazado, se mueven al dataset principal
 // y este overlay se vacía o desaparece.
 //
 // Mientras el array esté vacío, el toggle del panel de capas se auto-oculta
@@ -70,9 +71,9 @@ export interface InterurbanCorridor {
 // Placeholder de ejemplo (comentado) — descomentá y editá cuando agregues:
 //
 //   {
-//     id: 'el-pimenton',
-//     wikiSlug: 'corredor-el-pimenton',
-//     title: 'Corredor El Pimentón · Concepción ↔ Florida',
+//     id: 'concepcion-florida',
+//     wikiSlug: 'concepcion-florida',
+//     title: 'Concepción ↔ Florida (corredor de El Pimentón)',
 //     subtitle: 'Sin GTFS público · operación informal',
 //     color: '#b45309',
 //     anchor: [-36.83, -72.66],
