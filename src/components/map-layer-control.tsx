@@ -1,5 +1,6 @@
 import {
   Bike,
+  BookOpen,
   Bus,
   Building2,
   Compass,
@@ -38,6 +39,7 @@ interface MapLayerControlProps {
   showCycleways: boolean;
   showGreenspace: boolean;
   showSchools: boolean;
+  showInterurbanCorridors: boolean;
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
   onTogglePois: () => void;
@@ -48,6 +50,7 @@ interface MapLayerControlProps {
   onToggleCycleways: () => void;
   onToggleGreenspace: () => void;
   onToggleSchools: () => void;
+  onToggleInterurbanCorridors: () => void;
   airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
   simulationStatus: { count: number; loading: boolean };
   coverageStatus: { loading: boolean };
@@ -88,6 +91,7 @@ export function MapLayerControl({
   showCycleways,
   showGreenspace,
   showSchools,
+  showInterurbanCorridors,
   onToggleTerminals,
   onToggleParaderos,
   onTogglePois,
@@ -98,6 +102,7 @@ export function MapLayerControl({
   onToggleCycleways,
   onToggleGreenspace,
   onToggleSchools,
+  onToggleInterurbanCorridors,
   airQualityStatus,
   simulationStatus,
   coverageStatus,
@@ -119,6 +124,7 @@ export function MapLayerControl({
     showCycleways,
     showGreenspace,
     showSchools,
+    showInterurbanCorridors,
   ].filter(Boolean).length;
 
   const layers = useMemo(
@@ -225,6 +231,16 @@ export function MapLayerControl({
         onToggle: onToggleSchools,
         loading: schoolsStatus.loading,
       },
+      {
+        id: 'interurban',
+        label: 'Corredores interurbanos',
+        detail: showInterurbanCorridors
+          ? 'Servicios licitados fuera del GTFS urbano · enlace al wiki'
+          : 'Pines a comunas rurales/satélite (Santa Juana, …)',
+        icon: BookOpen,
+        checked: showInterurbanCorridors,
+        onToggle: onToggleInterurbanCorridors,
+      },
     ],
     [
       airQualityStatus.loading,
@@ -257,6 +273,8 @@ export function MapLayerControl({
       showSchools,
       onToggleSchools,
       schoolsStatus.loading,
+      showInterurbanCorridors,
+      onToggleInterurbanCorridors,
     ],
   );
 

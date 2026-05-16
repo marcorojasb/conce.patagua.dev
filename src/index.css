@@ -250,3 +250,66 @@
   border: 5px solid transparent;
   border-top-color: hsl(var(--background));
 }
+
+/* Interurban corridor pins — sit above the urban network to signal that
+   the entity is "off-map" (no GTFS shape). Larger than micro stops, with
+   a tag-like silhouette so they read as labels, not waypoints. */
+.interurban-pin {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--pin-bg, #0f766e);
+  color: #fff;
+  border: 2px solid hsl(var(--background));
+  font-size: 11px;
+  font-weight: 700;
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 120ms ease;
+}
+.interurban-pin:hover {
+  transform: scale(1.08);
+}
+.interurban-pin::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--pin-bg, #0f766e);
+}
+
+/* Leaflet popup customisation for interurban corridors — match shadcn look. */
+.interurban-popup-wrap .leaflet-popup-content-wrapper {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+}
+.interurban-popup-wrap .leaflet-popup-tip {
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+}
+.interurban-popup-wrap .leaflet-popup-content {
+  margin: 12px 14px;
+  line-height: 1.4;
+}
+.interurban-popup .interurban-popup-link {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.interurban-popup .interurban-popup-link:hover {
+  color: hsl(var(--primary));
+}

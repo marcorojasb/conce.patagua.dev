@@ -2,6 +2,7 @@ import { Building2, Map as MapIcon, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { WikiLinkButton } from '@/components/wiki-link';
 import type { Terminal } from '@/types/transport';
 
 interface TerminalDetailSheetProps {
@@ -44,6 +45,10 @@ export function TerminalDetailSheet({ open, terminal, onOpenChange, onFocus }: T
               <ExternalLink className="h-3.5 w-3.5" />
               Ver en OSM
             </Button>
+            {/* Si el terminal es nodo de servicios documentados en el wiki
+                (ej.: Estación Intermodal Concepción → recorridos interurbanos)
+                mostramos un enlace al artículo correspondiente. */}
+            <WikiLinkButton kind="terminal" terminalId={terminal.id} />
           </div>
 
           <div className="space-y-2 rounded-md border bg-card p-3 text-sm">
