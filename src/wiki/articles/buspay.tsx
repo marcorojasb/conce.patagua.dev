@@ -166,7 +166,7 @@ export default function BusPay2026() {
             },
             {
               date: '27-feb-2026',
-              event: <>Reunión técnica con taxibuses. Asisten subsecretario Daza, seremi (s) Hugo Cautivo y <strong>Hollman Suárez</strong> (director Busmatick). Tema: instalación en flota de ~2.000 buses.</>,
+              event: <>Reunión técnica con taxibuses. Asisten subsecretario Daza, SEREMI Hugo Cautivo (titular desde 28-nov-2025) y <strong>Hollman Suárez</strong> (director Busmatick). Tema: instalación en flota de ~2.000 buses.</>,
               source: { href: 'https://www.radioudec.cl/empresa-a-cargo-del-pago-electronico-se-reune-con-operadores-del-transporte-publico-del-gran-concepcion/', label: 'Radio UdeC · 27-feb-2026' },
             },
             {

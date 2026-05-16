@@ -98,7 +98,7 @@ export default function Biotren() {
           items={[
             {
               date: '1872',
-              event: 'Inauguración de la línea férrea Concepción-Talcahuano como parte del sistema Sur de EFE. Trafico mixto pasajeros + carga.',
+              event: 'Inauguración de la línea férrea Concepción-Talcahuano como parte del sistema Sur de EFE. Tráfico mixto pasajeros + carga.',
               source: { href: 'https://es.wikipedia.org/wiki/Ferrocarril_Concepci%C3%B3n-Talcahuano', label: 'Wikipedia · línea Concepción-Talcahuano' },
             },
             {

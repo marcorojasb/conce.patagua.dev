@@ -546,7 +546,7 @@ export default function PerimetroExclusionTome() {
         </p>
         <p className="text-[12px] text-muted-foreground">
           Detalle técnico del corredor MOP (tramo, inversión, consorcio
-          Electro Cointer II, calendario 2026-2032) en{' '}
+          Electro-Cointer II, calendario 2026-2032) en{' '}
           <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
             Corredores de Transporte Público MOP del Biobío
           </a>

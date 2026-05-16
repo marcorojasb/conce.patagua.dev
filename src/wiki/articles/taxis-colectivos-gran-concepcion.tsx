@@ -238,7 +238,7 @@ export default function TaxisColectivosGranConcepcion() {
           documentados en prensa regional y conocimiento de campo, no la
           lista oficial de la DTPR. Cada línea opera con un número
           (asignado por la autoridad) y una razón social — la tabla
-          completa requiere acceso al catastro RNSTP regional via Ley de
+          completa requiere acceso al catastro RNSTP regional vía Ley de
           Transparencia. Lo que sigue es el mapa cualitativo de ejes,
           no la lista cuantitativa.
         </PendingBanner>

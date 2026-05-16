@@ -115,7 +115,7 @@ export default function BiotrenExtensionesProyectos() {
             },
             {
               date: '10-dic-2025',
-              event: 'Oferta única (Electro Cointer II) para concesión Ruta 150 + Conce-Talcahuano II (UF 4.431.000). La extensión Biotrén-Penco queda postergada otra vez.',
+              event: 'Oferta única (Electro-Cointer II) para concesión Ruta 150 + Conce-Talcahuano II (UF 4.431.000). La extensión Biotrén-Penco queda postergada otra vez.',
               source: { href: 'https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/', label: 'MOP Concesiones' },
             },
           ]}

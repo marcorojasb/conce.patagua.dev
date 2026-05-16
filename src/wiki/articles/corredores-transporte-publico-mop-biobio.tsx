@@ -432,7 +432,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
 
       <Section title="Tensión con BusPay">
         <p>
-          La línea editorial del MTT y la SEREMI Biobío es que los
+          La línea editorial del MTT y la SEREMITT Biobío es que los
           buses que circulen por los electrocorredores aceptarán{' '}
           <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay
@@ -848,7 +848,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
         <p className="text-[12px] text-muted-foreground">
           Vías de cierre: Ley de Transparencia a la Dirección General
           de Concesiones MOP por bases técnicas definitivas, a la
-          SEREMI MTT Biobío por el modelo de flota, y consulta al
+          SEREMITT Biobío por el modelo de flota, y consulta al
           portal mercadopublico.cl para hitos contractuales.
         </p>
       </Section>

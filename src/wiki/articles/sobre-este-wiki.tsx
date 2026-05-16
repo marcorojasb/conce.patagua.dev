@@ -416,7 +416,7 @@ export default function SobreEsteWiki() {
                 <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
                   SEREMITT Biobío y la DTPR
                 </a>
-                . Cargo actual: Patricio Fierro (desde 10-ene-2025).
+                . Cargo actual: Hugo Cautivo (desde 28-nov-2025; sucede a Patricio Fierro Cifuentes, titular entre 10-ene-2025 y 28-nov-2025).
               </>,
             ],
             [

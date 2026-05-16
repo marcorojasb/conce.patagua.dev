@@ -740,13 +740,6 @@ export default function SeremittDtprBiobio() {
             individuales a cada operador.
           </li>
           <li>
-            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
-              Concepción ↔ Florida (corredor de El Pimentón)
-            </a>{' '}
-            — corredor interurbano sin régimen unificado bajo
-            cuatro operadores privados.
-          </li>
-          <li>
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Recorridos interurbanos del Gran Concepción
             </a>{' '}

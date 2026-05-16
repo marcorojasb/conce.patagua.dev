@@ -221,7 +221,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
             },
             {
               date: '1-ene-2024',
-              event: 'Perímetro de Exclusión del Gran Concepción entra en vigor. Inicia con 30 empresas adheridas. Seremi Héctor Silva anuncia GPS obligatorio, fiscalización online, ranking de cumplimiento.',
+              event: 'Perímetro de Exclusión del Gran Concepción entra en vigor. Inicia con 30 empresas adheridas. SEREMI Héctor Silva anuncia GPS obligatorio, fiscalización online, ranking de cumplimiento.',
               source: { href: 'https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/', label: 'DPR Biobío · 3-ene-2024' },
             },
             {
@@ -246,7 +246,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
             },
             {
               date: '23-feb-2025',
-              event: 'Segundo ajuste polinómico: adulto $580, escolar $190, adulto mayor $290. Seremi Patricio Fierro lo justifica con "la realidad de la economía familiar" y la fórmula del polinomio (diésel, dólar, IPC).',
+              event: 'Segundo ajuste polinómico: adulto $580, escolar $190, adulto mayor $290. SEREMI Patricio Fierro lo justifica con "la realidad de la economía familiar" y la fórmula del polinomio (diésel, dólar, IPC).',
               source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html', label: 'Diario Concepción · 14-feb-2025' },
             },
             {
@@ -519,7 +519,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <strong>valor del diésel</strong>, el{' '}
           <strong>valor del neumático</strong>, el{' '}
           <strong>valor del bus</strong> y la{' '}
-          <strong>mano de obra</strong>. El Seremi Patricio Fierro
+          <strong>mano de obra</strong>. El SEREMI Patricio Fierro
           (feb-2025) lo describió en prensa como una fórmula que
           considera "diésel, dólar, IPC, entre otros factores" — la
           forma matemática exacta del polinomio no está publicada en
@@ -681,7 +681,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
 
       <Section title="Fiscalización y conflictos">
         <p>
-          El perímetro entrega al MTT (vía Seremi de Transportes Biobío
+          El perímetro entrega al MTT (vía SEREMI de Transportes Biobío
           y DTPR) un conjunto de herramientas que la licitación 2002 no
           tenía:
         </p>
@@ -691,10 +691,10 @@ export default function PerimetroExclusionGranConcepcion2024() {
             ['Indicadores de servicio', 'Frecuencia, regularidad y puntualidad medidos en tiempo real'],
             ['Ranking de cumplimiento', 'El MTT publica un ranking que afecta los pagos mensuales del subsidio (sanciones / reconocimientos)'],
             ['Control de "recortes"', 'Práctica donde el conductor termina el recorrido antes de llegar al barrio periférico — el GPS la detecta y se sanciona'],
-            ['Refuerzo zonal', 'Marzo 2024 en adelante, Seremi identifica zonas de bajo desempeño: sur de San Pedro de la Paz, Hualqui, Penco, "los cerros" de Talcahuano'],
+            ['Refuerzo zonal', 'Marzo 2024 en adelante, SEREMI identifica zonas de bajo desempeño: sur de San Pedro de la Paz, Hualqui, Penco, "los cerros" de Talcahuano'],
             ['Frecuencia y horarios', 'El operador no puede acortar la ventana operativa unilateralmente — debe respetar la tabla contractual'],
             ['Antigüedad de flota', 'El PE define un máximo (no publicado en fuente abierta) — incentivo a renovar usando subsidio "Renueva tu bus" ($6.000 millones disponibles)'],
-            ['Plataforma público', 'App "RED Regional de Movilidad" muestra recorridos y horarios al pasajero'],
+            ['Plataforma al público', 'App "RED Regional de Movilidad" muestra recorridos y horarios al pasajero'],
           ]}
         />
         <p className="text-[12px]">
@@ -734,8 +734,8 @@ export default function PerimetroExclusionGranConcepcion2024() {
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
               El contrato del PE define ventanas operativas pero la
-              cobertura nocturna (post 22:00) sigue siendo histórica
-              débil. Los servicios periféricos terminan temprano. El
+              cobertura nocturna (post 22:00) sigue siendo
+              históricamente débil. Los servicios periféricos terminan temprano. El
               régimen no estableció obligación de servicio 24/7.
             </p>
           </div>
@@ -744,8 +744,8 @@ export default function PerimetroExclusionGranConcepcion2024() {
               Frecuencias en periferias
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Mismas zonas que el Seremi identificó en marzo 2024 como
-              necesitadas de refuerzo siguen siendo crítica: sur de
+              Mismas zonas que el SEREMI identificó en marzo 2024 como
+              necesitadas de refuerzo siguen siendo críticas: sur de
               San Pedro de la Paz (Boca Sur, Michaihue), Hualqui, "los
               cerros" de Talcahuano. El ranking de cumplimiento es la
               palanca para presionar a los operadores adjudicados.

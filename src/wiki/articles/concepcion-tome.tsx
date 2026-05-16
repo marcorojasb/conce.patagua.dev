@@ -520,7 +520,7 @@ export default function ConcepcionTome() {
           items={[
             ['Tramo cubierto', 'Rotonda Bonilla (Concepción) ↔ Enlace Penco — aprox. 8-9 km'],
             ['Tipo de obra', 'Pista bidireccional exclusiva para transporte público + ciclovía + veredas + estaciones de alta capacidad'],
-            ['Adjudicación esperada', 'Primer semestre 2026 (oferta única consorcio Electro Cointer II)'],
+            ['Adjudicación esperada', 'Primer semestre 2026 (oferta única consorcio Electro-Cointer II)'],
             ['Puesta en servicio (proyectada)', '2032'],
           ]}
         />
@@ -648,7 +648,7 @@ export default function ConcepcionTome() {
             },
             {
               date: '10-dic-2025',
-              event: 'MOP recibe la oferta única del consorcio Electro Cointer II para la concesión Ruta 150 + Conce-Talcahuano II.',
+              event: 'MOP recibe la oferta única del consorcio Electro-Cointer II para la concesión Ruta 150 + Conce-Talcahuano II.',
               source: { href: 'https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/', label: 'MOP Concesiones' },
             },
             {
