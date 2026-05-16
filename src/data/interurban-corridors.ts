@@ -55,36 +55,26 @@ export interface InterurbanCorridor {
   sources: Array<{ label: string; href: string }>;
 }
 
-// Estación Intermodal Concepción (osm-way-135488014) — punto de salida del
-// 201 en el lado urbano. Coordenada copiada de terminals.generated.ts para
-// no duplicar la fuente.
-const INTERMODAL_CONCEPCION: LatLngTuple = [-36.8298968, -73.0605492];
+// El 201 Santa Juana se integró como ruta nativa del visor (ver
+// `src/data/interurban-routes.generated.ts` y `src/data/routes.ts`).
+// El sistema de corredores queda en pie para futuros servicios licitados
+// que aún no tienen trazado verificable: Florida (corredor El Pimentón),
+// Yumbel, Tomé rural, etc. Cuando aparezca su trazado, se mueven al
+// dataset principal y este overlay se vacía o desaparece.
+//
+// Placeholder de ejemplo (comentado) — descomentá y editá cuando agregues:
+//
+//   {
+//     id: 'el-pimenton',
+//     wikiSlug: 'corredor-el-pimenton',
+//     title: 'Corredor El Pimentón · Concepción ↔ Florida',
+//     subtitle: 'Sin GTFS público · operación informal',
+//     color: '#b45309',
+//     anchor: [-36.83, -72.66],
+//     sources: [{ label: 'OSM …', href: '…' }],
+//   },
 
-export const INTERURBAN_CORRIDORS: InterurbanCorridor[] = [
-  {
-    id: 'ruta-201',
-    wikiSlug: 'ruta-201-santa-juana',
-    title: 'Ruta 201 · Concepción ↔ Santa Juana',
-    subtitle: 'Servicio licitado DTPR ELC0007 · Transportes Santa Juana SpA',
-    color: '#0f766e', // teal-700 — distinto del esquema urbano
-    // Plaza de Armas / centro de Santa Juana. Fuente Nominatim: relation
-    // 1622274 (límite administrativo "Santa Juana", Provincia de Concepción,
-    // Biobío). El centroide reportado (-37.1738, -72.9426) cae sobre el
-    // área urbana de la comuna — apropiado como anchor del lado rural.
-    anchor: [-37.1738, -72.9426],
-    terminal: INTERMODAL_CONCEPCION,
-    sources: [
-      {
-        label: 'OSM relation/1622274 (Santa Juana, Biobío)',
-        href: 'https://www.openstreetmap.org/relation/1622274',
-      },
-      {
-        label: 'OSM way/135488014 (Estación Intermodal Concepción)',
-        href: 'https://www.openstreetmap.org/way/135488014',
-      },
-    ],
-  },
-];
+export const INTERURBAN_CORRIDORS: InterurbanCorridor[] = [];
 
 export const CORRIDOR_BY_ID = new Map(
   INTERURBAN_CORRIDORS.map((c) => [c.id, c] as const),

@@ -42,17 +42,20 @@
 
 export const MAP_WIKI_LINKS = {
   byRouteCode: {
-    // Servicios licitados con artículo dedicado. Nota: el código "201"
-    // NO existe en el GTFS urbano (ver `src/data/gtfs-bus-routes.generated.ts`
-    // — el servicio Santa Juana es interurbano). Cuando aparezca en el
-    // feed, el route.code "201" lo encontrará automáticamente.
+    // Servicios licitados con artículo dedicado. El código "201" se enchufa
+    // contra la ruta nativa interurbana servida desde
+    // `src/data/interurban-routes.generated.ts` (trazado digitalizado desde
+    // OSM, paraderos OSM citados). El visor lo trata como cualquier urbano
+    // y muestra el botón "Ver en el wiki →" porque hay match en este mapa.
     '201': 'ruta-201-santa-juana',
     '201 AU': 'ruta-201-santa-juana',
   } as Record<string, string>,
 
-  byCorridorId: {
-    'ruta-201': 'ruta-201-santa-juana',
-  } as Record<string, string>,
+  // Los corredores interurbanos sin trazado verificable conservan su lugar
+  // (cuando aparezcan Florida / Yumbel, se mapean acá). Hoy el mapa está
+  // vacío porque el único corredor previamente listado (201 Santa Juana)
+  // migró a ruta nativa del visor.
+  byCorridorId: {} as Record<string, string>,
 
   byTerminalId: {
     // Estación Intermodal Concepción es punto de salida de servicios

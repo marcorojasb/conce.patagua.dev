@@ -23,6 +23,7 @@ import { Card } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { INTERURBAN_CORRIDORS } from '@/data/interurban-corridors';
 import type { AnalysisTab } from '@/components/floating-tools-panel';
 
 interface MapLayerControlProps {
@@ -231,16 +232,24 @@ export function MapLayerControl({
         onToggle: onToggleSchools,
         loading: schoolsStatus.loading,
       },
-      {
-        id: 'interurban',
-        label: 'Corredores interurbanos',
-        detail: showInterurbanCorridors
-          ? 'Servicios licitados fuera del GTFS urbano · enlace al wiki'
-          : 'Pines a comunas rurales/satélite (Santa Juana, …)',
-        icon: BookOpen,
-        checked: showInterurbanCorridors,
-        onToggle: onToggleInterurbanCorridors,
-      },
+      // Toggle de corredores interurbanos — solo aparece si hay corredores
+      // sin trazado verificable en el dataset. Hoy la 201 vive como ruta
+      // nativa, así que el toggle se esconde hasta que se agregue otro
+      // corredor (Florida / Yumbel / Tomé rural) a interurban-corridors.ts.
+      ...(INTERURBAN_CORRIDORS.length > 0
+        ? [
+            {
+              id: 'interurban',
+              label: 'Corredores interurbanos',
+              detail: showInterurbanCorridors
+                ? 'Servicios licitados fuera del GTFS urbano · enlace al wiki'
+                : 'Pines a comunas rurales/satélite',
+              icon: BookOpen,
+              checked: showInterurbanCorridors,
+              onToggle: onToggleInterurbanCorridors,
+            },
+          ]
+        : []),
     ],
     [
       airQualityStatus.loading,
