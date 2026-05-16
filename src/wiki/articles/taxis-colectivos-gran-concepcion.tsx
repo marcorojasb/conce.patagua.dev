@@ -1,36 +1,9 @@
-// Taxis colectivos del Gran Concepción — modo urbano masivo invisibilizado.
-//
-// Hasta hoy la sección "urbanos" del wiki solo tenía el Biotrén. Los taxis
-// colectivos son el otro modo urbano masivo del Gran Concepción y no estaban
-// documentados en ninguna ficha. Este artículo abre la pieza.
-//
-// Lo que está bien sostenido con fuente primaria:
-//   - DS 212/1992 del MTT (Reglamento de los Servicios Nacionales de
-//     Transporte Público de Pasajeros) define la modalidad colectivo.
-//   - Ley 18.696 (régimen de subsidio y atribuciones MTT) — la misma que
-//     sostiene los perímetros de exclusión.
-//   - Ley 18.290 (Ley de Tránsito) regula vehículos, licencias y señalética.
-//   - Ley 20.474 (cierre del padrón nacional de taxis, año 2011) — congela
-//     inscripciones por 5 años, prorrogada por leyes posteriores.
-//   - Color reglamentario nacional: negro con techo amarillo (DS 212/1992).
-//   - Alcance BusPay 2026 = solo buses urbanos de los Perímetros + Ruta 201.
-//     Los taxis colectivos NO están incluidos (Subtrans · 30-ene-2026).
-//   - GTFS Gran Concepción cubre buses urbanos del Perímetro 2024; los
-//     taxis colectivos no están en el feed (ver gtfs-gran-concepcion).
-//
-// Lo que va con banner ámbar (no verificable a la fecha de cierre):
-//   - Cantidad total exacta de taxis colectivos operando en el Gran
-//     Concepción 2025-2026.
-//   - Lista íntegra de líneas troncales con su número y razón social.
-//   - Tarifa diurna/nocturna vigente 2026 — varía por línea, no hay
-//     tarifa unificada como en el bus urbano del Perímetro.
-//   - Nombre y existencia exacta de "FERETAX" como federación regional.
-//   - Estadísticas de participación modal en viajes del Gran Concepción.
-//   - Decreto regional Biobío que cree un perímetro de exclusión específico
-//     para taxis colectivos (no me consta que exista).
-//
-// Política de nombres aplicada: BusPay (camelCase) para el sistema,
-// Consorcio Buspay para la SPV, Busmatick para el operador técnico.
+// Taxis colectivos del Gran Concepción — modo urbano masivo
+// invisibilizado. Marco: DS 212/1992 MTT (define modalidad), Ley
+// 18.290 (Tránsito), Ley 18.696 (atribuciones MTT), Ley 20.474 (cierre
+// padrón nacional, 2011). Color reglamentario: negro con techo
+// amarillo. Quedan fuera de BusPay 2026 (solo buses urbanos) y fuera
+// del GTFS Gran Concepción.
 
 import {
   KeyValueList,
@@ -47,18 +20,13 @@ export default function TaxisColectivosGranConcepcion() {
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
         <strong>Verificación parcial con fuentes primarias.</strong> Marco
-        legal (DS 212/1992, Ley 18.290, Ley 18.696, Ley 20.474 que cerró el
-        padrón nacional de taxis en 2011), color reglamentario nacional
-        (negro con techo amarillo) y alcance declarado de BusPay 2026
-        (buses urbanos de los Perímetros + Ruta 201, sin taxis colectivos)
-        están citados. <strong>Pendientes</strong>: cantidad total de taxis
-        colectivos operando en el Gran Concepción 2025-2026, catastro
-        íntegro de líneas troncales con sus razones sociales y códigos,
-        tarifa adulto/nocturna vigente 2026 por línea (varía — no es
-        tarifa única como el bus del Perímetro), nombre exacto y vigencia
-        de la federación gremial regional, estadísticas de participación
-        modal. Todo número grueso lleva banner ámbar inline para que el
-        lector lo trate como orden de magnitud, no como dato auditado.
+        legal (DS 212/1992, Ley 18.290, Ley 18.696, Ley 20.474), color
+        reglamentario (negro con techo amarillo) y alcance BusPay 2026
+        (buses urbanos + Ruta 201, sin colectivos) están citados.{' '}
+        <strong>Pendientes</strong>: cantidad total operando, catastro
+        íntegro de líneas con razones sociales, tarifa 2026 por línea,
+        federación gremial regional, participación modal. Números gruesos
+        llevan banner ámbar inline (orden de magnitud, no dato auditado).
       </VerifiedBanner>
 
       <Section title="Qué son y por qué importan">
@@ -81,34 +49,25 @@ export default function TaxisColectivosGranConcepcion() {
           ).
         </p>
         <p>
-          Importan en el Gran Concepción por cuatro razones de fondo:
+          Importan en el Gran Concepción por cuatro razones:
         </p>
         <ul className="ml-5 list-disc space-y-1">
           <li>
-            <strong>Mueven una proporción significativa del viaje urbano
-            diario.</strong> La encuesta origen-destino de SECTRA y los
-            catastros DTPR Biobío sostienen históricamente que los taxis
-            colectivos compiten en volumen con los buses urbanos en ejes
-            cortos (Concepción ↔ Talcahuano, Concepción ↔ Chiguayante,
-            Plaza Independencia ↔ barrio universitario). La cifra exacta
-            de participación modal 2024-2026 está pendiente de cita.
+            <strong>Mueven proporción significativa del viaje urbano.</strong>{' '}
+            Compiten en volumen con buses urbanos en ejes cortos (Conce↔Talcahuano,
+            Conce↔Chiguayante, barrio universitario). Cifra exacta de
+            participación modal pendiente.
           </li>
           <li>
-            <strong>Llenan el hueco entre el taxi puro y el bus.</strong>{' '}
-            Frecuencia más alta que el bus ("sale cuando se llena"),
-            asiento garantizado, tiempo de viaje menor en hora punta, pero
-            tarifa muy por debajo del taxi básico — el costo se reparte
-            entre los pasajeros.
+            <strong>Llenan el hueco entre taxi puro y bus.</strong> Frecuencia
+            más alta ("sale cuando se llena"), asiento garantizado y tarifa
+            muy por debajo del taxi básico.
           </li>
           <li>
-            <strong>Padrón nacional cerrado desde 2011.</strong> La{' '}
-            <strong>Ley 20.474</strong> congeló las inscripciones de taxis
-            (incluidos los colectivos) a nivel nacional por cinco años, y
-            sucesivas prórrogas legales han mantenido el cierre. En el
-            Gran Concepción esto significa que las líneas operan con{' '}
-            <em>cupos fijos</em>: no entran autos nuevos al sistema; los
-            cupos se traspasan entre operadores con valor de mercado
-            secundario apreciable
+            <strong>Padrón nacional cerrado desde 2011.</strong>{' '}
+            <strong>Ley 20.474</strong> congeló inscripciones; prórrogas
+            sucesivas mantienen el cierre. Cupos fijos con mercado secundario
+            apreciable
             (
             <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1024893">
               BCN · Ley 20.474
@@ -116,20 +75,16 @@ export default function TaxisColectivosGranConcepcion() {
             ).
           </li>
           <li>
-            <strong>Quedan fuera de BusPay 2026.</strong> El sistema de
-            pago electrónico licitado al{' '}
+            <strong>Quedan fuera de BusPay 2026.</strong> Adjudicado al{' '}
             <strong>Consorcio Buspay</strong> (operador técnico{' '}
-            <strong>Busmatick</strong>) en enero de 2026 cubre buses
-            urbanos de los Perímetros del Gran Concepción y Tomé, la
-            regulación especial Coronel-Lota y la Ruta 201 Santa Juana —
-            no menciona taxis colectivos en el alcance publicado
+            <strong>Busmatick</strong>) en ene-2026, cubre buses urbanos
+            de PE GC, PE Tomé, Coronel-Lota y Ruta 201 — no menciona
+            colectivos
             (
             <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
               Subtrans · 30-ene-2026
             </SourceLink>
-            ). Implicancia inmediata: los colectivos seguirán cobrando en
-            efectivo cuando los buses del Perímetro estén en régimen
-            electrónico.
+            ). Los colectivos seguirán cobrando en efectivo.
           </li>
         </ul>
         <Sources>
@@ -310,37 +265,25 @@ export default function TaxisColectivosGranConcepcion() {
 
       <Section title="Operadores y federación gremial">
         <p>
-          La organización empresarial del sector se da en{' '}
-          <strong>sindicatos o asociaciones de propietarios por línea</strong>{' '}
-          (frecuentemente bajo figura de cooperativa o sociedad por
-          acciones pequeña), agrupados a su vez en una federación
-          regional. Cada propietario corre típicamente uno o dos
-          vehículos; la línea funciona como un colectivo gremial que
-          coordina turnos, paraderos y mantención.
+          Organización en <strong>sindicatos o asociaciones de
+          propietarios por línea</strong> (cooperativa o SpA), agrupados
+          en una federación regional. Cada propietario corre uno o dos
+          vehículos.
         </p>
         <PendingBanner>
-          <strong>Federación regional pendiente de verificar.</strong> La
-          referencia conocida en prensa nacional es la{' '}
-          <strong>CONATACOCH</strong> (Confederación Nacional de Taxis
-          Colectivos de Chile), que agrupa federaciones regionales. La
-          existencia, nombre exacto, razón social y vigencia de la
-          federación regional del Biobío (a veces referida en prensa
-          local como "FERETAX" o similar) está pendiente de cita
-          primaria. Cierre por contacto directo con CONATACOCH o
-          consulta al Registro de Asociaciones Gremiales del Ministerio
-          de Economía.
+          <strong>Federación regional pendiente.</strong> La referencia
+          nacional es <strong>CONATACOCH</strong>. La federación regional
+          del Biobío (a veces citada como "FERETAX") está pendiente de
+          cita primaria.
         </PendingBanner>
         <p className="text-[12px] text-muted-foreground">
-          La diferencia con el sector bus urbano es estructural: los
-          operadores de bus del{' '}
+          Diferencia estructural con el bus urbano: los operadores del{' '}
           <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
             Perímetro 2024
           </a>{' '}
-          son 33-35 empresas con flotas de 30-150 buses cada una, sujetas
-          a contrato MTT con métricas de calidad. Los operadores de taxi
-          colectivo son centenares de propietarios con uno o dos autos
-          cada uno, sin contrato MTT, sin métricas de servicio fijas y
-          sin obligación de publicar GTFS.
+          son 33-35 empresas con flotas de 30-150 buses y contrato MTT.
+          Los operadores de colectivo son centenares de propietarios sin
+          contrato, sin métricas ni GTFS.
         </p>
       </Section>
 
@@ -489,39 +432,20 @@ export default function TaxisColectivosGranConcepcion() {
         <p>
           La adjudicación de <strong>BusPay</strong> al{' '}
           <strong>Consorcio Buspay</strong> (operador técnico{' '}
-          <strong>Busmatick</strong>) en enero de 2026 marca el inicio del
-          régimen de pago electrónico en el transporte público del Gran
-          Concepción. El alcance publicado por la Subsecretaría de
-          Transportes detalla once comunas y cuatro regímenes regulatorios
-          unificados — <strong>todos en modo bus</strong>:
+          <strong>Busmatick</strong>) en ene-2026 abarca 11 comunas y 4
+          regímenes — <strong>todos en modo bus</strong>:
         </p>
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>
-            <strong>PE Gran Concepción</strong> (7 comunas): buses urbanos
-            de las 36 unidades de negocio.
-          </li>
-          <li>
-            <strong>PE Tomé</strong>: servicios 401 / 411 / 421 de
-            Transportes Tomé SpA.
-          </li>
-          <li>
-            <strong>Regulación especial Coronel-Lota</strong>: operadores
-            locales de buses (Res. Ex. 457 MTT, 2012-2013).
-          </li>
-          <li>
-            <strong>Licitación rural ELC0007 Santa Juana</strong>: líneas
-            201 y 201 AU de buses (Soc. Transporte de Pasajeros Santa
-            Juana SpA).
-          </li>
+          <li><strong>PE Gran Concepción</strong> (7 comunas): 36 unidades de negocio.</li>
+          <li><strong>PE Tomé</strong>: 401/411/421 de Transportes Tomé SpA.</li>
+          <li><strong>Regulación especial Coronel-Lota</strong>: Res. Ex. 457 MTT, 2012-2013.</li>
+          <li><strong>Licitación rural ELC0007 Santa Juana</strong>: líneas 201 y 201 AU.</li>
         </ul>
         <p>
-          <strong>En ninguno de los cuatro alcances se mencionan los
-          taxis colectivos.</strong> La comunicación oficial habla de
-          "micros del Gran Concepción", "buses urbanos" y "operadores
-          de buses". El sistema fue diseñado con validadores embarcados
-          en buses, con un esquema económico de liquidación a operadores
-          de bus, y el precedente de Bipay Temuco-Padre Las Casas (que
-          BusPay toma como modelo) también está limitado a buses
+          <strong>En ninguno se mencionan los taxis colectivos.</strong>{' '}
+          El sistema fue diseñado con validadores embarcados en buses; el
+          precedente Bipay Temuco-Padre Las Casas también se limita a
+          buses
           (
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026
@@ -529,96 +453,33 @@ export default function TaxisColectivosGranConcepcion() {
           ).
         </p>
         <div className="rounded-md border bg-card p-3 space-y-2">
-          <div className="text-[13px] font-semibold">
-            Implicancias para el usuario del Gran Concepción
-          </div>
+          <div className="text-[13px] font-semibold">Implicancias para el usuario</div>
           <ul className="ml-5 list-disc space-y-1 text-[12px]">
-            <li>
-              En el régimen permanente BusPay (proyectado fines de 2026),
-              el usuario podrá pagar con tarjeta sin contacto en bus
-              urbano pero <strong>seguirá pagando en efectivo en el
-              colectivo</strong>. Para un viaje multimodal bus + colectivo
-              quedan dos sistemas de pago distintos.
-            </li>
-            <li>
-              Sin BusPay no hay <strong>trazabilidad</strong> ni datos
-              consolidados de demanda para los colectivos. La pregunta
-              "cuántos viajes urbanos del Gran Concepción se hacen en
-              colectivo" queda sin respuesta dura.
-            </li>
-            <li>
-              Sin tarifa integrada, el costo combinado del viaje
-              multimodal sube respecto del régimen ideal (un solo medio
-              de pago, un solo descuento por transbordo).
-            </li>
+            <li>En régimen permanente BusPay (fines 2026), el usuario pagará con tarjeta en bus pero <strong>seguirá pagando en efectivo en el colectivo</strong>. Viaje multimodal con dos sistemas de pago.</li>
+            <li>Sin BusPay no hay trazabilidad ni datos de demanda para colectivos.</li>
+            <li>Sin tarifa integrada, el costo combinado del viaje multimodal sube.</li>
           </ul>
         </div>
         <PendingBanner>
-          <strong>Pregunta abierta para 2026-2027:</strong> ¿se contempla
-          una segunda fase de BusPay (o un piloto separado) que incorpore
-          taxis colectivos? La pregunta no aparece resuelta en la
-          comunicación oficial del MTT al cierre del primer trimestre de
-          2026. Cierre por consulta directa a SEREMITT Biobío y al
-          gremio regional.
+          <strong>Pregunta abierta 2026-2027:</strong> ¿segunda fase de
+          BusPay que incorpore colectivos? Sin respuesta oficial al
+          1T-2026.
         </PendingBanner>
-        <Sources>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-            Subtrans · adjudicación BusPay 28-ene-2026 (alcance: micros / buses urbanos)
-          </SourceLink>
-          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-            BioBioChile · 28-ene-2026 (alcance: micros)
-          </SourceLink>
-        </Sources>
       </Section>
 
       <Section title="Cobertura del visor">
         <p>
-          El visor de <code>conce.patagua.dev</code> hoy{' '}
-          <strong>NO muestra taxis colectivos</strong>. La razón es de
-          datos, no de política editorial. El feed que alimenta la capa
-          de buses urbanos es el{' '}
+          El visor <strong>NO muestra taxis colectivos</strong>. El feed
+          que alimenta la capa de buses es el{' '}
           <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
             GTFS Gran Concepción
           </a>{' '}
-          publicado por la Subsecretaría de Transportes para los buses
-          del Perímetro de Exclusión 2024. Los taxis colectivos no están
-          obligados a publicar GTFS y, en la práctica, no lo hacen.
-        </p>
-        <div className="rounded-md border bg-card p-3">
-          <div className="text-[12px] font-medium">
-            Por qué los colectivos no están en el feed GTFS
-          </div>
-          <ul className="ml-5 mt-1 list-disc space-y-0.5 text-[12px] text-muted-foreground">
-            <li>
-              <strong>Régimen legal distinto.</strong> Los buses del
-              Perímetro están bajo contrato MTT con obligaciones de
-              servicio y reporte; los colectivos están bajo inscripción
-              RNSTP sin contrato equivalente.
-            </li>
-            <li>
-              <strong>Operación fragmentada.</strong> Centenares de
-              propietarios con uno o dos vehículos cada uno —
-              consolidación de trayectos en tiempo real fuera del
-              alcance del operador individual.
-            </li>
-            <li>
-              <strong>Sin obligación regulatoria.</strong> La DTPR Biobío
-              no exige a las líneas de colectivos publicar feed GTFS al
-              cierre 2025-2026.
-            </li>
-            <li>
-              <strong>Recorridos con desvíos puntuales.</strong> Un
-              colectivo se desvía habitualmente para dejar a un pasajero
-              en su casa — esa flexibilidad no encaja en el modelo
-              determinista del GTFS estático.
-            </li>
-          </ul>
-        </div>
-        <p className="text-[12px] text-muted-foreground">
-          Una digitalización futura de las líneas de colectivo (catastro
-          de recorridos, paraderos de cabecera, tarifas por línea) sería
-          un aporte valioso al visor. Por ahora queda como{' '}
-          <em>hueco editorial conocido</em>.
+          publicado por Subtrans para el PE 2024. Los colectivos no están
+          obligados a publicar GTFS y no lo hacen, por: régimen legal
+          distinto (inscripción RNSTP sin contrato equivalente), operación
+          fragmentada (centenares de propietarios), sin obligación
+          regulatoria y recorridos con desvíos puntuales que no encajan
+          en GTFS estático.
         </p>
       </Section>
 
@@ -626,55 +487,27 @@ export default function TaxisColectivosGranConcepcion() {
         <div className="space-y-2">
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
             <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Competencia con apps (Uber, Cabify, DiDi)
+              Competencia con apps y disputa por paraderos
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Desde 2017-2018 las apps de transporte por aplicación
-              (TAP) han presionado al sector. La Ley 21.431 (publicada
-              en 2022) reguló a las EAT (empresas de aplicaciones de
-              transporte) y obliga a registro pero no las equipara
-              tarifariamente al colectivo. El impacto cuantitativo en
-              demanda de colectivos en el Gran Concepción está
-              pendiente de cita primaria.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Disputa por paraderos y saturación de Plaza Independencia
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Buses urbanos del Perímetro, taxis colectivos y servicios
-              interurbanos cortos comparten el entorno de Plaza
+              Desde 2017-2018 las EAT (Uber, Cabify, DiDi) presionan al
+              sector; Ley 21.431 (2022) las regula pero no las equipara
+              tarifariamente. Impacto cuantitativo pendiente. Buses,
+              colectivos e interurbanos cortos compiten por Plaza
               Independencia y calles centrales (O'Higgins, Aníbal Pinto,
-              Barros Arana). La gestión de paraderos y tiempos de
-              detención es una fricción urbana recurrente.
+              Barros Arana).
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
             <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Mercado secundario de cupos
+              Mercado secundario de cupos y envejecimiento
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Con el padrón cerrado desde 2011 (Ley 20.474), el "cupo"
-              para operar en una línea es un activo escaso con valor de
-              mercado secundario. La cifra exacta varía por línea y
-              ciudad, pero a nivel nacional la prensa ha citado valores
-              de varios millones de pesos por cupo. En el Gran
-              Concepción el dato puntual 2026 está pendiente.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Envejecimiento del conductor y de la flota
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El sector reporta dificultad para atraer conductores
-              jóvenes — la licencia profesional clase A2, las jornadas
-              largas y la presión competitiva de las EAT reducen el
-              atractivo. La edad promedio de la flota tiende a acercarse
-              al tope reglamentario por falta de incentivo a renovar
-              bajo padrón cerrado. Cifras puntuales para Biobío 2026
-              pendientes.
+              Con padrón cerrado desde 2011, el cupo es activo escaso
+              (prensa nacional cita varios millones de pesos por cupo;
+              dato Biobío 2026 pendiente). El sector reporta dificultad
+              para atraer conductores jóvenes y la flota tiende al tope
+              reglamentario por falta de incentivo a renovar.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -682,11 +515,10 @@ export default function TaxisColectivosGranConcepcion() {
               Electrificación pendiente
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Mientras los buses urbanos avanzan a flota eléctrica
-              (electrocorredores MOP, buses eléctricos del Perímetro
-              2024), los colectivos siguen 100% combustión interna. No
-              existe al cierre 2025-2026 un programa público de apoyo a
-              la electrificación del segmento.
+              Mientras los buses avanzan a flota eléctrica
+              (electrocorredores MOP, PE 2024), los colectivos siguen
+              100% combustión interna. Sin programa público de
+              electrificación al cierre 2025-2026.
             </p>
           </div>
         </div>
@@ -775,45 +607,15 @@ export default function TaxisColectivosGranConcepcion() {
 
       <Section title="Cómo contribuir">
         <p>
-          Este artículo es el primero del wiki sobre taxis colectivos y
-          tiene huecos importantes. Si tienes información primaria que
-          pueda cerrar alguno de los pendientes, puedes aportar:
-        </p>
-        <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>
-            <strong>Catastro de líneas activas</strong>: número de línea,
-            razón social, terminal cabecera, recorrido (origen ↔ destino),
-            tarifa adulto y nocturna 2026.
-          </li>
-          <li>
-            <strong>Fotografías</strong> de letreros de techo, cuadros
-            tarifarios al interior de vehículos, paraderos oficiales en
-            Plaza Independencia / Plaza Perú / Plaza Acevedo.
-          </li>
-          <li>
-            <strong>Copia de resoluciones MTT/SEREMITT</strong> que
-            autoricen tarifas o modifiquen recorridos de líneas
-            específicas.
-          </li>
-          <li>
-            <strong>Datos del padrón cerrado</strong>: valor de mercado
-            secundario observado de un cupo por línea, número total de
-            cupos autorizados por línea (si está disponible vía Ley de
-            Transparencia).
-          </li>
-          <li>
-            <strong>Estadísticas de demanda</strong>: encuestas
-            origen-destino SECTRA o estudios académicos que cuantifiquen
-            participación modal del colectivo en viajes urbanos del Gran
-            Concepción.
-          </li>
-        </ul>
-        <p>
-          Abre un pull request en{' '}
+          Si puedes aportar catastro de líneas activas (número, razón
+          social, terminal, recorrido, tarifa 2026), fotografías de
+          letreros y cuadros tarifarios, copia de resoluciones tarifarias
+          de SEREMITT, datos del mercado de cupos o estadísticas de
+          demanda SECTRA, abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/taxis-colectivos-gran-concepcion.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/taxis-colectivos-gran-concepcion.tsx
           </SourceLink>
-          . Cada contribución se cita en el commit con autoría.
+          .
         </p>
       </Section>
 
@@ -864,23 +666,20 @@ export default function TaxisColectivosGranConcepcion() {
 
       <Section title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Cantidad total de taxis colectivos activos en el Gran Concepción 2025-2026 (cifra DTPR/RNSTP).</li>
-          <li>Catastro íntegro de líneas autorizadas con número, razón social, recorrido, terminal y tarifa.</li>
-          <li>Tarifa adulto diurna y nocturna vigente 2026 por línea.</li>
-          <li>Antigüedad máxima reglamentaria aplicable a colectivos urbanos del Gran Concepción 2026.</li>
-          <li>Fecha y número de la última prórroga legal del padrón cerrado nacional.</li>
-          <li>Existencia y razón social de la federación regional gremial del Biobío (referencia "FERETAX" pendiente de cita primaria).</li>
-          <li>Valor de mercado secundario observado del cupo por línea.</li>
-          <li>Participación modal del colectivo en viajes urbanos del Gran Concepción (encuestas SECTRA o equivalentes).</li>
-          <li>Existencia (o no) de un decreto regional Biobío que cree perímetro de exclusión específico para taxis colectivos.</li>
-          <li>Política específica del MTT 2026-2027 sobre integración futura de los colectivos a BusPay.</li>
+          <li>Cantidad total de colectivos activos 2025-2026 (cifra DTPR/RNSTP).</li>
+          <li>Catastro íntegro de líneas (número, razón social, recorrido, terminal, tarifa).</li>
+          <li>Tarifa diurna/nocturna 2026 por línea.</li>
+          <li>Antigüedad máxima reglamentaria aplicable en 2026.</li>
+          <li>Última prórroga legal del padrón cerrado nacional.</li>
+          <li>Razón social de federación regional Biobío ("FERETAX" pendiente).</li>
+          <li>Valor de mercado secundario del cupo por línea.</li>
+          <li>Participación modal del colectivo (encuestas SECTRA).</li>
+          <li>Existencia de perímetro de exclusión específico para colectivos.</li>
+          <li>Política MTT 2026-2027 sobre integración futura a BusPay.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Vías de cierre: solicitud Ley de Transparencia a la DTPR
-          Biobío (catastro RNSTP regional, resoluciones tarifarias),
-          consulta directa a CONATACOCH y a la federación regional,
-          archivo de prensa BioBioChile / Diario Concepción / TVU,
-          encuestas origen-destino SECTRA del Gran Concepción.
+          Vías de cierre: Ley de Transparencia a DTPR Biobío, consulta a
+          CONATACOCH, archivo de prensa regional, encuestas SECTRA.
         </p>
       </Section>
 

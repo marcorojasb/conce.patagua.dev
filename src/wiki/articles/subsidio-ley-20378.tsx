@@ -1,83 +1,13 @@
 // Subsidio Nacional al Transporte Público (Ley 20.378) — ficha
-// estructural del marco financiero que sostiene económicamente al
-// sistema de transporte público chileno fuera de Santiago.
+// estructural del marco financiero que sostiene al transporte
+// público regional fuera de Santiago. Publicada 5-sep-2009 como
+// "ley espejo" del subsidio implícito al Transantiago.
 //
-// Este artículo es la ficha "del dinero" detrás de cada decisión que
-// los otros artículos del wiki citan sin desarrollar: pagos a
-// operadores del Perímetro de Exclusión Gran Concepción 2024, pagos
-// del Perímetro de Tomé, pago a la operadora ELC0007 Santa Juana,
-// subsidios a servicios deficitarios (Florida zona norte oct-2025,
-// Rahuil, Poñén-Roa, nocturno), Transporte Escolar Gratuito (TNE),
-// y el aporte para tarifa rebajada de adulto mayor en perímetros
-// licitados.
-//
-// Datos verificados con fuente primaria (BCN, Subtrans, DIPRES,
-// Sala de Prensa MTT, prensa nacional 2024-2026):
-//
-//   - Ley 20.378 fue publicada el 5-sep-2009 en el Diario Oficial,
-//     bajo el primer gobierno de Michelle Bachelet. Texto en BCN:
-//     bcn.cl/leychile/navegar?idNorma=1005871
-//
-//   - La ley nace explícitamente como "ley espejo" del subsidio
-//     implícito al Transantiago. Diario El Mostrador, La Tercera y
-//     otros cubrieron el debate parlamentario en 2008-2009.
-//
-//   - Vigencia original: 10 años (2009-2018).
-//
-//   - Prórroga 1: Ley 21.175 (2019), no Ley 21.165 como dice el
-//     prompt. Verifiqué: la Ley 21.175 prorroga el subsidio nacional
-//     al transporte público y modifica la Ley 20.378. Publicada en
-//     septiembre 2019. BCN: bcn.cl/leychile/navegar?idNorma=1135944
-//
-//   - Prórroga 2: Ley 21.439 (2022) prorroga el subsidio hasta 2024.
-//     BCN: bcn.cl/leychile/navegar?idNorma=1173818 — texto vigente
-//     prorroga el régimen y modifica componentes.
-//
-//   - Prórroga 3: existe una nueva prórroga discutida y aprobada en
-//     2024-2025 (Ley 21.659 según el prompt — el número exacto no
-//     ha sido recuperado de BCN en esta primera versión y va en
-//     PendingBanner). El estado real vigente 2026 es de prórroga,
-//     no de régimen permanente.
-//
-//   - Componentes principales (texto refundido Ley 20.378):
-//     · Art. 2°: Subsidio Nacional al Transporte Público (urbano e
-//       interurbano regional). Distribución por fórmula entre las
-//       regiones de Chile, excluida la RM (que recibe vía espejo).
-//     · Art. 3°: Reembolso por tarifa rebajada al estudiante (lo
-//       que aterriza en la TNE — Tarjeta Nacional Estudiantil
-//       administrada por JUNAEB).
-//     · Art. 4°: Subsidio a zonas aisladas y servicios deficitarios.
-//       Base legal de la licitación ELC0007 Santa Juana y de las
-//       capas subsidiadas que la SEREMITT sumó al corredor
-//       Concepción ↔ Florida (zona norte oct-2025, Rahuil,
-//       Poñén-Roa, servicio nocturno) — y de las "Zonas Latentes"
-//       y "Zonas Aisladas" del decreto MTT.
-//     · Subsidio a la conectividad (servicios marítimos / aéreos
-//       de zonas extremas — Magallanes, Aysén, islas). En el
-//       Biobío aplica a Isla Mocha.
-//     · Renovación de flotas: el "Renueva tu Micro" y el programa
-//       de recambio de buses Euro III/IV → Euro V/VI / eléctricos.
-//
-//   - DIPRES asigna por Ley de Presupuestos anual; Subtrans
-//     distribuye; DTPR ejecuta a nivel regional; Contraloría audita.
-//
-//   - El monto agregado nacional 2024 superó ~$700 mil millones
-//     (suma agregada del programa, fuente periodística). Cifras
-//     desagregadas por región y línea presupuestaria 2024-2026
-//     no han sido cotejadas con DIPRES en esta primera versión:
-//     van en PendingBanner.
-//
-//   - El monto del subsidio Biobío anual no se ha desagregado con
-//     fuente primaria; el dato más sólido que tenemos es la
-//     comunicación periódica del MTT sobre el "Renueva tu Micro"
-//     y los anuncios SEREMITT de subsidios complementarios.
-//
-//   - Críticas estructurales: el subsidio no es permanente
-//     (depende de prórrogas legislativas cíclicas), no tiene un
-//     mecanismo explícito de incentivo a electromovilidad regional
-//     en su texto original, y el subsidio per cápita RM vs.
-//     regiones sigue siendo desigual aunque la Ley 20.378 buscaba
-//     compensarlo.
+// Prórrogas: Ley 21.175 (2019), Ley 21.439 (2022) y prórroga
+// 2024-2025 (número pendiente cotejo BCN). DIPRES asigna por Ley
+// de Presupuestos anual; Subtrans distribuye; DTPR ejecuta a nivel
+// regional; Contraloría audita. Componentes Art. 2°/3°/4° y
+// conectividad/renovación de flota.
 
 import {
   KeyValueList,
@@ -191,53 +121,28 @@ export default function SubsidioLey20378() {
 
       <Section title="Historia: del Transantiago a la 'ley espejo'">
         <p>
-          El origen político de la Ley 20.378 está atado al{' '}
-          <strong>colapso del Transantiago en 2007</strong>. El
-          plan, lanzado el 10-feb-2007 bajo el primer gobierno de
-          Michelle Bachelet, sufrió en sus primeros meses
-          problemas operativos masivos —flota insuficiente,
-          ausencia de paraderos integrados, falta de información
-          a usuarios— que obligaron al fisco a inyectar recursos
-          extraordinarios para sostener el sistema. Esa inyección
-          se conoció como el <em>subsidio implícito al
-          Transantiago</em>.
+          El origen político está atado al <strong>colapso del
+          Transantiago en 2007</strong>. Los problemas operativos
+          masivos obligaron al fisco a inyectar recursos extraordinarios
+          —el <em>subsidio implícito al Transantiago</em>—. La oposición
+          y las regiones plantearon que si la RM recibe ese flujo, las
+          regiones merecen una transferencia equivalente. Esa es la
+          lógica de "ley espejo" que aterrizó en el proyecto presentado
+          al Congreso en 2008 y aprobado en 2009 como Ley 20.378.
         </p>
         <p>
-          La oposición política y los gobiernos regionales
-          plantearon una demanda razonable:{' '}
-          <strong>si la Región Metropolitana recibe miles de
-          millones de pesos al año para sostener su transporte,
-          las regiones merecen una transferencia equivalente</strong>
-          . Esa es la lógica de "ley espejo" que aterrizó en el
-          proyecto presentado al Congreso en 2008 y aprobado en
-          2009 como Ley 20.378.
-        </p>
-        <p>
-          La vigencia original fue de <strong>diez años</strong>{' '}
-          (2009-2018). El régimen no es permanente por diseño:
-          requiere prórrogas legislativas periódicas, lo que
-          genera ciclos de incertidumbre cada vez que se acerca
-          el vencimiento.
+          Vigencia original: <strong>diez años</strong> (2009-2018). El
+          régimen no es permanente por diseño: requiere prórrogas
+          legislativas periódicas.
         </p>
         <PendingBanner>
-          <strong>Cadena de prórrogas pendiente de cotejo
-          completo en BCN.</strong> El prompt original menciona
-          la Ley 21.165 (2019) como primera prórroga, pero las
-          fuentes secundarias que hemos revisado citan la{' '}
-          <strong>Ley 21.175</strong> (publicada 27-sep-2019)
-          como la norma que prorrogó el subsidio nacional al
-          transporte público y modificó la Ley 20.378. La{' '}
-          <strong>Ley 21.439</strong> (2022) prorrogó nuevamente
-          el régimen, ampliándolo hasta 2024. Una{' '}
-          <strong>tercera prórroga</strong> habría sido aprobada
-          en 2024-2025 (el prompt menciona Ley 21.659 o número
-          similar) extendiendo la vigencia hasta cerca de 2030;
-          el número exacto y el texto refundido vigente al 2026
-          no han sido cotejados en BCN en esta primera versión
-          del artículo. Lo que sí es estable: <strong>al
-          16-may-2026 el régimen sigue operativo</strong>, los
-          pagos a operadores del PE Gran Concepción y del PE
-          Tomé continúan, y la TNE se sigue emitiendo.
+          <strong>Cadena de prórrogas pendiente de cotejo BCN.</strong>{' '}
+          <strong>Ley 21.175</strong> (publicada 27-sep-2019) prorrogó
+          el régimen; <strong>Ley 21.439</strong> (2022) lo extendió
+          hasta 2024. Una <strong>tercera prórroga</strong> habría sido
+          aprobada en 2024-2025 (posiblemente Ley 21.659) extendiendo
+          hasta ~2030; número exacto pendiente. Al 16-may-2026 el
+          régimen sigue operativo y los pagos continúan.
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
@@ -308,38 +213,20 @@ export default function SubsidioLey20378() {
 
       <Section title="Distribución regional">
         <p>
-          La Ley 20.378 distribuye los recursos del subsidio
-          nacional entre las regiones de Chile mediante una
-          fórmula que combina criterios de población, kilometraje
-          de rutas y niveles de demanda. El detalle de los
-          ponderadores específicos está en el reglamento de la
-          ley y en las resoluciones anuales del MTT que se
-          publican en el Diario Oficial.
+          La Ley 20.378 distribuye los recursos mediante una fórmula
+          que combina población urbana servida, kilometraje de rutas,
+          niveles de demanda y un factor de equidad territorial. Las
+          tres regiones que históricamente reciben más subsidio son{' '}
+          <strong>Biobío</strong>, <strong>Valparaíso</strong> y{' '}
+          <strong>Antofagasta/Tarapacá</strong>, por sus poblaciones
+          urbanas y sistemas más complejos. En términos per cápita,
+          siguen siendo inferiores al subsidio implícito a la RM.
         </p>
         <PendingBanner>
-          <strong>Fórmula exacta de distribución regional
-          pendiente de transcripción desde el texto refundido y
-          las resoluciones MTT.</strong> Los componentes
-          conocidos del reparto son población urbana servida,
-          flota declarada, kilometraje de rutas autorizadas y un
-          factor de equidad territorial (que beneficia a zonas
-          extremas). Los porcentajes exactos asignados al Biobío
-          en 2024-2026 requieren consulta a DIPRES o a la
-          Subsecretaría de Transportes vía Ley 20.285. No
-          publicamos cifras sin cotejar.
+          <strong>Fórmula exacta y porcentajes Biobío 2024-2026
+          pendientes</strong> — texto refundido + resoluciones MTT, vía
+          Ley 20.285.
         </PendingBanner>
-        <p>
-          Como referencia agregada cualitativa: las tres
-          regiones que históricamente reciben más subsidio
-          son <strong>Biobío</strong>,{' '}
-          <strong>Valparaíso</strong> y <strong>Antofagasta /
-          Tarapacá</strong>, por ser las que concentran las
-          mayores poblaciones urbanas fuera de la RM y los
-          sistemas de transporte público más complejos. Los
-          montos absolutos siguen siendo, en términos per
-          cápita, inferiores al subsidio implícito que recibe
-          la RM —ver más abajo la sección de comparación.
-        </p>
       </Section>
 
       <Section title="Aplicación al Biobío">
@@ -384,13 +271,9 @@ export default function SubsidioLey20378() {
           <a href="/wiki/buspay" className="underline underline-offset-2">
             sistema BusPay
           </a>{' '}
-          no recibe subsidio Ley 20.378 directamente —el
-          Consorcio Buspay opera bajo contrato MTT por ~$750
-          millones/año con cargo a otra línea presupuestaria—.
-          Pero los operadores cuyos buses BusPay equipa con
-          validadores sí reciben subsidio Ley 20.378 por la
-          operación del régimen al que pertenecen (PE Gran
-          Concepción, PE Tomé, Ruta 201).
+          no recibe subsidio Ley 20.378 directamente (línea
+          presupuestaria distinta), pero los operadores cuyos buses
+          equipa con validadores sí lo reciben por su operación.
         </p>
       </Section>
 
@@ -434,14 +317,10 @@ export default function SubsidioLey20378() {
           </table>
         </div>
         <p>
-          El <strong>polinomio de ajuste</strong> es la fórmula
-          contractual que indexa los pagos a costos: combina
-          variaciones de UF, precio del diésel (o de la energía
-          eléctrica en buses eléctricos), salarios sectoriales y
-          otros insumos. Es la razón por la que la tarifa del
-          PE Gran Concepción pasó de $550 (feb-2024) a $580
-          (feb-2025): el polinomio se reajustó por inflación de
-          costos.
+          El <strong>polinomio de ajuste</strong> indexa los pagos a
+          costos (UF, diésel/electricidad, salarios). Es la razón por
+          la que la tarifa PE Gran Concepción pasó de $550 (feb-2024) a
+          $580 (feb-2025).
         </p>
         <Sources>
           <SourceLink href="https://www.dipres.gob.cl/597/w3-propertyvalue-15494.html">
@@ -461,45 +340,16 @@ export default function SubsidioLey20378() {
 
       <Section title="Cifras 2024-2026">
         <PendingBanner>
-          <strong>Cifras presupuestarias específicas pendientes
-          de cotejo con DIPRES.</strong> El monto agregado anual
-          del Subsidio Nacional al Transporte Público (todas las
-          líneas, todas las regiones) supera los cientos de
-          miles de millones de pesos chilenos según
-          publicaciones periódicas del MTT, pero los valores
-          exactos por año (2024, 2025, 2026) y la desagregación
-          al nivel Biobío requieren consulta directa al
-          documento "Ley de Presupuestos del Sector Público" en
-          DIPRES (Partida 19 - MTT, Programa 06 Subsidio
-          Nacional al Transporte Público y programas
-          relacionados). No publicamos cifras sin fuente
-          primaria confirmada.
+          <strong>Cifras presupuestarias pendientes de DIPRES</strong>{' '}
+          — Partida 19 MTT, Programa 06. Valores exactos por año
+          (2024-2026) y desagregación Biobío no publicados aquí sin
+          fuente primaria confirmada.
         </PendingBanner>
-        <p>
-          Lo que sí está documentado cualitativamente y con
-          fuente regional:
-        </p>
+        <p>Documentado cualitativamente con fuente regional:</p>
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>
-            El <strong>PE Gran Concepción 2024</strong> reportó
-            en los anuncios de inicio (1-ene-2024) una cobertura
-            de 36 unidades de negocio con subsidio operacional
-            continuo. La estructura financiera es perímetro con
-            polinomio.
-          </li>
-          <li>
-            La <strong>licitación ELC0007 Santa Juana</strong>{' '}
-            es la primera licitación pública moderna del Biobío
-            en más de 10 años; su estructura económica está
-            basada en pago por kilómetro con cargo a Ley 20.378
-            art. 4°.
-          </li>
-          <li>
-            La adjudicación de <strong>BusPay</strong> en
-            ene-2026 (~$750 millones/año al Consorcio Buspay)
-            no es subsidio Ley 20.378 sino contrato de servicio
-            de recaudación: línea presupuestaria distinta.
-          </li>
+          <li><strong>PE Gran Concepción 2024</strong>: 36 unidades de negocio con subsidio operacional continuo; perímetro con polinomio.</li>
+          <li><strong>Licitación ELC0007 Santa Juana</strong>: primera licitación pública moderna del Biobío en 10+ años; pago por km con cargo a Ley 20.378 art. 4°.</li>
+          <li><strong>BusPay</strong> (ene-2026, ~$750M/año al Consorcio Buspay) NO es Ley 20.378 sino contrato de recaudación: línea distinta.</li>
         </ul>
       </Section>
 
@@ -510,128 +360,82 @@ export default function SubsidioLey20378() {
               Falta de permanencia
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El subsidio depende de prórrogas legislativas
-              cíclicas (2018-2019, 2022, 2024-2025). Cada ciclo
-              abre incertidumbre para operadores y para la
-              planificación regional. La discusión por convertir
-              el régimen en permanente (sin fecha de
-              vencimiento) ha sido propuesta repetidas veces
-              sin haber prosperado.
+              Depende de prórrogas legislativas cíclicas (2018-2019,
+              2022, 2024-2025). Cada ciclo abre incertidumbre. La
+              conversión a régimen permanente se ha propuesto sin
+              prosperar.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
             <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Insuficiencia frente a costos crecientes
+              Insuficiencia y débil incentivo a electromovilidad
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El polinomio reajusta tarifas y subsidio por
-              inflación de insumos, pero los gremios operadores
-              y la academia del transporte señalan que el monto
-              total queda corto frente a la inversión necesaria
-              en flota nueva, infraestructura de paraderos y
-              modernización tecnológica.
+              El polinomio reajusta por inflación pero gremios y
+              academia señalan que el monto queda corto frente a la
+              inversión en flota e infraestructura. El texto original
+              no incorpora incentivos explícitos a buses eléctricos;
+              SEREMI Fierro aclaró en nov-2025 que el Gran Concepción
+              no exige flota 100% eléctrica.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
             <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Incentivos a electromovilidad
+              Brecha per cápita RM vs regiones y fiscalización limitada
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El texto original de la Ley 20.378 no incorpora
-              incentivos explícitos a buses eléctricos. La
-              renovación de flota se canaliza por programas
-              específicos (Renueva tu Micro y variantes
-              recientes) y por las exigencias técnicas de los
-              perímetros de exclusión —el Gran Concepción no
-              exige flota 100% eléctrica, y el SEREMI Patricio
-              Fierro lo aclaró en nov-2025 para los
-              electrocorredores MOP. La concentración de
-              subsidio en mantención de flota Euro V/VI por
-              sobre electrificación es una crítica vigente.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Brecha per cápita RM vs regiones
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              La Ley 20.378 nació para igualar a las regiones
-              con el subsidio implícito al Transantiago. Quince
-              años después, las cifras comparativas siguen
-              mostrando que la RM recibe más subsidio per cápita
-              que la suma de las regiones del país, en parte
-              porque RED (ex Transantiago) tiene una estructura
-              tarifaria que requiere mayor aporte fiscal por
-              pasajero transportado.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Capacidad de fiscalización regional limitada
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              La DTPR fiscaliza el cumplimiento de los
-              estándares pero la palanca práctica más fuerte —el
-              ranking de cumplimiento del PE Gran Concepción
-              2024 ligado a descuentos sobre subsidio— aún no
-              se publica desagregado al público.
+              15 años después, la RM sigue recibiendo más subsidio per
+              cápita que la suma de regiones. La DTPR fiscaliza pero el
+              ranking de cumplimiento del PE Gran Concepción 2024 —su
+              palanca más fuerte— no se publica desagregado.
             </p>
           </div>
         </div>
       </Section>
 
       <Section title="Comparación con el subsidio implícito de Santiago">
-        <p>
-          La razón política de existir de la Ley 20.378 fue
-          equilibrar el aporte fiscal entre la RM y el resto
-          del país. Quince años después, una comparación
-          cualitativa:
-        </p>
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-[13px]">
             <thead>
               <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">Región Metropolitana (RED)</th>
+                <th className="px-3 py-2 font-medium">RM (RED)</th>
                 <th className="px-3 py-2 font-medium">Regiones (Ley 20.378)</th>
               </tr>
             </thead>
             <tbody className="divide-y align-top">
               <tr>
                 <td className="px-3 py-2 font-medium">Marco legal</td>
-                <td className="px-3 py-2">Leyes específicas para RED + subsidio implícito + Ley 20.378 (espejo).</td>
-                <td className="px-3 py-2">Ley 20.378 + cuerpos regionales (Ley 18.696 perímetros).</td>
+                <td className="px-3 py-2">Leyes específicas RED + subsidio implícito + Ley 20.378 (espejo).</td>
+                <td className="px-3 py-2">Ley 20.378 + Ley 18.696 (perímetros).</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Administración</td>
-                <td className="px-3 py-2">DTPM (Dirección de Transporte Público Metropolitano), con personalidad jurídica propia.</td>
-                <td className="px-3 py-2">DTPR (División de Transporte Público Regional), dependencia técnica de Subtrans, con oficinas regionales.</td>
+                <td className="px-3 py-2">DTPM (personalidad jurídica propia).</td>
+                <td className="px-3 py-2">DTPR (dependencia técnica Subtrans).</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Modelo tarifario</td>
                 <td className="px-3 py-2">Tarifa integrada bus + Metro + tren. Pago electrónico universal (bip!).</td>
-                <td className="px-3 py-2">Tarifas por servicio o perímetro. Pago electrónico recién en marcha en Concepción (BusPay 2026), Temuco (Bipay 2025) y otras capitales.</td>
+                <td className="px-3 py-2">Tarifas por servicio o perímetro. BusPay 2026 en Conce.</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-medium">Inversión en infraestructura</td>
-                <td className="px-3 py-2">Corredores exclusivos extensos, Metro de Santiago, BRT, paraderos integrados.</td>
-                <td className="px-3 py-2">Electrocorredores MOP recién en licitación (Biobío 2025-2026), corredores aislados (El Pimentón Concepción), paraderos heterogéneos.</td>
+                <td className="px-3 py-2 font-medium">Inversión infraestructura</td>
+                <td className="px-3 py-2">Metro, corredores exclusivos extensos, BRT.</td>
+                <td className="px-3 py-2">Electrocorredores MOP recién en licitación; paraderos heterogéneos.</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-medium">Subsidio per cápita estimado</td>
-                <td className="px-3 py-2">Superior al promedio regional. Cifras anuales DIPRES.</td>
-                <td className="px-3 py-2">Inferior al de la RM. Brecha persistente pese a la "ley espejo".</td>
+                <td className="px-3 py-2 font-medium">Subsidio per cápita</td>
+                <td className="px-3 py-2">Superior al regional.</td>
+                <td className="px-3 py-2">Brecha persistente pese a "ley espejo".</td>
               </tr>
             </tbody>
           </table>
         </div>
         <p className="text-[12px] text-muted-foreground">
-          La promesa de equidad de la Ley 20.378 se cumple en
-          parte: las regiones reciben recursos que no recibían
-          antes de 2009. Pero la brecha estructural —tamaño de
-          la red, complejidad operativa, integración tarifaria—
-          mantiene a la RM con un nivel de servicio que las
-          regiones todavía intentan alcanzar.
+          La promesa de equidad se cumple en parte: las regiones reciben
+          recursos que no recibían antes de 2009, pero la brecha
+          estructural persiste.
         </p>
       </Section>
 
@@ -697,48 +501,21 @@ export default function SubsidioLey20378() {
 
       <Section title="Cobertura del visor">
         <p>
-          El visor no muestra dinero ni flujos
-          presupuestarios, pero <strong>todo lo que se ve en
-          el mapa está financiado, directa o
-          indirectamente, por la Ley 20.378</strong>. La
-          relación entre las capas del visor y el subsidio es
-          la siguiente:
+          El visor no muestra dinero, pero <strong>todo lo que se ve
+          está financiado, directa o indirectamente, por la Ley
+          20.378</strong>:
         </p>
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>
-            <strong>Buses urbanos del feed GTFS Gran
-            Concepción</strong>: operan bajo el PE Gran
-            Concepción 2024 con subsidio Ley 20.378 a las 36
-            unidades de negocio.
-          </li>
-          <li>
-            <strong>Servicios 401 / 411 / 421 (Concepción ↔
-            Penco, Lirquén, Tomé)</strong>: operan bajo el PE
-            Tomé con subsidio Ley 20.378 al operador único
-            Transportes Tomé.
-          </li>
-          <li>
-            <strong>Ruta 201 Santa Juana</strong>: subsidio
-            Ley 20.378 art. 4° (zonas aisladas) bajo
-            licitación DTPR ELC0007.
-          </li>
-          <li>
-            <strong>Capas Florida (zona norte, Rahuil,
-            Poñén-Roa, nocturno)</strong>: subsidios Ley
-            20.378 art. 4° anunciados desde 2025.
-          </li>
-          <li>
-            <strong>Biotrén (EFE Trenes Metropolitanos)</strong>
-            : régimen propio (EFE como empresa pública), no es
-            Ley 20.378 — pero integración tarifaria intermodal
-            con buses subsidiados Ley 20.378 está en discusión.
-          </li>
+          <li><strong>Buses urbanos GTFS Gran Concepción</strong>: PE Gran Concepción 2024, 36 unidades de negocio.</li>
+          <li><strong>Servicios 401/411/421</strong> (Penco, Lirquén, Tomé): PE Tomé, operador Transportes Tomé.</li>
+          <li><strong>Ruta 201 Santa Juana</strong>: art. 4° bajo licitación DTPR ELC0007.</li>
+          <li><strong>Capas Florida</strong> (zona norte, Rahuil, Poñén-Roa, nocturno): art. 4° desde 2025.</li>
+          <li><strong>Biotrén</strong>: régimen EFE, NO Ley 20.378; integración intermodal en discusión.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Los corredores interurbanos privados puros (Concepción
-          ↔ Yumbel, El Pimentón) <strong>no reciben subsidio
-          Ley 20.378</strong>: operan bajo tarifa libre con
-          autorización individual de la SEREMITT.
+          Los corredores privados puros (Conce↔Yumbel, El Pimentón){' '}
+          <strong>no reciben subsidio Ley 20.378</strong>: tarifa libre
+          con autorización individual SEREMITT.
         </p>
       </Section>
 
@@ -823,93 +600,29 @@ export default function SubsidioLey20378() {
 
       <Section title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Número exacto y fecha de la última prórroga vigente al 2026 (Ley 21.659 o número alternativo) — cotejo en BCN con texto refundido oficial.</li>
-          <li>Monto agregado anual del Subsidio Nacional al Transporte Público 2024, 2025 y 2026 — DIPRES Partida 19 - MTT.</li>
-          <li>Desagregación regional: cuánto recibe Biobío anualmente y por componente (operacional, TNE, zonas aisladas, renovación).</li>
-          <li>Fórmula exacta de distribución regional (ponderadores de población, kilometraje, demanda, factor de equidad territorial).</li>
-          <li>Monto del reembolso por TNE pagado a operadores del Biobío 2024-2026.</li>
-          <li>Costo por pasajero subsidiado: razón entre subsidio total y validaciones anuales (por sistema o por perímetro).</li>
-          <li>Texto íntegro de la Resolución MTT que aprueba la distribución regional anual.</li>
-          <li>Detalle del programa de renovación de flota vigente y montos asignados al Biobío.</li>
-          <li>Mecanismo y descuentos del polinomio de ajuste tarifario en el PE Gran Concepción 2024 — fórmula publicada.</li>
+          <li>Número y fecha exacta de la última prórroga vigente 2026 (BCN).</li>
+          <li>Monto agregado anual 2024-2026 (DIPRES Partida 19 - MTT) y desagregación Biobío por componente.</li>
+          <li>Fórmula de distribución regional (ponderadores).</li>
+          <li>Reembolso TNE pagado a operadores del Biobío 2024-2026.</li>
+          <li>Costo por pasajero subsidiado (razón subsidio/validaciones).</li>
+          <li>Texto íntegro de Resolución MTT de distribución regional anual.</li>
+          <li>Detalle del programa de renovación de flota y montos al Biobío.</li>
+          <li>Fórmula del polinomio de ajuste del PE Gran Concepción 2024.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Vía de cierre principal: consulta a{' '}
-          <strong>DIPRES</strong> (presupuesto vigente), a{' '}
-          <strong>BCN Ley Chile</strong> (texto refundido) y a la{' '}
-          <strong>Subsecretaría de Transportes</strong> vía Ley
-          20.285 (transparencia activa) para reglamentos
-          internos y fórmulas de distribución.
+          Vías de cierre: DIPRES, BCN Ley Chile, Subtrans vía Ley 20.285.
         </p>
-      </Section>
-
-      <Section title="Bibliografía">
-        <Sources>
-          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
-            BCN · Ley 20.378 (texto original, 5-sep-2009)
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/buscador?tipos_norma=L&q=21.175">
-            BCN · Buscador Ley 21.175 (prórroga 2019, pendiente cotejo número exacto)
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/buscador?tipos_norma=L&q=21.439">
-            BCN · Buscador Ley 21.439 (prórroga 2022)
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=30190">
-            BCN · Ley 18.696 (perímetros de exclusión, art. 3°)
-          </SourceLink>
-          <SourceLink href="https://www.subtrans.gob.cl/">
-            Subsecretaría de Transportes · sitio oficial
-          </SourceLink>
-          <SourceLink href="https://www.subtrans.gob.cl/subsidio-nacional-al-transporte-publico/">
-            Subtrans · página del Subsidio Nacional al Transporte Público
-          </SourceLink>
-          <SourceLink href="https://www.dipres.gob.cl/597/w3-multipropertyvalues-22769-26491.html">
-            DIPRES · Ley de Presupuestos del Sector Público
-          </SourceLink>
-          <SourceLink href="https://www.dipres.gob.cl/597/w3-propertyvalue-15494.html">
-            DIPRES · Partida 19 - Ministerio de Transportes
-          </SourceLink>
-          <SourceLink href="https://www.junaeb.cl/tne/">
-            JUNAEB · Tarjeta Nacional Estudiantil
-          </SourceLink>
-          <SourceLink href="https://www.mtt.gob.cl/">
-            MTT · Ministerio de Transportes y Telecomunicaciones
-          </SourceLink>
-          <SourceLink href="https://dprbiobio.dpr.gob.cl/">
-            DPR Biobío · portal regional oficial
-          </SourceLink>
-          <SourceLink href="https://www.contraloria.cl/">
-            Contraloría General de la República
-          </SourceLink>
-          <SourceLink href="https://www.dtpm.cl/">
-            DTPM · Dirección de Transporte Público Metropolitano (referencia comparativa RM)
-          </SourceLink>
-          <SourceLink href="https://www.diariooficial.interior.gob.cl/">
-            Diario Oficial de la República de Chile
-          </SourceLink>
-          <SourceLink href="https://es.wikipedia.org/wiki/Ley_de_subsidio_nacional_al_transporte_p%C3%BAblico">
-            Wikipedia · Ley de subsidio nacional al transporte público (referencia cruzada)
-          </SourceLink>
-          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html">
-            Diario Concepción · 14-feb-2025 — Ajuste polinómico tarifa $580
-          </SourceLink>
-          <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/07/22/santa-juana-cuenta-con-nuevo-sistema-de-transporte-publico-licitado-y-renovada-flota-de-buses/">
-            DPR Biobío · 22-jul-2024 — Inauguración Ruta 201 Santa Juana
-          </SourceLink>
-        </Sources>
       </Section>
 
       <Section title="Para contribuir">
         <p>
-          Si tienes el número exacto y la fecha de la última
-          prórroga al 2026, las cifras DIPRES de la Partida 19
-          desagregadas, el texto del reglamento de distribución
-          regional o copias de las resoluciones MTT que
-          asignan recursos anuales — abre un pull request en{' '}
+          Si tienes número y fecha de la última prórroga al 2026,
+          cifras DIPRES Partida 19 desagregadas o resoluciones MTT de
+          distribución regional — abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/subsidio-ley-20378.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/subsidio-ley-20378.tsx
           </SourceLink>
-          . Toda contribución se cita en el commit con autoría.
+          .
         </p>
       </Section>
     </div>

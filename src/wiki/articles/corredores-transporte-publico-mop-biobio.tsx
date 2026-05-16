@@ -1,50 +1,9 @@
-// Electrocorredores MOP del Biobío — los tres proyectos concesionados
-// de corredores exclusivos para buses urbanos sobre las troncales del
-// Gran Concepción (Rutas 160, 150 y Autopista Concepción-Talcahuano
-// Tramo II). Inversión global ~USD 250 millones, plazo de concesión
-// 300 meses (25 años) según las bases técnicas y económicas de MOP
-// Concesiones.
-//
-// Particularidad común a los tres: en la apertura de ofertas técnicas
-// y económicas de noviembre-diciembre de 2025 se presentó un único
-// consorcio (Electro-Cointer / Electro-Cointer II, ambas matrices
-// vinculadas a Cointer Concesiones S.L. de España, parte del Grupo
-// Azvi). Es un dato editorialmente fuerte: USD 250 millones de
-// inversión pública concentrados en un solo oferente.
-//
-// Datos verificados con fuentes primarias:
-//   - Ruta 160 (San Pedro - Coronel): UF 4.414.000, 14 km, oferta
-//     Electro-Cointer 5-nov-2025, apertura económica 3-dic-2025,
-//     adjudicación 1T 2026, plazo 25 años (Concesiones MOP, BBCh,
-//     CPI, El Conquistador Concepción, Radio UdeC, Soychile).
-//   - Ruta 150 + Autopista Conce-Talcahuano Tramo II: UF 4.431.000,
-//     9,3 km totales (6,7 + 2,6), oferta Electro-Cointer II
-//     10-dic-2025, apertura económica 15-ene-2026, adjudicación 1S
-//     2026, obras 2S 2029-1S 2030, puesta en servicio 2032, plazo
-//     300 meses (Concesiones MOP, Diario Concepción 7-nov-2025).
-//   - CGR visó bases 13-nov-2024 (Diario Concepción).
-//   - Cointer = filial española del Grupo Azvi, también socia de
-//     Sacyr en la concesión Red Norte de aeropuertos (Cointer.eu,
-//     BNamericas, Trade-news).
-//   - Ruta 160 OSM relation 9239557, ref=160, official_name
-//     "Concepción - Tres Pinos - Lebu", decreto MOP 121/2009
-//     (Overpass kumi.systems 2026-05-16).
-//   - Ruta 150 OSM relation 6599805, ref=150 (ya verificado en
-//     concepcion-tome).
-//
-// Lo que va en banner ámbar:
-//   - Composición societaria exacta de Electro-Cointer y
-//     Electro-Cointer II (¿son la misma SPV o dos vehículos?).
-//   - Política de flota: ¿qué proporción de buses eléctricos vs
-//     diésel exige el contrato? El SEREMI Patricio Fierro aclaró
-//     en nov-2025 que NO es flota 100% eléctrica obligatoria.
-//   - Quién compra los buses: ¿la concesionaria, los operadores
-//     del perímetro de exclusión, una nueva licitación MTT? No
-//     está cerrado en las fuentes.
-//   - Integración con BusPay: comprometida políticamente pero
-//     sin ingeniería publicada.
-//   - Subsidio operacional Ley 20.378 al operador de los buses
-//     que circulen por los corredores: monto, mecánica.
+// Electrocorredores MOP del Biobío — tres proyectos concesionados de
+// corredores exclusivos para buses urbanos sobre las troncales del Gran
+// Concepción (Rutas 160, 150 y Autopista Concepción-Talcahuano Tramo
+// II). Inversión global ~USD 250M, plazo 300 meses (25 años). Oferente
+// único en los tres llamados: Electro-Cointer / Electro-Cointer II
+// (Cointer Concesiones S.L., Grupo Azvi, España).
 
 import {
   KeyValueList,
@@ -78,61 +37,44 @@ export default function CorredoresTransportePublicoMOPBiobio() {
       </VerifiedBanner>
 
       <p className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
-        <strong>Nota editorial sobre el nombre.</strong> Este wiki
-        adopta <strong>"Corredores de Transporte Público MOP"</strong>{' '}
-        como nombre canónico de los tres proyectos, siguiendo el uso
-        actual del MTT y del propio MOP, que dejaron de rotularlos
-        como "electrocorredores" para evitar la confusión que el
-        prefijo generaba (sugería una flota 100% eléctrica obligatoria,
-        lo cual el SEREMI Patricio Fierro aclaró públicamente en
-        noviembre de 2025 que no es el caso). El término{' '}
-        <strong>"electrocorredor"</strong> se mantiene en el cuerpo
-        del artículo —y como clave de búsqueda— porque sigue siendo
-        el nombre con el que la prensa regional y los expedientes
-        MOP los identifican (de hecho los oferentes se llaman
-        Electro-Cointer y Electro-Cointer II).
+        <strong>Nota sobre el nombre.</strong> El wiki adopta{' '}
+        <strong>"Corredores de Transporte Público MOP"</strong> como
+        nombre canónico, siguiendo el uso del MTT y MOP. El término{' '}
+        "electrocorredor" se mantiene como clave de búsqueda porque es
+        el nombre que usa la prensa y los expedientes MOP (los oferentes
+        se llaman Electro-Cointer y Electro-Cointer II). El SEREMI
+        Patricio Fierro aclaró en nov-2025 que no se exige flota 100%
+        eléctrica.
       </p>
 
       <Section title="Qué son y por qué importan">
         <p>
-          Los <strong>"electrocorredores"</strong> del Gran Concepción
-          son tres proyectos de infraestructura concesionada por el{' '}
-          <strong>MOP</strong> bajo la Ley de Concesiones (DS MOP 900)
-          que segregan, sobre las troncales viales más cargadas de la
-          conurbación, una <strong>pista exclusiva bidireccional para
-          buses de transporte público</strong> en el eje central de la
-          ruta, con paraderos de alta capacidad sobre la mediana,
-          cruces peatonales seguros, ciclovía y veredas a ambos lados.
-          El nombre comercial es "electrocorredor" porque el diseño
-          prevé buses eléctricos, pero el SEREMI de Transportes del
-          Biobío <strong>Patricio Fierro</strong> aclaró en noviembre
-          de 2025 que el contrato <strong>no exige flota 100%
-          eléctrica</strong> ni a la entrada en servicio ni durante el
-          plazo de la concesión.
+          Los <strong>"electrocorredores"</strong> son tres proyectos
+          de infraestructura concesionada por el <strong>MOP</strong>{' '}
+          (Ley de Concesiones, DS MOP 900) que segregan, sobre las
+          troncales más cargadas, una <strong>pista exclusiva
+          bidireccional para buses</strong> en el eje central de la ruta,
+          con paraderos sobre mediana, cruces peatonales, ciclovía y
+          veredas. El SEREMI <strong>Patricio Fierro</strong> aclaró en
+          nov-2025 que el contrato <strong>no exige flota 100%
+          eléctrica</strong>.
         </p>
         <p>
-          Son los <strong>primeros corredores segregados de transporte
-          público fuera de Santiago</strong>. La cartera global suma
-          aproximadamente <strong>USD 250 millones</strong> y más de{' '}
-          <strong>23 km</strong> de pista exclusiva entre los tres
-          proyectos, con un plazo de concesión común de{' '}
-          <strong>300 meses (25 años)</strong> contados desde la
-          puesta en servicio de cada obra
-          (
+          Son los <strong>primeros corredores segregados fuera de
+          Santiago</strong>. Cartera global ~<strong>USD 250 millones</strong>{' '}
+          y más de <strong>23 km</strong> de pista exclusiva, plazo{' '}
+          <strong>300 meses (25 años)</strong> desde la puesta en
+          servicio (
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
             Diario Concepción · 7-nov-2025
           </SourceLink>
           ).
         </p>
         <p>
-          Materialmente cambian la jerarquía de la red: hoy un bus
-          urbano comparte la pista con autos y camiones en la Ruta 160
-          (San Pedro ↔ Coronel) o el bypass de la Ruta 150 (Concepción
-          ↔ Penco) y queda atrapado en la misma congestión. Con la
-          pista exclusiva, el bus pasa por arriba del cuello de
-          botella. La pregunta abierta es si la demanda residencial-
-          laboral de cada corredor justifica el costo —y si no termina
-          desplazando políticamente las extensiones del{' '}
+          Cambian la jerarquía de la red: con pista exclusiva el bus
+          pasa por arriba del cuello de botella. La pregunta abierta es
+          si la demanda justifica el costo y si no desplaza políticamente
+          las extensiones del{' '}
           <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
             Biotrén
           </a>
@@ -191,14 +133,10 @@ export default function CorredoresTransportePublicoMOPBiobio() {
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
-          <strong>Nota editorial:</strong> los tres proyectos
-          comparten oferente único de matriz española. Cointer
-          Concesiones S.L. es filial del{' '}
-          <strong>Grupo Azvi</strong>, con sede en Sevilla y presencia
-          en concesiones de transporte urbano, autopistas y aeropuertos
-          en España y Latinoamérica. En Chile además integra (con un
-          30%) el consorcio que opera la Red Norte de Aeropuertos
-          junto a Sacyr Concesiones.
+          Los tres proyectos comparten oferente único de matriz española.
+          Cointer Concesiones S.L. es filial del <strong>Grupo Azvi</strong>{' '}
+          (Sevilla); en Chile integra (30%) el consorcio Red Norte de
+          Aeropuertos junto a Sacyr.
         </p>
         <Sources>
           <SourceLink href="https://concesiones.mop.gob.cl/project/corredor-de-transporte-publico-ruta-160/">
@@ -287,18 +225,14 @@ export default function CorredoresTransportePublicoMOPBiobio() {
 
       <Section title="Material rodante y operación">
         <p>
-          El contrato MOP <strong>no construye buses</strong>, sólo la
-          pista. El sistema funcional —los buses, su recaudo, su
-          itinerario— vive en el régimen tarifario del MTT bajo dos
-          paraguas distintos según el tramo: el{' '}
+          El contrato MOP <strong>no construye buses</strong>, solo la
+          pista. Los buses y su recaudo viven en el régimen MTT: el{' '}
           <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
             Perímetro de Exclusión del Gran Concepción 2024
           </a>
-          {' '}para los corredores Ruta 160 (Coronel-San Pedro) y la
-          Autopista Concepción-Talcahuano Tramo II, y el{' '}
-          <strong>Perímetro de Exclusión de Tomé</strong> (decreto
-          jul-2016, operativo mar-2022) para el extremo norte de la
-          Ruta 150.
+          {' '}para Ruta 160 y Autopista Conce-Talcahuano II, y el{' '}
+          Perímetro de Exclusión de Tomé (jul-2016, operativo mar-2022)
+          para el extremo norte de la Ruta 150.
         </p>
         <KeyValueList
           items={[
@@ -354,17 +288,15 @@ export default function CorredoresTransportePublicoMOPBiobio() {
 
       <Section title="Tensión con el Biotrén">
         <p>
-          Es la tensión política más fuerte del paquete. El{' '}
+          Tensión política central del paquete. El{' '}
           <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
             Biotrén
           </a>
-          {' '}tiene tres extensiones largamente estudiadas que cruzan
-          territorialmente con los electrocorredores: <strong>Penco
-          / Lirquén</strong> (cruza con Ruta 150), <strong>Lota</strong>{' '}
-          (cruza con Ruta 160) y <strong>Carriel Sur / Talcahuano
-          aeropuerto</strong> (cruza con Autopista Tramo II). Ninguna
-          de las tres extensiones tiene RS MIDESO ni licitación
-          abierta. Las tres están "en estudio" en EFE Sur.
+          {' '}tiene tres extensiones que cruzan territorialmente con
+          los electrocorredores: <strong>Penco/Lirquén</strong> (Ruta
+          150), <strong>Lota</strong> (Ruta 160) y <strong>Carriel Sur</strong>{' '}
+          (Autopista Tramo II). Ninguna tiene RS MIDESO ni licitación
+          abierta; las tres están "en estudio" en EFE Sur.
         </p>
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-[13px]">
@@ -410,18 +342,12 @@ export default function CorredoresTransportePublicoMOPBiobio() {
           </table>
         </div>
         <p className="text-[12px] text-muted-foreground">
-          <strong>Lectura editorial:</strong> técnicamente bus y tren
-          no son sustitutos perfectos (la jerarquía Biotrén troncal +
-          buses alimentadores funciona bien donde existe), pero
-          financieramente compiten por el mismo presupuesto público
-          regional. La priorización MOP por carretera es un hecho
-          consumado: si los electrocorredores absorben la demanda
-          residencial Concepción ↔ Penco y Concepción ↔ Coronel, la
-          demanda residual difícilmente justifica el riel en el corto
-          plazo. El alcalde de Penco{' '}
-          <strong>Víctor Hugo Figueroa</strong> advirtió en noviembre
-          de 2022 que el corredor Ruta 150 podía "frenar" la llegada
-          del Biotrén a Penco.
+          Bus y tren no son sustitutos perfectos pero compiten por el
+          mismo presupuesto regional. Si los electrocorredores absorben
+          la demanda residencial Conce↔Penco y Conce↔Coronel, la
+          demanda residual difícilmente justifica el riel. El alcalde
+          de Penco <strong>Víctor Hugo Figueroa</strong> advirtió en
+          nov-2022 que la Ruta 150 podía "frenar" la llegada del Biotrén.
         </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
@@ -430,85 +356,35 @@ export default function CorredoresTransportePublicoMOPBiobio() {
         </Sources>
       </Section>
 
-      <Section title="Tensión con BusPay">
+      <Section title="Tensión con BusPay y referente RED">
         <p>
-          La línea editorial del MTT y la SEREMITT Biobío es que los
-          buses que circulen por los electrocorredores aceptarán{' '}
+          La línea oficial es que los buses de los electrocorredores
+          aceptarán{' '}
           <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay
           </a>
-          {' '}desde su marcha blanca proyectada para el tercer
-          trimestre de 2026. Pero hay un desfase de cronograma fuerte:
+          {' '}desde su marcha blanca (Q3 2026). Hay desfase de
+          cronograma: BusPay entra en régimen 100% electrónico a fines
+          de 2026; los electrocorredores en servicio en{' '}
+          <strong>2031-2032</strong>. Cuando los corredores estén
+          operativos, BusPay ya llevará 5 años con datos reales.
         </p>
-        <ul className="ml-5 list-disc space-y-1">
-          <li>
-            BusPay entra en régimen 100% electrónico a fines de 2026.
-          </li>
-          <li>
-            Los electrocorredores entran en servicio en{' '}
-            <strong>2031-2032</strong>, varios años después de la
-            consolidación de BusPay.
-          </li>
-          <li>
-            Cuando los corredores estén operativos, BusPay ya llevará
-            cinco años con datos reales de validación, evasión y
-            comportamiento de demanda. El operador entrante del
-            corredor heredará un sistema de pago maduro.
-          </li>
-        </ul>
         <p>
-          La pregunta abierta es si los buses del electrocorredor
-          serán <strong>flota dedicada</strong> con identidad propia
+          La pregunta abierta es si los buses serán flota dedicada
           (tipo RED Santiago) o se mezclarán con el padrón del
-          perímetro 2024 actual. Las bases MOP no zanjan el punto. Si
-          son flota dedicada y con itinerario punto a punto, la
-          tentación operativa es cerrar el sistema y dejar fuera al
-          resto del padrón —algo que ocurrió en Transantiago/RED y
-          generó fricción con buses no troncales que perdieron rutas
-          rentables.
+          perímetro 2024. Las bases MOP no zanjan el punto.
         </p>
-      </Section>
-
-      <Section title="Comparación con corredores RED en Santiago">
         <p>
-          Los corredores Independencia, Vicuña Mackenna, Santa Rosa,
-          Pajaritos y Recoleta de Santiago son el referente. El
-          aprendizaje cruzado (no exhaustivo):
+          Los corredores RED de Santiago (Independencia, Vicuña
+          Mackenna, Santa Rosa, Pajaritos) son referente. Aprendizajes
+          clave: pista exclusiva en mediana funciona sobre 30.000
+          pax/día; cruce peatonal seguro es la pieza más cara y
+          primera sacrificada; capacidad agregada 8.000-12.000
+          pax/hora-sentido (vs metro &gt;40.000); pre-pay reduce 40-60%
+          el tiempo de detención (las bases MOP contemplan estaciones
+          cerradas pero BusPay valida a bordo — decisión pendiente);
+          integración multimodal con Biotrén Conecta sigue pendiente.
         </p>
-        <ul className="ml-5 list-disc space-y-1">
-          <li>
-            <strong>Pista exclusiva en mediana funciona</strong> en
-            ejes con demanda &gt; 30.000 pax/día y semaforización
-            preferente. Bajo ese umbral, el costo de capital no
-            recupera vía ahorro de tiempo de viaje.
-          </li>
-          <li>
-            <strong>Las estaciones en mediana son vulnerables</strong>
-            : el cruce peatonal seguro es la pieza más cara y la que
-            primero se sacrifica en sobrecostos. Hay que blindarla en
-            las bases.
-          </li>
-          <li>
-            <strong>El bus no es un metro</strong>. La capacidad
-            agregada de un corredor exclusivo bien operado es del
-            orden de 8.000-12.000 pax/hora-sentido (frecuencia 30 s
-            con buses articulados). El metro de Santiago supera los
-            40.000.
-          </li>
-          <li>
-            <strong>Pre-pay (validación antes de subir) reduce
-            tiempos de detención</strong> en 40-60% según la
-            literatura BRT. Las bases MOP del Biobío contemplan
-            estaciones cerradas pero el modelo de validación BusPay
-            está pensado a bordo. Hay aquí una decisión pendiente.
-          </li>
-          <li>
-            <strong>La integración tarifaria multimodal es la
-            ventaja decisiva</strong> de un sistema BRT moderno.
-            BusPay todavía no integra con Biotrén Conecta. Sin esa
-            integración, el corredor pierde la mitad de su valor.
-          </li>
-        </ul>
       </Section>
 
       <Section title="Cronología">
@@ -567,17 +443,10 @@ export default function CorredoresTransportePublicoMOPBiobio() {
               Oferta única en los tres llamados
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El mismo consorcio (Electro-Cointer / Electro-Cointer II,
-              ambos ligados a Cointer Concesiones S.L., filial del
-              Grupo Azvi de España) fue el único postulante en los dos
-              procesos. Es un dato fuerte: USD 250 millones de
-              inversión pública concentrados en una sola SPV. La
-              competencia esperada por el MOP no se materializó y la
-              presión sobre el precio se pierde. Repite el patrón
-              "oferente único en concesiones grandes" que ha
-              caracterizado la cartera Boric (también visible en Red
-              Norte de aeropuertos, donde Sacyr y Cointer ganaron sin
-              competencia real).
+              Electro-Cointer / Electro-Cointer II (Cointer / Grupo
+              Azvi) fue el único postulante. USD 250M concentrados en
+              una sola SPV; presión sobre el precio se pierde. Repite
+              el patrón "oferente único" de Red Norte de Aeropuertos.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -585,38 +454,19 @@ export default function CorredoresTransportePublicoMOPBiobio() {
               Sobrecostos típicos en concesiones MOP
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Históricamente las concesiones MOP cierran con
-              sobrecosto promedio 15-30% sobre la oferta original por
-              modificaciones contractuales (M.O.P.). Aplicado a la
-              cartera Biobío, el costo final puede acercarse a USD
-              300-325 millones —sin que eso aparezca todavía en los
-              comunicados oficiales.
+              Sobrecosto histórico promedio 15-30% por modificaciones
+              contractuales. Costo final podría acercarse a USD 300-325M.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
             <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Demanda inducida vs. demanda real
+              Demanda inducida vs. real y gremio sin posición
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Los estudios de demanda de cada corredor no son
-              públicos. La hipótesis MOP es que la mejora de tiempo
-              de viaje inducirá demanda nueva (modal shift desde
-              auto). En Santiago, los corredores Pajaritos y Vicuña
-              Mackenna confirmaron parcialmente esa hipótesis; en
-              ciudades intermedias el efecto es más débil.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Críticas desde el gremio de buses tradicionales
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Los operadores del Perímetro de Exclusión 2024 no han
-              fijado posición pública sobre qué proporción de su
-              flota usará los corredores, ni si la entrada al
-              corredor exige flota nueva (a su costo). Sin claridad
-              regulatoria, hay riesgo de bloqueo del modelo cuando se
-              acerque la puesta en servicio.
+              Estudios de demanda no son públicos. Los operadores del
+              Perímetro 2024 no han fijado posición sobre qué proporción
+              de flota usará los corredores ni si la entrada exige flota
+              nueva. Sin claridad regulatoria, hay riesgo de bloqueo.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -625,10 +475,8 @@ export default function CorredoresTransportePublicoMOPBiobio() {
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
               Si los electrocorredores consumen el techo presupuestario
-              de inversión metropolitana de la región para la próxima
-              década, las extensiones del Biotrén a Penco, Lota y
-              Carriel Sur quedan estructuralmente postergadas. Es la
-              tensión modal central del paquete.
+              regional para la próxima década, las extensiones del
+              Biotrén a Penco, Lota y Carriel Sur quedan postergadas.
             </p>
           </div>
         </div>
@@ -639,42 +487,36 @@ export default function CorredoresTransportePublicoMOPBiobio() {
           items={[
             [
               'Empleo construcción',
-              'Por orden de magnitud y proporcional a la inversión, los tres corredores generan entre 1.500 y 3.000 empleos directos durante la fase de obras (2029-2032), más empleos indirectos en proveedores locales de áridos, hormigón y servicios. Cifra no oficial.',
+              'Por orden de magnitud: 1.500-3.000 empleos directos durante obras (2029-2032), más indirectos en proveedores locales. Cifra no oficial.',
             ],
             [
               'Electromovilidad efectiva',
               <>
-                Depende de decisiones MTT y de la operadora del
-                Perímetro 2024, no del contrato MOP. Si el contrato no
-                exige electrificación, la transición puede tardar 10-15
-                años desde la puesta en servicio. El entonces SEREMI{' '}
-                <strong>Patricio Fierro</strong> fue explícito en este
-                punto en noviembre de 2025 (la postura institucional
-                de la SEREMITT Biobío no se ha modificado tras la
-                sucesión Fierro → Cautivo del 28-nov-2025).
+                Depende de decisiones MTT y operadora del Perímetro 2024,
+                no del contrato MOP. Sin exigencia de electrificación, la
+                transición puede tardar 10-15 años desde puesta en
+                servicio. Fierro fue explícito en nov-2025; la postura no
+                se modificó tras la sucesión Fierro → Cautivo (28-nov-2025).
               </>,
             ],
             [
               'Calidad del aire',
-              'PM2.5 en Concepción metropolitano supera la norma anual; la fuente principal es leña residencial (~70% en invierno), no transporte. La reducción de emisiones por corredor electrificado es marginal sobre el PM2.5 total, pero sí relevante sobre NOx y ruido en las arterias troncales.',
+              'PM2.5 metropolitano excede norma anual; fuente principal es leña (~70% invierno), no transporte. La reducción por corredor electrificado es marginal sobre PM2.5 pero relevante en NOx y ruido.',
             ],
             [
               'Reducción CO₂',
-              'Sin número MOP publicado. Referencia: un bus diésel Euro VI emite ~1,3 kg CO₂/km. Reemplazar por eléctrico (mix SEN actual) baja a ~0,3 kg CO₂/km. Si el corredor opera 100 buses-equivalentes 16 h/día por 300 km de servicio, el ahorro grueso ronda 30.000 tCO₂/año por los tres corredores combinados.',
+              'Sin número MOP. Referencia: bus diésel Euro VI ~1,3 kg CO₂/km; eléctrico ~0,3 kg CO₂/km. Ahorro grueso ~30.000 tCO₂/año para los tres corredores combinados.',
             ],
             [
               'Plusvalía inmobiliaria',
-              'Documentada en proyectos similares: las cuadras a 400 m de una estación BRT suben 10-20% en valor residencial dentro de 5 años. Sectores beneficiados: Av. Cuatro Sur (San Pedro), Coronel norte, Penco eje Ruta 150, Hualpén eje El Trébol.',
+              'Cuadras a 400 m de estación BRT suben 10-20% en 5 años (proyectos similares). Sectores: Av. Cuatro Sur (San Pedro), Coronel norte, Penco eje Ruta 150, Hualpén eje El Trébol.',
             ],
           ]}
         />
         <PendingBanner>
-          <strong>Pendientes:</strong> estudio de impacto ambiental
-          (SEIA) declarado de cada proyecto, número oficial de
-          empleos directos en la fase de construcción, y métrica
-          oficial de reducción de emisiones del paquete. El RCA
-          (Resolución de Calificación Ambiental) debe ingresarse
-          antes del inicio de obras.
+          <strong>Pendientes:</strong> SEIA de cada proyecto, empleos
+          oficiales en construcción y métrica oficial de reducción de
+          emisiones. RCA debe ingresarse antes del inicio de obras.
         </PendingBanner>
       </Section>
 
@@ -716,48 +558,21 @@ export default function CorredoresTransportePublicoMOPBiobio() {
             Ningún electrocorredor está en el visor hoy
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            El visor de <strong>conce.patagua.dev</strong> muestra
-            recorridos urbanos con feed GTFS Gran Concepción y, en el
-            caso de la 201 Santa Juana, un trazado digitalizado desde
-            OSM. Los electrocorredores no tienen GTFS ni capa OSM
-            propia: a la fecha del último corte (mayo 2026) las pistas
-            exclusivas <em>todavía no existen físicamente</em>. Las
-            rutas urbanas que en el futuro circularán por estos
+            Las pistas exclusivas todavía no existen físicamente (mayo
+            2026). Las rutas que en el futuro circularán por estos
             corredores hoy se ven en el visor compartiendo pista con
-            el tráfico normal en los ejes troncales:
+            el tráfico normal: Ruta 160 (San Pedro ↔ Coronel) en el
+            feed GTFS Gran Concepción; Ruta 150 con servicios 17M,
+            30B/C/E, 31F, 57Y, 62H — ver{' '}
+            <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
+              Concepción ↔ Tomé
+            </a>
+            ; Autopista Tramo II con servicios hacia Hualpén y Talcahuano.
           </p>
-          <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px]">
-            <li>
-              <strong>Ruta 160 (San Pedro ↔ Coronel)</strong>: rutas
-              urbanas que pasan hoy por el eje son visibles en el feed
-              GTFS Gran Concepción (códigos del padrón vigente, no
-              listados aquí porque cambian con cada actualización
-              MTT).
-            </li>
-            <li>
-              <strong>Ruta 150 (Concepción ↔ Penco)</strong>: cubierta
-              por servicios urbanos GTFS 17M, 30B/C/E, 31F, 57Y, 62H —
-              ver el artículo{' '}
-              <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
-                Concepción ↔ Tomé
-              </a>
-              .
-            </li>
-            <li>
-              <strong>Autopista Concepción-Talcahuano Tramo II</strong>:
-              cubierta por servicios urbanos GTFS hacia Hualpén y
-              Talcahuano centro.
-            </li>
-          </ul>
           <p className="mt-2 text-[12px] text-muted-foreground">
-            Cuando los corredores entren en servicio (2031-2032), las
-            rutas que circulen por ellos podrán dibujarse en el visor
-            con una capa segregada si el operador publica GTFS o si
-            la comunidad OSM digitaliza la pista exclusiva
-            (<code className="font-mono">highway=busway</code>) y los
-            paraderos cerrados (<code className="font-mono">highway=bus_stop
-            </code>{' '}+ <code className="font-mono">covered=yes</code>).
-            Ese trabajo no está hecho.
+            Cuando entren en servicio (2031-2032) podrán dibujarse con
+            capa segregada si el operador publica GTFS o se digitalizan
+            en OSM (<code className="font-mono">highway=busway</code>).
           </p>
         </div>
       </Section>
@@ -807,49 +622,17 @@ export default function CorredoresTransportePublicoMOPBiobio() {
 
       <Section title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>
-            Composición societaria exacta de los consorcios
-            Electro-Cointer y Electro-Cointer II (¿qué porcentaje
-            tiene Cointer Concesiones, qué socios chilenos, qué
-            participación financiera local?).
-          </li>
-          <li>
-            Política de electromovilidad del contrato MOP: ¿exige
-            porcentaje mínimo de flota eléctrica? ¿En qué hito? ¿Quién
-            paga la diferencia de capex?
-          </li>
-          <li>
-            Modelo de compra de buses: ¿operador del perímetro 2024 +
-            Ley 20.378, licitación MTT específica, o aporte de la
-            concesionaria MOP?
-          </li>
-          <li>
-            Niveles de Ingreso Mínimo Garantizado y polinomio de
-            ajuste fiscal de las tres concesiones.
-          </li>
-          <li>
-            Integración tarifaria multimodal BusPay ↔ Biotrén Conecta:
-            ¿transbordo gratuito o con descuento? ¿Tarifa integrada
-            zonal?
-          </li>
-          <li>
-            RCA (Resolución de Calificación Ambiental) declaradas o
-            por declarar de cada proyecto en el SEIA.
-          </li>
-          <li>
-            Estudio de demanda detallado (proyección año a año) de
-            cada corredor, por sentido y por hora punta.
-          </li>
-          <li>
-            Cronograma definitivo post-adjudicación: fecha exacta de
-            firma del contrato, entrada en RCA, expropiaciones y obras.
-          </li>
+          <li>Composición societaria de Electro-Cointer y Electro-Cointer II (socios chilenos, participación).</li>
+          <li>Política de electromovilidad del contrato MOP (porcentaje mínimo, hito, quién paga capex).</li>
+          <li>Modelo de compra de buses (operador PE 2024 + Ley 20.378, licitación MTT o concesionaria MOP).</li>
+          <li>Ingreso Mínimo Garantizado y polinomio de ajuste fiscal.</li>
+          <li>Integración tarifaria BusPay ↔ Biotrén Conecta.</li>
+          <li>RCA SEIA de cada proyecto y estudio de demanda detallado.</li>
+          <li>Cronograma definitivo post-adjudicación.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Vías de cierre: Ley de Transparencia a la Dirección General
-          de Concesiones MOP por bases técnicas definitivas, a la
-          SEREMITT Biobío por el modelo de flota, y consulta al
-          portal mercadopublico.cl para hitos contractuales.
+          Vías de cierre: Ley de Transparencia a DGC MOP y SEREMITT
+          Biobío, mercadopublico.cl.
         </p>
       </Section>
 
@@ -906,15 +689,13 @@ export default function CorredoresTransportePublicoMOPBiobio() {
 
       <Section title="Para contribuir">
         <p>
-          Si tienes copia de las bases técnicas y económicas
-          definitivas de cualquiera de las dos concesiones, conoces
-          la composición societaria del Consorcio Electro-Cointer o
-          Electro-Cointer II, tienes el RCA SEIA respectivo o copia
-          del decreto MOP de adjudicación, abre un pull request en{' '}
+          Si tienes bases técnicas definitivas, composición societaria
+          de Electro-Cointer o copia del decreto de adjudicación, abre
+          un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/corredores-transporte-publico-mop-biobio.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/corredores-transporte-publico-mop-biobio.tsx
           </SourceLink>
-          . Toda contribución se cita en el commit con autoría.
+          .
         </p>
       </Section>
     </div>
