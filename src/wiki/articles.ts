@@ -35,6 +35,24 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/ruta-201-santa-juana')),
   },
   {
+    slug: 'corredor-el-pimenton',
+    title: 'Corredor interurbano por El Pimentón',
+    summary:
+      'Panorama del corredor sur-oriente que cruza la Cordillera de la Costa entre Concepción y la zona de Florida / Yumbel / Hualqui rural. Cuatro operadores privados, 40 buses combinados, regulación fragmentada y una capa de servicios subsidiados nueva en 2025.',
+    section: 'interurbanos',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/corredor-el-pimenton')),
+  },
+  {
+    slug: 'concepcion-florida',
+    title: 'Concepción ↔ Florida · servicio troncal',
+    summary:
+      'Cuatro operadores privados (Delsal, Nueva Libertadores, Biocosta, Trinidad) en la troncal, más capas subsidiadas nuevas (zona norte oct-2025, Rahuil, Poñén-Roa, nocturno) que el MTT sumó desde 2025 sin licitar todavía el reemplazo del troncal.',
+    section: 'interurbanos',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/concepcion-florida')),
+  },
+  {
     slug: 'sobre-este-wiki',
     title: 'Sobre este wiki',
     summary:
