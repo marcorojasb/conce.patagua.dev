@@ -5,7 +5,7 @@
 // qué conecta, qué operadores lo cruzan, qué decisiones de política pública
 // están en juego. Las fichas individuales viven en archivos hermanos
 // (concepcion-florida.tsx para el servicio principal). Los datos de la
-// 201 Santa Juana NO entran acá — Santa Juana sale por Ruta 156 (Ruta de
+// 201 Santa Juana NO entran aquí — Santa Juana sale por Ruta 156 (Ruta de
 // la Madera, costa), no por El Pimentón.
 
 import {
@@ -270,7 +270,7 @@ export default function CorredorElPimenton() {
                 <>
                   Interurbano privado. Cubre la franja Conce-Yumbel con
                   frecuencias declaradas cada 30-60 min, viaje ~1 h - 1 h
-                  30 min, tarifa referencial $2.000-$3.500 CLP. Sin GTFS
+                  30 min, tarifa referencial $2.000-$3.500. Sin GTFS
                   público.
                 </>
               ),
@@ -356,8 +356,8 @@ export default function CorredorElPimenton() {
               items={[
                 ['Tipo', 'Contrato de Transporte Aislado'],
                 ['Servicios', '10 a la semana, lunes a viernes + festivos'],
-                ['Tarifa', '$400 a $1.500 CLP según destino'],
-                ['Inversión', '$63.720.000 CLP'],
+                ['Tarifa', '$400 a $1.500 según destino'],
+                ['Inversión', '$63.720.000'],
                 ['Plazo', '36 meses'],
                 ['Financia', 'Ministerio de Transportes y Telecomunicaciones'],
                 ['Inauguración formal', 'Fines de octubre 2025 (servicio ya operativo antes)'],
@@ -511,7 +511,7 @@ export default function CorredorElPimenton() {
             ],
             [
               'Terminal Camilo Henríquez',
-              'Camilo Henríquez 2565. Origen de larga distancia (Delsal, Buses Bío Bío, Línea Azul a Chillán). El interurbano hacia Yumbel sale desde acá según Busbud.',
+              'Camilo Henríquez 2565. Origen de larga distancia (Delsal, Buses Bío Bío, Línea Azul a Chillán). El interurbano hacia Yumbel sale desde aquí según Busbud.',
             ],
             [
               'Terminal Collao',

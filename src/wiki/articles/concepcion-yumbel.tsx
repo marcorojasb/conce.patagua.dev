@@ -202,7 +202,7 @@ export default function ConcepcionYumbel() {
             },
             {
               date: '20-abr-2026',
-              event: 'Fin de obras MOP Ruta O-60 (Q-60-O) Yumbel-Rere (16,3 km, $7.983 millones CLP, Serviterra Ltda.). Mejora el camino interior alternativo a la Ruta 146 desde Hualqui hacia Yumbel y Rere.',
+              event: 'Fin de obras MOP Ruta O-60 (Q-60-O) Yumbel-Rere (16,3 km, $7.983 millones, Serviterra Ltda.). Mejora el camino interior alternativo a la Ruta 146 desde Hualqui hacia Yumbel y Rere.',
               source: { href: 'https://www.latribuna.cl/desarrollo/2026/04/17/ruta-o-60-yumbelrere-llega-a-su-fase-final-y-mejora-acceso-a-zona-con-valor-historico-y-turistico-de-biobio.html', label: 'La Tribuna · 17-abr-2026' },
             },
           ]}
@@ -488,7 +488,7 @@ export default function ConcepcionYumbel() {
             [
               'Tarifa adulto (rango observado)',
               <>
-                <strong>$2.000 - $3.500 CLP</strong> según operador y
+                <strong>$2.000 - $3.500</strong> según operador y
                 horario (Línea Azul, Buses Bío Bío, Pullman). Rango
                 citado por agregadores; no hay tabla oficial publicada
                 por las empresas.
@@ -545,7 +545,7 @@ export default function ConcepcionYumbel() {
               <>
                 Adjudicado el <strong>24-dic-2025</strong>. Subsidios
                 a la conectividad rural en Biobío por{' '}
-                <strong>$11.106.265.700 CLP</strong> sobre 21 comunas
+                <strong>$11.106.265.700</strong> sobre 21 comunas
                 de la región. Yumbel figura entre las 21 comunas
                 cubiertas pero como parte de un paquete CTR{' '}
                 (Conectividad de Transporte Rural).
@@ -606,7 +606,7 @@ export default function ConcepcionYumbel() {
               <>
                 Camilo Henríquez 2565. Es la <strong>cabecera principal</strong>{' '}
                 del corredor en Concepción: Línea Azul, Buses Bío Bío,
-                Pullman Bus y Pullman Santa María salen desde acá hacia
+                Pullman Bus y Pullman Santa María salen desde aquí hacia
                 Yumbel (entre otros destinos). Teléfono terminal:
                 041-2851626.
               </>,
@@ -692,9 +692,8 @@ export default function ConcepcionYumbel() {
             <strong>Terminales en Yumbel</strong> (San Sebastián y San
             Francisco) NO están mapeadas todavía en{' '}
             <code className="font-mono">terminals.generated.ts</code>.
-            Por eso este artículo no incluye <code>&lt;MapLink terminal=…&gt;</code>{' '}
-            apuntando a Yumbel — verificable la decisión en el
-            entregable del corredor.
+            Por eso este artículo no incluye{' '}
+            <code>&lt;MapLink terminal=…&gt;</code> apuntando a Yumbel.
           </p>
         </div>
         <Sources>

@@ -409,7 +409,7 @@ export default function BusPay2026() {
           contractual específico de la Región Metropolitana — no es
           extrapolable a otras regiones sin un proceso DTPR propio
           (que es exactamente lo que recién en 2025-2026 se hizo
-          acá).
+          en el Biobío).
         </p>
       </Section>
 
@@ -422,7 +422,7 @@ export default function BusPay2026() {
             ['Comisión evaluadora', 'DTPR (Diario Concepción · 23-sep-2025)'],
             ['Adjudicación', '28 de enero de 2026 — Consorcio Buspay'],
             ['Visa Contraloría', 'Enero-febrero 2026 (fecha exacta no publicada — Subtrans confirma el 30-ene-2026 que el contrato "queda en condiciones para su firma")'],
-            ['Inversión estatal', '~$750.000.000 chilenos / año durante todo el período de la concesión'],
+            ['Inversión estatal', '~$750 millones anuales durante todo el período de la concesión'],
             ['Cobertura', '11 comunas: 7 PE Gran Concepción + Tomé + Coronel + Lota + Santa Juana (rural)'],
             ['Validadores', '1.800 unidades (la prensa también cita "~2.000 máquinas" según el TVU)'],
             ['Tarifa', '$580 sin alteración — el sistema lo paga el Estado'],
@@ -1095,8 +1095,8 @@ export default function BusPay2026() {
           ¿Pago semanal? ¿quincenal? ¿con anticipo y ajuste? ¿el
           Consorcio Buspay cobra una comisión sobre la recaudación
           (modelo AFT Transantiago) o solo el fee fijo del subsidio
-          $750M/año? Esto es lo más opaco del proceso y lo más
-          relevante para los operadores.
+          de $750 millones anuales? Es lo más opaco del proceso y lo
+          más relevante para los operadores.
         </PendingBanner>
       </Section>
 
@@ -1156,7 +1156,7 @@ export default function BusPay2026() {
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>Razón social, RUT y composición societaria exacta del Consorcio Buspay (¿Busmatick + socio chileno? ¿SpA? ¿joint venture?).</li>
           <li>ID de licitación en MercadoPublico.cl / DTPR Biobío y lista de las 6 oferentes con puntajes.</li>
-          <li>Plazo del contrato (años) y monto total agregado (más allá del flujo anual $750M).</li>
+          <li>Plazo del contrato (años) y monto total agregado (más allá del flujo anual de $750 millones).</li>
           <li>Identidad de las 5 oferentes derrotadas — sólo Sonda está confirmada como interesada (no como oferente formal).</li>
           <li>Esquema concreto de liquidación a operadores: plazo, comisión, modelo de float, base de cálculo.</li>
           <li>¿Hay descuento tarjeta vs efectivo? ¿transbordo gratuito? ¿integración Biotrén?</li>
@@ -1245,10 +1245,10 @@ export default function BusPay2026() {
 
       <Section title="Para contribuir">
         <p>
-          Si tenés el ID exacto de la licitación en MercadoPublico, la
+          Si tienes el ID exacto de la licitación en MercadoPublico, la
           razón social y RUT del Consorcio Buspay, el texto del decreto
           MTT de adjudicación, la red minorista de recarga publicada o
-          fotos de validadores instalados en buses del PE — abrí un
+          fotos de validadores instalados en buses del PE — abre un
           pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/buspay-2026.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/buspay-2026.tsx

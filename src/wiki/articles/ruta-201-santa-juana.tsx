@@ -207,12 +207,12 @@ export default function Ruta201SantaJuana() {
             <tbody className="divide-y">
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto</td>
-                <td className="px-3 py-2 font-mono">$1.000 CLP</td>
+                <td className="px-3 py-2 font-mono">$1.000</td>
                 <td className="px-3 py-2 text-muted-foreground">Antes con operador previo: $1.700</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Estudiante TNE</td>
-                <td className="px-3 py-2 font-mono">$330 CLP</td>
+                <td className="px-3 py-2 font-mono">$330</td>
                 <td className="px-3 py-2 text-muted-foreground">33% de la tarifa adulto</td>
               </tr>
               <tr>
@@ -277,7 +277,11 @@ export default function Ruta201SantaJuana() {
       <Section title="Pago electrónico — rollout 2026">
         <p>
           El servicio 201 será el <strong>primer servicio rural de Chile</strong>{' '}
-          con pago electrónico integrado. Cronología:
+          con pago electrónico integrado. Ficha completa del sistema en{' '}
+          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            BusPay 2026
+          </a>
+          . Cronología:
         </p>
         <Timeline
           items={[
@@ -383,7 +387,7 @@ export default function Ruta201SantaJuana() {
         <p>
           Foto del cartel del horario en paradero o terminal, observación de
           tiempo de viaje real, tarifa pagada con fecha — todo aporte se cita
-          en el commit con el contribuyente como autor. Abrí un pull request
+          en el commit con el contribuyente como autor. Abre un pull request
           en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/ruta-201-santa-juana.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/ruta-201-santa-juana.tsx

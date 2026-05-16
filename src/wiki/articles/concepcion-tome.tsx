@@ -54,7 +54,7 @@ export default function ConcepcionTome() {
             <strong>Tramo urbano</strong> Concepción ↔ Penco ↔ Lirquén:
             cubierto por el <em>Perímetro de Exclusión del Gran Concepción</em>{' '}
             (vigente 1-ene-2024). Las líneas 17M, 30B/C/E, 31F, 57Y, 62H del
-            GTFS urbano llegan hasta acá y aparecen en el visor.
+            GTFS urbano llegan hasta este tramo y aparecen en el visor.
           </li>
           <li>
             <strong>Tramo interurbano</strong> Concepción ↔ Tomé ↔ Dichato:
@@ -225,8 +225,8 @@ export default function ConcepcionTome() {
           items={[
             ['Decreto creación', 'Julio 2016 · firmado por el ministro de Transportes Andrés Gómez-Lobo'],
             ['Operación efectiva', '10 de marzo de 2022'],
-            ['Tarifa de partida (2022)', '$750 CLP adulto · una reducción de $150 respecto a la previa ($900)'],
-            ['Tarifa Dichato (2022)', 'Cayó $200 CLP respecto a la previa'],
+            ['Tarifa de partida (2022)', '$750 adulto · una reducción de $150 respecto a la previa ($900)'],
+            ['Tarifa Dichato (2022)', 'Cayó $200 respecto a la previa'],
             ['Ámbito', 'Servicios colectivos Concepción ↔ Tomé y Concepción ↔ Dichato (vía Tomé)'],
             ['Operador único', 'Transportes Tomé (formada por la fusión de operadores previos del corredor)'],
             ['Demanda referencial', 'Cerca de 10.000 pasajeros/día declarados al inicio del perímetro'],
@@ -411,8 +411,8 @@ export default function ConcepcionTome() {
               'Dichato → Conce',
               'Mayo 2025 sumó cuarta salida entre 06:00-07:00, cada 15 min',
             ],
-            ['Tarifa adulto base', '$750 CLP (referencia 2022 al inicio del perímetro) · valor 2026 con polinomio de ajuste no publicado'],
-            ['Tarifa Dichato', 'Mayor que $750 CLP — diferencial no publicado'],
+            ['Tarifa adulto base', '$750 (referencia 2022 al inicio del perímetro) · valor 2026 con polinomio de ajuste no publicado'],
+            ['Tarifa Dichato', 'Mayor que $750 — diferencial no publicado'],
             ['Información en tiempo real', 'App Red Regional de Movilidad — buscar "401" / "411"'],
             ['GTFS público', 'NO publicado. El servicio no aparece en el feed GTFS Gran Concepción.'],
             ['Pago electrónico', 'Comprometido — Tomé está dentro del perímetro Buspay 2026'],
@@ -468,7 +468,14 @@ export default function ConcepcionTome() {
             ],
             [
               'Buspay 2026',
-              'Tomé está dentro del perímetro de exclusión inicial de Buspay (junto con Gran Concepción y Santa Juana). Cronograma alineado con la 201.',
+              <>
+                Tomé está dentro del perímetro de exclusión inicial de{' '}
+                <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+                  BusPay
+                </a>{' '}
+                (junto con Gran Concepción y Santa Juana). Cronograma
+                alineado con la 201.
+              </>,
             ],
           ]}
         />
@@ -871,10 +878,10 @@ export default function ConcepcionTome() {
 
       <Section title="Para contribuir">
         <p>
-          Si tenés foto del cartel de horarios en la terminal Manuel
-          Rodríguez de Concepción o en Tomé Alto, conocés la razón social
-          formal de Transportes Tomé, o tenés copia del decreto MTT que
-          adjudicó el perímetro — abrí un pull request en{' '}
+          Si tienes foto del cartel de horarios en la terminal Manuel
+          Rodríguez de Concepción o en Tomé Alto, conoces la razón social
+          formal de Transportes Tomé, o tienes copia del decreto MTT que
+          adjudicó el perímetro — abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-tome.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-tome.tsx
           </SourceLink>

@@ -102,7 +102,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
             corredor de El Pimentón
           </a>
-          {' '}— lo nombran sin desarrollarlo. Acá está el desarrollo.
+          {' '}— lo nombran sin desarrollarlo. Aquí está el desarrollo.
         </p>
       </Section>
 
@@ -563,7 +563,12 @@ export default function PerimetroExclusionGranConcepcion2024() {
           compromisos centrales. El sistema se conoce como{' '}
           <strong>BusPay</strong> y fue adjudicado al{' '}
           <strong>Consorcio Buspay</strong> el{' '}
-          <strong>28 de enero de 2026</strong>.
+          <strong>28 de enero de 2026</strong>. Ficha técnica completa
+          en{' '}
+          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            BusPay 2026
+          </a>
+          .
         </p>
         <KeyValueList
           items={[
@@ -790,6 +795,15 @@ export default function PerimetroExclusionGranConcepcion2024() {
       <Section title="Vínculos con otros artículos">
         <ul className="ml-5 list-disc space-y-1.5 text-[13px]">
           <li>
+            <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+              BusPay 2026
+            </a>{' '}
+            — la capa de pago electrónico que se monta sobre este
+            perímetro. Adjudicado al Consorcio Buspay el 28-ene-2026,
+            $580 sin alteración, 1.800-2.000 validadores en 11
+            comunas, marcha blanca Q3 2026.
+          </li>
+          <li>
             <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
               Ruta 201 Santa Juana
             </a>{' '}
@@ -936,11 +950,11 @@ export default function PerimetroExclusionGranConcepcion2024() {
 
       <Section title="Para contribuir">
         <p>
-          Si tenés copia del decreto MTT del perímetro 2024, lista
+          Si tienes copia del decreto MTT del perímetro 2024, lista
           íntegra de UN con su operador adjudicado, foto del cartel
           tarifario en paradero o terminal, captura del ranking de
           cumplimiento DTPR, o cualquier dato que ayude a cerrar los
-          pendientes — abrí un pull request en{' '}
+          pendientes — abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/perimetro-exclusion-gran-concepcion-2024.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/perimetro-exclusion-gran-concepcion-2024.tsx
           </SourceLink>
