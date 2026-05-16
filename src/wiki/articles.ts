@@ -98,6 +98,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/biotren-extensiones')),
   },
   {
+    slug: 'gtfs-gran-concepcion',
+    title: 'GTFS Gran Concepción',
+    summary:
+      'Ficha metodológica del feed GTFS estático que alimenta el visor urbano. Publicado en el Portal de Datos Abiertos del Estado (datos.gob.cl) bajo gestión de la Subsecretaría de Transportes / DTPR Biobío, cubre los buses urbanos del Perímetro de Exclusión del Gran Concepción 2024 (7 comunas, 36 unidades, 35 empresas). Documenta qué cubre el feed y qué no (Tomé, Santa Juana, Florida, Yumbel, Biotrén quedan afuera), la estructura del ZIP, el pipeline de procesamiento del visor (scripts/generate-gtfs-concepcion.ts + simplificación RDP), licencia, limitaciones y comparación con otros feeds chilenos.',
+    section: 'fuentes',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/gtfs-gran-concepcion')),
+  },
+  {
     slug: 'sobre-este-wiki',
     title: 'Sobre este wiki',
     summary:
