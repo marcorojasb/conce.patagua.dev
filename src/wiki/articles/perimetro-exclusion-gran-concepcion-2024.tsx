@@ -36,7 +36,6 @@ import {
   Timeline,
   VerifiedBanner,
 } from './_components';
-import { MapLink } from '@/wiki/map-link';
 
 export default function PerimetroExclusionGranConcepcion2024() {
   return (
@@ -299,11 +298,6 @@ export default function PerimetroExclusionGranConcepcion2024() {
           Juana (licitación pública DTPR ELC0007 bajo Ley 20.378),
           Florida (sin régimen — operadores privados + subsidios
           parciales por servicio).
-        </p>
-        <p className="text-[12px]">
-          <MapLink corridor="perimetro-gran-concepcion">
-            Ver perímetro Gran Concepción en el mapa →
-          </MapLink>
         </p>
         <Sources>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/">

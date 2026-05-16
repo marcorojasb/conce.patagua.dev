@@ -152,7 +152,7 @@ export default function ConcepcionTome() {
             ],
             [
               'Estaciones / paraderos clave',
-              'Plaza de Penco, Plaza de Lirquén, Estación Biotrén Lirquén (terminal norte del tren urbano), Bellavista Tomé, Costanera de Tomé, Tomé Alto, Dichato Av. Daniel Vera',
+              'Plaza de Penco, Plaza de Lirquén, Bellavista Tomé, Costanera de Tomé, Tomé Alto, Dichato Av. Daniel Vera. El Biotrén no llega al corredor (terminal norte L1 es Mercado de Talcahuano); la extensión a Penco/Lirquén lleva años en estudio EFE — ver artículo Biotrén y sus extensiones.',
             ],
             ['Hidrografía cruzada', 'Río Andalién (entre Concepción y Penco), río Tomé y río Coliumo (en Tomé urbano), estero Dichato (en Dichato)'],
             ['Cordillera y geomorfología', 'Corredor costero plano-ondulado, sin cuesta dura como el corredor de El Pimentón; el tramo Lirquén-Tomé bordea acantilados de baja altura'],
@@ -442,16 +442,18 @@ export default function ConcepcionTome() {
         <KeyValueList
           items={[
             [
-              'Biotrén Lirquén',
+              'Biotrén (sin servicio al corredor)',
               <>
-                La <strong>estación terminal norte del Biotrén</strong>{' '}
-                hoy es <strong>Lirquén</strong> (no Penco — el Biotrén no
-                llega a Tomé). Punto de transbordo natural: bajarse del
-                bus 401/411/421 en Plaza de Lirquén y caminar al Biotrén
-                para entrar a Concepción evitando congestión Ruta 150 en
-                hora punta. La <strong>extensión Biotrén a Penco</strong>{' '}
-                lleva años en estudio EFE y depende de demanda y del
-                nuevo electrocorredor Ruta 150.
+                El <strong>Biotrén no llega a Tomé, Lirquén ni Penco</strong>:
+                el terminal norte de la Línea 1 es{' '}
+                <strong>Mercado de Talcahuano</strong>. Para un viaje
+                Tomé → Concepción no hay transbordo intermodal posible
+                con el tren — los servicios 401/411/421 hacen el trayecto
+                completo en bus. La <strong>extensión Biotrén a Penco /
+                Lirquén</strong> lleva años en estudio EFE y queda
+                tensionada con el electrocorredor MOP Ruta 150 que se
+                licita en paralelo. Ver artículo{' '}
+                <em>Biotrén y sus extensiones</em>.
               </>,
             ],
             [
