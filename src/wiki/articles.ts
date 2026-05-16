@@ -26,6 +26,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/perimetro-exclusion-gran-concepcion-2024')),
   },
   {
+    slug: 'buspay-2026',
+    title: 'BusPay · pago electrónico del Gran Concepción 2026',
+    summary:
+      'Sistema de recaudo electrónico adjudicado al Consorcio Buspay (operador técnico Busmatick) el 28-ene-2026 por el MTT. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas (PE Gran Concepción + PE Tomé + PE Coronel-Lota + licitación 201 Santa Juana). Marcha blanca Q3 2026, régimen 100% electrónico proyectado fin de 2026. Tarifa $580 sin alteración, tarjeta Campanil UdeC elegida por consulta ciudadana. Cierra una deuda de casi 20 años desde el piloto Biobús 2016 fallido.',
+    section: 'estructural',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/buspay-2026')),
+  },
+  {
     slug: 'recorridos-interurbanos',
     title: 'Recorridos interurbanos del Gran Concepción',
     summary:
