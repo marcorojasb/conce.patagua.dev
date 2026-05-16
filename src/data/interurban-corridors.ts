@@ -74,7 +74,42 @@ export interface InterurbanCorridor {
 //     sources: [{ label: 'OSM …', href: '…' }],
 //   },
 
-export const INTERURBAN_CORRIDORS: InterurbanCorridor[] = [];
+export const INTERURBAN_CORRIDORS: InterurbanCorridor[] = [
+  {
+    // Conce ↔ Tomé · servicios 401 / 411 / 421 operados por Transportes Tomé
+    // bajo el Perímetro de Exclusión de Tomé (decreto MTT jul-2016, op. 2022).
+    // No están en el feed GTFS urbano. El tramo Concepción↔Penco↔Lirquén sí
+    // está cubierto por micros del GTFS (17M, 30B/C/E, 31F, 57Y, 62H); este
+    // pin marca el lado de Tomé que falta.
+    id: 'concepcion-tome',
+    wikiSlug: 'concepcion-tome',
+    title: 'Concepción ↔ Tomé · 401 / 411 / 421',
+    subtitle: 'Transportes Tomé · perímetro de exclusión Tomé (op. 2022)',
+    color: '#0e7490',
+    // Anchor en Tomé urbano (centro administrativo de la comuna). OSM
+    // relation 1558890 "Tomé" — clasificación town, place_rank 16.
+    anchor: [-36.6171, -72.9575],
+    // Terminal en Concepción ya presente en terminals.generated.ts como
+    // osm-way-425356582 "Terminal de líneas a Tomé" (Angol esq. Manuel
+    // Rodríguez aprox.). Repetimos la coordenada acá para que el overlay
+    // pueda dibujar la línea discontinua sin tener que cruzar datasets.
+    terminal: [-36.8191314, -73.0619879],
+    sources: [
+      {
+        label: 'OSM relation 1558890 · Tomé (Nominatim)',
+        href: 'https://nominatim.openstreetmap.org/search?q=Tom%C3%A9%2C+Biob%C3%ADo%2C+Chile&format=json&limit=3',
+      },
+      {
+        label: 'OSM way 425356582 · Terminal de líneas a Tomé (Manuel Rodríguez, Concepción)',
+        href: 'https://www.openstreetmap.org/way/425356582',
+      },
+      {
+        label: 'OSM way 1082594953 · Ruta 150 (ref=150)',
+        href: 'https://www.openstreetmap.org/way/1082594953',
+      },
+    ],
+  },
+];
 
 export const CORRIDOR_BY_ID = new Map(
   INTERURBAN_CORRIDORS.map((c) => [c.id, c] as const),
