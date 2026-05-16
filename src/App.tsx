@@ -22,12 +22,23 @@ import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
 import { useAirQuality } from '@/hooks/use-air-quality';
 import { useTheme } from '@/hooks/use-theme';
-import { readUrlState, useSyncUrlState } from '@/hooks/use-url-state';
+import {
+  clearFocusParam,
+  readFocusParam,
+  readUrlState,
+  useSyncUrlState,
+} from '@/hooks/use-url-state';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
 import { cn } from '@/lib/utils';
+import { CORRIDOR_BY_ID } from '@/data/interurban-corridors';
 import type { FlyToToken, Route, RouteTypeId, SheetKind } from '@/types/transport';
 
 const INITIAL_URL = readUrlState();
+// `?focus=<kind>:<id>` puede venir desde el wiki (`<MapLink>`). Lo leemos
+// una sola vez al iniciar; el visor lo aplica como un flyTo + activación
+// de capas, y `clearFocusParam` lo retira del query string para que la
+// URL siga limpia mientras el usuario navega.
+const INITIAL_FOCUS = readFocusParam();
 
 export default function App() {
   // Subscribes to the micros-loaded event so the sidebar/search/etc.
@@ -211,6 +222,11 @@ export default function App() {
   const [greenspaceLoading, setGreenspaceLoading] = useState(false);
   const [showSchools, setShowSchools] = useState(false);
   const [schoolsLoading, setSchoolsLoading] = useState(false);
+  // Si la URL trae `?focus=corridor:…` activamos la capa de corredores
+  // inmediatamente — el usuario llegó desde el wiki y espera ver el pin.
+  const [showInterurbanCorridors, setShowInterurbanCorridors] = useState(
+    INITIAL_FOCUS?.kind === 'corridor',
+  );
 
   // Last viewport reported by the map. Used by the wallpaper exporter so the
   // "vista actual" mode captures exactly what the user is looking at.
@@ -250,6 +266,8 @@ export default function App() {
 
   // Apply the initial fly-to once the map is mounted.
   useEffect(() => {
+    // 1) Deep link tradicional (?route= / ?stop= / etc.) — toma prioridad
+    //    porque ya selecciona la sheet correspondiente.
     if (INITIAL_URL.route) {
       const r = ROUTES_BY_ID.get(INITIAL_URL.route);
       if (r) setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
@@ -283,8 +301,71 @@ export default function App() {
           target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
         });
       }
+      return;
     }
+    // 2) `?focus=<kind>:<id>` — viene desde el wiki vía `<MapLink>`. Limpiamos
+    //    el parámetro de la URL después de aplicarlo: el visor mantiene su
+    //    propia sincronización por entidad (route/stop/…) y `focus` no
+    //    necesita persistir.
+    if (INITIAL_FOCUS) {
+      applyFocus(INITIAL_FOCUS);
+      clearFocusParam();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Resolver de focus deep-links provenientes del wiki. Cubre:
+  //   - route   → si el código (route.code) está cargado, abre la sheet
+  //               y enfoca el shape. Útil si en el futuro el GTFS urbano
+  //               incluye un servicio que el wiki documenta.
+  //   - corridor → enciende la capa interurbana, centra el pin del corredor
+  //                y abre su popup automáticamente sería ideal — el popup
+  //                lo abre el usuario; nosotros enfocamos el área entre
+  //                terminal y anchor.
+  //   - terminal → reutiliza onSelectTerminal.
+  //   - stop    → reutiliza onSelectStop.
+  //   - poi     → reutiliza onSelectPoi.
+  function applyFocus(focus: { kind: string; id: string }): void {
+    if (focus.kind === 'route') {
+      // Buscar por route.id O por route.code (ambos son IDs estables que
+      // un autor de wiki podría usar). route.id es de la forma `gtfs-route-NNNN`,
+      // route.code es la sigla mostrada al usuario.
+      const direct = ROUTES_BY_ID.get(focus.id);
+      const r = direct ?? ROUTES.find((x) => x.code === focus.id);
+      if (r) onSelectRoute(r.id);
+      return;
+    }
+    if (focus.kind === 'corridor') {
+      const c = CORRIDOR_BY_ID.get(focus.id);
+      if (!c) return;
+      setShowInterurbanCorridors(true);
+      // Enfocar el área del corredor — si conocemos los dos extremos,
+      // bounds; si solo el anchor, point con zoom regional.
+      if (c.terminal) {
+        setFlyToToken({
+          key: Date.now(),
+          target: { kind: 'bounds', path: [c.terminal, c.anchor] },
+        });
+      } else {
+        setFlyToToken({
+          key: Date.now(),
+          target: { kind: 'point', lat: c.anchor[0], lng: c.anchor[1], zoom: 11 },
+        });
+      }
+      return;
+    }
+    if (focus.kind === 'terminal') {
+      onSelectTerminal(focus.id);
+      return;
+    }
+    if (focus.kind === 'stop') {
+      onSelectStop(focus.id);
+      return;
+    }
+    if (focus.kind === 'poi') {
+      onSelectPoi(focus.id);
+    }
+  }
 
   const selectedRoute = useMemo(
     () => (selectedRouteId ? ROUTES_BY_ID.get(selectedRouteId) ?? null : null),
@@ -570,6 +651,7 @@ export default function App() {
             onSchoolsLoadingChange={setSchoolsLoading}
             onBoundsChange={setMapBounds}
             plannerMidpoint={plannerMidpoint}
+            showInterurbanCorridors={showInterurbanCorridors}
           />
 
           <MapLayerControl
@@ -596,6 +678,8 @@ export default function App() {
             onToggleGreenspace={() => setShowGreenspace((v) => !v)}
             showSchools={showSchools}
             onToggleSchools={() => setShowSchools((v) => !v)}
+            showInterurbanCorridors={showInterurbanCorridors}
+            onToggleInterurbanCorridors={() => setShowInterurbanCorridors((v) => !v)}
             airQualityStatus={airQuality}
             simulationStatus={{
               count: simulatedVehicles.length,

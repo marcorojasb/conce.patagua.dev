@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ROUTE_TYPES } from '@/data/routes';
+import { WikiLinkButton } from '@/components/wiki-link';
 import type { Route } from '@/types/transport';
 
 interface RouteDetailSheetProps {
@@ -106,6 +107,10 @@ export function RouteDetailSheet({
               <Github className="h-3.5 w-3.5" />
               Reportar
             </Button>
+            {/* "Ver en el wiki" se renderiza solo si la ruta tiene artículo
+                dedicado (ej.: 201 Santa Juana). Para el resto el componente
+                no devuelve nada y la fila queda exactamente igual. */}
+            <WikiLinkButton kind="route" code={route.code} />
           </div>
         </div>
 

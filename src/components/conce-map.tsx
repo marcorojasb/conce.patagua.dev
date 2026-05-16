@@ -29,6 +29,7 @@ import { categorize } from '@/hooks/use-air-quality';
 import { CoverageLayer } from '@/components/coverage-layer';
 import { CyclewaysLayer } from '@/components/cycleways-layer';
 import { GreenspaceLayer } from '@/components/greenspace-layer';
+import { InterurbanCorridorsLayer } from '@/components/interurban-corridors-layer';
 import { ParaderosLayer } from '@/components/paraderos-layer';
 import { SchoolsLayer } from '@/components/schools-layer';
 
@@ -76,6 +77,11 @@ interface ConceMapProps {
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
   // Walking midpoint result drawn on top of the route layer (path + M marker).
   plannerMidpoint?: RoutingResult | null;
+  // Interurban corridors — overlay opcional con servicios licitados que
+  // no están en el GTFS urbano (Santa Juana, Florida, etc.). Click → popup
+  // con link al artículo del wiki.
+  showInterurbanCorridors?: boolean;
+  onSelectInterurbanCorridor?: (corridorId: string) => void;
 }
 
 const TILE_URL = {
@@ -325,6 +331,8 @@ export function ConceMap({
   onSchoolsLoadingChange,
   onBoundsChange,
   plannerMidpoint,
+  showInterurbanCorridors = false,
+  onSelectInterurbanCorridor,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
   const [zoom, setZoom] = useState(13);
@@ -410,6 +418,11 @@ export function ConceMap({
         shouldDim={shouldDimForSelectedRoute}
         canvasRenderer={paraderoRenderer}
         onSelect={onSelectParadero}
+      />
+
+      <InterurbanCorridorsLayer
+        enabled={showInterurbanCorridors}
+        onSelectCorridor={onSelectInterurbanCorridor}
       />
 
       {visibleRoutes.map((r) => {

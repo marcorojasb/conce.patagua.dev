@@ -17,6 +17,52 @@ export interface UrlState {
   aire: boolean;
 }
 
+/**
+ * Deep-link de "enfoque inicial" usado por el wiki para navegar al visor
+ * con una entidad ya centrada (ej.: `?focus=corridor:ruta-201`).
+ * Se lee una sola vez en mount y se limpia del query string después de
+ * aplicar el flyTo — no tiene sentido mantenerlo en la URL durante toda
+ * la sesión porque el visor ya sincroniza `route`/`stop`/`terminal` por
+ * separado.
+ */
+export type FocusKind = 'route' | 'corridor' | 'terminal' | 'stop' | 'poi';
+export interface FocusParam {
+  kind: FocusKind;
+  id: string;
+}
+
+export function readFocusParam(): FocusParam | null {
+  if (typeof window === 'undefined') return null;
+  const raw = new URLSearchParams(window.location.search).get('focus');
+  if (!raw) return null;
+  const colon = raw.indexOf(':');
+  if (colon <= 0) return null;
+  const kind = raw.slice(0, colon) as FocusKind;
+  const id = raw.slice(colon + 1);
+  if (!id) return null;
+  if (
+    kind !== 'route' &&
+    kind !== 'corridor' &&
+    kind !== 'terminal' &&
+    kind !== 'stop' &&
+    kind !== 'poi'
+  ) {
+    return null;
+  }
+  return { kind, id };
+}
+
+/** Elimina `?focus=…` del query string sin generar entrada en el back stack. */
+export function clearFocusParam(): void {
+  if (typeof window === 'undefined') return;
+  const p = new URLSearchParams(window.location.search);
+  if (!p.has('focus')) return;
+  p.delete('focus');
+  const qs = p.toString();
+  const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+  window.history.replaceState(null, '', next);
+}
+
 export function readUrlState(): UrlState {
   if (typeof window === 'undefined') {
     return {
