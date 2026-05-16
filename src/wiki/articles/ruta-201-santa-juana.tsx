@@ -4,6 +4,8 @@
 // Servicio inaugurado el 15-jul-2024 bajo la licitación DTPR ELC0007,
 // primera del Biobío en más de 10 años.
 
+import { KeyValueList, Section, SourceLink, Sources, Timeline } from './_components';
+
 export default function Ruta201SantaJuana() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -385,86 +387,5 @@ export default function Ruta201SantaJuana() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-2">
-      <h2 className="mt-4 text-base font-semibold tracking-tight">{title}</h2>
-      <div className="space-y-2">{children}</div>
-    </section>
-  );
-}
-
-function KeyValueList({ items }: { items: Array<[string, string]> }) {
-  return (
-    <dl className="overflow-hidden rounded-md border">
-      {items.map(([key, value], i) => (
-        <div
-          key={key}
-          className={`grid grid-cols-[140px_1fr] gap-3 px-3 py-2 text-[13px] ${
-            i === 0 ? '' : 'border-t'
-          }`}
-        >
-          <dt className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            {key}
-          </dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
-}
-
-function SourceLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="underline underline-offset-2 hover:text-foreground"
-    >
-      {children}
-    </a>
-  );
-}
-
-function Sources({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-2 rounded-sm border-l-2 border-muted-foreground/30 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
-      <span className="font-medium uppercase tracking-wider">Fuentes</span>
-      <div className="mt-1 flex flex-col gap-0.5">{children}</div>
-    </div>
-  );
-}
-
-function Timeline({
-  items,
-}: {
-  items: Array<{ date: string; event: string; source?: { href: string; label: string } }>;
-}) {
-  return (
-    <ol className="space-y-2 border-l-2 border-muted pl-4">
-      {items.map((item, i) => (
-        <li key={i} className="relative">
-          <span
-            aria-hidden
-            className="absolute -left-[18px] mt-1 inline-block h-2 w-2 rounded-full bg-muted-foreground"
-          />
-          <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            {item.date}
-          </div>
-          <div className="text-[13px] leading-snug">
-            {item.event}
-            {item.source && (
-              <>
-                {' '}
-                <SourceLink href={item.source.href}>
-                  ({item.source.label})
-                </SourceLink>
-              </>
-            )}
-          </div>
-        </li>
-      ))}
-    </ol>
-  );
-}
+// Componentes compartidos viven ahora en ./_components — el 201, el
+// corredor de El Pimentón y Concepción↔Florida consumen la misma API.

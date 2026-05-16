@@ -31,24 +31,33 @@ export default function RecorridosInterurbanos() {
           verified
         />
         <ServiceRow
+          code="corredor"
+          title="Corredor por El Pimentón (panorámico)"
+          notes="Espina dorsal interurbana sur-oriente: cruce de la Cordillera de la Costa entre Concepción y Florida / Yumbel / rural Hualqui. Cuatro operadores privados, ~40 buses combinados, regulación fragmentada, capas subsidiadas nuevas en 2025."
+          slug="corredor-el-pimenton"
+          verified
+        />
+        <ServiceRow
           code="—"
           title="Concepción ↔ Tomé"
           notes="Múltiples operadores. Conexión norte que pasa por Penco y Lirquén (estos sí están en el visor)."
         />
         <ServiceRow
-          code="—"
+          code="4 op."
           title="Concepción ↔ Florida"
-          notes="Servicio rural interior, frecuencia baja. Operador licitado, sin GTFS público conocido."
+          notes="Troncal privado con 4 operadores (Delsal, Nueva Libertadores, Biocosta, Trinidad). El MTT reconoce que no puede obligar a aumentar frecuencias. Desde 2025 hay capas subsidiadas (zona norte oct-2025, Rahuil, Poñén-Roa, nocturno)."
+          slug="concepcion-florida"
+          verified
         />
         <ServiceRow
           code="—"
           title="Concepción ↔ Yumbel"
-          notes="Servicio interurbano hacia el sur-oriente. Pendiente identificar operador y horarios."
+          notes="Servicio interurbano privado. Operadores reportados: Línea Azul, Transportes Bío Bío, Pullman, Buses Bío Bío. Terminal Camilo Henríquez y Collao. Demanda peak en Fiesta de San Sebastián (20-ene / 20-mar, ~250-350 mil peregrinos). Sin licitación DTPR específica conocida."
         />
         <ServiceRow
           code="—"
           title="Conexiones a Hualqui rural"
-          notes="Más allá de la estación Biotrén Hualqui — sectores rurales hacia el interior."
+          notes="Más allá de la estación Biotrén Hualqui — sectores rurales hacia el interior. Talcamávida, Unihue y Quilacoya conectan principalmente por ferrocarril, no bus."
         />
       </Section>
 
