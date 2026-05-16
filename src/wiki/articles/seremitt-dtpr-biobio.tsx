@@ -663,6 +663,16 @@ export default function SeremittDtprBiobio() {
             Transportes.
           </li>
           <li>
+            <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
+              Subsidio Nacional al Transporte Público (Ley 20.378)
+            </a>{' '}
+            — el marco nacional de financiamiento (art. 2° subsidio
+            base, art. 4° servicios licitados) que la SEREMITT y la
+            DTPR usan para sostener tarifa social en el PE Gran
+            Concepción ($580) y para licitar servicios subsidiados
+            como la Ruta 201 Santa Juana.
+          </li>
+          <li>
             <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">
               Sobre este wiki
             </a>{' '}

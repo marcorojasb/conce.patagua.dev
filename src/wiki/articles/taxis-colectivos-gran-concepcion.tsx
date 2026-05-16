@@ -653,6 +653,16 @@ export default function TaxisColectivosGranConcepcion() {
             </a>{' '}
             — la autoridad regional que autoriza tarifas, recorridos y
             cupos de las líneas de colectivos vía resoluciones.
+            Sucesión SEREMI: Silva → Fierro (10-ene-2025 ↔ 28-nov-2025)
+            → Cautivo (desde 28-nov-2025).
+          </li>
+          <li>
+            <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
+              Subsidio Nacional al Transporte Público (Ley 20.378)
+            </a>{' '}
+            — el régimen general de subsidio que sostiene los
+            servicios licitados. Los colectivos quedan fuera de su
+            ámbito (no son licitados; operan por autorización).
           </li>
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
