@@ -514,8 +514,11 @@ export default function BiotrenExtensiones() {
             trazas férreas existentes (algunas en desuso, otras
             compartidas con el ramal de carga al puerto de Lirquén). La
             comuna de Penco (47.367 hab. Censo 2017) hoy depende del bus
-            urbano (líneas 17M, 30B/C/E, 31F, 57Y, 62H del feed GTFS
-            Gran Concepción) o de buses interurbanos de Transportes Tomé
+            urbano (líneas 17M, 30B/C/E, 31F, 57Y, 62H del{' '}
+            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+              feed GTFS Gran Concepción
+            </a>
+            ) o de buses interurbanos de Transportes Tomé
             (servicios 401/411/421).
           </p>
           <p className="text-[12px] leading-snug">
@@ -703,8 +706,11 @@ export default function BiotrenExtensiones() {
       <Section title="Tensión con el electrocorredor Ruta 150">
         <p>
           Esta es la disputa de política pública más fuerte del corredor
-          norte y vale documentarla en su propio bloque. Los datos del
-          electrocorredor están desarrollados en{' '}
+          norte y vale documentarla en su propio bloque. Los datos del{' '}
+          <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+            electrocorredor MOP
+          </a>{' '}
+          están desarrollados en su artículo propio y referenciados en{' '}
           <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
             Concepción ↔ Tomé
           </a>

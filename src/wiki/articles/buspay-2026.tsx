@@ -116,8 +116,11 @@ export default function BusPay2026() {
           <li>
             <strong>Integra regímenes regulatorios distintos en un solo
             medio de pago.</strong> Cubre el PE Gran Concepción (7
-            comunas), el PE Tomé (1 comuna), el PE Coronel-Lota (2
-            comunas) y la licitación 201 Santa Juana — Santa Juana es{' '}
+            comunas), el PE Tomé (1 comuna), la regulación especial
+            Coronel-Lota (2 comunas, Resolución Exenta 457/2012-2013 del
+            MTT — no es un Perímetro de Exclusión formal aún; el decreto
+            PE estaba en bases de licitación en Contraloría a jul-2025)
+            y la licitación 201 Santa Juana — Santa Juana es{' '}
             <em>el primer servicio rural de Chile</em> con pago
             electrónico
             (
@@ -524,11 +527,13 @@ export default function BusPay2026() {
 
       <Section title="Cobertura — 11 comunas, tres regímenes">
         <p>
-          BusPay opera sobre tres regímenes regulatorios distintos
+          BusPay opera sobre cuatro regímenes regulatorios distintos
           unificados en un solo medio de pago. La cobertura supera al
           Perímetro Gran Concepción (7 comunas) porque incorpora
-          también el Perímetro Tomé, el Perímetro Coronel-Lota y la
-          licitación rural Santa Juana
+          también el Perímetro Tomé, la regulación especial Coronel-Lota
+          (Res. Ex. 457 MTT, 2012-2013 — el PE formal está en licitación
+          y aún no vigente al cierre 2025) y la licitación rural Santa
+          Juana
           (
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026
@@ -587,12 +592,12 @@ export default function BusPay2026() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Coronel</td>
-                <td className="px-3 py-2">PE Coronel-Lota (operativo 2013)</td>
+                <td className="px-3 py-2">Regulación especial Coronel-Lota (Res. Ex. 457 MTT, 2012-2013 — PE formal en licitación, aún no vigente)</td>
                 <td className="px-3 py-2 text-muted-foreground">Operadores locales (Las Galaxias, Buses J. Ewert, etc.)</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Lota</td>
-                <td className="px-3 py-2">PE Coronel-Lota (operativo 2013)</td>
+                <td className="px-3 py-2">Regulación especial Coronel-Lota (Res. Ex. 457 MTT, 2012-2013 — PE formal en licitación, aún no vigente)</td>
                 <td className="px-3 py-2 text-muted-foreground">Operadores locales</td>
               </tr>
               <tr>
@@ -985,7 +990,7 @@ export default function BusPay2026() {
               + Soc. Santa Juana SpA + operadores Coronel-Lota? ¿Quién
               se queda con el float (saldo no ejecutado)? En
               Transantiago esto fue históricamente un punto crítico
-              que justificó la creación del AFT. Acá no hay AFT
+              que justificó la creación del AFT. Aquí no hay AFT
               equivalente: el Consorcio Buspay es a la vez recaudador
               y liquidador, lo que es una arquitectura distinta y no
               probada en una metrópoli del tamaño del Gran Concepción.

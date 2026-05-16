@@ -490,8 +490,10 @@ export default function ConcepcionYumbel() {
               <>
                 <strong>$2.000 - $3.500</strong> según operador y
                 horario (Línea Azul, Buses Bío Bío, Pullman). Rango
-                citado por agregadores; no hay tabla oficial publicada
+                citado por agregadores (Biomex / kupos / recorrido.cl,
+                observado 2024-2025); no hay tabla oficial publicada
                 por las empresas.
+                {/* PENDIENTE: tarifa vigente 2026 sin confirmar oficialmente */}
               </>,
             ],
             ['Frecuencia declarada', 'Cada 30 a 60 min desde temprano en la mañana hasta entrada la noche (Biomex / agregadores)'],
@@ -500,7 +502,7 @@ export default function ConcepcionYumbel() {
             [
               'Pago electrónico',
               <>
-                <strong>NO</strong> está en el perímetro Buspay 2026
+                <strong>NO</strong> está en el perímetro BusPay 2026
                 (que cubre Gran Concepción + Santa Juana + Tomé).
                 Yumbel queda fuera de la primera fase.
               </>,
@@ -634,8 +636,8 @@ export default function ConcepcionYumbel() {
               </>,
             ],
             [
-              'Buspay 2026',
-              'NO aplica. El perímetro Buspay 2026 cubre Gran Concepción + Santa Juana + Tomé. Yumbel queda fuera.',
+              'BusPay 2026',
+              'NO aplica. El perímetro BusPay 2026 cubre Gran Concepción + Santa Juana + Tomé. Yumbel queda fuera.',
             ],
           ]}
         />
@@ -658,7 +660,7 @@ export default function ConcepcionYumbel() {
             ❌ El corredor Concepción ↔ Yumbel NO está en el visor
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            El feed GTFS Gran Concepción que alimenta el visor principal
+            El <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">feed GTFS Gran Concepción</a> que alimenta el visor principal
             cubre el área metropolitana urbana (Concepción, Talcahuano,
             Hualpén, San Pedro, Chiguayante, Penco/Lirquén, Coronel,
             Lota). Una revisión directa del dataset confirma que no
@@ -746,10 +748,10 @@ export default function ConcepcionYumbel() {
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
             <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Sin pago electrónico ni Buspay
+              Sin pago electrónico ni BusPay
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Yumbel queda fuera del perímetro Buspay 2026 (que cubre
+              Yumbel queda fuera del perímetro BusPay 2026 (que cubre
               Gran Concepción + Santa Juana + Tomé). El usuario paga
               en efectivo a bordo, con TNE 33% como única reducción
               estructural.

@@ -11,7 +11,11 @@ export default function RecorridosInterurbanos() {
     <div className="space-y-5 text-[14px] leading-relaxed">
       <p>
         El visor principal de <code className="font-mono">conce.patagua.dev</code> se
-        alimenta del feed <strong>GTFS estático Gran Concepción</strong> publicado por
+        alimenta del feed{' '}
+        <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+          <strong>GTFS estático Gran Concepción</strong>
+        </a>{' '}
+        publicado por
         la Subsecretaría de Transportes (CC&nbsp;BY&nbsp;4.0). Ese feed cubre el área
         urbana metropolitana — Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante,
         Penco/Lirquén, Coronel y Lota — y deja afuera los <strong>servicios
@@ -44,7 +48,7 @@ export default function RecorridosInterurbanos() {
         <ServiceRow
           code="401 · 411 · 421"
           title="Concepción ↔ Tomé"
-          notes="Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022). Operador único Transportes Tomé (fusión de operadores previos, representante Bernardo Montoya), 71 buses, tarifa $750 base. Servicios 401 (Tomé Alto), 411 (Dichato), 421 (Av. Estadio). El tramo Concepción↔Penco↔Lirquén sí está en el visor (líneas 17M/30B/30C/30E/31F/57Y/62H del GTFS urbano); Lirquén↔Tomé↔Dichato no. Electrocorredor MOP Ruta 150 en licitación."
+          notes={<>Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022). Operador único Transportes Tomé (fusión de operadores previos, representante Bernardo Montoya), 71 buses, tarifa $750 base (vigencia 2026 sin polinomio publicado). Servicios 401 (Tomé Alto), 411 (Dichato), 421 (Av. Estadio). El tramo Concepción↔Penco↔Lirquén sí está en el visor (líneas 17M/30B/30C/30E/31F/57Y/62H del GTFS urbano); Lirquén↔Tomé↔Dichato no. <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">Electrocorredor MOP Ruta 150</a> en licitación.</>}
           slug="concepcion-tome"
           verified
           extra={<MapLink route="401">Ver la 401 Tomé Alto en el mapa →</MapLink>}
@@ -64,7 +68,7 @@ export default function RecorridosInterurbanos() {
         <ServiceRow
           code="4 op."
           title="Concepción ↔ Yumbel"
-          notes="Corredor privado puro (sin licitación DTPR ni perímetro de exclusión) por la Ruta 146 'Autopista Valles del Biobío' (concesión Sacyr, peaje Huinanco en Yumbel km 33,9). Cuatro operadores: Línea Azul (retomó jul-2024 tras 5 años), Buses Bío Bío, Pullman Bus (retomó ene-2024 tras pugna municipal), Pullman Santa María. Demanda peak en Fiesta de San Sebastián (20-ene / 20-mar, 250-350 mil peregrinos/jornada, 400 carabineros en 2025). Fuera de Buspay 2026."
+          notes="Corredor privado puro (sin licitación DTPR ni perímetro de exclusión) por la Ruta 146 'Autopista Valles del Biobío' (concesión Sacyr, peaje Huinanco en Yumbel km 33,9). Cuatro operadores: Línea Azul (retomó jul-2024 tras 5 años), Buses Bío Bío, Pullman Bus (retomó ene-2024 tras pugna municipal), Pullman Santa María. Demanda peak en Fiesta de San Sebastián (20-ene / 20-mar, 250-350 mil peregrinos/jornada, 400 carabineros en 2025). Fuera de BusPay 2026."
           slug="concepcion-yumbel"
           verified
           extra={

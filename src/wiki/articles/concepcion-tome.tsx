@@ -62,14 +62,21 @@ export default function ConcepcionTome() {
             (segundo perímetro creado en la zona, por decreto del ministro
             Andrés Gómez-Lobo en julio 2016, operativo desde el 10 de marzo
             de 2022). Servicios <strong>401, 411 y 421</strong>, operador
-            único <strong>Transportes Tomé</strong>. NO están en el feed
-            GTFS Gran Concepción y por eso no aparecen en el visor.
+            único <strong>Transportes Tomé</strong>. NO están en el{' '}
+            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+              feed GTFS Gran Concepción
+            </a>
+            {' '}y por eso no aparecen en el visor.
           </li>
         </ul>
         <p>
           A esto se suma una capa de inversión MOP histórica: el{' '}
           <strong>corredor de transporte público Ruta 150</strong>{' '}
-          (electrocorredor) cuya licitación recibió oferta única en
+          (
+          <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+            electrocorredor
+          </a>
+          ) cuya licitación recibió oferta única en
           diciembre 2025 — adjudicación esperada en 1S 2026, obras desde
           2029-2030, puesta en servicio proyectada 2032.
         </p>
@@ -231,7 +238,7 @@ export default function ConcepcionTome() {
             ['Operador único', 'Transportes Tomé (formada por la fusión de operadores previos del corredor)'],
             ['Demanda referencial', 'Cerca de 10.000 pasajeros/día declarados al inicio del perímetro'],
             ['Frecuencias laborales (declaradas 2022)', 'Mejoradas respecto al régimen previo; horarios visibles en app Red Regional'],
-            ['Pago electrónico', 'Comprometido desde 2022, perímetro Buspay 2026 incluye Tomé'],
+            ['Pago electrónico', 'Comprometido desde 2022, perímetro BusPay 2026 incluye Tomé'],
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
@@ -415,7 +422,7 @@ export default function ConcepcionTome() {
             ['Tarifa Dichato', 'Mayor que $750 — diferencial no publicado'],
             ['Información en tiempo real', 'App Red Regional de Movilidad — buscar "401" / "411"'],
             ['GTFS público', 'NO publicado. El servicio no aparece en el feed GTFS Gran Concepción.'],
-            ['Pago electrónico', 'Comprometido — Tomé está dentro del perímetro Buspay 2026'],
+            ['Pago electrónico', 'Comprometido — Tomé está dentro del perímetro BusPay 2026'],
           ]}
         />
         <PendingBanner>
@@ -467,7 +474,7 @@ export default function ConcepcionTome() {
               'Las micros urbanas 17M/30B/30C/30E/31F/57Y/62H sí aparecen en el visor y conectan los mismos puntos hasta Penco/Lirquén — útil para el tramo corto.',
             ],
             [
-              'Buspay 2026',
+              'BusPay 2026',
               <>
                 Tomé está dentro del perímetro de exclusión inicial de{' '}
                 <a href="/wiki/buspay-2026" className="underline underline-offset-2">
@@ -484,7 +491,7 @@ export default function ConcepcionTome() {
             Diario Concepción · 1-nov-2022 — Debate Biotrén-Penco y corredor Ruta 150
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
-            Subtrans · Perímetro Buspay = Gran Concepción + Santa Juana + Tomé
+            Subtrans · Perímetro BusPay = Gran Concepción + Santa Juana + Tomé
           </SourceLink>
         </Sources>
       </Section>
@@ -721,7 +728,7 @@ export default function ConcepcionTome() {
                 <td className="px-3 py-2">~42 km vía Itata · ~50 km vía 148</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-medium">Buspay 2026</td>
+                <td className="px-3 py-2 font-medium">BusPay 2026</td>
                 <td className="px-3 py-2"><strong>SÍ</strong> en perímetro inicial</td>
                 <td className="px-3 py-2"><strong>SÍ</strong> en perímetro inicial</td>
                 <td className="px-3 py-2">NO en perímetro inicial</td>
@@ -772,7 +779,7 @@ export default function ConcepcionTome() {
           <li>Decreto exacto de adjudicación del perímetro de exclusión Tomé (2016/2022) y duración del contrato.</li>
           <li>Tarifa adulto vigente al cierre 2025-2026 con polinomio de ajuste publicado.</li>
           <li>Tabla horaria oficial lun-vie / sáb / dom / festivos para 401, 411 y 421.</li>
-          <li>Detalle del compromiso de pago electrónico Buspay para servicios 401/411/421 (validadores, cronograma).</li>
+          <li>Detalle del compromiso de pago electrónico BusPay para servicios 401/411/421 (validadores, cronograma).</li>
           <li>Operación temporada alta verano: ¿hay flota o frecuencia extra contractual? No documentado.</li>
           <li>Estado de la prefactibilidad EFE para extender Biotrén a Penco / Tomé.</li>
           <li>Verificación independiente de la flota declarada (71 buses).</li>

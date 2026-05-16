@@ -10,7 +10,8 @@ export default function SobreEsteWiki() {
         <p>
           El visor principal de <code className="font-mono">conce.patagua.dev</code> es
           un producto técnico que consume fuentes <strong>verificables</strong>
-          {' '}— GTFS estático, OpenStreetMap, INE, SINCA. Si un dato no puede
+          {' '}— <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS estático</a>,
+          OpenStreetMap, INE, SINCA. Si un dato no puede
           citarse a un origen abierto, no entra al visor.
         </p>
         <p>
