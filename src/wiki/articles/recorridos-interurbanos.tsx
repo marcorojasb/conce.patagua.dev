@@ -62,9 +62,16 @@ export default function RecorridosInterurbanos() {
           }
         />
         <ServiceRow
-          code="—"
+          code="4 op."
           title="Concepción ↔ Yumbel"
-          notes="Servicio interurbano privado. Operadores reportados: Línea Azul, Transportes Bío Bío, Pullman, Buses Bío Bío. Terminal Camilo Henríquez y Collao. Demanda peak en Fiesta de San Sebastián (20-ene / 20-mar, ~250-350 mil peregrinos). Sin licitación DTPR específica conocida."
+          notes="Corredor privado puro (sin licitación DTPR ni perímetro de exclusión) por la Ruta 146 'Autopista Valles del Biobío' (concesión Sacyr, peaje Huinanco en Yumbel km 33,9). Cuatro operadores: Línea Azul (retomó jul-2024 tras 5 años), Buses Bío Bío, Pullman Bus (retomó ene-2024 tras pugna municipal), Pullman Santa María. Demanda peak en Fiesta de San Sebastián (20-ene / 20-mar, 250-350 mil peregrinos/jornada, 400 carabineros en 2025). Fuera de Buspay 2026."
+          slug="concepcion-yumbel"
+          verified
+          extra={
+            <MapLink terminal="osm-way-114474600">
+              Terminal Camilo Henríquez en el mapa →
+            </MapLink>
+          }
         />
         <ServiceRow
           code="—"

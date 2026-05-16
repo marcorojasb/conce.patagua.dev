@@ -62,6 +62,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/concepcion-tome')),
   },
   {
+    slug: 'concepcion-yumbel',
+    title: 'Concepción ↔ Yumbel · corredor del valle central',
+    summary:
+      'Corredor privado puro (sin licitación DTPR ni perímetro de exclusión) por la Ruta 146 "Autopista Valles del Biobío" (concesión Sacyr, decreto MOP 179/2013). Cuatro operadores interurbanos (Línea Azul, Buses Bío Bío, Pullman Bus, Pullman Santa María) con frecuencias 30-60 min, tarifa $2.000-$3.500. Eje turístico-religioso: Fiesta de San Sebastián de Yumbel 20-ene y 20-mar mueve 250-350 mil peregrinos por jornada. Sin GTFS y fuera del perímetro Buspay 2026.',
+    section: 'interurbanos',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/concepcion-yumbel')),
+  },
+  {
     slug: 'sobre-este-wiki',
     title: 'Sobre este wiki',
     summary:
