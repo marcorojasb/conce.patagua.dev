@@ -8,7 +8,7 @@ export interface ArticleMeta {
   title: string;
   summary: string;
   /** Section grouping in the index — keeps related articles together. */
-  section: 'interurbanos' | 'fuentes' | 'metodologia';
+  section: 'interurbanos' | 'urbanos' | 'fuentes' | 'metodologia';
   /** Last edited date for the "actualizado" hint in the article header. */
   updated: string;
   /** Lazy-load the article body. */
@@ -62,6 +62,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/concepcion-tome')),
   },
   {
+    slug: 'biotren-extensiones',
+    title: 'Biotrén y sus extensiones',
+    summary:
+      'Tren urbano del Gran Concepción operado por EFE Trenes Metropolitanos. Línea 1 Hualqui ↔ Mercado de Talcahuano (12 estaciones) y Línea 2 Coronel ↔ Concepción (14 estaciones), trazado y estaciones digitalizados desde OSM. Único tren urbano de Chile fuera de Santiago. Extensiones discutidas a Penco, Tomé, Lota y Carriel Sur — y la tensión con el electrocorredor MOP Ruta 150 que se licita en paralelo.',
+    section: 'urbanos',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/biotren-extensiones')),
+  },
+  {
     slug: 'sobre-este-wiki',
     title: 'Sobre este wiki',
     summary:
@@ -78,6 +87,7 @@ export function findArticle(slug: string): ArticleMeta | null {
 
 export const SECTION_LABELS: Record<ArticleMeta['section'], string> = {
   interurbanos: 'Recorridos interurbanos',
+  urbanos: 'Modos urbanos',
   fuentes: 'Fuentes y datos',
   metodologia: 'Sobre este wiki',
 };
