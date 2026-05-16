@@ -38,9 +38,11 @@ export default function RecorridosInterurbanos() {
           verified
         />
         <ServiceRow
-          code="—"
+          code="401 · 411 · 421"
           title="Concepción ↔ Tomé"
-          notes="Múltiples operadores. Conexión norte que pasa por Penco y Lirquén (estos sí están en el visor)."
+          notes="Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022). Operador único Transportes Tomé (fusión de operadores previos, representante Bernardo Montoya), 71 buses, tarifa $750 base. Servicios 401 (Tomé Alto), 411 (Dichato), 421 (Av. Estadio). El tramo Concepción↔Penco↔Lirquén sí está en el visor (líneas 17M/30B/30C/30E/31F/57Y/62H del GTFS urbano); Lirquén↔Tomé↔Dichato no. Electrocorredor MOP Ruta 150 en licitación."
+          slug="concepcion-tome"
+          verified
         />
         <ServiceRow
           code="4 op."

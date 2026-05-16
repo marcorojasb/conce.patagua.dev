@@ -53,6 +53,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/concepcion-florida')),
   },
   {
+    slug: 'concepcion-tome',
+    title: 'Concepción ↔ Tomé · corredor norte',
+    summary:
+      'Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022) con operador único Transportes Tomé y servicios 401/411/421. Tarifa $750 al inicio, 71 buses, refuerzos may-2025 (+11% punta tarde). El tramo Concepción↔Penco↔Lirquén sí está en el GTFS urbano; Lirquén↔Tomé↔Dichato no. Electrocorredor MOP Ruta 150 (USD 172M) en licitación; puesta en servicio 2032.',
+    section: 'interurbanos',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/concepcion-tome')),
+  },
+  {
     slug: 'sobre-este-wiki',
     title: 'Sobre este wiki',
     summary:
