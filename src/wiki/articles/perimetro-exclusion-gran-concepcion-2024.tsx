@@ -565,7 +565,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <strong>Consorcio Buspay</strong> el{' '}
           <strong>28 de enero de 2026</strong>. Ficha técnica completa
           en{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay 2026
           </a>
           .
@@ -799,7 +799,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
       <Section title="Vínculos con otros artículos">
         <ul className="ml-5 list-disc space-y-1.5 text-[13px]">
           <li>
-            <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
             </a>{' '}
             — la capa de pago electrónico que se monta sobre este

@@ -48,7 +48,7 @@ export default function RecorridosInterurbanos() {
         <ServiceRow
           code="401 · 411 · 421"
           title="Concepción ↔ Tomé"
-          notes={<>Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022). Operador único Transportes Tomé (fusión de operadores previos, representante Bernardo Montoya), 71 buses, tarifa $750 base (vigencia 2026 sin polinomio publicado). Servicios 401 (Tomé Alto), 411 (Dichato), 421 (Av. Estadio). El tramo Concepción↔Penco↔Lirquén sí está en el visor (líneas 17M/30B/30C/30E/31F/57Y/62H del GTFS urbano); Lirquén↔Tomé↔Dichato no. <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">Electrocorredor MOP Ruta 150</a> en licitación.</>}
+          notes={<>Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022). Operador único Transportes Tomé (fusión de operadores previos, representante Bernardo Montoya), 71 buses, tarifa $750 base (vigencia 2026 sin polinomio publicado). Servicios 401 (Tomé Alto), 411 (Dichato), 421 (Av. Estadio). El tramo Concepción↔Penco↔Lirquén sí está en el visor (líneas 17M/30B/30C/30E/31F/57Y/62H del GTFS urbano); Lirquén↔Tomé↔Dichato no. <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">Electrocorredor MOP Ruta 150</a> en licitación.</>}
           slug="concepcion-tome"
           verified
           extra={<MapLink route="401">Ver la 401 Tomé Alto en el mapa →</MapLink>}

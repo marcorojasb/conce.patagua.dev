@@ -1210,7 +1210,7 @@ export default function OpenstreetmapFuenteVisor() {
             mientras no haya GTFS.
           </li>
           <li>
-            <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+            <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
               Electrocorredores MOP del Biobío
             </a>
             {' '}— refs MOP de Ruta 160 / Ruta 150 / Concepción–Talcahuano

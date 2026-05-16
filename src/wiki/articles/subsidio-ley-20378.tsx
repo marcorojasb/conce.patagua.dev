@@ -171,7 +171,7 @@ export default function SubsidioLey20378() {
         </ul>
         <p className="text-[12px] text-muted-foreground">
           El sistema de pago electrónico{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay
           </a>{' '}
           no recibe subsidio Ley 20.378 directamente (el
@@ -381,7 +381,7 @@ export default function SubsidioLey20378() {
         />
         <p className="text-[12px] text-muted-foreground">
           El{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             sistema BusPay
           </a>{' '}
           no recibe subsidio Ley 20.378 directamente —el
@@ -795,7 +795,7 @@ export default function SubsidioLey20378() {
             índice depende de Ley 20.378 art. 4°.
           </li>
           <li>
-            <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
             </a>{' '}
             — el sistema de recaudación no es Ley 20.378 pero
@@ -803,7 +803,7 @@ export default function SubsidioLey20378() {
             subsidiada por ella.
           </li>
           <li>
-            <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+            <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
               Electrocorredores MOP del Biobío
             </a>{' '}
             — la infraestructura la paga el MOP por concesión;

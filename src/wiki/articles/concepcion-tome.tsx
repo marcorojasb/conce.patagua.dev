@@ -73,7 +73,7 @@ export default function ConcepcionTome() {
           A esto se suma una capa de inversión MOP histórica: el{' '}
           <strong>corredor de transporte público Ruta 150</strong>{' '}
           (
-          <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
             electrocorredor
           </a>
           ) cuya licitación recibió oferta única en
@@ -481,7 +481,7 @@ export default function ConcepcionTome() {
               'BusPay 2026',
               <>
                 Tomé está dentro del perímetro de exclusión inicial de{' '}
-                <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+                <a href="/wiki/buspay" className="underline underline-offset-2">
                   BusPay
                 </a>{' '}
                 (junto con Gran Concepción y Santa Juana). Cronograma

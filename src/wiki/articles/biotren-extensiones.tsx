@@ -719,7 +719,7 @@ export default function BiotrenExtensiones() {
         <p>
           Esta es la disputa de política pública más fuerte del corredor
           norte y vale documentarla en su propio bloque. Los datos del{' '}
-          <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
             electrocorredor MOP
           </a>{' '}
           están desarrollados en su artículo propio y referenciados en{' '}

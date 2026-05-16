@@ -56,7 +56,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
-export default function ElectrocorredoresMOPBiobio() {
+export default function CorredoresTransportePublicoMOPBiobio() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
@@ -76,6 +76,22 @@ export default function ElectrocorredoresMOPBiobio() {
         buses, integración tarifaria con BusPay y subsidio
         operacional MTT al operador.
       </VerifiedBanner>
+
+      <p className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+        <strong>Nota editorial sobre el nombre.</strong> Este wiki
+        adopta <strong>"Corredores de Transporte Público MOP"</strong>{' '}
+        como nombre canónico de los tres proyectos, siguiendo el uso
+        actual del MTT y del propio MOP, que dejaron de rotularlos
+        como "electrocorredores" para evitar la confusión que el
+        prefijo generaba (sugería una flota 100% eléctrica obligatoria,
+        lo cual el SEREMI Patricio Fierro aclaró públicamente en
+        noviembre de 2025 que no es el caso). El término{' '}
+        <strong>"electrocorredor"</strong> se mantiene en el cuerpo
+        del artículo —y como clave de búsqueda— porque sigue siendo
+        el nombre con el que la prensa regional y los expedientes
+        MOP los identifican (de hecho los oferentes se llaman
+        Electro-Cointer y Electro-Cointer II).
+      </p>
 
       <Section title="Qué son y por qué importan">
         <p>
@@ -314,7 +330,7 @@ export default function ElectrocorredoresMOPBiobio() {
               'Validación / pago',
               <>
                 Vía{' '}
-                <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+                <a href="/wiki/buspay" className="underline underline-offset-2">
                   BusPay
                 </a>
                 : los tres tramos cruzan el perímetro inicial del
@@ -418,7 +434,7 @@ export default function ElectrocorredoresMOPBiobio() {
         <p>
           La línea editorial del MTT y la SEREMI Biobío es que los
           buses que circulen por los electrocorredores aceptarán{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay
           </a>
           {' '}desde su marcha blanca proyectada para el tercer
@@ -770,7 +786,7 @@ export default function ElectrocorredoresMOPBiobio() {
             heredará los corredores Ruta 160 y Conce-Talcahuano II.
           </li>
           <li>
-            <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
             </a>
             : sistema de recaudo electrónico que entrará en régimen
@@ -893,8 +909,8 @@ export default function ElectrocorredoresMOPBiobio() {
           la composición societaria del Consorcio Electro-Cointer o
           Electro-Cointer II, tienes el RCA SEIA respectivo o copia
           del decreto MOP de adjudicación, abre un pull request en{' '}
-          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/electrocorredores-mop-biobio.tsx">
-            github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/electrocorredores-mop-biobio.tsx
+          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/corredores-transporte-publico-mop-biobio.tsx">
+            github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/corredores-transporte-publico-mop-biobio.tsx
           </SourceLink>
           . Toda contribución se cita en el commit con autoría.
         </p>

@@ -238,7 +238,7 @@ export default function ConcepcionCoronelLota() {
               'Encaje con BusPay',
               <>
                 BusPay (adjudicado al{' '}
-                <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+                <a href="/wiki/buspay" className="underline underline-offset-2">
                   Consorcio Buspay
                 </a>{' '}
                 el 28-ene-2026, marcha blanca Q3 2026) cubre Coronel y
@@ -252,7 +252,7 @@ export default function ConcepcionCoronelLota() {
           <strong>Texto exacto de la Res. Ex. 457 pendiente.</strong> La
           referencia "Resolución Exenta 457 MTT 2012-2013" aparece en
           varios artículos del wiki (
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay 2026
           </a>
           ,{' '}
@@ -507,7 +507,7 @@ export default function ConcepcionCoronelLota() {
           BusPay, el sistema de recaudo electrónico adjudicado al{' '}
           <strong>Consorcio Buspay</strong> el <strong>28-ene-2026</strong>{' '}
           (operador técnico <strong>Busmatick</strong>, ver{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             artículo BusPay 2026
           </a>
           ), <strong>sí cubre</strong> Coronel y Lota desde el inicio.
@@ -559,7 +559,7 @@ export default function ConcepcionCoronelLota() {
           El <strong>electrocorredor MOP Ruta 160</strong> es el proyecto
           de infraestructura que más afecta al corredor sur. Datos
           verificados (ver{' '}
-          <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
             artículo Electrocorredores MOP del Biobío
           </a>
           ):
@@ -857,7 +857,7 @@ export default function ConcepcionCoronelLota() {
           El sistema de pago electrónico que cruza los tres regímenes
           (PE Gran Concepción + PE Tomé + Res. Ex. 457 Coronel-Lota +
           licitación 201 Santa Juana) está documentado en{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay 2026
           </a>
           .
@@ -865,7 +865,7 @@ export default function ConcepcionCoronelLota() {
         <p>
           Para la infraestructura vial que reemplazará parcialmente al
           corredor desde 2031-2032, ve{' '}
-          <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
             Electrocorredores MOP del Biobío
           </a>
           . Para el modo competidor por el mismo eje, lee{' '}
@@ -886,8 +886,8 @@ export default function ConcepcionCoronelLota() {
           Para operadores con presencia cruzada en otros corredores del
           wiki (Las Galaxias también opera la Línea 80 / UN80 del PE
           Gran Concepción), ve{' '}
-          <a href="/wiki/corredor-el-pimenton" className="underline underline-offset-2">
-            Corredor interurbano por El Pimentón
+          <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
+            Concepción ↔ Florida (corredor de El Pimentón)
           </a>{' '}
           y el resto del índice en{' '}
           <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">

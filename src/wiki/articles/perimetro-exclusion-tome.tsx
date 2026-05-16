@@ -21,7 +21,7 @@
 // Pendiente (PendingBanner):
 // - Número exacto del decreto MTT 2016 que crea el perímetro
 // - Razón social formal (¿SpA? ¿S.A.? ¿Ltda.?) y RUT de Transportes
-//   Tomé. El artículo buspay-2026 cita "Transportes Tomé SpA" sin
+//   Tomé. El artículo buspay cita "Transportes Tomé SpA" sin
 //   fuente primaria — pendiente cotejo SII / RNTPP.
 // - Forma matemática del polinomio de ajuste tarifario (tarifa 2026
 //   vigente: $780 a Concepción, $830 a Dichato — confirmado).
@@ -574,7 +574,7 @@ export default function PerimetroExclusionTome() {
             Subtrans · 30-ene-2026
           </SourceLink>
           ). Ficha técnica completa en{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay 2026
           </a>
           .
@@ -675,7 +675,7 @@ export default function PerimetroExclusionTome() {
             Diario Concepción · 1-nov-2022
           </SourceLink>
           ). Ver{' '}
-          <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
             Electrocorredores MOP del Biobío
           </a>
           {' '}y{' '}
@@ -921,7 +921,7 @@ export default function PerimetroExclusionTome() {
             Concepción 2024" de este artículo resume las diferencias.
           </li>
           <li>
-            <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
             </a>{' '}
             — el sistema de recaudo electrónico que entra en marcha
@@ -931,7 +931,7 @@ export default function PerimetroExclusionTome() {
             operador técnico.
           </li>
           <li>
-            <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+            <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
               Electrocorredores MOP del Biobío
             </a>{' '}
             — el corredor exclusivo Ruta 150 (Rotonda Bonilla ↔ Enlace

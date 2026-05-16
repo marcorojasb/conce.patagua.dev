@@ -94,7 +94,7 @@ export default function SobreEsteWiki() {
                 Entidad que históricamente administró el recaudo y la
                 liquidación de la tarjeta bip! en Santiago. Modelo
                 citado en el artículo{' '}
-                <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+                <a href="/wiki/buspay" className="underline underline-offset-2">
                   BusPay 2026
                 </a>{' '}
                 como contraste con el esquema operacional adoptado en
@@ -116,7 +116,7 @@ export default function SobreEsteWiki() {
                 Sistema de recaudo electrónico licitado por el MTT para
                 el Gran Concepción 2026. Adjudicatario: Consorcio
                 Buspay. Operador técnico: Busmatick. Ver{' '}
-                <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+                <a href="/wiki/buspay" className="underline underline-offset-2">
                   artículo BusPay
                 </a>
                 .
@@ -216,7 +216,7 @@ export default function SobreEsteWiki() {
                 <strong>Ministerio de Obras Públicas</strong>. Concesiona
                 las autopistas y los corredores MOP (Rutas 150, 160 y
                 Autopista Concepción-Talcahuano). Ver{' '}
-                <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+                <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
                   Electrocorredores MOP del Biobío
                 </a>
                 .

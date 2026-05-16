@@ -59,7 +59,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
-export default function BusPay2026() {
+export default function BusPay() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
@@ -1255,8 +1255,8 @@ export default function BusPay2026() {
           MTT de adjudicación, la red minorista de recarga publicada o
           fotos de validadores instalados en buses del PE — abre un
           pull request en{' '}
-          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/buspay-2026.tsx">
-            github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/buspay-2026.tsx
+          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/buspay.tsx">
+            github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/buspay.tsx
           </SourceLink>
           . Toda contribución se cita en el commit con autoría.
         </p>

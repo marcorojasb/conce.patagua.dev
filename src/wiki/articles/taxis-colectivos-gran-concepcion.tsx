@@ -838,7 +838,7 @@ export default function TaxisColectivosGranConcepcion() {
             colectivos.
           </li>
           <li>
-            <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay · pago electrónico del Gran Concepción 2026
             </a>{' '}
             — el sistema de recaudo electrónico del que los colectivos

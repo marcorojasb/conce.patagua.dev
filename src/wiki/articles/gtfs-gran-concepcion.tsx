@@ -681,7 +681,7 @@ export default function GtfsGranConcepcion() {
             {' '}— el régimen regulatorio al que está acotado el feed.
           </li>
           <li>
-            <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
             </a>
             {' '}— pago electrónico, motor de la unificación operativa

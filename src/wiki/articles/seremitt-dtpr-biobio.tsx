@@ -99,7 +99,7 @@ export default function SeremittDtprBiobio() {
             licitación de la Ruta 201 Santa Juana
           </a>
           , el sistema{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay 2026
           </a>
           , los subsidios al corredor{' '}
@@ -107,7 +107,7 @@ export default function SeremittDtprBiobio() {
             Concepción ↔ Florida
           </a>
           , los{' '}
-          <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
             Electrocorredores MOP
           </a>{' '}
           y la publicación del{' '}
@@ -679,7 +679,7 @@ export default function SeremittDtprBiobio() {
             unidades de negocio, contrato hasta 31-dic-2028.
           </li>
           <li>
-            <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+            <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
             </a>{' '}
             — el sistema de pago electrónico que la DTPR licitó y
@@ -731,7 +731,7 @@ export default function SeremittDtprBiobio() {
             pero que no están en el feed GTFS urbano.
           </li>
           <li>
-            <a href="/wiki/electrocorredores-mop-biobio" className="underline underline-offset-2">
+            <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
               Electrocorredores MOP del Biobío
             </a>{' '}
             — proyectos de infraestructura del MOP donde la

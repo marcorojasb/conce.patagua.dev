@@ -44,22 +44,22 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/perimetro-exclusion-tome')),
   },
   {
-    slug: 'buspay-2026',
-    title: 'BusPay · pago electrónico del Gran Concepción 2026',
+    slug: 'buspay',
+    title: 'BusPay · pago electrónico del Gran Concepción',
     summary:
       'Sistema de recaudo electrónico adjudicado al Consorcio Buspay (operador técnico Busmatick) el 28-ene-2026 por el MTT. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas (PE Gran Concepción + PE Tomé + PE Coronel-Lota + licitación 201 Santa Juana). Marcha blanca Q3 2026, régimen 100% electrónico proyectado fin de 2026. Tarifa $580 sin alteración, tarjeta Campanil UdeC elegida por consulta ciudadana. Cierra una deuda de casi 20 años desde el piloto Biobús 2016 fallido.',
     section: 'estructural',
     updated: '2026-05-16',
-    Component: lazy(() => import('./articles/buspay-2026')),
+    Component: lazy(() => import('./articles/buspay')),
   },
   {
-    slug: 'electrocorredores-mop-biobio',
-    title: 'Electrocorredores MOP del Biobío',
+    slug: 'corredores-transporte-publico-mop-biobio',
+    title: 'Corredores de Transporte Público MOP del Biobío',
     summary:
-      'Tres concesiones MOP de corredores exclusivos para buses urbanos sobre las troncales del Gran Concepción (Ruta 160 San Pedro-Coronel, Ruta 150 Concepción-Penco y Autopista Concepción-Talcahuano Tramo II). ~USD 250 millones, 23+ km, plazo 25 años (300 meses). Oferente único en los dos llamados (Electro-Cointer y Electro-Cointer II, ligados a Cointer Concesiones S.L. / Grupo Azvi). CGR visó bases 13-nov-2024; ofertas recibidas nov-dic 2025; adjudicación 1S 2026; obras 2029-2030; puesta en servicio 2031-2032. Tensión política con extensiones del Biotrén a Penco, Lota y Carriel Sur.',
+      'Tres concesiones MOP de corredores exclusivos para buses urbanos sobre las troncales del Gran Concepción (Ruta 160 San Pedro-Coronel, Ruta 150 Concepción-Penco y Autopista Concepción-Talcahuano Tramo II). Llamados todavía rotulados "Electro-Cointer" / "Electro-Cointer II" en los expedientes MOP, pero el MTT/MOP ya no usan "electrocorredor" como nombre oficial — el SEREMI Fierro lo aclaró en nov-2025 al precisar que la flota no será 100% eléctrica. ~USD 250 millones, 23+ km, plazo 25 años (300 meses). Oferente único en los dos llamados (Cointer Concesiones S.L. / Grupo Azvi). CGR visó bases 13-nov-2024; ofertas recibidas nov-dic 2025; adjudicación 1S 2026; obras 2029-2030; puesta en servicio 2031-2032. Tensión política con extensiones del Biotrén a Penco, Lota y Carriel Sur.',
     section: 'estructural',
     updated: '2026-05-16',
-    Component: lazy(() => import('./articles/electrocorredores-mop-biobio')),
+    Component: lazy(() => import('./articles/corredores-transporte-publico-mop-biobio')),
   },
   {
     slug: 'subsidio-ley-20378',

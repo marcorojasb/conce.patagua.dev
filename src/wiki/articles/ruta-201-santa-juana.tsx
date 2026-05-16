@@ -281,7 +281,7 @@ export default function Ruta201SantaJuana() {
         <p>
           El servicio 201 será el <strong>primer servicio rural de Chile</strong>{' '}
           con pago electrónico integrado. Ficha completa del sistema en{' '}
-          <a href="/wiki/buspay-2026" className="underline underline-offset-2">
+          <a href="/wiki/buspay" className="underline underline-offset-2">
             BusPay 2026
           </a>
           . Cronología:
