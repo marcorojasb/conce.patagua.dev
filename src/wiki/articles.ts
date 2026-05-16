@@ -137,9 +137,9 @@ export const ARTICLES: ArticleMeta[] = [
     slug: 'sobre-este-wiki',
     title: 'Sobre este wiki',
     summary:
-      'Qué es, qué no es, cómo contribuir y la visión de mediano plazo: convertirse en el centro de verdad regional del transporte y la planificación urbana del Biobío.',
+      'Qué es, qué no es, cómo contribuir y la visión de mediano plazo: convertirse en el centro de verdad regional del transporte y la planificación urbana del Biobío. Incluye glosario de siglas recurrentes (BCN, BusPay, DTPR, EFE, GTFS, MOP, MTT, PE, Res. Ex., RNTPP, SEREMITT, TNE, UF, UN y otras).',
     section: 'metodologia',
-    updated: '2026-05-15',
+    updated: '2026-05-16',
     Component: lazy(() => import('./articles/sobre-este-wiki')),
   },
 ];

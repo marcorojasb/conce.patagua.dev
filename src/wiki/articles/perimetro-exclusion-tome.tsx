@@ -23,7 +23,8 @@
 // - Razón social formal (¿SpA? ¿S.A.? ¿Ltda.?) y RUT de Transportes
 //   Tomé. El artículo buspay-2026 cita "Transportes Tomé SpA" sin
 //   fuente primaria — pendiente cotejo SII / RNTPP.
-// - Tarifa adulto vigente 2026 con polinomio aplicado
+// - Forma matemática del polinomio de ajuste tarifario (tarifa 2026
+//   vigente: $780 a Concepción, $830 a Dichato — confirmado).
 // - Plazo del contrato del perímetro
 // - Sanciones DTPR documentadas
 
@@ -48,11 +49,13 @@ export default function PerimetroExclusionTome() {
         10-mar-2022, operador único Transportes Tomé, servicios 401 /
         411 / 421, tarifa de partida $750 adulto, flota declarada de 71
         buses, refuerzos de may-2025 (+11% hora punta tarde) y
-        cobertura BusPay confirmada: todo con fuente.{' '}
+        cobertura BusPay confirmada: todo con fuente. Tarifas vigentes
+        desde 23-feb-2025 ($780 Concepción ↔ Tomé, $830 Concepción ↔
+        Dichato) también verificadas con prensa regional.{' '}
         <strong>Pendientes</strong>: número exacto del decreto MTT
-        2016, razón social formal y RUT de Transportes Tomé, tarifa
-        adulto vigente 2026 con polinomio aplicado, plazo contractual
-        del perímetro y eventuales sanciones DTPR publicadas.
+        2016, razón social formal y RUT de Transportes Tomé, forma
+        matemática del polinomio de ajuste, plazo contractual del
+        perímetro y eventuales sanciones DTPR publicadas.
       </VerifiedBanner>
 
       <Section title="Qué es y por qué importa">
@@ -385,6 +388,7 @@ export default function PerimetroExclusionTome() {
               <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 font-medium">Categoría</th>
                 <th className="px-3 py-2 font-medium">Tarifa de partida (10-mar-2022)</th>
+                <th className="px-3 py-2 font-medium">Vigente desde 23-feb-2025</th>
                 <th className="px-3 py-2 font-medium">Notas</th>
               </tr>
             </thead>
@@ -392,6 +396,7 @@ export default function PerimetroExclusionTome() {
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto Concepción ↔ Tomé</td>
                 <td className="px-3 py-2 font-mono">$750</td>
+                <td className="px-3 py-2 font-mono">$780</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
                   Cayó $150 respecto al régimen previo de $900. Era el
                   argumento político central del perímetro (rebaja).
@@ -400,13 +405,15 @@ export default function PerimetroExclusionTome() {
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto Concepción ↔ Dichato</td>
                 <td className="px-3 py-2 font-mono">Diferencial superior</td>
+                <td className="px-3 py-2 font-mono">$830</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
-                  Cayó $200 respecto al régimen previo. Valor exacto no
-                  publicado en fuente abierta.
+                  Cayó $200 respecto al régimen previo. Diferencial de
+                  $50 sobre la tarifa Tomé por kilometraje adicional.
                 </td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Estudiante (TNE)</td>
+                <td className="px-3 py-2 font-mono">No publicado</td>
                 <td className="px-3 py-2 font-mono">No publicado</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
                   Cobertura TNE estándar a nivel nacional (~33% del adulto).
@@ -414,6 +421,7 @@ export default function PerimetroExclusionTome() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto mayor (60+)</td>
+                <td className="px-3 py-2 font-mono">No publicado</td>
                 <td className="px-3 py-2 font-mono">No publicado</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
                   Beneficio descuento estándar (~50% del adulto).
@@ -433,18 +441,21 @@ export default function PerimetroExclusionTome() {
           "diésel, dólar, IPC, entre otros factores". La forma
           matemática exacta no está publicada en fuente abierta.
         </p>
-        <PendingBanner>
-          <strong>Tarifa adulto vigente 2026 pendiente.</strong> La
-          rebaja inicial de mar-2022 ($750) lleva casi cuatro años bajo
-          ajuste polinómico. El alza ratificada en el Gran Concepción
-          el 23-feb-2025 ($580 adulto) probablemente tuvo un correlato
-          en el PE Tomé, pero el valor exacto no se ha recuperado en
-          fuente primaria. Vía de cierre: foto del cartel tarifario en
-          la terminal Manuel Rodríguez o en Tomé Alto.
-        </PendingBanner>
+        <p className="text-[12px] text-muted-foreground">
+          <strong>Reajuste 23-feb-2025:</strong> el SEREMI Patricio
+          Fierro ratificó en prensa que el alza del Gran Concepción ($560
+          → $580 adulto) tuvo correlato en el PE Tomé. Las tarifas vigentes
+          a partir del 23-feb-2025 son <strong>$780 Concepción ↔ Tomé</strong>{' '}
+          y <strong>$830 Concepción ↔ Dichato</strong>. La forma matemática
+          del polinomio y el detalle de descuentos TNE / adulto mayor
+          siguen pendientes en fuente abierta.
+        </p>
         <Sources>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
             BioBioChile · 11-mar-2022 — Tarifa inicial $750 (rebaja de $150)
+          </SourceLink>
+          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2025/02/17/gran-concepcion-pasaje-de-transporte-publico-registrara-alza-de-20-desde-el-proximo-domingo.shtml">
+            BioBioChile · 17-feb-2025 — Alza 23-feb-2025: Tomé-Concepción $780, Tomé-Dichato $830
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html">
             Diario Concepción · 14-feb-2025 — Alza en Gran Concepción y Tomé
@@ -954,8 +965,7 @@ export default function PerimetroExclusionTome() {
           <li>Razón social formal de Transportes Tomé con tipo societario (¿SpA? ¿S.A.? ¿Ltda.?) y RUT.</li>
           <li>N° de inscripción en el Registro Nacional de Transporte Público de Pasajeros (RNTPP).</li>
           <li>Plazo del contrato del perímetro y condiciones de renovación.</li>
-          <li>Tarifa adulto vigente 2026 con polinomio aplicado, y tarifa diferenciada exacta para Dichato.</li>
-          <li>Tarifas TNE estudiante y adulto mayor con su descuento publicado.</li>
+          <li>Tarifas TNE estudiante y adulto mayor con su descuento publicado (tarifa adulto 2026 confirmada: $780 a Concepción, $830 a Dichato).</li>
           <li>Forma matemática del polinomio de ajuste tarifario (coeficiente de cada variable).</li>
           <li>Tabla horaria oficial lun-vie / sáb / dom / festivos para 401, 411 y 421.</li>
           <li>Composición de flota (marca, modelo, año, norma Euro) verificada — la cifra de 71 buses requiere cotejo con padrón DTPR.</li>

@@ -901,8 +901,11 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <SourceLink href="https://mtt.gob.cl/wp-content/uploads/2017/10/Resex_1005.2017.pdf">
             MTT · Resolución Exenta N° 1006/2017 (marco normativo, base del PE)
           </SourceLink>
+          {/* NOTE: el PDF directo en mtt.gob.cl devolvía 404 en mayo 2026.
+              Mantenemos la cita por trazabilidad; pendiente snapshot en
+              Wayback Machine o reubicación del PDF en el portal MTT. */}
           <SourceLink href="https://www.mtt.gob.cl/wp-content/uploads/2023/07/Rex-1482-2023.pdf">
-            MTT · Resolución Exenta N° 1482/2023
+            MTT · Resolución Exenta N° 1482/2023 (PDF — URL puede estar caída)
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/">
             DPR Biobío · 3-ene-2024 — Inicio operativo perímetro

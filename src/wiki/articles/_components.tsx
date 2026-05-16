@@ -52,10 +52,13 @@ export function SourceLink({ href, children }: { href: string; children: ReactNo
 
 export function Sources({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-2 rounded-sm border-l-2 border-muted-foreground/30 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+    <aside
+      aria-label="Fuentes citadas"
+      className="mt-2 rounded-sm border-l-2 border-muted-foreground/30 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground"
+    >
       <span className="font-medium uppercase tracking-wider">Fuentes</span>
       <div className="mt-1 flex flex-col gap-0.5">{children}</div>
-    </div>
+    </aside>
   );
 }
 
@@ -95,7 +98,11 @@ export function Timeline({
 
 export function VerifiedBanner({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-[12px] text-emerald-900 dark:text-emerald-200">
+    <div
+      role="status"
+      aria-label="Bloque verificado"
+      className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-[12px] text-emerald-900 dark:text-emerald-200"
+    >
       {children}
     </div>
   );
@@ -103,7 +110,11 @@ export function VerifiedBanner({ children }: { children: ReactNode }) {
 
 export function PendingBanner({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-[12px] text-amber-900 dark:text-amber-200">
+    <div
+      role="status"
+      aria-label="Bloque pendiente de verificación"
+      className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-[12px] text-amber-900 dark:text-amber-200"
+    >
       {children}
     </div>
   );
