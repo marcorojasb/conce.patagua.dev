@@ -8,7 +8,7 @@ export interface ArticleMeta {
   title: string;
   summary: string;
   /** Section grouping in the index — keeps related articles together. */
-  section: 'interurbanos' | 'urbanos' | 'fuentes' | 'metodologia';
+  section: 'estructural' | 'interurbanos' | 'urbanos' | 'fuentes' | 'metodologia';
   /** Last edited date for the "actualizado" hint in the article header. */
   updated: string;
   /** Lazy-load the article body. */
@@ -16,6 +16,15 @@ export interface ArticleMeta {
 }
 
 export const ARTICLES: ArticleMeta[] = [
+  {
+    slug: 'perimetro-exclusion-gran-concepcion-2024',
+    title: 'Perímetro de Exclusión del Gran Concepción 2024',
+    summary:
+      'Régimen tarifario y operativo bajo el cual operan, desde el 1-ene-2024, todos los buses urbanos del Gran Concepción (7 comunas, 36 unidades de negocio, 35 empresas). Reemplaza la licitación 2002 caducada el 31-mar-2024. Tarifa $580 adulto (vigente 23-feb-2025), polinomio de ajuste, contrato hasta 31-dic-2028. BusPay adjudicado a Consorcio Buspay en ene-2026, marcha blanca Q3 2026. Columna vertebral conceptual del visor urbano.',
+    section: 'estructural',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/perimetro-exclusion-gran-concepcion-2024')),
+  },
   {
     slug: 'recorridos-interurbanos',
     title: 'Recorridos interurbanos del Gran Concepción',
@@ -86,6 +95,7 @@ export function findArticle(slug: string): ArticleMeta | null {
 }
 
 export const SECTION_LABELS: Record<ArticleMeta['section'], string> = {
+  estructural: 'Régimen estructural',
   interurbanos: 'Recorridos interurbanos',
   urbanos: 'Modos urbanos',
   fuentes: 'Fuentes y datos',
