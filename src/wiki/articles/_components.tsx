@@ -155,6 +155,51 @@ export function OperatorTable({ rows }: { rows: OperatorRow[] }) {
   );
 }
 
+// Fila de servicio para el índice "Recorridos interurbanos". Reutilizable
+// si en el futuro otro índice quiere listar artículos del mismo formato:
+// código, título, nota corta y opcionalmente link al artículo + badge
+// verificado.
+
+export interface ServiceRowProps {
+  code: string;
+  title: string;
+  notes: string;
+  slug?: string;
+  verified?: boolean;
+  /** Extra slot a la derecha del link "Ver artículo →" (ej. un <MapLink>). */
+  extra?: ReactNode;
+}
+
+export function ServiceRow({ code, title, notes, slug, verified, extra }: ServiceRowProps) {
+  return (
+    <div className="rounded-md border bg-card p-3">
+      <div className="flex items-baseline gap-2">
+        <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{code}</span>
+        <span className="text-[14px] font-medium">{title}</span>
+        {verified && (
+          <span className="ml-auto rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+            verificado
+          </span>
+        )}
+      </div>
+      <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{notes}</p>
+      {(slug || extra) && (
+        <div className="mt-1.5 flex flex-wrap items-center gap-3 text-[11px]">
+          {slug && (
+            <a
+              href={`/wiki/${slug}`}
+              className="underline underline-offset-2 hover:text-foreground"
+            >
+              Ver artículo →
+            </a>
+          )}
+          {extra}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Placeholder reservado para que el agente del mapa lo conecte al visor
 // real más tarde. Mientras tanto: caja con dimensiones, nodo identificable
 // por data-corridor-id, y un mini-listado de hitos opcional.

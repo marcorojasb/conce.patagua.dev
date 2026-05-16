@@ -5,8 +5,8 @@
 // qué conecta, qué operadores lo cruzan, qué decisiones de política pública
 // están en juego. Las fichas individuales viven en archivos hermanos
 // (concepcion-florida.tsx para el servicio principal). Los datos de la
-// 201 Santa Juana NO entran acá — Santa Juana sale por Ruta 160 (costa),
-// no por El Pimentón.
+// 201 Santa Juana NO entran acá — Santa Juana sale por Ruta 156 (Ruta de
+// la Madera, costa), no por El Pimentón.
 
 import {
   CorridorMap,
@@ -19,6 +19,7 @@ import {
   Timeline,
   VerifiedBanner,
 } from './_components';
+import { MapLink } from '@/wiki/map-link';
 
 export default function CorredorElPimenton() {
   return (
@@ -39,12 +40,16 @@ export default function CorredorElPimenton() {
           interurbana sur-oriente del Gran Concepción: el conjunto de viajes
           en bus que cruzan la Cordillera de la Costa para conectar la
           metrópoli con la comuna de <strong>Florida</strong> (~10.624 hab.,
-          60% rural) y, vía Florida o vía rutas alternativas, con sectores
+          60% rural —{' '}
+          <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
+            ver artículo del servicio troncal Concepción ↔ Florida
+          </a>
+          ) y, vía Florida o vía rutas alternativas, con sectores
           rurales de Hualqui y la comuna de <strong>Yumbel</strong>{' '}
           (~21.198 hab.).
         </p>
         <p>
-          A diferencia del eje Concepción ↔ Santa Juana (Ruta 160 / Ruta de
+          A diferencia del eje Concepción ↔ Santa Juana (Ruta 156 / Ruta de
           la Madera, costa), este corredor se mete por el interior y trepa
           la cuesta de la Cordillera de la Costa. Lo conforman, hoy:
         </p>
@@ -489,6 +494,15 @@ export default function CorredorElPimenton() {
           tres puntos distintos según el operador, y <strong>no</strong>{' '}
           tienen un único terminal:
         </p>
+        <p className="text-[12px]">
+          <MapLink terminal="osm-way-114474600">
+            Terminal Camilo Henríquez en el mapa →
+          </MapLink>
+          {' · '}
+          <MapLink terminal="osm-way-597586612">
+            Terminal Collao en el mapa →
+          </MapLink>
+        </p>
         <KeyValueList
           items={[
             [
@@ -569,7 +583,7 @@ export default function CorredorElPimenton() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Trazado de la cuesta</td>
-                <td className="px-3 py-2">Ruta 160 (Madera) por la costa, NO cruza El Pimentón</td>
+                <td className="px-3 py-2">Ruta 156 (Madera) por la costa, NO cruza El Pimentón</td>
                 <td className="px-3 py-2">Sube por la Cordillera de la Costa interior (cuesta colloquialmente llamada El Pimentón)</td>
               </tr>
               <tr>

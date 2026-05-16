@@ -31,7 +31,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Servicio licitado bajo DTPR ELC0007, operado por Sociedad de Transporte de Pasajeros Santa Juana SpA desde julio 2024. 23 buses Agrale Euro V, tarifa $1.000, accesibilidad universal en 6 unidades. Primera licitación del Biobío en 10+ años.',
     section: 'interurbanos',
-    updated: '2026-05-15',
+    updated: '2026-05-16',
     Component: lazy(() => import('./articles/ruta-201-santa-juana')),
   },
   {

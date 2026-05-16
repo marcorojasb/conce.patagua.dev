@@ -3,6 +3,9 @@
 // con comunas rurales/satélite y que NO están en el GTFS urbano que
 // alimenta el visor principal.
 
+import { Section, ServiceRow } from './_components';
+import { MapLink } from '@/wiki/map-link';
+
 export default function RecorridosInterurbanos() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -29,6 +32,7 @@ export default function RecorridosInterurbanos() {
           notes="Licitado bajo DTPR ELC0007, operado por Sociedad de Transporte de Pasajeros Santa Juana SpA desde julio 2024. AU = Accesibilidad Universal (piso bajo, rampa). 23 buses Agrale Euro V, tarifa adulto $1.000. Primera licitación del Biobío en 10+ años. Pago electrónico previsto fin de 2026."
           slug="ruta-201-santa-juana"
           verified
+          extra={<MapLink route="201">Ver la 201 en el mapa →</MapLink>}
         />
         <ServiceRow
           code="corredor"
@@ -43,6 +47,7 @@ export default function RecorridosInterurbanos() {
           notes="Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022). Operador único Transportes Tomé (fusión de operadores previos, representante Bernardo Montoya), 71 buses, tarifa $750 base. Servicios 401 (Tomé Alto), 411 (Dichato), 421 (Av. Estadio). El tramo Concepción↔Penco↔Lirquén sí está en el visor (líneas 17M/30B/30C/30E/31F/57Y/62H del GTFS urbano); Lirquén↔Tomé↔Dichato no. Electrocorredor MOP Ruta 150 en licitación."
           slug="concepcion-tome"
           verified
+          extra={<MapLink route="401">Ver la 401 Tomé Alto en el mapa →</MapLink>}
         />
         <ServiceRow
           code="4 op."
@@ -50,6 +55,11 @@ export default function RecorridosInterurbanos() {
           notes="Troncal privado con 4 operadores (Delsal, Nueva Libertadores, Biocosta, Trinidad). El MTT reconoce que no puede obligar a aumentar frecuencias. Desde 2025 hay capas subsidiadas (zona norte oct-2025, Rahuil, Poñén-Roa, nocturno)."
           slug="concepcion-florida"
           verified
+          extra={
+            <MapLink terminal="osm-way-114474600">
+              Terminal Camilo Henríquez en el mapa →
+            </MapLink>
+          }
         />
         <ServiceRow
           code="—"
@@ -73,10 +83,11 @@ export default function RecorridosInterurbanos() {
           de validar trazado, frecuencia o paraderos en código.
         </p>
         <p>
-          Verificamos esto en la fuente: una consulta SQL al feed Gran
-          Concepción candidate no devuelve coincidencias para "201",
-          "Santa Juana", "Tomé", "Florida" ni "Yumbel". Los stops mencionados
-          como "Tomé" en el dataset son nombres de calles, no servicios.
+          Lo confirma una revisión directa del feed GTFS Gran Concepción
+          publicado por la Subsecretaría: no contiene servicios con códigos
+          "201", "Santa Juana", "Tomé", "Florida" ni "Yumbel". Los stops del
+          dataset que mencionan "Tomé" son nombres de calles dentro del área
+          urbana, no servicios interurbanos hacia esa comuna.
         </p>
       </Section>
 
@@ -125,52 +136,6 @@ export default function RecorridosInterurbanos() {
           <li>OSM Overpass — relaciones <code className="font-mono">route=bus</code> taggeadas con el ID del servicio cuando existen.</li>
         </ul>
       </Section>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-2">
-      <h2 className="mt-4 text-base font-semibold tracking-tight">{title}</h2>
-      <div className="space-y-2">{children}</div>
-    </section>
-  );
-}
-
-function ServiceRow({
-  code,
-  title,
-  notes,
-  slug,
-  verified,
-}: {
-  code: string;
-  title: string;
-  notes: string;
-  slug?: string;
-  verified?: boolean;
-}) {
-  return (
-    <div className="rounded-md border bg-card p-3">
-      <div className="flex items-baseline gap-2">
-        <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{code}</span>
-        <span className="text-[14px] font-medium">{title}</span>
-        {verified && (
-          <span className="ml-auto rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
-            verificado
-          </span>
-        )}
-      </div>
-      <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{notes}</p>
-      {slug && (
-        <a
-          href={`/wiki/${slug}`}
-          className="mt-1.5 inline-block text-[11px] underline underline-offset-2 hover:text-foreground"
-        >
-          Ver artículo →
-        </a>
-      )}
     </div>
   );
 }
