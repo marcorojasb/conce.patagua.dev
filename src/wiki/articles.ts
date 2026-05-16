@@ -125,6 +125,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/concepcion-yumbel')),
   },
   {
+    slug: 'concepcion-coronel-lota',
+    title: 'Concepción ↔ Coronel ↔ Lota · corredor sur',
+    summary:
+      'Espina dorsal sur del Gran Concepción por la Ruta 160 ("Camino a Lota"). Régimen especial bajo Resolución Exenta 457 MTT (2012-2013, "aproximada a un PE") sin operador único ni polinomio público — el PE Coronel-Lota formal está en bases en Contraloría desde jul-2025, proyecta 80 buses nuevos. Operadores parciales identificados (Las Galaxias, Buses J. Ewert). BusPay (Consorcio Buspay) cubre Coronel y Lota desde Q3 2026. Coexiste con la Línea 2 del Biotrén (Concepción-Coronel, 2009) y con el electrocorredor MOP Ruta 160 (UF 4.414.000, Electro-Cointer oferta única 5-nov-2025, puesta en servicio 2031-2032). Corredor más conflictivo del Biobío por la transición post-carbón (Enacar 14-abr-1997) y tarifa históricamente disputada.',
+    section: 'interurbanos',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/concepcion-coronel-lota')),
+  },
+  {
     slug: 'biotren-extensiones',
     title: 'Biotrén y sus extensiones',
     summary:
