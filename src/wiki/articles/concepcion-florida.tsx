@@ -17,6 +17,7 @@ import {
   Timeline,
   VerifiedBanner,
 } from './_components';
+import { MapLink } from '@/wiki/map-link';
 
 export default function ConcepcionFlorida() {
   return (
@@ -131,6 +132,15 @@ export default function ConcepcionFlorida() {
           (incluyendo notas municipales de Florida) listan a Trinidad
           como cuarto operador del corredor rural ampliado.
         </p>
+        <p className="text-[12px]">
+          <MapLink terminal="osm-way-114474600">
+            Terminal Camilo Henríquez en el mapa →
+          </MapLink>
+          {' · '}
+          <MapLink terminal="osm-way-597586612">
+            Terminal Collao en el mapa →
+          </MapLink>
+        </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/07/27/transportes-no-puede-obligar-a-buses-a-florida-para-que-aumenten-su-frecuencia.html">
             Diario Concepción · 27-jul-2024 — Flota combinada de 40 buses
@@ -200,7 +210,11 @@ export default function ConcepcionFlorida() {
       <Section title="Servicios subsidiados que complementan el troncal">
         <p>
           A partir de 2025, en lugar de licitar un único reemplazo (como
-          la 201 Santa Juana), el MTT eligió{' '}
+          la{' '}
+          <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
+            201 Santa Juana
+          </a>
+          , primer caso licitado del Biobío en más de una década), el MTT eligió{' '}
           <strong>añadir capas subsidiadas</strong> al corredor, dejando
           el troncal Conce-Florida diurno en manos de los privados:
         </p>
@@ -408,7 +422,17 @@ export default function ConcepcionFlorida() {
             ['Cámaras de seguridad', 'MTT financia. Estado: comprometido jul-2024, no verificado en flota 2025.'],
             ['Contadores de pasajeros', 'No mencionado en el acuerdo (sí en Lota-Coronel).'],
             ['App Red Regional', 'Integración comprometida; el servicio no aparecía al cierre 2025.'],
-            ['Pago electrónico Buspay', 'NO está en el perímetro inicial (perímetro Gran Concepción + Santa Juana + Tomé).'],
+            [
+              'Pago electrónico Buspay',
+              <>
+                NO está en el perímetro inicial (perímetro Gran Concepción +
+                Santa Juana +{' '}
+                <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
+                  Tomé
+                </a>
+                {' '}— este último es el segundo perímetro de exclusión de la zona).
+              </>,
+            ],
           ]}
         />
         <Sources>

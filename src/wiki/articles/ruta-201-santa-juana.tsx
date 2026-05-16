@@ -4,18 +4,19 @@
 // Servicio inaugurado el 15-jul-2024 bajo la licitación DTPR ELC0007,
 // primera del Biobío en más de 10 años.
 
-import { KeyValueList, Section, SourceLink, Sources, Timeline } from './_components';
+import { KeyValueList, Section, SourceLink, Sources, Timeline, VerifiedBanner } from './_components';
+import { MapLink } from '@/wiki/map-link';
 
 export default function Ruta201SantaJuana() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
-      <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-[12px] text-emerald-900 dark:text-emerald-200">
+      <VerifiedBanner>
         <strong>Datos verificados con fuentes primarias.</strong> Licitación
         DTPR ELC0007, decreto MTT N°93/2023, comunicados oficiales y prensa
         regional 2023-2026. Algunos detalles operativos (tabla horaria
         completa, duración exacta del contrato) siguen pendientes — ver
         sección "Datos pendientes" al final.
-      </div>
+      </VerifiedBanner>
 
       <Section title="Resumen ejecutivo">
         <p>
@@ -130,8 +131,15 @@ export default function Ruta201SantaJuana() {
           Trazado urbano-rural confirmado por comunicado MTT del 16-jul-2024.
           La ruta cruza el río Biobío por el <strong>Puente Juan Pablo II</strong>{' '}
           (no por el Puente Llacolén, como podría asumirse). Usa la{' '}
-          <strong>Ruta de la Madera</strong> (Ruta 160 oriente) en el tramo
+          <strong>Ruta de la Madera</strong> (Ruta 156) en el tramo
           Santa Juana – San Pedro de la Paz.
+        </p>
+        <p className="text-[12px]">
+          <MapLink route="201">Ver la 201 en el mapa →</MapLink>
+          {' · '}
+          <MapLink terminal="osm-way-135488014">
+            Estación Intermodal Concepción →
+          </MapLink>
         </p>
         <div className="rounded-md border bg-card p-3">
           <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -139,7 +147,7 @@ export default function Ruta201SantaJuana() {
           </div>
           <p className="mt-1 text-[12px] leading-snug">
             <strong>Santa Juana centro</strong> (Pedro de Valdivia / Irarrázaval /
-            Yungay) → José Cardenio Avello → Lautaro → <strong>Ruta 160 (Ruta de
+            Yungay) → José Cardenio Avello → Lautaro → <strong>Ruta 156 (Ruta de
             la Madera)</strong> → San Pedro Viejo → Pedro Aguirre Cerda (San
             Pedro de la Paz) → <strong>Puente Juan Pablo II</strong> → Vega
             Monumental → Av. Manuel Rodríguez → Serrano → Bulnes → Castellón

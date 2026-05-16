@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Github, MapPin, Moon, PanelLeft, Search, Sun } from 'lucide-react';
+import { BookOpen, Github, MapPin, Moon, PanelLeft, Search, Sun } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
@@ -15,6 +15,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import { ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS } from '@/data/routes';
+import { ARTICLES } from '@/wiki/articles';
 import type { Theme } from '@/types/transport';
 
 interface HeaderProps {
@@ -62,6 +63,17 @@ export function Header({
     if (!q) return STOPS.slice(0, 6);
     return STOPS.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 10);
   }, [q]);
+  const wikiMatches = useMemo(
+    () =>
+      ARTICLES.filter(
+        (a) =>
+          !q ||
+          a.title.toLowerCase().includes(q) ||
+          a.summary.toLowerCase().includes(q) ||
+          a.slug.toLowerCase().includes(q),
+      ),
+    [q],
+  );
 
   const BrandIcon = ROUTE_TYPES.micro.Icon;
 
@@ -160,9 +172,11 @@ export function Header({
           placeholder="Buscar recorridos, paraderos…"
         />
         <CommandList>
-          {routeMatches.length === 0 && stopMatches.length === 0 && (
-            <CommandEmpty>Sin resultados.</CommandEmpty>
-          )}
+          {routeMatches.length === 0 &&
+            stopMatches.length === 0 &&
+            wikiMatches.length === 0 && (
+              <CommandEmpty>Sin resultados.</CommandEmpty>
+            )}
           {routeMatches.length > 0 && (
             <CommandGroup heading="Recorridos">
               {routeMatches.map((r) => {
@@ -211,6 +225,27 @@ export function Header({
                       .filter(Boolean)
                       .join(' · ')}
                   </CommandShortcut>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+          {wikiMatches.length > 0 && (
+            <CommandGroup heading="Wiki">
+              {wikiMatches.map((a) => (
+                <CommandItem
+                  key={a.slug}
+                  value={`${a.title} ${a.slug}`}
+                  onSelect={() => {
+                    setCommandOpen(false);
+                    setQuery('');
+                    // Navegación interna al wiki: usar mismo patrón que
+                    // WikiLinkButton (anchor href) para que respete history
+                    // y service worker / preloading del browser.
+                    window.location.assign(`/wiki/${a.slug}`);
+                  }}
+                >
+                  <BookOpen className="h-[15px] w-[15px] text-muted-foreground" />
+                  <span className="font-medium">{a.title}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

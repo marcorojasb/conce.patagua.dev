@@ -1,6 +1,8 @@
 // Sobre este wiki — propósito, alcance, modelo editorial y la visión
 // de mediano plazo (centro de verdad regional).
 
+import { Section } from './_components';
+
 export default function SobreEsteWiki() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -90,14 +92,5 @@ export default function SobreEsteWiki() {
         </p>
       </Section>
     </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-2">
-      <h2 className="mt-4 text-base font-semibold tracking-tight">{title}</h2>
-      <div className="space-y-2">{children}</div>
-    </section>
   );
 }

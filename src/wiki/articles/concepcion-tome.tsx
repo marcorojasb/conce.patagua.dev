@@ -116,8 +116,8 @@ export default function ConcepcionTome() {
             <code className="font-mono">−36.8191, −73.0620</code>).
           </p>
           <p className="mt-2 text-[12px]">
-            <MapLink corridor="concepcion-tome">
-              Ver el pin del corredor en el mapa
+            <MapLink route="401">
+              Ver la 401 Tomé Alto en el mapa →
             </MapLink>
           </p>
         </div>
@@ -702,7 +702,7 @@ export default function ConcepcionTome() {
               <tr>
                 <td className="px-3 py-2 font-medium">Eje vial</td>
                 <td className="px-3 py-2">Ruta 150 (costa norte)</td>
-                <td className="px-3 py-2">Ruta 160 / Ruta de la Madera (costa sur)</td>
+                <td className="px-3 py-2">Ruta 156 / Ruta de la Madera (costa sur)</td>
                 <td className="px-3 py-2">Ruta 148 + Ruta del Itata (sur-oriente)</td>
               </tr>
               <tr>
@@ -718,10 +718,10 @@ export default function ConcepcionTome() {
                 <td className="px-3 py-2">NO en perímetro inicial</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-medium">GTFS</td>
-                <td className="px-3 py-2">NO publicado (servicios 401/411/421 ausentes del feed urbano)</td>
-                <td className="px-3 py-2">NO publicado (ruta nativa del visor desde 2026)</td>
-                <td className="px-3 py-2">NO publicado</td>
+                <td className="px-3 py-2 font-medium">GTFS publicado</td>
+                <td className="px-3 py-2">No (operador no publica feed; servicios 401/411/421 ausentes del feed urbano)</td>
+                <td className="px-3 py-2">No (operador no publica feed). Trazado integrado nativamente al visor desde mayo 2026 vía digitalización OSM — ver artículo Ruta 201.</td>
+                <td className="px-3 py-2">No (operador no publica feed)</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Conexión Biotrén</td>
@@ -735,9 +735,25 @@ export default function ConcepcionTome() {
         <p className="text-[12px] text-muted-foreground">
           La hipótesis editorial: Tomé fue el <em>primer</em> ensayo
           regional del modelo "perímetro de exclusión + operador único
-          fusionado" — y, junto con Santa Juana, está en la primera ola de
-          modernización del transporte público metropolitano del Biobío.
-          Florida sigue siendo el caso pendiente.
+          fusionado" — y, junto con{' '}
+          <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
+            Santa Juana
+          </a>
+          , está en la primera ola de modernización del transporte público
+          metropolitano del Biobío.{' '}
+          <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
+            Florida
+          </a>
+          {' '}sigue siendo el caso pendiente. Para el panorama general del
+          conjunto de corredores interurbanos, ver el{' '}
+          <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
+            índice de recorridos interurbanos
+          </a>
+          {' '}y la nota{' '}
+          <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">
+            sobre este wiki
+          </a>
+          .
         </p>
       </Section>
 
