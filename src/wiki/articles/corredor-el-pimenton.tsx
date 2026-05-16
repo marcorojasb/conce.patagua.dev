@@ -588,8 +588,8 @@ export default function CorredorElPimenton() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Pago electrónico</td>
-                <td className="px-3 py-2">Incluido en perímetro Buspay 2026</td>
-                <td className="px-3 py-2">Florida + Yumbel <strong>no</strong> están en el perímetro inicial Buspay</td>
+                <td className="px-3 py-2">Incluido en perímetro BusPay 2026</td>
+                <td className="px-3 py-2">Florida + Yumbel <strong>no</strong> están en el perímetro inicial BusPay</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">App Red Movilidad</td>
@@ -797,7 +797,7 @@ export default function CorredorElPimenton() {
           <li>Frecuencia documentada Concepción-Yumbel por operador.</li>
           <li>Cifras de demanda diaria/anual del corredor (no hay encuesta O/D pública 2020+).</li>
           <li>Kilometraje exacto y pendiente máxima de la cuesta entre Concepción y Florida.</li>
-          <li>Si Buspay incluirá eventualmente Florida y Yumbel en alguna fase posterior.</li>
+          <li>Si BusPay incluirá eventualmente Florida y Yumbel en alguna fase posterior.</li>
           <li>Confirmar o refutar el topónimo "El Pimentón" con fuente IGM, municipal o comunitaria.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">

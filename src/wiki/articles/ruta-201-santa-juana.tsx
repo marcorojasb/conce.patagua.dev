@@ -208,7 +208,10 @@ export default function Ruta201SantaJuana() {
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto</td>
                 <td className="px-3 py-2 font-mono">$1.000</td>
-                <td className="px-3 py-2 text-muted-foreground">Antes con operador previo: $1.700</td>
+                <td className="px-3 py-2 text-muted-foreground">
+                  Vigente desde inicio del servicio (15-jul-2024). Antes con operador previo: $1.700.
+                  {/* PENDIENTE: confirmar si tuvo reajuste 2025-2026 */}
+                </td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Estudiante TNE</td>
@@ -374,7 +377,7 @@ export default function Ruta201SantaJuana() {
           <li>Duración exacta del contrato de concesión (decreto N°93/2023 íntegro).</li>
           <li>RUT de Sociedad de Transporte de Pasajeros Santa Juana SpA.</li>
           <li>Tracking del cumplimiento del compromiso de espacio entre asientos.</li>
-          <li>GTFS público del servicio — al publicarse, se incorpora al visor principal.</li>
+          <li><a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS</a> público del servicio — al publicarse, se incorpora al visor principal.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
           Para cerrar estos huecos: solicitar Decreto N°93/2023 al Diario

@@ -50,7 +50,7 @@ export default function ConcepcionFlorida() {
             corredor de El Pimentón
           </a>
           . Pieza de movilidad <em>no</em> integrada al GTFS Gran
-          Concepción ni al sistema Buspay 2026.
+          Concepción ni al sistema BusPay 2026.
         </p>
       </Section>
 
@@ -309,7 +309,13 @@ export default function ConcepcionFlorida() {
             ],
             [
               'GTFS',
-              'No publicado para ninguno de los operadores. El servicio no aparece en el feed GTFS Gran Concepción.',
+              <>
+                No publicado para ninguno de los operadores. El servicio no aparece en el{' '}
+                <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+                  feed GTFS Gran Concepción
+                </a>
+                .
+              </>,
             ],
           ]}
         />
@@ -423,7 +429,7 @@ export default function ConcepcionFlorida() {
             ['Contadores de pasajeros', 'No mencionado en el acuerdo (sí en Lota-Coronel).'],
             ['App Red Regional', 'Integración comprometida; el servicio no aparecía al cierre 2025.'],
             [
-              'Pago electrónico Buspay',
+              'Pago electrónico BusPay',
               <>
                 NO está en el perímetro inicial (perímetro Gran Concepción +
                 Santa Juana +{' '}

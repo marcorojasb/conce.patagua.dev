@@ -136,10 +136,10 @@ export default function PerimetroExclusionGranConcepcion2024() {
                 <td className="px-3 py-2">Decreto jul-2016 · operativo 10-mar-2022</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-medium">PE Coronel-Lota</td>
+                <td className="px-3 py-2 font-medium">Regulación especial Coronel-Lota</td>
                 <td className="px-3 py-2">Coronel y Lota</td>
                 <td className="px-3 py-2">Operadores locales (Las Galaxias, Buses J. Ewert, etc.)</td>
-                <td className="px-3 py-2">Implementado 2013 — históricamente subfinanciado</td>
+                <td className="px-3 py-2">Resolución Exenta 457 MTT (2012-2013) — equivalente parcial a un PE, históricamente subfinanciado. El decreto formal de PE Coronel-Lota está en proceso de licitación (bases en Contraloría a jul-2025) y aún no vigente.</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Licitación DTPR ELC0007</td>
@@ -434,7 +434,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
               name: 'Las Galaxias',
               routes: 'Línea 80 · UN80',
               terminal: 'Concepción',
-              notes: 'Operador grande del corredor sur. Misma razón social tiene presencia también en PE Coronel-Lota.',
+              notes: 'Operador grande del corredor sur. Misma razón social tiene presencia también en la regulación especial Coronel-Lota (Res. Ex. 457 MTT, 2012-2013).',
               source: { href: 'https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n', label: 'Wikipedia' },
             },
             {
@@ -615,7 +615,11 @@ export default function PerimetroExclusionGranConcepcion2024() {
           Para los efectos del visor de{' '}
           <code className="font-mono">conce.patagua.dev</code>, este
           perímetro <strong>define el universo de líneas urbanas</strong>{' '}
-          que aparecen en el feed GTFS Gran Concepción:
+          que aparecen en el{' '}
+          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+            feed GTFS Gran Concepción
+          </a>
+          :
         </p>
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">

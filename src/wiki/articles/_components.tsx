@@ -163,7 +163,7 @@ export function OperatorTable({ rows }: { rows: OperatorRow[] }) {
 export interface ServiceRowProps {
   code: string;
   title: string;
-  notes: string;
+  notes: ReactNode;
   slug?: string;
   verified?: boolean;
   /** Extra slot a la derecha del link "Ver artículo →" (ej. un <MapLink>). */
