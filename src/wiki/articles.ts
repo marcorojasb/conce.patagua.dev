@@ -62,6 +62,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/electrocorredores-mop-biobio')),
   },
   {
+    slug: 'subsidio-ley-20378',
+    title: 'Subsidio Nacional al Transporte Público (Ley 20.378)',
+    summary:
+      'Marco financiero que sostiene económicamente al transporte público chileno fuera de Santiago. Ley 20.378 (5-sep-2009) creada como "ley espejo" del subsidio implícito al Transantiago. Prorrogada en 2019 (Ley 21.175), 2022 (Ley 21.439) y nuevamente en 2024-2025. Componentes: subsidio nacional al transporte público, reembolso TNE, subsidios a zonas aisladas (art. 4°), conectividad marítima/aérea, renovación de flotas. En el Biobío financia el PE Gran Concepción 2024, PE Tomé, licitación ELC0007 Santa Juana, capas subsidiadas Florida (zona norte, Rahuil, Poñén-Roa, nocturno) y la TNE regional. Es el dinero detrás de cada perímetro, licitación y subsidio rural del wiki.',
+    section: 'estructural',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/subsidio-ley-20378')),
+  },
+  {
     slug: 'recorridos-interurbanos',
     title: 'Recorridos interurbanos del Gran Concepción',
     summary:
