@@ -17,6 +17,15 @@ export interface ArticleMeta {
 
 export const ARTICLES: ArticleMeta[] = [
   {
+    slug: 'seremitt-dtpr-biobio',
+    title: 'SEREMITT Biobío y la DTPR',
+    summary:
+      'Ficha institucional de la autoridad regional de transportes. SEREMITT Biobío (instancia política, encabezada por el SEREMI Patricio Fierro desde 10-ene-2025, sucesor de Héctor Silva) y DTPR Biobío (brazo técnico de la Subsecretaría de Transportes, opera dprbiobio.dpr.gob.cl). Diferencia con DTPM (Santiago) y 3CV. Marco legal: DFL 343, Leyes 18.059, 18.696, 20.378, 19.880, 20.285. Cartera regional 2024-2026: PE Gran Concepción, PE Tomé, PE Coronel-Lota, ELC0007 Santa Juana, BusPay, Electrocorredores MOP, subsidios Florida. Es el "marco institucional" detrás de cada artículo del wiki.',
+    section: 'estructural',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/seremitt-dtpr-biobio')),
+  },
+  {
     slug: 'perimetro-exclusion-gran-concepcion-2024',
     title: 'Perímetro de Exclusión del Gran Concepción 2024',
     summary:
