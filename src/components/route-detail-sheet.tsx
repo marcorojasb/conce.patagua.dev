@@ -62,7 +62,7 @@ export function RouteDetailSheet({
         className="w-full gap-4 sm:max-w-md sm:w-[420px]"
       >
         <SheetHeader>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white"
               style={{ background: route.color }}
@@ -78,6 +78,17 @@ export function RouteDetailSheet({
             <span className="text-xs text-muted-foreground">
               {ROUTE_TYPES[route.type].label}
             </span>
+            {route.network === 'Interurbano Biobío' && (
+              // Badge sutil que distingue al 201 (y futuros licitados rurales)
+              // del corredor urbano GTFS. Misma forma que el chip de código
+              // pero outline, sin saturar la cabecera.
+              <Badge
+                variant="outline"
+                className="border-teal-600/40 bg-teal-500/10 text-[10px] font-normal text-teal-900 dark:text-teal-200"
+              >
+                Interurbano · licitado DTPR
+              </Badge>
+            )}
           </div>
           <SheetTitle className="pr-8">{route.name}</SheetTitle>
           <SheetDescription>{route.operator}</SheetDescription>
@@ -227,6 +238,17 @@ export function RouteDetailSheet({
 
           <TabsContent value="recorrido" className="min-h-0 flex-1">
             <ScrollArea className="h-full pr-2">
+              {route.digitized && (
+                // Nota explícita: este trazado se digitalizó a partir de una
+                // descripción oficial y waypoints OSM citados; no es un
+                // shape GTFS verificado. La ocultamos para los urbanos y
+                // Biotrén porque sí vienen de GTFS / OSM directos.
+                <div className="mb-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] leading-snug text-amber-900 dark:text-amber-200">
+                  Trazado aproximado a partir de descripción oficial — no es
+                  shape GTFS verificado. Vértices reconstruidos por
+                  Dijkstra-por-corredor sobre el grafo highway= de OSM.
+                </div>
+              )}
               {hasStops ? (
                 <ol className="relative">
                   {route.stops.map((s, i) => (

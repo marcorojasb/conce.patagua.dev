@@ -27,9 +27,14 @@ import {
 } from '@/data/biotren.generated';
 import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generated';
 import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
+import {
+  INTERURBAN_BUS_ROUTES,
+  INTERURBAN_PARADEROS,
+} from '@/data/interurban-routes.generated';
 import type {
   BusRoute,
   MapCenter,
+  Paradero,
   Route,
   RouteType,
   RouteTypeId,
@@ -101,12 +106,27 @@ const BIOTREN_ROUTES: Route[] = [
   },
 ];
 
-const PARADERO_BY_ID = new Map(GTFS_STOPS.map((p) => [p.id, p]));
+// Combinamos paraderos GTFS con los digitalizados de rutas interurbanas
+// (hoy: el corredor 201). Si más adelante el GTFS oficial incluye estos
+// paraderos, el dataset interurbano queda vacío y este Map vuelve a ser
+// trivialmente igual a `GTFS_STOPS`.
+const PARADERO_BY_ID = new Map<string, Paradero>([
+  ...GTFS_STOPS.map((p) => [p.id, p] as const),
+  ...INTERURBAN_PARADEROS.map((p) => [p.id, p] as const),
+]);
 
-function busRouteToRoute(b: BusRoute): Route {
+// Buses interurbanos (201 Santa Juana, etc.) — pequeñísimos en bytes vs.
+// los 169 GTFS, así que los cargamos eagerly y aparecen junto con Biotrén
+// en el primer paint. La sheet de detalle, la búsqueda y el simulador los
+// tratan exactamente igual que un urbano.
+const INTERURBAN_ROUTES: Route[] = INTERURBAN_BUS_ROUTES.map((b) =>
+  busRouteToRoute(b, PARADERO_BY_ID),
+);
+
+function busRouteToRoute(b: BusRoute, paraderoIndex: Map<string, Paradero>): Route {
   const stops: Stop[] = [];
   for (const id of b.stopIds) {
-    const p = PARADERO_BY_ID.get(id);
+    const p = paraderoIndex.get(id);
     if (!p) continue;
     stops.push({
       id: p.id,
@@ -116,6 +136,9 @@ function busRouteToRoute(b: BusRoute): Route {
       ref: p.ref,
     });
   }
+  // Las rutas interurbanas (network !== GTFS) viven fuera del feed; al no
+  // tener stop_times.txt no podemos prometer una frecuencia programada.
+  const isGtfs = b.source === 'gtfs';
   return {
     id: b.id,
     code: b.ref,
@@ -123,21 +146,25 @@ function busRouteToRoute(b: BusRoute): Route {
     type: 'micro',
     color: b.colour ?? operatorColor(b.operator, b.id),
     operator: b.operator ?? 'Operador no registrado (GTFS)',
-    headway: 'Programado GTFS',
-    hours: 'Según calendario GTFS',
+    headway: isGtfs ? 'Programado GTFS' : 'Frecuencia operativa publicada por operador',
+    hours: isGtfs ? 'Según calendario GTFS' : 'Según horario publicado por operador',
     frequencyByDay: {},
     stops,
     path: b.path,
+    network: b.network,
+    digitized: b.digitized,
   };
 }
 
-// Mutable arrays/Maps: start with Biotrén; micros are pushed in once the
-// lazy chunk resolves. Same array identity throughout — consumers that
-// hold a reference see the new entries; the version counter + subscription
-// model below tells React to re-render.
-export const ROUTES: Route[] = [...BIOTREN_ROUTES];
+// Mutable arrays/Maps: arrancamos con Biotrén + interurbanos (estos dos
+// son chicos y se prerenderean eagerly). Los 169 micros GTFS llegan después
+// vía dynamic import. La identidad del array NO cambia — los consumidores
+// que mantienen una referencia ven los nuevos elementos cuando aparecen;
+// el contador de versión + subscripción debajo dispara los re-renders.
+const SEED_ROUTES: Route[] = [...BIOTREN_ROUTES, ...INTERURBAN_ROUTES];
+export const ROUTES: Route[] = [...SEED_ROUTES];
 export const ROUTES_BY_ID = new Map<string, Route>(
-  BIOTREN_ROUTES.map((r) => [r.id, r]),
+  SEED_ROUTES.map((r) => [r.id, r]),
 );
 
 function buildStopIndex(routes: Route[]): StopWithRoutes[] {
@@ -157,9 +184,14 @@ function buildStopIndex(routes: Route[]): StopWithRoutes[] {
 
 export const STOPS: StopWithRoutes[] = buildStopIndex(ROUTES);
 
-// Biotrén route ids are the only ones visible by default — the urban micros
-// would clutter the map. Users opt in via the sidebar.
-export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = BIOTREN_ROUTES.map((r) => r.id);
+// Visibles por defecto: Biotrén + interurbanos (servicios licitados que
+// el usuario debería ver desde el primer paint). Los 169 micros del GTFS
+// urbano siguen siendo opt-in via sidebar — saturan el mapa si todos
+// aparecieran prendidos.
+export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = [
+  ...BIOTREN_ROUTES.map((r) => r.id),
+  ...INTERURBAN_ROUTES.map((r) => r.id),
+];
 
 // Tiny subscription store: bump a counter and notify so consumers
 // re-render the moment micros land. (Not using useSyncExternalStore to
@@ -210,7 +242,9 @@ function appendMicros(routes: Route[]): void {
 function startMicroLoad(): void {
   void import('@/data/gtfs-bus-routes.generated')
     .then((mod) => {
-      const micros = mod.GTFS_BUS_ROUTES.map(busRouteToRoute);
+      const micros = mod.GTFS_BUS_ROUTES.map((b) =>
+        busRouteToRoute(b, PARADERO_BY_ID),
+      );
       appendMicros(micros);
     })
     .catch((err) => {

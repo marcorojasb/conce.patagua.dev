@@ -48,6 +48,16 @@ export interface Route {
   frequencyByDay: Record<string, string>;
   stops: Stop[];
   path: LatLngTuple[];
+  /**
+   * Etiqueta de red de servicio (ej.: "GTFS Gran Concepción",
+   * "Interurbano Biobío"). Sirve para diferenciar urbanos del 201 etc.
+   */
+  network?: string;
+  /**
+   * Si el trazado proviene de una descripción digitalizada y no de un
+   * shape GTFS verificado. Bubble-up desde `BusRoute.digitized`.
+   */
+  digitized?: boolean;
 }
 
 export interface MapCenter {
@@ -134,6 +144,13 @@ export interface BusRoute {
   path: LatLngTuple[];
   /** Ordered paradero ids matched or loaded for this route at build time. */
   stopIds: string[];
+  /**
+   * Marca rutas cuyo trazado fue digitalizado manualmente desde una
+   * descripción oficial — no es un shape GTFS ni una relación route=bus
+   * verificada. La UI usa esto para añadir una nota explícita
+   * "Trazado aproximado, no oficial" en la sheet de detalle.
+   */
+  digitized?: boolean;
 }
 
 export type PoiCategory = 'hospital' | 'university' | 'college' | 'mall';
