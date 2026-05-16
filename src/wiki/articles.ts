@@ -125,6 +125,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/biotren-extensiones')),
   },
   {
+    slug: 'taxis-colectivos-gran-concepcion',
+    title: 'Taxis colectivos del Gran Concepción',
+    summary:
+      'El otro modo urbano masivo del Gran Concepción, ausente del visor y poco documentado. Vehículos de hasta 6 pasajeros operando en líneas fijas con tarifa por persona, regulados por el DS 212/1992 del MTT y por la Ley 20.474 (padrón nacional cerrado desde 2011). Operadores fragmentados (cooperativas y propietarios individuales agrupados por línea), tarifa variable por línea autorizada por la SEREMITT. Quedan fuera de BusPay 2026 y del feed GTFS Gran Concepción — el visor no los muestra. Ejes troncales en Talcahuano, Hualpén, Chiguayante, San Pedro, barrio universitario y Collao / Nonguén.',
+    section: 'urbanos',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/taxis-colectivos-gran-concepcion')),
+  },
+  {
     slug: 'gtfs-gran-concepcion',
     title: 'GTFS Gran Concepción',
     summary:
