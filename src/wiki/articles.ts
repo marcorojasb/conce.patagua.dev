@@ -134,6 +134,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/gtfs-gran-concepcion')),
   },
   {
+    slug: 'openstreetmap-fuente-visor',
+    title: 'OpenStreetMap como fuente del visor',
+    summary:
+      'Ficha metodológica de la segunda fuente estructural del visor, complementaria del GTFS Gran Concepción. OSM aporta todo lo que el feed urbano no cubre: el Biotrén (route_master 6857223 L1 + 6857222 L2 verificadas vía Overpass, 26 estaciones), los servicios interurbanos sin GTFS (201 Santa Juana, 401/411/421 Tomé) digitalizados con waypoints OSM citados + corridor-Dijkstra, paraderos (highway=bus_stop), terminales, POIs, ciclovías, áreas verdes, escuelas y el basemap CARTO. Licencia ODbL 1.0 (atribución + share-alike), pipeline scripts/fetch-*.ts → src/data/*.generated.ts → Leaflet. Documenta queries Overpass concretas, mirrors usados (kumi.systems / overpass-api.de / overpass.osm.ch), simplificación RDP a 5e-5 grados, y cómo verificar / corregir OSM para el Biobío.',
+    section: 'fuentes',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/openstreetmap-fuente-visor')),
+  },
+  {
     slug: 'sobre-este-wiki',
     title: 'Sobre este wiki',
     summary:
