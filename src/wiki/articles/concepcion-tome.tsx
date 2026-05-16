@@ -1,16 +1,20 @@
-// Concepción ↔ Tomé — corredor norte del Gran Concepción.
+// Concepción ↔ Tomé — ficha OPERACIONAL del corredor norte del Gran
+// Concepción.
 //
-// Particularidad clave del corredor: el tramo Concepción ↔ Penco ↔ Lirquén
-// está cubierto por el GTFS urbano (líneas 17M, 30B/C/E, 31F, 57Y, 62H que
-// el visor sí muestra). El tramo verdaderamente interurbano —Lirquén → Tomé
-// → Dichato— lo opera una empresa única, Transportes Tomé SpA, bajo el
-// segundo perímetro de exclusión metropolitano (decreto MTT julio 2016,
-// operativo marzo 2022). Esos servicios 401/411/421 NO están en el feed
-// GTFS Gran Concepción.
+// División editorial con `perimetro-exclusion-tome.tsx`:
+//   - Aquí vive la OPERACIÓN: trazado calle a calle, paraderos,
+//     frecuencias observadas, refuerzos may-2025, contexto industrial
+//     (Bellavista Oveja Tomé), demanda y población, intermodalidad
+//     observada (Biotrén, terminales, BusPay desde la perspectiva del
+//     pasajero), issues operacionales (congestión, estacionalidad).
+//   - El RÉGIMEN regulatorio (decreto MTT, marco legal, tarifa con
+//     polinomio, operador adjudicado, BusPay institucional,
+//     comparación con PE Gran Concepción, sanciones DTPR) vive en
+//     `perimetro-exclusion-tome.tsx`.
+// Cualquier dato regulatorio aquí debe ser cross-link a esa ficha.
 
 import {
   KeyValueList,
-  OperatorTable,
   PendingBanner,
   Section,
   SourceLink,
@@ -25,14 +29,20 @@ export default function ConcepcionTome() {
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
         <strong>Verificado parcialmente con fuentes primarias.</strong>{' '}
-        Existencia y configuración del perímetro de exclusión (decreto MTT
-        julio 2016, operativo 10-mar-2022), operador único{' '}
-        <em>Transportes Tomé</em>, códigos 401/411/421, tarifa de partida
-        $750, flota declarada de 71 buses, terminales, ampliaciones 2025 e
-        inversión MOP en Ruta 150: todo con fuente. <strong>Pendientes</strong>:
-        razón social y RUT exactos de Transportes Tomé SpA, decreto exacto
-        de adjudicación, tabla horaria completa. Tarifa adulto vigente 2026:
-        $780 a Concepción / $830 a Dichato (alza 23-feb-2025).
+        Trazado calle a calle de los servicios 401 / 411 / 421, tiempos
+        de viaje, refuerzo de may-2025 (+11% en hora punta tarde),
+        contexto industrial de Bellavista Oveja Tomé y demanda
+        referencial del corredor: todo con fuente. La{' '}
+        <strong>ficha institucional</strong> del régimen (decreto MTT
+        jul-2016, operador adjudicado, tarifa $780 / $830 con polinomio
+        de ajuste vigente desde 23-feb-2025, BusPay como sistema de
+        recaudo) vive en{' '}
+        <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+          Perímetro de Exclusión de Tomé
+        </a>
+        . <strong>Pendientes operacionales</strong>: tabla horaria
+        oficial lun-vie / sáb / dom / festivos, composición de flota
+        verificada, refuerzos contractuales de temporada alta.
       </VerifiedBanner>
 
       <Section title="Resumen ejecutivo">
@@ -46,27 +56,35 @@ export default function ConcepcionTome() {
           ("Cruce Ruta 146 — Bypass Penco — Tomé").
         </p>
         <p>
-          Tiene una <strong>particularidad regulatoria</strong> que lo
-          distingue de los demás interurbanos del wiki:
+          Operacionalmente, el corredor se mueve sobre <strong>dos
+          regímenes regulatorios distintos</strong> según el tramo:
         </p>
         <ul className="ml-5 list-disc space-y-1">
           <li>
             <strong>Tramo urbano</strong> Concepción ↔ Penco ↔ Lirquén:
-            cubierto por el <em>Perímetro de Exclusión del Gran Concepción</em>{' '}
-            (vigente 1-ene-2024). Las líneas 17M, 30B/C/E, 31F, 57Y, 62H del
-            GTFS urbano llegan hasta este tramo y aparecen en el visor.
+            cubierto por servicios del{' '}
+            <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
+              Perímetro de Exclusión del Gran Concepción
+            </a>
+            . Las líneas 17M, 30B/C/E, 31F, 57Y, 62H del GTFS urbano
+            llegan hasta este tramo y aparecen en el visor (tarifa
+            $580).
           </li>
           <li>
-            <strong>Tramo interurbano</strong> Concepción ↔ Tomé ↔ Dichato:
-            cubierto por el <em>Perímetro de Exclusión de Tomé</em>{' '}
-            (segundo perímetro creado en la zona, por decreto del ministro
-            Andrés Gómez-Lobo en julio 2016, operativo desde el 10 de marzo
-            de 2022). Servicios <strong>401, 411 y 421</strong>, operador
-            único <strong>Transportes Tomé</strong>. NO están en el{' '}
+            <strong>Tramo interurbano</strong> Concepción ↔ Tomé ↔
+            Dichato: cubierto por servicios <strong>401, 411 y 421</strong>{' '}
+            del{' '}
+            <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+              Perímetro de Exclusión de Tomé
+            </a>
+            , operados por Transportes Tomé. Tarifas vigentes:
+            <strong> $780</strong> a Tomé / <strong>$830</strong> a
+            Dichato (desde 23-feb-2025). Estos servicios{' '}
+            <strong>no están</strong> en el{' '}
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               feed GTFS Gran Concepción
             </a>
-            {' '}y por eso no aparecen en el visor.
+            .
           </li>
         </ul>
         <p>
@@ -74,18 +92,17 @@ export default function ConcepcionTome() {
           <strong>corredor de transporte público Ruta 150</strong>{' '}
           (
           <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
-            electrocorredor
+            corredor MOP
           </a>
           ) cuya licitación recibió oferta única en
-          diciembre 2025 — adjudicación esperada en 1S 2026, obras desde
-          2029-2030, puesta en servicio proyectada 2032.
+          diciembre 2025 — puesta en servicio proyectada 2032.
         </p>
       </Section>
 
       <Section title="Cobertura del visor (qué sí, qué no)">
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">
-            ✅ Sí están en el visor (feed GTFS Gran Concepción)
+            Sí están en el visor (feed GTFS Gran Concepción)
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
             Servicios urbanos que cruzan Concepción → Penco/Lirquén y
@@ -107,14 +124,18 @@ export default function ConcepcionTome() {
         </div>
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">
-            ❌ NO están en el visor (servicios interurbanos Tomé)
+            NO están en el visor (servicios interurbanos Tomé)
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            Los servicios 401/411/421 que llegan a Tomé y Dichato operan
-            bajo el <em>Perímetro de Exclusión de Tomé</em> (no Gran
-            Concepción) y no comparten el feed GTFS. Una consulta directa
-            al dataset GTFS confirma que no hay ninguna ruta con esos
-            códigos en el feed urbano.
+            Los servicios 401 / 411 / 421 que llegan a Tomé y Dichato
+            operan bajo el Perímetro de Exclusión de Tomé y no
+            comparten el feed GTFS. Una consulta directa al dataset
+            GTFS confirma que no hay ninguna ruta con esos códigos en
+            el feed urbano. El por qué institucional vive en{' '}
+            <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+              PE Tomé · Hueco GTFS
+            </a>
+            .
           </p>
           <p className="mt-1 text-[12px]">
             Lo más cercano que el visor tiene del corredor es la{' '}
@@ -221,96 +242,18 @@ export default function ConcepcionTome() {
         </Sources>
       </Section>
 
-      <Section title="El Perímetro de Exclusión de Tomé (decreto 2016, operativo 2022)">
-        <p>
-          Es el <strong>segundo perímetro de exclusión</strong> creado en
-          la zona metropolitana de Concepción (el primero fue el Gran
-          Concepción 2002, recién reemplazado por uno nuevo el 1-ene-2024).
-          Cronología documentada:
-        </p>
-        <KeyValueList
-          items={[
-            ['Decreto creación', 'Julio 2016 · firmado por el ministro de Transportes Andrés Gómez-Lobo'],
-            ['Operación efectiva', '10 de marzo de 2022'],
-            ['Tarifa de partida (2022)', '$750 adulto · una reducción de $150 respecto a la previa ($900)'],
-            ['Tarifa Dichato (2022)', 'Cayó $200 respecto a la previa'],
-            ['Ámbito', 'Servicios colectivos Concepción ↔ Tomé y Concepción ↔ Dichato (vía Tomé)'],
-            ['Operador único', 'Transportes Tomé (formada por la fusión de operadores previos del corredor)'],
-            ['Demanda referencial', 'Cerca de 10.000 pasajeros/día declarados al inicio del perímetro'],
-            ['Frecuencias laborales (declaradas 2022)', 'Mejoradas respecto al régimen previo; horarios visibles en app Red Regional'],
-            ['Pago electrónico', 'Comprometido desde 2022, perímetro BusPay 2026 incluye Tomé'],
-          ]}
-        />
-        <p className="text-[12px] text-muted-foreground">
-          Los servicios <strong>401</strong> (Tomé Alto), <strong>411</strong>{' '}
-          (Dichato) y <strong>421</strong> (Av. Estadio · agregado en
-          noviembre 2022, sólo hora punta) componen la familia. Todos
-          parten desde el terminal en Angol / Av. Manuel Rodríguez en
-          Concepción.
-        </p>
-        <Sources>
-          <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
-            Wikipedia · Perímetro de Exclusión Gran Concepción (sección Tomé)
-          </SourceLink>
-          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
-            BioBioChile · 11-mar-2022 — Inicio perímetro Tomé, tarifa $750
-          </SourceLink>
-          <SourceLink href="https://es.wikipedia.org/wiki/Transporte_p%C3%BAblico_en_el_Gran_Concepci%C3%B3n">
-            Wikipedia · Transporte público Gran Concepción
-          </SourceLink>
-        </Sources>
-      </Section>
-
-      <Section title="Operador único: Transportes Tomé">
-        <OperatorTable
-          rows={[
-            {
-              name: 'Transportes Tomé',
-              routes: '401 · Tomé Alto · 411 · Dichato · 421 · Av. Estadio (hora punta)',
-              terminal: 'Terminal Angol / Av. Manuel Rodríguez (Concepción)',
-              notes: (
-                <>
-                  <p>
-                    Empresa formada en 2022 por la <strong>fusión de los
-                    operadores históricos del corredor</strong> (Buses
-                    Costa Azul S.A. y otras pequeñas razones sociales que
-                    operaban bajo la licitación 2002 caducada) para
-                    consolidar la operación dentro del perímetro de
-                    exclusión. Representante legal y portavoz público:{' '}
-                    <strong>Bernardo Montoya</strong>.
-                  </p>
-                  <p className="mt-1">
-                    <strong>Flota declarada:</strong> 71 buses al cierre
-                    de 2024 (Wikipedia cita esta cifra; sin confirmación
-                    independiente del padrón DTPR).
-                  </p>
-                  <p className="mt-1">
-                    <strong>Cita Montoya (mayo 2025):</strong> "ajustamos
-                    los tiempos porque antes había diferencias de 20 a 21
-                    minutos entre buses". Las mejoras de mayo 2025 se
-                    decidieron localmente, "evitando decisiones desde
-                    Santiago" — el operador trabajó con apoyo técnico
-                    regional y monitoreo en terreno.
-                  </p>
-                </>
-              ),
-              source: {
-                href: 'https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html',
-                label: 'Diario Concepción · 7-may-2025',
-              },
-            },
-          ]}
-        />
-        <PendingBanner>
-          <strong>Pendiente:</strong> razón social formal con tipo
-          societario (SpA / S.A. / Ltda.), RUT, N° RNTPP, decreto de
-          adjudicación del perímetro y plazo del contrato. Vía de cierre:
-          Ley de Transparencia a DTPR Biobío o consulta SII por nombre
-          comercial.
-        </PendingBanner>
-      </Section>
-
       <Section title="Servicios 401 / 411 / 421">
+        <p>
+          El operador único <strong>Transportes Tomé</strong> presta tres
+          servicios bajo el perímetro. El detalle institucional del
+          operador (origen societario por fusión de Buses Costa Azul
+          S.A. y otros, representante legal Bernardo Montoya, flota
+          declarada de 71 buses) vive en{' '}
+          <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+            PE Tomé · Operador único
+          </a>
+          .
+        </p>
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-[13px]">
             <thead>
@@ -327,15 +270,17 @@ export default function ConcepcionTome() {
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
                   Servicio troncal. ~64 paradas, ~82 min de viaje según
                   agregadores. Salida desde Concepción por Av. Chacabuco
-                  (ida) y retorno por Av. Los Carrera.
+                  (ida) y retorno por Av. Los Carrera. Operativo desde
+                  el inicio del perímetro (mar-2022).
                 </td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-mono font-medium">411</td>
                 <td className="px-3 py-2">Concepción ↔ Dichato (vía Tomé)</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
-                  Extensión norte hasta el balneario de Dichato. En mayo
-                  2025 se sumó una <strong>cuarta salida de Dichato</strong>{' '}
+                  Extensión norte hasta el balneario de Dichato. Tarifa
+                  diferenciada ($830 desde 23-feb-2025). En mayo 2025
+                  se sumó una <strong>cuarta salida desde Dichato</strong>{' '}
                   entre 06:00 y 07:00, con frecuencia cada 15 min.
                 </td>
               </tr>
@@ -400,32 +345,49 @@ export default function ConcepcionTome() {
         </Sources>
       </Section>
 
-      <Section title="Frecuencias y horarios (2025)">
+      <Section title="Frecuencias y refuerzo may-2025">
         <KeyValueList
           items={[
             [
               'Hora punta tarde Conce → Tomé (16:00-21:00)',
-              '70 salidas (subió 11% en mayo 2025, antes 63). Frecuencia cada 3-5 min',
+              '70 salidas (subió 11% en mayo 2025, antes 63). Frecuencia cada 3-5 min.',
             ],
             [
               'Hora punta tarde detallada',
-              '16:00-16:30: cada 4 min · desde 17:30: cada 3 min (declarado por Montoya)',
+              '16:00-16:30: cada 4 min · desde 17:30: cada 3 min (declarado por Bernardo Montoya).',
             ],
             [
               'Hora punta mañana Tomé → Conce',
-              'Servicio de inyección agregado mayo 2025: salida 06:20 desde sector Cementerio 2 (cubre Loma Larga y Villa El Mirador)',
+              'Servicio de inyección agregado mayo 2025: salida 06:20 desde sector Cementerio 2 (cubre Loma Larga y Villa El Mirador).',
             ],
             [
               'Dichato → Conce',
-              'Mayo 2025 sumó cuarta salida entre 06:00-07:00, cada 15 min',
+              'Mayo 2025 sumó cuarta salida entre 06:00-07:00, cada 15 min.',
             ],
-            ['Tarifa adulto base', '$750 al inicio del perímetro (mar-2022) → $780 vigente desde 23-feb-2025 (reajuste polinómico ratificado por el SEREMI Patricio Fierro)'],
-            ['Tarifa Dichato', '$830 vigente desde 23-feb-2025 (diferencial Tomé-Dichato por kilometraje adicional)'],
-            ['Información en tiempo real', 'App Red Regional de Movilidad — buscar "401" / "411"'],
+            ['Información en tiempo real', 'App Red Regional de Movilidad — buscar "401" / "411".'],
             ['GTFS público', 'NO publicado. El servicio no aparece en el feed GTFS Gran Concepción.'],
-            ['Pago electrónico', 'Comprometido — Tomé está dentro del perímetro BusPay 2026'],
           ]}
         />
+        <p className="text-[12px] text-muted-foreground">
+          <strong>Origen del refuerzo:</strong> Bernardo Montoya
+          (representante legal) reconoció en prensa que hasta abril 2025
+          había "diferencias de 20 a 21 minutos entre buses" en algunos
+          cortes de la hora punta. El ajuste se decidió localmente,
+          "evitando decisiones desde Santiago", como reacción a la
+          presión de la <strong>Unión Comunal de Juntas de Vecinos de
+          Tomé</strong> (presidente 2025: Gonzalo Reyes) — resuelta en
+          menos de 20 días desde la solicitud.
+        </p>
+        <p className="text-[12px] text-muted-foreground">
+          <strong>Tarifas adulto vigentes:</strong> $780 Concepción ↔
+          Tomé y $830 Concepción ↔ Dichato desde el reajuste polinómico
+          del 23-feb-2025. Detalle del polinomio y tarifas TNE / adulto
+          mayor en{' '}
+          <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+            PE Tomé · Tarifa y polinomio de ajuste
+          </a>
+          .
+        </p>
         <PendingBanner>
           <strong>Tabla horaria completa pendiente.</strong> Los horarios
           publicados son anuncios puntuales (mayo 2025, etc.). Falta la
@@ -434,17 +396,14 @@ export default function ConcepcionTome() {
           terminal Manuel Rodríguez cierra este hueco.
         </PendingBanner>
         <Sources>
+          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html">
+            Diario Concepción · 7-may-2025 — Refuerzo en hora punta
+          </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/08/en-11-aumentaron-las-salidas-de-buses-desde-concepcion-hacia-tome-en-horario-punta.html">
             Diario Concepción · 8-may-2025 — Salidas Conce→Tomé +11%
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2025/05/07/transporte-publico-refuerza-rutas-entre-tome-y-concepcion-con-mas-salidas-y-horarios-extendidos.html">
             TVU · 7-may-2025 — Refuerzo rutas Concepción-Tomé
-          </SourceLink>
-          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
-            BioBioChile · 11-mar-2022 — Tarifa inicial $750
-          </SourceLink>
-          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2025/02/17/gran-concepcion-pasaje-de-transporte-publico-registrara-alza-de-20-desde-el-proximo-domingo.shtml">
-            BioBioChile · 17-feb-2025 — Alza 23-feb-2025: Tomé-Concepción $780, Tomé-Dichato $830
           </SourceLink>
         </Sources>
       </Section>
@@ -462,30 +421,52 @@ export default function ConcepcionTome() {
                 con el tren — los servicios 401/411/421 hacen el trayecto
                 completo en bus. La <strong>extensión Biotrén a Penco /
                 Lirquén</strong> lleva años en estudio EFE y queda
-                tensionada con el electrocorredor MOP Ruta 150 que se
-                licita en paralelo. Ver artículo{' '}
-                <em>Biotrén y sus extensiones</em>.
+                tensionada con el corredor MOP Ruta 150. Ver{' '}
+                <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
+                  Biotrén · extensiones y proyectos
+                </a>
+                .
               </>,
             ],
             [
-              'Terminales de buses interurbanos en Concepción',
+              'Terminal en Concepción',
               <>
-                Terminal Manuel Rodríguez (Angol esquina M. Rodríguez) — base de Transportes Tomé. <strong>NO</strong> es Terminal Camilo Henríquez ni Collao.
+                <strong>Terminal Manuel Rodríguez</strong> (Angol esquina
+                M. Rodríguez) — base de Transportes Tomé. <strong>NO</strong>{' '}
+                es Terminal Camilo Henríquez ni Collao. Nodo OSM way
+                425356582 "Terminal de líneas a Tomé".
               </>,
             ],
             [
-              'GTFS urbano',
-              'Las micros urbanas 17M/30B/30C/30E/31F/57Y/62H sí aparecen en el visor y conectan los mismos puntos hasta Penco/Lirquén — útil para el tramo corto.',
+              'Taxis colectivos',
+              <>
+                En los extremos del corredor (centros de Penco, Lirquén,
+                Tomé y Dichato) la red local de{' '}
+                <a href="/wiki/taxis-colectivos-gran-concepcion" className="underline underline-offset-2">
+                  taxis colectivos
+                </a>
+                {' '}suele complementar la última milla. No hay
+                integración tarifaria con los servicios del PE Tomé.
+              </>,
+            ],
+            [
+              'GTFS urbano (visor)',
+              'Las micros urbanas 17M/30B/30C/30E/31F/57Y/62H sí aparecen en el visor y conectan los mismos puntos hasta Penco/Lirquén — útil para el tramo corto si el pasajero no necesita continuar a Tomé.',
             ],
             [
               'BusPay 2026',
               <>
-                Tomé está dentro del perímetro de exclusión inicial de{' '}
+                Desde el Q3 2026, marcha blanca de pago electrónico
+                contactless sobre la flota de Transportes Tomé.
+                Detalles del sistema en{' '}
                 <a href="/wiki/buspay" className="underline underline-offset-2">
                   BusPay
-                </a>{' '}
-                (junto con Gran Concepción y Santa Juana). Cronograma
-                alineado con la 201.
+                </a>
+                ; cobertura institucional sobre el perímetro en{' '}
+                <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+                  PE Tomé · Integración con BusPay
+                </a>
+                .
               </>,
             ],
           ]}
@@ -496,51 +477,6 @@ export default function ConcepcionTome() {
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
             Subtrans · Perímetro BusPay = Gran Concepción + Santa Juana + Tomé
-          </SourceLink>
-        </Sources>
-      </Section>
-
-      <Section title="Inversión MOP: el electrocorredor Ruta 150">
-        <p>
-          La Dirección General de Concesiones MOP impulsa un{' '}
-          <strong>corredor exclusivo de transporte público sobre la Ruta
-          150</strong>, parte del paquete de "electrocorredores" del Gran
-          Concepción (los primeros fuera de Santiago). Datos verificados:
-        </p>
-        <KeyValueList
-          items={[
-            ['Tramo', 'Rotonda Bonilla (Concepción) ↔ Enlace Penco — aprox. 8-9 km'],
-            ['Tipo de obra', 'Pista bidireccional exclusiva para transporte público + ciclovía + veredas a ambos lados + estaciones de alta capacidad'],
-            ['Inversión global (Ruta 150 + Autopista Conce-Talcahuano tramo II)', 'UF 4.431.000 ≈ USD 172 millones'],
-            ['Inversión paquete electrocorredores total', 'USD 250 millones (los tres: Ruta 150, Ruta 160, Conce-Talcahuano II)'],
-            ['Recepción de ofertas técnicas y económicas', '10 de diciembre de 2025 · oferta única del consorcio Electro Cointer II'],
-            ['Apertura oferta económica', '15 de enero de 2026'],
-            ['Adjudicación esperada', 'Primer semestre 2026'],
-            ['Inicio de obras (proyectado)', '2S 2029 — 1S 2030'],
-            ['Puesta en servicio (proyectada)', '2032'],
-            ['Plazo de concesión', '300 meses (25 años)'],
-            ['Buses', 'Eléctricos y diésel — SEREMI Patricio Fierro aclaró que el "electrocorredor" no implica flota 100% eléctrica'],
-          ]}
-        />
-        <p className="text-[12px] text-muted-foreground">
-          Importante: este corredor MOP llega hasta el <strong>Enlace Penco</strong> y
-          no continúa hasta Lirquén ni Tomé. La conectividad de Tomé con
-          Concepción seguirá dependiendo del bypass urbano de Ruta 150 sin
-          pista exclusiva. La municipalidad de Tomé ha pedido extender la
-          inversión.
-        </p>
-        <Sources>
-          <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-            MOP Concesiones · 10-dic-2025 — Recepción ofertas Ruta 150 + Conce-Talcahuano II
-          </SourceLink>
-          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-            Diario Concepción · 7-nov-2025 — Electrocorredores Gran Concepción
-          </SourceLink>
-          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html">
-            Diario Concepción · 13-nov-2024 — Visa CGR a licitaciones Rutas 160 / 150 / Conce-Talcahuano
-          </SourceLink>
-          <SourceLink href="http://www.tomealdia.com/2025/11/tome-tambien-se-beneficara-con-proyecto.html">
-            Tomé al día · 2025-11 — Tomé pide extender beneficio del proyecto Ruta 150
           </SourceLink>
         </Sources>
       </Section>
@@ -573,7 +509,52 @@ export default function ConcepcionTome() {
         </Sources>
       </Section>
 
-      <Section title="Issues conocidos">
+      <Section title="Inversión MOP: el corredor Ruta 150 (impacto operacional)">
+        <p>
+          La concesión MOP de un <strong>corredor exclusivo de
+          transporte público sobre la Ruta 150</strong> impactará la
+          operación cotidiana del corredor a partir de 2032. Datos
+          clave verificados de la concesión:
+        </p>
+        <KeyValueList
+          items={[
+            ['Tramo cubierto', 'Rotonda Bonilla (Concepción) ↔ Enlace Penco — aprox. 8-9 km'],
+            ['Tipo de obra', 'Pista bidireccional exclusiva para transporte público + ciclovía + veredas + estaciones de alta capacidad'],
+            ['Adjudicación esperada', 'Primer semestre 2026 (oferta única consorcio Electro Cointer II)'],
+            ['Puesta en servicio (proyectada)', '2032'],
+          ]}
+        />
+        <p className="text-[12px] text-muted-foreground">
+          <strong>Para el pasajero del corredor:</strong> los servicios
+          401 / 411 / 421 ganarían tiempo en el tramo Rotonda Bonilla ↔
+          Enlace Penco, pero el cuello de botella del bypass urbano
+          Penco ↔ Lirquén ↔ Tomé (~20 km sin pista exclusiva) se
+          mantiene. La municipalidad de Tomé ha pedido extender la
+          inversión, sin compromiso MOP a la fecha.
+        </p>
+        <p className="text-[12px] text-muted-foreground">
+          Detalle técnico completo (inversión UF 4.431.000, consorcios,
+          calendario, paquete de corredores MOP) en{' '}
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
+            Corredores de Transporte Público MOP del Biobío
+          </a>
+          . Tensión institucional del perímetro con la concesión MOP en{' '}
+          <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+            PE Tomé · Tensión con Corredor MOP Ruta 150
+          </a>
+          .
+        </p>
+        <Sources>
+          <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
+            MOP Concesiones · 10-dic-2025 — Recepción ofertas Ruta 150 + Conce-Talcahuano II
+          </SourceLink>
+          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
+            Diario Concepción · 7-nov-2025 — Corredores MOP del Gran Concepción
+          </SourceLink>
+        </Sources>
+      </Section>
+
+      <Section title="Issues operacionales conocidos">
         <div className="space-y-2">
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
             <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
@@ -583,21 +564,8 @@ export default function ConcepcionTome() {
               El bypass Penco-Lirquén-Tomé tiene capacidad limitada y, al
               ser doble vía sin pista exclusiva, se satura cuando los
               buses del 401/411 acumulan demanda residencial con el flujo
-              comercial. Es la razón política del electrocorredor MOP que
-              se licita ahora.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Frecuencias desfasadas pre-mayo 2025
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Hasta abril 2025, según declaró el propio Bernardo Montoya,
-              había "diferencias de 20 a 21 minutos entre buses" en
-              algunos cortes de la hora punta. El ajuste de mayo 2025 fue
-              reactivo a presión vecinal (resuelto en menos de 20 días
-              desde la solicitud de la Unión Comunal de Juntas de
-              Vecinos).
+              comercial. Es la razón política del corredor MOP que se
+              licita ahora.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -607,8 +575,9 @@ export default function ConcepcionTome() {
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
               En enero-febrero y fines de semana largos, los servicios
               411 a Dichato/Pingueral colapsan. No hay refuerzo
-              documentado formal en el contrato del perímetro para
-              temporada alta.
+              documentado contractualmente para temporada alta — el
+              régimen no exige al operador único una flota o frecuencia
+              extra estival.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -616,17 +585,33 @@ export default function ConcepcionTome() {
               Biotrén no llega a Tomé
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              La terminal del Biotrén urbano está en Lirquén. El alcalde
-              de Penco Víctor Hugo Figueroa (2022) advirtió que el
-              corredor Ruta 150 puede <em>frenar</em> la extensión a
-              Penco/Tomé porque baja la demanda potencial del tren. EFE
+              La terminal del Biotrén urbano está en Mercado de Talcahuano.
+              El alcalde de Penco Víctor Hugo Figueroa (2022) advirtió
+              que el corredor Ruta 150 puede <em>frenar</em> la extensión
+              a Penco/Tomé porque baja la demanda potencial del tren. EFE
               Sur tiene un estudio de prefactibilidad en curso.
+            </p>
+          </div>
+          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
+              Operador único sin alternativa en el régimen
+            </div>
+            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
+              Al ser un perímetro de exclusión con operador único, si
+              Transportes Tomé baja frecuencia o sube quejas, el
+              pasajero no tiene alternativa formal dentro del régimen.
+              La compensación es presión vecinal directa y
+              fiscalización DTPR. Lectura institucional del riesgo en{' '}
+              <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+                PE Tomé · Fiscalización y riesgo monopólico
+              </a>
+              .
             </p>
           </div>
         </div>
       </Section>
 
-      <Section title="Línea de tiempo">
+      <Section title="Línea de tiempo operacional">
         <Timeline
           items={[
             { date: '1865', event: 'Guillermo Délano Ferguson funda la fábrica textil Bellavista en Tomé. Inicia el ciclo industrial que define el corredor.' },
@@ -647,13 +632,8 @@ export default function ConcepcionTome() {
               source: { href: 'https://www.biobiochile.cl/noticias/2015/02/27/el-antes-y-despues-de-la-reconstruccion-de-dichato-a-cinco-anos-del-terremoto-y-tsunami.shtml', label: 'BioBioChile' },
             },
             {
-              date: 'Jul-2016',
-              event: 'Ministro Andrés Gómez-Lobo firma decreto creando el Perímetro de Exclusión de Tomé (segundo de la zona después del Gran Conce 2002).',
-              source: { href: 'https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n', label: 'Wikipedia' },
-            },
-            {
               date: '10-mar-2022',
-              event: 'Perímetro Tomé operativo. Tarifa cae a $750 (-$150 vs régimen previo). Operador único: Transportes Tomé. Servicios 401 y 411.',
+              event: 'Entra en operación el Perímetro de Exclusión de Tomé. Servicios 401 y 411 desde la terminal Manuel Rodríguez. Detalles regulatorios en PE Tomé.',
               source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml', label: 'BioBioChile' },
             },
             {
@@ -662,31 +642,31 @@ export default function ConcepcionTome() {
               source: { href: 'https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html', label: 'Diario Concepción' },
             },
             {
-              date: '1-ene-2024',
-              event: 'Inicio del nuevo Perímetro de Exclusión del Gran Concepción (que cubre Penco/Lirquén urbano, no Tomé). Caduca la licitación urbana de 2002 el 31-mar-2024.',
-              source: { href: 'https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n', label: 'Wikipedia' },
-            },
-            {
-              date: '13-nov-2024',
-              event: 'CGR visa los llamados a licitación MOP de corredores de transporte público para Rutas 150 / 160 y Autopista Conce-Talcahuano.',
-              source: { href: 'https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html', label: 'Diario Concepción' },
-            },
-            {
               date: '7-may-2025',
-              event: 'Se anuncia refuerzo en hora punta: 70 salidas tarde Conce→Tomé (+11%), nueva inyección 06:20 desde Cementerio 2, cuarta salida Dichato cada 15 min.',
+              event: 'Refuerzo en hora punta: 70 salidas tarde Conce → Tomé (+11%), nueva inyección 06:20 desde Cementerio 2, cuarta salida Dichato cada 15 min entre 06:00-07:00. Decisión reactiva a presión de la Unión Comunal de Juntas de Vecinos.',
               source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html', label: 'Diario Concepción' },
             },
             {
               date: '10-dic-2025',
-              event: 'MOP recibe la oferta única del consorcio Electro Cointer II para la concesión Ruta 150 + Conce-Talcahuano II (UF 4.431.000).',
+              event: 'MOP recibe la oferta única del consorcio Electro Cointer II para la concesión Ruta 150 + Conce-Talcahuano II.',
               source: { href: 'https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/', label: 'MOP Concesiones' },
             },
             {
-              date: '15-ene-2026',
-              event: 'Apertura oferta económica de la concesión Ruta 150. Adjudicación esperada 1S 2026 · puesta en servicio proyectada 2032.',
+              date: 'Q3 2026 (proyectado)',
+              event: 'Marcha blanca BusPay sobre la flota de Transportes Tomé. Efectivo y pago electrónico operan en paralelo.',
             },
           ]}
         />
+        <p className="text-[12px] text-muted-foreground">
+          La cronología <strong>institucional</strong> del régimen
+          (decreto Gómez-Lobo 2016, fusión de operadores 2016-2022,
+          reajuste tarifario 23-feb-2025, adjudicación BusPay 28-ene-2026)
+          vive en{' '}
+          <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+            PE Tomé · Cronología institucional
+          </a>
+          .
+        </p>
       </Section>
 
       <Section title="Comparación con los otros corredores del wiki">
@@ -714,8 +694,8 @@ export default function ConcepcionTome() {
                 <td className="px-3 py-2">CUATRO privados + capas subsidiadas</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-medium">Tarifa adulto</td>
-                <td className="px-3 py-2">$750 base (2022)</td>
+                <td className="px-3 py-2 font-medium">Tarifa adulto vigente</td>
+                <td className="px-3 py-2">$780 (Tomé) / $830 (Dichato)</td>
                 <td className="px-3 py-2">$1.000 fijo</td>
                 <td className="px-3 py-2">$1.700-$2.500 privado / $400-$1.500 subsidiado</td>
               </tr>
@@ -745,7 +725,7 @@ export default function ConcepcionTome() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Conexión Biotrén</td>
-                <td className="px-3 py-2">SÍ en Lirquén (terminal norte)</td>
+                <td className="px-3 py-2">NO directa (terminal norte L1 = Mercado de Talcahuano)</td>
                 <td className="px-3 py-2">SÍ en Juan Pablo II</td>
                 <td className="px-3 py-2">NO directa</td>
               </tr>
@@ -777,23 +757,27 @@ export default function ConcepcionTome() {
         </p>
       </Section>
 
-      <Section title="Datos pendientes">
+      <Section title="Datos operacionales pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Razón social formal con tipo societario (SpA / S.A. / Ltda.), RUT y N° RNTPP de Transportes Tomé.</li>
-          <li>Decreto exacto de adjudicación del perímetro de exclusión Tomé (2016/2022) y duración del contrato.</li>
-          <li>Forma matemática del polinomio de ajuste y calendario completo de reajustes 2022-2026 (tarifa 2026 vigente: $780 a Concepción, $830 a Dichato).</li>
           <li>Tabla horaria oficial lun-vie / sáb / dom / festivos para 401, 411 y 421.</li>
-          <li>Detalle del compromiso de pago electrónico BusPay para servicios 401/411/421 (validadores, cronograma).</li>
-          <li>Operación temporada alta verano: ¿hay flota o frecuencia extra contractual? No documentado.</li>
+          <li>Composición de flota verificada (marca, modelo, año, norma Euro) — la cifra declarada de 71 buses requiere cotejo con padrón DTPR.</li>
+          <li>Número de conductores y composición laboral del operador.</li>
+          <li>Operación temporada alta verano: ¿hay flota o frecuencia extra observada en terreno? No documentado.</li>
           <li>Estado de la prefactibilidad EFE para extender Biotrén a Penco / Tomé.</li>
-          <li>Verificación independiente de la flota declarada (71 buses).</li>
-          <li>Lista de razones sociales originales que se fusionaron en Transportes Tomé.</li>
+          <li>Reclamos OIRS / Subtrans documentados específicamente por el corredor.</li>
+          <li>Conteo de pasajeros actualizado post may-2025 (las cifras públicas son de 2022).</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Vías de cierre: Ley de Transparencia a DTPR Biobío por el
-          contrato vigente, consulta a SII por nombre comercial, foto del
-          cartel del horario en la terminal Manuel Rodríguez en Concepción
-          o terminal Tomé Alto.
+          Vías de cierre: foto del cartel del horario en la terminal
+          Manuel Rodríguez en Concepción o terminal Tomé Alto, conteo
+          en paradero, observación de terreno en temporada alta. Los
+          pendientes <strong>institucionales</strong> (decreto exacto,
+          RUT, plazo contractual, polinomio matemático, sanciones DTPR)
+          viven en{' '}
+          <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+            PE Tomé · Datos institucionales pendientes
+          </a>
+          .
         </p>
       </Section>
 
@@ -811,7 +795,7 @@ export default function ConcepcionTome() {
           </li>
           <li>
             <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
-              BioBioChile · 11-mar-2022 — Tarifa $750 al inicio del perímetro
+              BioBioChile · 11-mar-2022 — Inicio del perímetro
             </SourceLink>
           </li>
           <li>
@@ -840,11 +824,6 @@ export default function ConcepcionTome() {
             </SourceLink>
           </li>
           <li>
-            <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-              Diario Concepción · 7-nov-2025 — Electrocorredores Gran Concepción
-            </SourceLink>
-          </li>
-          <li>
             <SourceLink href="https://www.archivohistoricoconcepcion.cl/minisitios/economia-y-sociedad/bellavista-oveja-tome/">
               Archivo Histórico Concepción · Bellavista Oveja Tomé
             </SourceLink>
@@ -870,16 +849,6 @@ export default function ConcepcionTome() {
             </SourceLink>
           </li>
           <li>
-            <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8111">
-              BCN · Reportes comunales Tomé 2017
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8107">
-              BCN · Reportes comunales Penco 2017
-            </SourceLink>
-          </li>
-          <li>
             <SourceLink href="https://pordondevalamicro.wordpress.com/recorridos-micros-licitadas/tome/concepcion-%E2%86%92-tome-%E2%86%92-dichato/">
               PorDóndeVaLaMicro · Trazado Conce → Tomé → Dichato
             </SourceLink>
@@ -890,9 +859,9 @@ export default function ConcepcionTome() {
       <Section title="Para contribuir">
         <p>
           Si tienes foto del cartel de horarios en la terminal Manuel
-          Rodríguez de Concepción o en Tomé Alto, conoces la razón social
-          formal de Transportes Tomé, o tienes copia del decreto MTT que
-          adjudicó el perímetro — abre un pull request en{' '}
+          Rodríguez de Concepción o en Tomé Alto, conteo de pasajeros
+          actualizado, o información operacional del corredor — abre un
+          pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-tome.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-tome.tsx
           </SourceLink>

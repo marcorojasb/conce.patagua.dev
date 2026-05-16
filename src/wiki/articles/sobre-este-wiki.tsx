@@ -78,6 +78,111 @@ export default function SobreEsteWiki() {
         </p>
       </Section>
 
+      <Section title="Manual de estilo">
+        <p>
+          Reglas operacionales para mantener consistencia editorial
+          entre artículos. No es un tratado: es lo mínimo necesario
+          para que las fichas se lean como salidas de la misma
+          redacción.
+        </p>
+        <KeyValueList
+          items={[
+            [
+              'Voz',
+              'Español chileno neutro. Sin tecnicismos innecesarios ni jerga interna. Tono informativo, no opinión: los hechos llevan fuente, las hipótesis editoriales se marcan como tales ("la hipótesis editorial es que…").',
+            ],
+            [
+              'Formato monetario',
+              <>
+                Signo <strong>$</strong> con separador de miles según
+                costumbre chilena: <strong>$1.500</strong>, no
+                "$1,500" ni "1500 pesos". Para UF, escribir{' '}
+                <strong>UF&nbsp;4.431.000</strong> (mismo separador).
+                Conversiones a USD entre paréntesis cuando ayuden a
+                la lectura.
+              </>,
+            ],
+            [
+              'PendingBanner',
+              <>
+                Usar cuando un dato afirmado en el artículo no está
+                aún verificado contra fuente primaria. El banner se
+                cierra (se elimina) con un commit que cite la fuente
+                que lo verificó.
+              </>,
+            ],
+            [
+              'VerifiedBanner',
+              <>
+                Usar cuando una fuente primaria (resolución exenta,
+                ordenanza, GTFS oficial, padrón RNTPP) confirma el
+                dato. Incluir <strong>URL</strong> y{' '}
+                <strong>fecha del snapshot</strong> de la
+                verificación.
+              </>,
+            ],
+            [
+              'SourceLink',
+              <>
+                Cada hecho factual no trivial debe colgar de una. Si
+                la URL deja de responder, marcar con comentario
+                inline (<code className="font-mono">{`{/* ROTO: 404 al cierre de mayo 2026 */}`}</code>)
+                y mantener visible el SourceLink mientras no exista
+                un snapshot equivalente.
+              </>,
+            ],
+            [
+              'Grafía estandarizada',
+              <>
+                "<strong>SpA</strong>" (no "S.P.A."),{' '}
+                "<strong>EFE Biobío</strong>" (no "Biotrén EFE"),{' '}
+                "Concepción ↔ Tomé" con flecha bidireccional para
+                corredores. Siglas (MTT, DTPR, SEREMITT, PE, RNTPP,
+                BusPay, etc.) en el glosario de abajo.
+              </>,
+            ],
+            [
+              'Tablas y cronologías',
+              <>
+                Usar los componentes <code className="font-mono">Table</code>{' '}
+                (cuando exista) o las tablas inline con clases del
+                wiki, y <code className="font-mono">Timeline</code> de{' '}
+                <code className="font-mono">src/wiki/articles/_components.tsx</code>.
+                Nunca markdown crudo ni HTML directo sin clases del
+                sistema.
+              </>,
+            ],
+            [
+              'Cross-links',
+              <>
+                Para apuntar a otra ficha del wiki, usar el helper
+                consolidado (
+                <code className="font-mono">{`<a href="/wiki/slug" className="underline underline-offset-2">`}</code>
+                ), no <code className="font-mono">&lt;a&gt;</code>{' '}
+                pelado sin clase. Para apuntar al visor de mapa,
+                usar <code className="font-mono">MapLink</code> de{' '}
+                <code className="font-mono">@/wiki/map-link</code>.
+              </>,
+            ],
+            [
+              'Largo objetivo',
+              'Entre 400 y 700 líneas por artículo. Sobre 900 líneas es señal de que la ficha debería partirse en dos artículos más enfocados (por ejemplo: una ficha institucional / jurídica y una operacional, con cross-links bidireccionales).',
+            ],
+            [
+              'Histórico vs vigente',
+              'Las citas de prensa con fecha específica se conservan tal cual: son testimonio temporal. Solo los datos descritos como "actuales / vigentes / titular" deben mantenerse al día (tarifas, autoridades en cargo, calendario en curso).',
+            ],
+          ]}
+        />
+        <p className="text-[12px] text-muted-foreground">
+          Las siglas usadas en este manual (MTT, DTPR, RNTPP, GTFS,
+          SpA, EFE, UF, etc.) están definidas en el{' '}
+          <strong>Glosario de siglas</strong> a continuación. Si una
+          ficha introduce una sigla nueva recurrente, agregarla
+          también ahí.
+        </p>
+      </Section>
+
       <Section title="Glosario de siglas">
         <p>
           Siglas y abreviaciones que aparecen recurrentemente en los
@@ -167,8 +272,8 @@ export default function SobreEsteWiki() {
                 <strong>Empresa de los Ferrocarriles del Estado</strong>{' '}
                 (efe.cl). EFE Sur opera el Biotrén a través de su
                 filial EFE Trenes Metropolitanos S.A. Ver{' '}
-                <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
-                  Biotrén y sus extensiones
+                <a href="/wiki/biotren" className="underline underline-offset-2">
+                  Biotrén
                 </a>
                 .
               </>,
