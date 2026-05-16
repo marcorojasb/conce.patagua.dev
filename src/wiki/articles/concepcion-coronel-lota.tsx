@@ -462,8 +462,8 @@ export default function ConcepcionCoronelLota() {
         <p>
           <strong>Enacar</strong> cerró el <strong>14-abr-1997</strong>,
           fin del ciclo industrial-obrero. La <strong>Carbonífera
-          Schwager</strong> (Coronel) había cerrado antes;{' '}
-          <strong>Lota Verde</strong> también en 1997. El flujo de
+          Schwager</strong> (Coronel) se fusionó con Enacar en{' '}
+          <strong>1994</strong>; <strong>Lota Verde</strong> cerró también en 1997. El flujo de
           transporte dejó de ser commuting obrero a las minas y pasó a
           pendular residencial hacia Concepción (trabajo, salud,
           educación).

@@ -630,6 +630,15 @@ export default function OpenstreetmapFuenteVisor() {
             — refs MOP de Ruta 160 / 150 / Concepción-Talcahuano vía OSM.
           </li>
           <li>
+            <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
+              SEREMITT Biobío y la DTPR
+            </a>{' '}
+            — marco institucional detrás del visor: la DTPR Biobío
+            publica el GTFS y las resoluciones que el visor refleja.
+            Sucesión SEREMI documentada (Silva → Fierro → Cautivo
+            desde 28-nov-2025).
+          </li>
+          <li>
             <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">
               Sobre este wiki
             </a>{' '}

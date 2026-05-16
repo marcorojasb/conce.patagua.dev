@@ -26,7 +26,16 @@ export default function RecorridosInterurbanos() {
         Esta página es un índice abierto: información compilada desde fuentes
         secundarias mientras esperamos un feed GTFS público para estos servicios.
         Cuando aparezca, se enchufa al visor y este artículo queda como contexto
-        histórico.
+        histórico. La autoridad que los regula (vía Ley 18.696, Ley 20.378 y
+        autorizaciones puntuales) es la{' '}
+        <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
+          SEREMITT Biobío
+        </a>{' '}
+        — sucesión vigente Silva → Fierro → Cautivo (desde 28-nov-2025) —, y
+        los financiamientos se estructuran sobre el{' '}
+        <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
+          Subsidio Nacional al Transporte Público
+        </a>.
       </p>
 
       <Section title="Servicios identificados">

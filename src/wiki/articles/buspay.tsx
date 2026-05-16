@@ -18,7 +18,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
-export default function BusPay2026() {
+export default function BusPay() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>

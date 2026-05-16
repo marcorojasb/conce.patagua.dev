@@ -709,6 +709,12 @@ export default function GtfsGranConcepcion() {
             GTFS de buses y procesado por OSM.
           </li>
           <li>
+            <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">SEREMITT Biobío y la DTPR</a>
+            {' '}— la autoridad regional que publica el GTFS vía la DTPR
+            Biobío. Sucesión SEREMI documentada: Silva → Fierro
+            (10-ene-2025 ↔ 28-nov-2025) → Cautivo (desde 28-nov-2025).
+          </li>
+          <li>
             <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">Sobre este wiki</a>
             {' '}— compromiso editorial general: si no hay fuente abierta,
             no entra al visor.

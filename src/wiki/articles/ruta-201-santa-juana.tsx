@@ -355,7 +355,8 @@ export default function Ruta201SantaJuana() {
             Septiembre 2024 · Espacio entre filas de asientos
           </div>
           <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-            La SEREMI de Transportes confirmó que la distancia entre filas de
+            La SEREMITT Biobío (institución, vocería de Héctor Silva en
+            ese momento) confirmó que la distancia entre filas de
             asientos en la flota nueva no cumplía con lo licitado. El operador
             se comprometió a <strong>eliminar una fila de asientos</strong> en
             cada bus para corregir la separación. Estado del cumplimiento de

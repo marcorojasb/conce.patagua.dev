@@ -27,16 +27,16 @@ export default function BiotrenExtensionesProyectos() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
-        <strong>Verificado parcialmente con prensa regional y
-        declaraciones públicas.</strong> Hitos del electrocorredor MOP
-        Ruta 150 (CGR 13-nov-2024, oferta única 10-dic-2025) y
-        declaraciones del alcalde de Penco (1-nov-2022) están citados.{' '}
-        <strong>Pendientes</strong>: estado exacto del estudio de
-        prefactibilidad EFE de la extensión a Penco, RS MIDESO de
-        cualquiera de las extensiones, fechas de licitación o inicio de
-        obras. Toda esta ficha es{' '}
-        <em>debate público, no obra adjudicada</em> — ninguna extensión
-        tiene contrato firmado al cierre 2025-2026.
+        <strong>Ficha de debate público, no de obra adjudicada.</strong>{' '}
+        Los hitos puntuales que sí tienen fuente firme son: el
+        electrocorredor MOP Ruta 150 (CGR 13-nov-2024, oferta única
+        10-dic-2025) y declaraciones del alcalde de Penco (1-nov-2022).
+        El resto de la ficha (extensiones a Penco, Lota, San Pedro,
+        Coronel) describe proyectos en discusión sin contrato firmado,
+        sin RS MIDESO publicado y sin fecha de licitación. Ninguna
+        extensión está adjudicada al cierre 2025-2026 — todo lo que
+        suene a futuro debe leerse como{' '}
+        <em>propuesta o expectativa</em>, no como obra confirmada.
       </VerifiedBanner>
 
       <div className="rounded-md border bg-card p-3 text-[13px]">

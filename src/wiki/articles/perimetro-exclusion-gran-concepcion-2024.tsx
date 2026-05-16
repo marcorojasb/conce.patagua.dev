@@ -840,6 +840,14 @@ export default function PerimetroExclusionGranConcepcion2024() {
             (urbano) vs. qué cae fuera.
           </li>
           <li>
+            <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
+              Subsidio Nacional al Transporte Público (Ley 20.378)
+            </a>{' '}
+            — la Ley 20.378 (art. 2°) es la que financia el subsidio
+            que sostiene la tarifa $580 del PE. El art. 4° (servicios
+            licitados subsidiados) habilita servicios como la Ruta 201.
+          </li>
+          <li>
             <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">
               Sobre este wiki
             </a>{' '}
