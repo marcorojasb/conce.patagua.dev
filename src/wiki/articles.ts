@@ -35,6 +35,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/buspay-2026')),
   },
   {
+    slug: 'electrocorredores-mop-biobio',
+    title: 'Electrocorredores MOP del Biobío',
+    summary:
+      'Tres concesiones MOP de corredores exclusivos para buses urbanos sobre las troncales del Gran Concepción (Ruta 160 San Pedro-Coronel, Ruta 150 Concepción-Penco y Autopista Concepción-Talcahuano Tramo II). ~USD 250 millones, 23+ km, plazo 25 años (300 meses). Oferente único en los dos llamados (Electro-Cointer y Electro-Cointer II, ligados a Cointer Concesiones S.L. / Grupo Azvi). CGR visó bases 13-nov-2024; ofertas recibidas nov-dic 2025; adjudicación 1S 2026; obras 2029-2030; puesta en servicio 2031-2032. Tensión política con extensiones del Biotrén a Penco, Lota y Carriel Sur.',
+    section: 'estructural',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/electrocorredores-mop-biobio')),
+  },
+  {
     slug: 'recorridos-interurbanos',
     title: 'Recorridos interurbanos del Gran Concepción',
     summary:
