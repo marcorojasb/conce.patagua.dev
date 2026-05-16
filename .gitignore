@@ -17,3 +17,4 @@ conce-patagua-dev/
 .vercel
 .claude/settings.local.json
 .claude/launch.json
+.claude/worktrees/
