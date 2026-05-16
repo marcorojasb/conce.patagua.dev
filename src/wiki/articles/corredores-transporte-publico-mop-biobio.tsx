@@ -647,9 +647,11 @@ export default function CorredoresTransportePublicoMOPBiobio() {
                 Depende de decisiones MTT y de la operadora del
                 Perímetro 2024, no del contrato MOP. Si el contrato no
                 exige electrificación, la transición puede tardar 10-15
-                años desde la puesta en servicio. El SEREMI{' '}
-                <strong>Patricio Fierro</strong> ha sido explícito en
-                este punto.
+                años desde la puesta en servicio. El entonces SEREMI{' '}
+                <strong>Patricio Fierro</strong> fue explícito en este
+                punto en noviembre de 2025 (la postura institucional
+                de la SEREMITT Biobío no se ha modificado tras la
+                sucesión Fierro → Cautivo del 28-nov-2025).
               </>,
             ],
             [

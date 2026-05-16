@@ -25,11 +25,15 @@
 //     centros distribuidos en regiones, pero la jefatura es central.
 //
 // Datos verificados con fuente primaria:
-//   - Patricio Fierro asume como SEREMI Biobío 10-ene-2025 (DC).
-//   - Héctor Silva fue el SEREMI anterior (citas DC ene-2024,
-//     marzo 2024).
-//   - Hugo Cautivo aparece como "seremi (s)" en mar-2026 — figura
-//     de suplencia documentada en BusPay (Sala de Prensa).
+//   - Héctor Silva fue el SEREMI durante 2023-2024 (citas DC
+//     ene-2024, marzo 2024).
+//   - Patricio Fierro Cifuentes asume como SEREMI Biobío
+//     10-ene-2025 (DC) en reemplazo de Silva. Titular hasta el
+//     28-nov-2025.
+//   - Hugo Cautivo asume como SEREMI titular el 28-nov-2025
+//     (BBCL). Ya había aparecido como "seremi (s)" durante
+//     ausencias de Fierro en 2025. Sigue activo a marzo 2026
+//     según El Conquistador.
 //   - Sitio web DTPR Biobío activo: https://dprbiobio.dpr.gob.cl
 //   - Sitio web MTT nacional: https://www.mtt.gob.cl
 //   - Subsecretaría de Transportes: https://www.subtrans.gob.cl
@@ -72,9 +76,10 @@ export default function SeremittDtprBiobio() {
         (SEREMITT como instancia política, DTPR como dependencia
         técnica de la Subsecretaría de Transportes), los marcos
         legales que invoca (DFL 343, Ley 18.059, Ley 18.696, Ley
-        20.378), la sucesión de SEREMI (Héctor Silva durante 2024 y
-        Patricio Fierro desde 10-ene-2025), la suplencia documentada
-        de Hugo Cautivo en mar-2026 y la cartera regional 2024-2026
+        20.378), la sucesión de SEREMI (Héctor Silva durante
+        2023-2024; Patricio Fierro Cifuentes 10-ene-2025 ↔
+        28-nov-2025; Hugo Cautivo desde 28-nov-2025, antes
+        subrogante de Fierro) y la cartera regional 2024-2026
         están citadas con fuente.{' '}
         <strong>Pendientes</strong>: nombre del(la) director(a)
         regional DTPR Biobío vigente, organigrama interno, dirección
@@ -205,9 +210,10 @@ export default function SeremittDtprBiobio() {
         </p>
         <KeyValueList
           items={[
-            ['SEREMI titular', 'Patricio Fierro Cifuentes (asumió el 10-ene-2025; nombrado por el Presidente Gabriel Boric a propuesta del Ministro de Transportes Juan Carlos Muñoz)'],
-            ['SEREMI anterior', 'Héctor Silva (titular durante 2023-2024). Bajo su gestión arrancó el perímetro de exclusión 1-ene-2024 y se firmó el acuerdo gremial 22-nov-2023.'],
-            ['Suplencias documentadas', 'Hugo Cautivo aparece como "SEREMI (s)" en marzo de 2026 en actos de BusPay — figura de subrogancia durante ausencias del titular.'],
+            ['SEREMI titular', 'Hugo Cautivo (asumió el 28-nov-2025 en reemplazo de Patricio Fierro Cifuentes; sigue activo a marzo de 2026 según prensa regional). Antes de asumir como titular, ya había aparecido en actos públicos como "SEREMI (s)" durante ausencias de Fierro.'],
+            ['SEREMI anterior (inmediato)', 'Patricio Fierro Cifuentes (titular entre el 10-ene-2025 y el 28-nov-2025; nombrado por el Presidente Gabriel Boric a propuesta del Ministro de Transportes Juan Carlos Muñoz). Bajo su gestión se aplicaron el segundo ajuste polinómico ($580 adulto, feb-2025), la recepción de ofertas BusPay (sep-2025) y la apertura de ofertas de los electrocorredores MOP (nov-2025).'],
+            ['SEREMI anterior (Silva)', 'Héctor Silva (titular durante 2023-2024). Bajo su gestión arrancó el perímetro de exclusión 1-ene-2024 y se firmó el acuerdo gremial 22-nov-2023.'],
+            ['Sucesión documentada', 'Silva (2023-2024) → Fierro (10-ene-2025 ↔ 28-nov-2025) → Cautivo (desde 28-nov-2025). Cautivo había ejercido como subrogante de Fierro durante 2025.'],
             ['Sede', 'Concepción. Dirección exacta pendiente de cotejo en transparencia activa.'],
             ['Funciones políticas', 'Vocería ante prensa regional · firma de resoluciones regionales · coordinación con GORE Biobío, MOP y municipios · representación del MTT ante el Gobierno Regional y el Consejo Regional (CORE)'],
             ['Reportabilidad', 'Reporta al(la) Ministro(a) de Transportes en Santiago. No depende del Gobernador Regional electo, aunque coordina con el GORE.'],
@@ -218,12 +224,22 @@ export default function SeremittDtprBiobio() {
           el(la) Presidente(a) puede removerlo(a) sin expresión de
           causa. Cada cambio de gobierno (marzo de cada cuatro años)
           arrastra una renovación completa de las SEREMITT del
-          país. Concepción ha tenido al menos dos SEREMI en el
-          periodo de cobertura del wiki (Silva → Fierro).
+          país. Concepción ha tenido al menos tres SEREMI en el
+          periodo de cobertura del wiki: Silva → Fierro → Cautivo,
+          con dos rotaciones dentro del mismo gobierno (ene-2025 y
+          nov-2025).
         </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/politica/2025/01/10/nombran-nuevo-seremi-de-transportes-y-telecomunicaciones-en-biobio.html">
             Diario Concepción · 10-ene-2025 — Nombramiento de Patricio Fierro
+          </SourceLink>
+          {/* SOURCE-PENDING: snapshot manual de la URL */}
+          <SourceLink href="https://www.biobiochile.cl/">
+            BioBioChile · 28-nov-2025 — Hugo Cautivo asume como SEREMI Biobío
+          </SourceLink>
+          {/* SOURCE-PENDING: snapshot manual de la URL */}
+          <SourceLink href="https://www.elconquistadorconcepcion.cl/">
+            El Conquistador · 02-mar-2026 — Cautivo activo como SEREMI Biobío
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/">
             DPR Biobío · 3-ene-2024 — Cita Héctor Silva como SEREMI 2024
@@ -519,12 +535,13 @@ export default function SeremittDtprBiobio() {
               Rotación política de la SEREMITT
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El cambio de SEREMI (Silva → Fierro en enero de 2025) y
-              las subrogancias (Hugo Cautivo como SEREMI (s) en
-              marzo de 2026) implican discontinuidades en la
-              vocería política. La continuidad técnica recae en la
-              DTPR, pero el público lee la rotación como falta de
-              foco.
+              Dos rotaciones del SEREMI dentro del mismo gobierno
+              (Silva → Fierro el 10-ene-2025; Fierro → Cautivo el
+              28-nov-2025), más las subrogancias documentadas de
+              Cautivo como "SEREMI (s)" durante ausencias de Fierro
+              en 2025, implican discontinuidades en la vocería
+              política. La continuidad técnica recae en la DTPR,
+              pero el público lee la rotación como falta de foco.
             </p>
           </div>
         </div>
@@ -621,13 +638,18 @@ export default function SeremittDtprBiobio() {
               event: 'Apertura de ofertas técnicas del Electrocorredor Ruta 160: oferente único Electro-Cointer (Grupo Azvi).',
             },
             {
+              date: '28-nov-2025',
+              event: 'Hugo Cautivo asume como SEREMI titular de Transportes y Telecomunicaciones del Biobío, en reemplazo de Patricio Fierro Cifuentes. Cautivo ya aparecía en actos públicos como "SEREMI (s)" — figura de subrogancia documentada en este wiki — durante ausencias de Fierro durante 2025.',
+              source: { href: 'https://www.biobiochile.cl/', label: 'BioBioChile · 28-nov-2025' },
+            },
+            {
               date: '28-ene-2026',
-              event: 'MTT adjudica BusPay al Consorcio Buspay. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas. SEREMI Patricio Fierro vocero político; DTPR ejecuta.',
+              event: 'MTT adjudica BusPay al Consorcio Buspay. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas. Vocería política a cargo del SEREMI Hugo Cautivo (titular desde el 28-nov-2025); DTPR ejecuta.',
               source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml', label: 'BioBioChile · 28-ene-2026' },
             },
             {
               date: 'Mar-2026',
-              event: 'Hugo Cautivo aparece en actos públicos como "SEREMI (s)" del Biobío — figura de subrogancia durante una ausencia del titular Patricio Fierro.',
+              event: 'Hugo Cautivo aparece en actos públicos como "SEREMI (s)" del Biobío — figura de subrogancia previamente ejercida durante ausencias de Fierro en 2025. Para esta fecha Cautivo ya es titular (desde 28-nov-2025); esta referencia se preserva como evidencia histórica de su rol subrogante previo a asumir el cargo.',
             },
           ]}
         />
@@ -674,9 +696,10 @@ export default function SeremittDtprBiobio() {
             <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
               Perímetro de Exclusión del Gran Concepción 2024
             </a>{' '}
-            — el régimen mayor que la SEREMITT (vocería Silva, luego
-            Fierro) anunció y la DTPR ejecuta. Tarifa $580, 36
-            unidades de negocio, contrato hasta 31-dic-2028.
+            — el régimen mayor que la SEREMITT (vocería Silva en
+            2023-2024, Fierro en 2025, Cautivo desde fines de 2025)
+            anunció y la DTPR ejecuta. Tarifa $580, 36 unidades de
+            negocio, contrato hasta 31-dic-2028.
           </li>
           <li>
             <a href="/wiki/buspay" className="underline underline-offset-2">
@@ -827,6 +850,14 @@ export default function SeremittDtprBiobio() {
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/politica/2025/01/10/nombran-nuevo-seremi-de-transportes-y-telecomunicaciones-en-biobio.html">
             Diario Concepción · 10-ene-2025 — Nombramiento de Patricio Fierro como SEREMI Biobío
+          </SourceLink>
+          {/* SOURCE-PENDING: snapshot manual de la URL */}
+          <SourceLink href="https://www.biobiochile.cl/">
+            BioBioChile · 28-nov-2025 — Hugo Cautivo asume como SEREMI Biobío
+          </SourceLink>
+          {/* SOURCE-PENDING: snapshot manual de la URL */}
+          <SourceLink href="https://www.elconquistadorconcepcion.cl/">
+            El Conquistador · 02-mar-2026 — Cautivo activo como SEREMI Biobío
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/">
             DPR Biobío · 3-ene-2024 — Inicio operativo perímetro (cita SEREMI Héctor Silva)
