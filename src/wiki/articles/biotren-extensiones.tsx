@@ -239,7 +239,7 @@ export default function BiotrenExtensiones() {
             ],
             [
               'Ventana operativa',
-              '05:45 — 23:10 (Lun-Vie). Detalle por día festivo no documentado acá; revisar app oficial.',
+              '05:45 — 23:10 (Lun-Vie). Detalle por día festivo no documentado en este artículo; revisar app oficial.',
             ],
             [
               'Material rodante',
@@ -247,7 +247,7 @@ export default function BiotrenExtensiones() {
             ],
             [
               'Tarifa adulto',
-              'Por tramo (zonas), no plana. El visor anota "CLP por tramo" para diferenciar de buses (que cobran por viaje). Valor exacto 2026 no citado acá.',
+              'Por tramo (zonas), no plana. El visor anota "CLP por tramo" para diferenciar de buses (que cobran por viaje). Valor exacto 2026 no citado en este artículo.',
             ],
             [
               'Información en tiempo real',
@@ -708,7 +708,7 @@ export default function BiotrenExtensiones() {
           <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
             Concepción ↔ Tomé
           </a>
-          ; acá los resumimos en clave Biotrén.
+          ; aquí los resumimos en clave Biotrén.
         </p>
         <div className="overflow-x-auto rounded-md border">
           <table className="w-full text-[13px]">
@@ -994,10 +994,10 @@ export default function BiotrenExtensiones() {
 
       <Section title="Para contribuir">
         <p>
-          Si tenés foto del cuadro tarifario vigente en la estación
-          Concepción, conocés el estado del estudio de prefactibilidad
-          de la extensión Biotrén-Penco, o tenés copia de la última
-          memoria anual de EFE Trenes Metropolitanos — abrí un pull
+          Si tienes foto del cuadro tarifario vigente en la estación
+          Concepción, conoces el estado del estudio de prefactibilidad
+          de la extensión Biotrén-Penco, o tienes copia de la última
+          memoria anual de EFE Trenes Metropolitanos — abre un pull
           request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/biotren-extensiones.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/biotren-extensiones.tsx

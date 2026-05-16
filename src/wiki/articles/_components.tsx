@@ -1,7 +1,7 @@
 // Componentes reutilizables para los artículos del wiki.
 //
 // Originalmente vivían inline en ruta-201-santa-juana.tsx. Se extrajeron
-// acá porque el corredor de El Pimentón sumó dos artículos hermanos que
+// aquí porque el corredor de El Pimentón sumó dos artículos hermanos que
 // necesitan exactamente la misma UI (KeyValueList, Timeline, banners).
 //
 // Mantener la API estable: el 201 sigue importando los mismos nombres.

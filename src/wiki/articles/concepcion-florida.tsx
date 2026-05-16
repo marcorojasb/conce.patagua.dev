@@ -228,8 +228,8 @@ export default function ConcepcionFlorida() {
               items={[
                 ['Tipo de contrato', 'Contrato de Transporte Aislado'],
                 ['Servicios', '10 a la semana (lunes a viernes + festivos)'],
-                ['Tarifa', '$400 - $1.500 CLP según destino'],
-                ['Inversión MTT', '$63.720.000 CLP'],
+                ['Tarifa', '$400 - $1.500 según destino'],
+                ['Inversión MTT', '$63.720.000'],
                 ['Plazo', '36 meses'],
                 ['Inauguración formal', 'Fines de octubre 2025'],
                 ['Cobertura', 'Decena de localidades de la zona norte de la comuna'],
@@ -333,8 +333,8 @@ export default function ConcepcionFlorida() {
           <strong>Pendiente.</strong> Ningún operador publica tabla
           tarifaria oficial 2025-2026 en fuente abierta. Rangos
           observados por usuarios y agregadores (no oficiales):
-          $1.700-$2.500 CLP tarifa adulto Concepción-Florida directo;{' '}
-          $400-$1.500 CLP el servicio subsidiado zona norte intra-comuna.
+          $1.700-$2.500 tarifa adulto Concepción-Florida directo;{' '}
+          $400-$1.500 el servicio subsidiado zona norte intra-comuna.
           La gratuidad para adultos mayores y personas con discapacidad
           es <strong>obligatoria sólo en servicios subsidiados</strong>{' '}
           — los privados aplican TNE (33%) pero no garantizan gratuidad.
@@ -468,7 +468,7 @@ export default function ConcepcionFlorida() {
             [
               'Pavimentación Florida-Copiulemu (O-540 / Q-560)',
               <>
-                Inversión MOP <strong>{'> $3.000 millones CLP'}</strong>.
+                Inversión MOP <strong>{'> $3.000 millones'}</strong>.
                 Beneficia San Antonio de Dadi, San Antonio de Cuda, La
                 Paz y Cancha Los Monteros. En proceso de licitación al
                 cierre de septiembre 2024; ejecución 2025-. Aún no
@@ -582,7 +582,7 @@ export default function ConcepcionFlorida() {
           Foto del cartel del horario en el paradero, datos de la
           empresa operadora del nocturno, tarifa pagada con fecha,
           experiencia operativa: todo aporte se cita en el commit con el
-          contribuyente como autor. Abrí un pull request en{' '}
+          contribuyente como autor. Abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-florida.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-florida.tsx
           </SourceLink>
