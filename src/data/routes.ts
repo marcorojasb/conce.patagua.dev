@@ -107,18 +107,18 @@ const BIOTREN_ROUTES: Route[] = [
 ];
 
 // Combinamos paraderos GTFS con los digitalizados de rutas interurbanas
-// (hoy: el corredor 201). Si más adelante el GTFS oficial incluye estos
-// paraderos, el dataset interurbano queda vacío y este Map vuelve a ser
-// trivialmente igual a `GTFS_STOPS`.
+// (hoy: 201 Santa Juana + 401/411/421 Tomé). Si más adelante el GTFS
+// oficial incluye estos paraderos, el dataset interurbano queda vacío y
+// este Map vuelve a ser trivialmente igual a `GTFS_STOPS`.
 const PARADERO_BY_ID = new Map<string, Paradero>([
   ...GTFS_STOPS.map((p) => [p.id, p] as const),
   ...INTERURBAN_PARADEROS.map((p) => [p.id, p] as const),
 ]);
 
-// Buses interurbanos (201 Santa Juana, etc.) — pequeñísimos en bytes vs.
-// los 169 GTFS, así que los cargamos eagerly y aparecen junto con Biotrén
-// en el primer paint. La sheet de detalle, la búsqueda y el simulador los
-// tratan exactamente igual que un urbano.
+// Buses interurbanos (201 Santa Juana + 401/411/421 Tomé) — pequeñísimos
+// en bytes vs. los 169 GTFS, así que los cargamos eagerly y aparecen junto
+// con Biotrén en el primer paint. La sheet de detalle, la búsqueda y el
+// simulador los tratan exactamente igual que un urbano.
 const INTERURBAN_ROUTES: Route[] = INTERURBAN_BUS_ROUTES.map((b) =>
   busRouteToRoute(b, PARADERO_BY_ID),
 );

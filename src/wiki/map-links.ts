@@ -42,13 +42,20 @@
 
 export const MAP_WIKI_LINKS = {
   byRouteCode: {
-    // Servicios licitados con artículo dedicado. El código "201" se enchufa
-    // contra la ruta nativa interurbana servida desde
-    // `src/data/interurban-routes.generated.ts` (trazado digitalizado desde
-    // OSM, paraderos OSM citados). El visor lo trata como cualquier urbano
-    // y muestra el botón "Ver en el wiki →" porque hay match en este mapa.
+    // Servicios licitados con artículo dedicado. Los códigos "201" y
+    // "401"/"411"/"421" se enchufan contra rutas nativas interurbanas
+    // servidas desde `src/data/interurban-routes.generated.ts` (trazado
+    // digitalizado desde OSM, paraderos OSM citados). El visor las trata
+    // como cualquier urbana y muestra el botón "Ver en el wiki →" porque
+    // hay match en este mapa.
     '201': 'ruta-201-santa-juana',
     '201 AU': 'ruta-201-santa-juana',
+    // Servicios del Perímetro de Exclusión de Tomé (op. 2022). Los tres
+    // apuntan al mismo artículo del corredor Concepción ↔ Tomé que los
+    // documenta como familia de Transportes Tomé.
+    '401': 'concepcion-tome',
+    '411': 'concepcion-tome',
+    '421': 'concepcion-tome',
   } as Record<string, string>,
 
   // Los corredores interurbanos sin trazado verificable conservan su lugar
