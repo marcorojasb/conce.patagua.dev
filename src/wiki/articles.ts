@@ -26,6 +26,15 @@ export const ARTICLES: ArticleMeta[] = [
     Component: lazy(() => import('./articles/perimetro-exclusion-gran-concepcion-2024')),
   },
   {
+    slug: 'perimetro-exclusion-tome',
+    title: 'Perímetro de Exclusión de Tomé',
+    summary:
+      'Segundo perímetro de exclusión metropolitano del Biobío (decreto MTT jul-2016 firmado por Andrés Gómez-Lobo, operativo 10-mar-2022). Régimen de operador único bajo art. 3° Ley 18.696: Transportes Tomé corre los servicios 401 / 411 / 421 desde Concepción hacia Penco, Lirquén, Tomé y Dichato con 71 buses declarados. Tarifa de partida $750 adulto (rebaja de $150 vs régimen previo). Refuerzos may-2025 +11% hora punta tarde. Integración BusPay desde Q3 2026. Tensión con el electrocorredor MOP Ruta 150 que solo llega hasta Enlace Penco. Los servicios 401/411/421 no están en el feed GTFS Gran Concepción.',
+    section: 'estructural',
+    updated: '2026-05-16',
+    Component: lazy(() => import('./articles/perimetro-exclusion-tome')),
+  },
+  {
     slug: 'buspay-2026',
     title: 'BusPay · pago electrónico del Gran Concepción 2026',
     summary:
