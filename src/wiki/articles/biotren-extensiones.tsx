@@ -30,11 +30,12 @@ export default function BiotrenExtensiones() {
         <strong>Verificado parcialmente con fuentes primarias.</strong>{' '}
         Estaciones, trazado, código de servicio L1/L2, operador EFE Trenes
         Metropolitanos y hitos históricos (1872 línea Sur, 1995 FESUR,
-        proyecto Biotrén 2005, electrificación, 27F-2010) están citados.{' '}
-        <strong>Pendientes</strong>: tarifa adulto vigente 2026 con
-        polinomio de ajuste, demanda diaria 2025-2026, estado exacto del
-        estudio de prefactibilidad de la extensión a Penco, decreto MTT
-        del subsidio operacional. Las <em>extensiones</em> a Penco, Tomé,
+        proyecto Biotrén 2005, electrificación, 27F-2010) están citados.
+        Tarifas por zona vigentes desde 2-ene-2026 (alza promedio $60,
+        rango Z1-Z10 $420-$850) también verificadas con EFE Sur.{' '}
+        <strong>Pendientes</strong>: demanda diaria 2025-2026, estado
+        exacto del estudio de prefactibilidad de la extensión a Penco,
+        decreto MTT del subsidio operacional. Las <em>extensiones</em> a Penco, Tomé,
         Lota y Carriel Sur están en debate público pero ninguna está
         adjudicada ni con RS (recomendación social) vigente en MIDESO al
         cierre 2025-2026 — toda esa sección lleva banner ámbar.
@@ -247,7 +248,7 @@ export default function BiotrenExtensiones() {
             ],
             [
               'Tarifa adulto',
-              'Por tramo (zonas), no plana. El visor anota "CLP por tramo" para diferenciar de buses (que cobran por viaje). Valor exacto 2026 no citado en este artículo.',
+              'Por tramo (zonas), no plana. El visor anota "CLP por tramo" para diferenciar de buses (que cobran por viaje). Reajuste vigente desde 2-ene-2026: alza promedio de $60 por viaje (rango $40-$70 según zona).',
             ],
             [
               'Información en tiempo real',
@@ -255,16 +256,27 @@ export default function BiotrenExtensiones() {
             ],
           ]}
         />
-        <PendingBanner>
-          <strong>Tarifa y polinomio de ajuste 2026 pendientes</strong>.
-          La estructura tarifaria del Biotrén es <em>por zonas</em> (no
-          plana como los buses urbanos), con valores diferenciados
-          adulto / estudiante / adulto mayor. Cierre por foto del cuadro
-          tarifario en cualquier estación o consulta a la app oficial.
-        </PendingBanner>
+        <p className="text-[12px]">
+          <strong>Tarifas vigentes 2026 (extracto · adulto sin descuento):</strong>{' '}
+          Zona 1 Hualqui $550, Zona 2 Leonera / Manquimávida / Pedro
+          Medina / Chiguayante $510, Zona 3 Lorenzo Arenas $420, Zona 4
+          UTFSM / Los Cóndores / Higueras $500, Zona 6 Juan Pablo II /
+          Diagonal Biobío $570, Zona 10 Coronel $850. Estudiantes con TNE
+          activa: <strong>67% de descuento</strong> en enseñanza media y
+          superior (básica liberada). Adultos mayores: <strong>50% de
+          descuento</strong>, los 365 días del año. EFE Sur cita "alza
+          acumulada por inflación no aplicada en pandemia" como
+          fundamento del ajuste.
+        </p>
         <Sources>
-          <SourceLink href="https://www.efetrenes.cl/biotren">
-            EFE Trenes · servicio Biotrén
+          <SourceLink href="https://www.efe.cl/efe-sur-informa-nueva-estructura-tarifaria-del-biotren-a-partir-del-2-de-enero-de-2026/">
+            EFE Trenes · 30-dic-2025 — Nueva estructura tarifaria Biotrén vigente 2-ene-2026
+          </SourceLink>
+          <SourceLink href="https://www.biobiochile.cl/noticias/servicios/toma-nota/2025/12/30/efe-sur-anuncia-alza-en-la-tarifa-del-biotren-para-2026-revisa-a-cuanto-subira-el-pasaje.shtml">
+            BioBioChile · 30-dic-2025 — Alza promedio $60, tabla por zona
+          </SourceLink>
+          <SourceLink href="https://www.efe.cl/nuestros-servicios/biotren/tarifas-del-servicio/">
+            EFE Trenes · Tarifas del servicio Biotrén (cuadro vigente)
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Biotr%C3%A9n">
             Wikipedia · Biotrén (frecuencias, material rodante)

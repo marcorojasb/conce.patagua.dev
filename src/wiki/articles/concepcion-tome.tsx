@@ -3,7 +3,7 @@
 // Particularidad clave del corredor: el tramo Concepción ↔ Penco ↔ Lirquén
 // está cubierto por el GTFS urbano (líneas 17M, 30B/C/E, 31F, 57Y, 62H que
 // el visor sí muestra). El tramo verdaderamente interurbano —Lirquén → Tomé
-// → Dichato— lo opera una empresa única, Transportes Tomé S.P.A., bajo el
+// → Dichato— lo opera una empresa única, Transportes Tomé SpA, bajo el
 // segundo perímetro de exclusión metropolitano (decreto MTT julio 2016,
 // operativo marzo 2022). Esos servicios 401/411/421 NO están en el feed
 // GTFS Gran Concepción.
@@ -30,9 +30,9 @@ export default function ConcepcionTome() {
         <em>Transportes Tomé</em>, códigos 401/411/421, tarifa de partida
         $750, flota declarada de 71 buses, terminales, ampliaciones 2025 e
         inversión MOP en Ruta 150: todo con fuente. <strong>Pendientes</strong>:
-        razón social y RUT exactos de Transportes Tomé S.P.A., tarifa
-        adulto vigente 2026 (con polinomio de ajuste), decreto exacto de
-        adjudicación, tabla horaria completa.
+        razón social y RUT exactos de Transportes Tomé SpA, decreto exacto
+        de adjudicación, tabla horaria completa. Tarifa adulto vigente 2026:
+        $780 a Concepción / $830 a Dichato (alza 23-feb-2025).
       </VerifiedBanner>
 
       <Section title="Resumen ejecutivo">
@@ -302,10 +302,11 @@ export default function ConcepcionTome() {
           ]}
         />
         <PendingBanner>
-          <strong>Pendiente:</strong> razón social formal (¿Transportes
-          Tomé S.P.A.? ¿S.A.?), RUT, N° RNTPP, decreto de adjudicación del
-          perímetro y plazo del contrato. Vía de cierre: Ley de
-          Transparencia a DTPR Biobío o consulta SII por nombre comercial.
+          <strong>Pendiente:</strong> razón social formal con tipo
+          societario (SpA / S.A. / Ltda.), RUT, N° RNTPP, decreto de
+          adjudicación del perímetro y plazo del contrato. Vía de cierre:
+          Ley de Transparencia a DTPR Biobío o consulta SII por nombre
+          comercial.
         </PendingBanner>
       </Section>
 
@@ -418,8 +419,8 @@ export default function ConcepcionTome() {
               'Dichato → Conce',
               'Mayo 2025 sumó cuarta salida entre 06:00-07:00, cada 15 min',
             ],
-            ['Tarifa adulto base', '$750 (referencia 2022 al inicio del perímetro) · valor 2026 con polinomio de ajuste no publicado'],
-            ['Tarifa Dichato', 'Mayor que $750 — diferencial no publicado'],
+            ['Tarifa adulto base', '$750 al inicio del perímetro (mar-2022) → $780 vigente desde 23-feb-2025 (reajuste polinómico ratificado por el SEREMI Patricio Fierro)'],
+            ['Tarifa Dichato', '$830 vigente desde 23-feb-2025 (diferencial Tomé-Dichato por kilometraje adicional)'],
             ['Información en tiempo real', 'App Red Regional de Movilidad — buscar "401" / "411"'],
             ['GTFS público', 'NO publicado. El servicio no aparece en el feed GTFS Gran Concepción.'],
             ['Pago electrónico', 'Comprometido — Tomé está dentro del perímetro BusPay 2026'],
@@ -441,6 +442,9 @@ export default function ConcepcionTome() {
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
             BioBioChile · 11-mar-2022 — Tarifa inicial $750
+          </SourceLink>
+          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2025/02/17/gran-concepcion-pasaje-de-transporte-publico-registrara-alza-de-20-desde-el-proximo-domingo.shtml">
+            BioBioChile · 17-feb-2025 — Alza 23-feb-2025: Tomé-Concepción $780, Tomé-Dichato $830
           </SourceLink>
         </Sources>
       </Section>
@@ -775,9 +779,9 @@ export default function ConcepcionTome() {
 
       <Section title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Razón social formal (¿S.P.A.?), RUT y N° RNTPP de Transportes Tomé.</li>
+          <li>Razón social formal con tipo societario (SpA / S.A. / Ltda.), RUT y N° RNTPP de Transportes Tomé.</li>
           <li>Decreto exacto de adjudicación del perímetro de exclusión Tomé (2016/2022) y duración del contrato.</li>
-          <li>Tarifa adulto vigente al cierre 2025-2026 con polinomio de ajuste publicado.</li>
+          <li>Forma matemática del polinomio de ajuste y calendario completo de reajustes 2022-2026 (tarifa 2026 vigente: $780 a Concepción, $830 a Dichato).</li>
           <li>Tabla horaria oficial lun-vie / sáb / dom / festivos para 401, 411 y 421.</li>
           <li>Detalle del compromiso de pago electrónico BusPay para servicios 401/411/421 (validadores, cronograma).</li>
           <li>Operación temporada alta verano: ¿hay flota o frecuencia extra contractual? No documentado.</li>
