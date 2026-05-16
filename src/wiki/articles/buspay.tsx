@@ -610,7 +610,7 @@ export default function BusPay() {
         </div>
         <p className="text-[12px] text-muted-foreground">
           <strong>NO están en BusPay 2026:</strong> Biotrén (sigue con
-          su tarjeta Conecta · ver <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">artículo Biotrén</a>),
+          su tarjeta Conecta · ver <a href="/wiki/biotren" className="underline underline-offset-2">artículo Biotrén</a>),
           corredor Concepción-Florida (operadores privados sin
           régimen formal · ver{' '}
           <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
@@ -1132,7 +1132,7 @@ export default function BusPay() {
             jul-2016). Operador único Transportes Tomé SpA.
           </li>
           <li>
-            <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén y sus extensiones
             </a>{' '}
             — el modo masivo del Gran Concepción <em>no</em> está en

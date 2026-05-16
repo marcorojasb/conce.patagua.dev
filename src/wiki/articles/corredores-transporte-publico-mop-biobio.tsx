@@ -133,7 +133,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
           botella. La pregunta abierta es si la demanda residencial-
           laboral de cada corredor justifica el costo —y si no termina
           desplazando políticamente las extensiones del{' '}
-          <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+          <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
             Biotrén
           </a>
           {' '}que llevan años en cola en EFE-MIDESO.
@@ -355,7 +355,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
       <Section title="Tensión con el Biotrén">
         <p>
           Es la tensión política más fuerte del paquete. El{' '}
-          <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+          <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
             Biotrén
           </a>
           {' '}tiene tres extensiones largamente estudiadas que cruzan
@@ -771,7 +771,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
             Transportes Tomé, perímetro de exclusión 2016/2022).
           </li>
           <li>
-            <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén y sus extensiones
             </a>
             : la tensión modal con el electrocorredor Ruta 150 está

@@ -811,7 +811,7 @@ export default function SubsidioLey20378() {
             seguirá financiada por Ley 20.378.
           </li>
           <li>
-            <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén y sus extensiones
             </a>{' '}
             — EFE no se financia con Ley 20.378, pero la

@@ -182,7 +182,7 @@ export default function GtfsGranConcepcion() {
                   <code className="font-mono">scripts/fetch-biotren.ts</code>{' '}
                   y <code className="font-mono">fetch-biotren-track.ts</code>{' '}
                   consumiendo OpenStreetMap (Overpass). Ver{' '}
-                  <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">Biotrén y sus extensiones</a>.
+                  <a href="/wiki/biotren" className="underline underline-offset-2">Biotrén</a>.
                 </td>
               </tr>
             </tbody>
@@ -704,7 +704,7 @@ export default function GtfsGranConcepcion() {
             afuera y cómo el visor los integra (o no) de otra manera.
           </li>
           <li>
-            <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">Biotrén y sus extensiones</a>
+            <a href="/wiki/biotren" className="underline underline-offset-2">Biotrén</a>
             {' '}— el otro modo urbano del Gran Concepción, fuera del feed
             GTFS de buses y procesado por OSM.
           </li>

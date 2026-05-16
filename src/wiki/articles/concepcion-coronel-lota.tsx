@@ -638,7 +638,7 @@ export default function ConcepcionCoronelLota() {
                 periféricos de Coronel que no llegan a la estación). La
                 discusión política sobre <em>extender el Biotrén a
                 Lota</em> aparece recurrentemente (ver{' '}
-                <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+                <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
                   artículo Biotrén y sus extensiones
                 </a>
                 ) — pero la inversión en buses nuevos (80 buses del PE
@@ -734,8 +734,8 @@ export default function ConcepcionCoronelLota() {
               <strong>Línea 2 del Biotrén</strong> (Concepción ↔ Coronel)
               — trazado y 14 estaciones digitalizadas desde OSM. La capa
               de tren no depende del feed GTFS de buses. Ver el artículo{' '}
-              <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
-                Biotrén y sus extensiones
+              <a href="/wiki/biotren" className="underline underline-offset-2">
+                Biotrén
               </a>
               .
             </li>
@@ -869,8 +869,8 @@ export default function ConcepcionCoronelLota() {
             Electrocorredores MOP del Biobío
           </a>
           . Para el modo competidor por el mismo eje, lee{' '}
-          <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
-            Biotrén y sus extensiones
+          <a href="/wiki/biotren" className="underline underline-offset-2">
+            Biotrén
           </a>
           .
         </p>

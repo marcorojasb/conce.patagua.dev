@@ -740,7 +740,7 @@ export default function SeremittDtprBiobio() {
             la concesión no obliga a flota 100% eléctrica.
           </li>
           <li>
-            <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén y sus extensiones
             </a>{' '}
             — la SEREMITT coordina con EFE la integración

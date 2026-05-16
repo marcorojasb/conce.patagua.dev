@@ -1174,7 +1174,7 @@ export default function OpenstreetmapFuenteVisor() {
             feed entra por OSM.
           </li>
           <li>
-            <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén y sus extensiones
             </a>
             {' '}— estaciones y trazado vienen de OSM (relations 6857222 /

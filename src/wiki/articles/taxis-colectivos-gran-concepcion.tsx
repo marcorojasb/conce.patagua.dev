@@ -258,7 +258,7 @@ export default function TaxisColectivosGranConcepcion() {
                 ruta entre las dos cabeceras urbanas del área. Compite
                 directamente con la <strong>Línea 1 del Biotrén</strong>{' '}
                 (
-                <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+                <a href="/wiki/biotren" className="underline underline-offset-2">
                   ver artículo Biotrén
                 </a>
                 ) y con líneas del{' '}
@@ -820,7 +820,7 @@ export default function TaxisColectivosGranConcepcion() {
       <Section title="Vínculos con otros artículos">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>
-            <a href="/wiki/biotren-extensiones" className="underline underline-offset-2">
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén y sus extensiones
             </a>{' '}
             — el otro modo urbano masivo del Gran Concepción, con la
