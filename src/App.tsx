@@ -248,10 +248,20 @@ export default function App() {
   // Single active tool — null means no panel is open. Floating, non-modal:
   // the user can keep interacting with the map while a tool is on screen.
   const [activeTool, setActiveTool] = useState<AnalysisTab | null>(null);
+  const [layersOpen, setLayersOpen] = useState(false);
 
   // Toolbar button behavior: click same tool = close; different = switch.
   const toggleTool = useCallback((t: AnalysisTab) => {
+    setLayersOpen(false);
     setActiveTool((cur) => (cur === t ? null : t));
+  }, []);
+
+  const toggleLayers = useCallback(() => {
+    setLayersOpen((cur) => {
+      const next = !cur;
+      if (next) setActiveTool(null);
+      return next;
+    });
   }, []);
 
   const onShowOperatorRoutes = useCallback(
@@ -626,7 +636,10 @@ export default function App() {
           onlyOperatingNow={onlyOperatingNow}
           onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
           onOpenSources={() => setSourcesOpen(true)}
-          onOpenAnalysis={() => setActiveTool('cobertura')}
+          onOpenAnalysis={() => {
+            setLayersOpen(false);
+            setActiveTool('cobertura');
+          }}
         />
 
         <main className="relative flex-1">
@@ -711,12 +724,15 @@ export default function App() {
             cyclewaysStatus={{ loading: cyclewaysLoading }}
             greenspaceStatus={{ loading: greenspaceLoading }}
             schoolsStatus={{ loading: schoolsLoading }}
+            layersOpen={layersOpen}
+            onToggleLayers={toggleLayers}
+            onCloseLayers={() => setLayersOpen(false)}
             onRecenter={onRecenterMap}
             onOpenTool={toggleTool}
             activeTool={activeTool}
           />
 
-          {!sheetKind && !activeTool && (
+          {!sheetKind && !activeTool && !layersOpen && (
             <div className="pointer-events-none absolute left-2 top-2 z-10 animate-fade-in md:left-3 md:top-3">
               <Card className="pointer-events-auto max-w-[220px] border-border/80 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:max-w-[260px]">
                 <CardHeader className="space-y-1 p-3">
@@ -759,7 +775,7 @@ export default function App() {
           <div
             className={cn(
               'pointer-events-none absolute bottom-10 left-2 z-10 md:bottom-6 md:left-3',
-              activeTool && 'hidden md:block',
+              (activeTool || layersOpen) && 'hidden md:block',
             )}
           >
             <div className="pointer-events-auto max-h-[35vh] overflow-y-auto thin-scroll rounded-md border bg-background/90 px-3 py-2 text-[11px] shadow-sm backdrop-blur md:max-h-[40vh]">
