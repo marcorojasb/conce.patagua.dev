@@ -804,6 +804,18 @@ export default function App() {
             visibleRouteIds={visibleRouteIds}
             mapBounds={mapBounds}
             theme={theme}
+            simulatedVehicles={simulatedVehicles}
+            simulationScope={simulationScope}
+            activeMapLayers={{
+              paraderos: showParaderos,
+              terminales: showTerminals,
+              pois: showPois,
+              coverage: showCoverage,
+              cycleways: showCycleways,
+              greenspace: showGreenspace,
+              schools: showSchools,
+              simulated: showSimulatedVehicles,
+            }}
             plannerMidpoint={plannerMidpoint}
             plannerMidpointLoading={plannerMidpointLoading}
             plannerMidpointError={plannerMidpointError}

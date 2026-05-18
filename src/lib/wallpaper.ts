@@ -11,6 +11,8 @@ const TILE_SIZE = 256;
 const TILE_SUBDOMAINS = ['a', 'b', 'c'];
 
 export type WallpaperTheme = 'light' | 'dark';
+export type WallpaperStyle = 'clean' | 'technical' | 'editorial' | 'night';
+export type WallpaperRouteMode = 'visible' | 'all' | 'biotren' | 'interurban';
 
 export interface WallpaperRoute {
   path: Array<[number, number]>; // [lat, lng] vertices
@@ -29,6 +31,31 @@ export interface WallpaperPoint {
   lng: number;
 }
 
+export interface WallpaperStyledPoint extends WallpaperPoint {
+  color: string;
+  radius?: number;
+}
+
+export interface WallpaperPolygon {
+  ring: Array<[number, number]>;
+  fill: string;
+  stroke?: string;
+}
+
+export interface WallpaperVehicle extends WallpaperPoint {
+  color: string;
+  bearing: number;
+  routeId: string;
+  label?: string;
+  sourceKind?: string;
+}
+
+export interface WallpaperLegendItem {
+  label: string;
+  color: string;
+  kind?: 'line' | 'dot' | 'square' | 'polygon' | 'vehicle';
+}
+
 export interface WallpaperMidpoint {
   path: Array<[number, number]>;
   midpoint: [number, number];
@@ -41,16 +68,38 @@ export interface WallpaperConfig {
   width: number;
   height: number;
   theme: WallpaperTheme;
+  style?: WallpaperStyle;
   routes: WallpaperRoute[];
+  cycleways?: WallpaperRoute[];
+  greenspace?: WallpaperPolygon[];
   coverageCells?: WallpaperCoverageCell[];
   /** GTFS stops (paraderos) to dot on the map. */
   paraderos?: WallpaperPoint[];
   /** Bus terminals to mark with squares. */
   terminales?: WallpaperPoint[];
+  pois?: WallpaperStyledPoint[];
+  schools?: WallpaperStyledPoint[];
+  vehicles?: WallpaperVehicle[];
+  legendItems?: WallpaperLegendItem[];
+  showLegend?: boolean;
+  showScale?: boolean;
   /** Walking midpoint result drawn as dashed line + A/M/B markers. */
   midpoint?: WallpaperMidpoint;
   title?: string;
   subtitle?: string;
+}
+
+export interface WallpaperRouteSource {
+  id: string;
+  type: 'micro' | 'biotren';
+  network?: string;
+  path: Array<[number, number]>;
+  color: string;
+}
+
+export interface WallpaperFrameOptions {
+  paddingPct: number;
+  zoomDelta: number;
 }
 
 const COVERAGE_COLOR: Record<WallpaperCoverageCell['bucket'], string> = {
@@ -61,6 +110,115 @@ const COVERAGE_COLOR: Record<WallpaperCoverageCell['bucket'], string> = {
   'muy-pobre': 'rgba(239, 68, 68, 0.45)',
 };
 const COVERAGE_HALF_STEP = 0.0015; // matches the coverage grid generator
+
+const STYLE_META: Record<
+  WallpaperStyle,
+  {
+    label: string;
+    overlay: string;
+    vignette: number;
+    titleScale: number;
+    routeHaloAlpha: number;
+    legend: boolean;
+  }
+> = {
+  clean: {
+    label: 'Limpio',
+    overlay: 'rgba(255,255,255,0)',
+    vignette: 0.18,
+    titleScale: 1,
+    routeHaloAlpha: 0.7,
+    legend: false,
+  },
+  technical: {
+    label: 'Técnico',
+    overlay: 'rgba(255,255,255,0.04)',
+    vignette: 0.12,
+    titleScale: 0.9,
+    routeHaloAlpha: 0.85,
+    legend: true,
+  },
+  editorial: {
+    label: 'Editorial',
+    overlay: 'rgba(0,0,0,0.04)',
+    vignette: 0.28,
+    titleScale: 1.35,
+    routeHaloAlpha: 0.9,
+    legend: true,
+  },
+  night: {
+    label: 'Nocturno',
+    overlay: 'rgba(0,0,0,0.16)',
+    vignette: 0.38,
+    titleScale: 1.05,
+    routeHaloAlpha: 0.95,
+    legend: true,
+  },
+};
+
+export const WALLPAPER_STYLES: Array<{ id: WallpaperStyle; label: string; description: string }> = [
+  { id: 'clean', label: 'Limpio', description: 'Mapa sobrio, rutas y marca discreta.' },
+  { id: 'technical', label: 'Técnico', description: 'Leyenda, escala y capas analíticas.' },
+  { id: 'editorial', label: 'Editorial', description: 'Título más visible, composición tipo póster.' },
+  { id: 'night', label: 'Nocturno', description: 'Alto contraste para pantallas OLED.' },
+];
+
+export function padBbox(
+  bbox: WallpaperConfig['bbox'],
+  { paddingPct, zoomDelta }: WallpaperFrameOptions,
+): WallpaperConfig['bbox'] {
+  const [[latMin, lngMin], [latMax, lngMax]] = bbox;
+  const latSpan = Math.max(0.001, latMax - latMin);
+  const lngSpan = Math.max(0.001, lngMax - lngMin);
+  const zoomFactor = Math.pow(1.16, -zoomDelta);
+  const pad = Math.max(0, paddingPct) / 100;
+  const targetLatSpan = latSpan * (1 + pad * 2) * zoomFactor;
+  const targetLngSpan = lngSpan * (1 + pad * 2) * zoomFactor;
+  const centerLat = (latMin + latMax) / 2;
+  const centerLng = (lngMin + lngMax) / 2;
+  return [
+    [centerLat - targetLatSpan / 2, centerLng - targetLngSpan / 2],
+    [centerLat + targetLatSpan / 2, centerLng + targetLngSpan / 2],
+  ];
+}
+
+export function selectWallpaperRoutes(
+  routes: WallpaperRouteSource[],
+  visibleRouteIds: string[],
+  mode: WallpaperRouteMode,
+): WallpaperRouteSource[] {
+  const visible = new Set(visibleRouteIds);
+  return routes.filter((route) => {
+    if (mode === 'visible') return visible.has(route.id);
+    if (mode === 'all') return true;
+    if (mode === 'biotren') return route.type === 'biotren';
+    return route.network?.startsWith('Interurbano') ?? false;
+  });
+}
+
+export function buildWallpaperLegend(input: {
+  routesCount: number;
+  vehiclesCount: number;
+  paraderos: boolean;
+  terminales: boolean;
+  cobertura: boolean;
+  cycleways: boolean;
+  greenspace: boolean;
+  schools: boolean;
+  pois: boolean;
+}): WallpaperLegendItem[] {
+  const items: WallpaperLegendItem[] = [];
+  if (input.routesCount > 0) items.push({ label: `${input.routesCount} recorridos`, color: '#0ea5e9', kind: 'line' });
+  if (input.vehiclesCount > 0) items.push({ label: `${input.vehiclesCount} servicios en curso`, color: '#f8fafc', kind: 'vehicle' });
+  if (input.paraderos) items.push({ label: 'Paraderos', color: '#f8fafc', kind: 'dot' });
+  if (input.terminales) items.push({ label: 'Terminales', color: '#f8fafc', kind: 'square' });
+  if (input.cobertura) items.push({ label: 'Cobertura territorial', color: '#facc15', kind: 'polygon' });
+  if (input.cycleways) items.push({ label: 'Ciclovías', color: '#2563eb', kind: 'line' });
+  if (input.greenspace) items.push({ label: 'Áreas verdes', color: '#22c55e', kind: 'polygon' });
+  if (input.schools) items.push({ label: 'Educación', color: '#dc2626', kind: 'dot' });
+  if (input.pois) items.push({ label: 'Centros de atracción', color: '#7c3aed', kind: 'dot' });
+  return items;
+}
 
 function projectAtZoom(lat: number, lng: number, zoom: number): [number, number] {
   const scale = TILE_SIZE * Math.pow(2, zoom);
@@ -104,14 +262,25 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     width,
     height,
     theme,
+    style = 'clean',
     routes,
+    cycleways,
+    greenspace,
     coverageCells,
     paraderos,
     terminales,
+    pois,
+    schools,
+    vehicles,
+    legendItems,
+    showLegend,
+    showScale,
     midpoint,
     title,
     subtitle,
   } = cfg;
+  const styleMeta = STYLE_META[style];
+  const renderTheme: WallpaperTheme = style === 'night' ? 'dark' : theme;
   const [[latMin, lngMin], [latMax, lngMax]] = bbox;
   const centerLat = (latMin + latMax) / 2;
   const centerLng = (lngMin + lngMax) / 2;
@@ -133,7 +302,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas 2D context unavailable');
 
-  ctx.fillStyle = theme === 'dark' ? '#0b0b0d' : '#FFFFFF';
+  ctx.fillStyle = renderTheme === 'dark' ? '#0b0b0d' : '#FFFFFF';
   ctx.fillRect(0, 0, width, height);
 
   // Compute visible tile range and fetch in parallel.
@@ -141,7 +310,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
   const tileMinY = Math.floor(originY / TILE_SIZE);
   const tileMaxX = Math.floor((originX + width) / TILE_SIZE);
   const tileMaxY = Math.floor((originY + height) / TILE_SIZE);
-  const tileStyle = theme === 'dark' ? 'dark_all' : 'light_all';
+  const tileStyle = renderTheme === 'dark' ? 'dark_all' : 'light_all';
 
   const tilePromises: Promise<{ img: HTMLImageElement | null; tx: number; ty: number }>[] = [];
   for (let tx = tileMinX; tx <= tileMaxX; tx++) {
@@ -159,6 +328,44 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     ctx.drawImage(img, tx * TILE_SIZE - originX, ty * TILE_SIZE - originY, TILE_SIZE, TILE_SIZE);
   }
 
+  ctx.fillStyle = styleMeta.overlay;
+  ctx.fillRect(0, 0, width, height);
+
+  if (styleMeta.vignette > 0) {
+    const vignette = ctx.createRadialGradient(
+      width / 2,
+      height / 2,
+      Math.min(width, height) * 0.18,
+      width / 2,
+      height / 2,
+      Math.max(width, height) * 0.72,
+    );
+    vignette.addColorStop(0, 'rgba(0,0,0,0)');
+    vignette.addColorStop(1, `rgba(0,0,0,${styleMeta.vignette})`);
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, width, height);
+  }
+
+  if (greenspace && greenspace.length > 0) {
+    ctx.lineWidth = Math.max(0.6, Math.min(width, height) / 2200);
+    for (const poly of greenspace) {
+      if (poly.ring.length < 3) continue;
+      ctx.beginPath();
+      for (let i = 0; i < poly.ring.length; i++) {
+        const [x, y] = toCanvas(poly.ring[i][0], poly.ring[i][1]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = poly.fill;
+      ctx.fill();
+      if (poly.stroke) {
+        ctx.strokeStyle = poly.stroke;
+        ctx.stroke();
+      }
+    }
+  }
+
   // Coverage cells under the routes so routes stay legible on top.
   if (coverageCells && coverageCells.length > 0) {
     for (const cell of coverageCells) {
@@ -171,12 +378,20 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
 
   // Routes — stroked polylines, scaled-up weight so they're crisp at print res.
   const lineScale = Math.max(1, Math.min(width, height) / 1280);
-  for (const r of routes) {
-    if (r.path.length < 2) continue;
-    ctx.strokeStyle = r.color;
-    ctx.lineWidth = (r.weight ?? 3) * lineScale;
+  const drawPath = (
+    route: WallpaperRoute,
+    options?: { halo?: boolean; alpha?: number; dash?: number[] },
+  ) => {
+    const { halo = false, alpha = 1, dash } = options ?? {};
+    const r = route;
+    if (r.path.length < 2) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = halo ? (renderTheme === 'dark' ? 'rgba(0,0,0,0.86)' : 'rgba(255,255,255,0.88)') : r.color;
+    ctx.lineWidth = ((r.weight ?? 3) + (halo ? 4.5 : 0)) * lineScale;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    if (dash) ctx.setLineDash(dash.map((d) => d * lineScale));
     ctx.beginPath();
     for (let i = 0; i < r.path.length; i++) {
       const [x, y] = toCanvas(r.path[i][0], r.path[i][1]);
@@ -184,14 +399,22 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
       else ctx.lineTo(x, y);
     }
     ctx.stroke();
+    ctx.restore();
+  };
+
+  if (cycleways && cycleways.length > 0) {
+    for (const r of cycleways) drawPath(r, { alpha: 0.78, dash: [5, 4] });
   }
+
+  for (const r of routes) drawPath(r, { halo: true, alpha: styleMeta.routeHaloAlpha });
+  for (const r of routes) drawPath(r);
 
   // Paraderos as small filled circles. Skipped at very low zoom — wouldn't
   // be readable anyway and they'd just blanket the map.
   if (paraderos && paraderos.length > 0 && zoom >= 12) {
     const r = 1.8 * lineScale;
-    ctx.fillStyle = theme === 'dark' ? 'rgba(250,250,250,0.85)' : 'rgba(15,15,15,0.7)';
-    ctx.strokeStyle = theme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.9)';
+    ctx.fillStyle = renderTheme === 'dark' ? 'rgba(250,250,250,0.85)' : 'rgba(15,15,15,0.7)';
+    ctx.strokeStyle = renderTheme === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.9)';
     ctx.lineWidth = 0.6 * lineScale;
     for (const p of paraderos) {
       const [x, y] = toCanvas(p.lat, p.lng);
@@ -207,14 +430,56 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
   // viewer can tell them apart at glance.
   if (terminales && terminales.length > 0) {
     const s = 5 * lineScale;
-    ctx.fillStyle = theme === 'dark' ? '#fafafa' : '#0f0f0f';
-    ctx.strokeStyle = theme === 'dark' ? '#000' : '#fff';
+    ctx.fillStyle = renderTheme === 'dark' ? '#fafafa' : '#0f0f0f';
+    ctx.strokeStyle = renderTheme === 'dark' ? '#000' : '#fff';
     ctx.lineWidth = 1.2 * lineScale;
     for (const t of terminales) {
       const [x, y] = toCanvas(t.lat, t.lng);
       if (x < -s || x > width + s || y < -s || y > height + s) continue;
       ctx.fillRect(x - s / 2, y - s / 2, s, s);
       ctx.strokeRect(x - s / 2, y - s / 2, s, s);
+    }
+  }
+
+  const drawStyledPoints = (points: WallpaperStyledPoint[] | undefined, fallbackRadius: number) => {
+    if (!points || points.length === 0 || zoom < 11) return;
+    ctx.lineWidth = 1.1 * lineScale;
+    for (const p of points) {
+      const radius = (p.radius ?? fallbackRadius) * lineScale;
+      const [x, y] = toCanvas(p.lat, p.lng);
+      if (x < -radius || x > width + radius || y < -radius || y > height + radius) continue;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      ctx.strokeStyle = renderTheme === 'dark' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.9)';
+      ctx.stroke();
+    }
+  };
+
+  drawStyledPoints(schools, 2.4);
+  drawStyledPoints(pois, 3.1);
+
+  if (vehicles && vehicles.length > 0) {
+    const markerSize = 7.2 * lineScale;
+    for (const v of vehicles) {
+      const [x, y] = toCanvas(v.lat, v.lng);
+      if (x < -markerSize || x > width + markerSize || y < -markerSize || y > height + markerSize) continue;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((v.bearing * Math.PI) / 180);
+      ctx.beginPath();
+      ctx.moveTo(0, -markerSize);
+      ctx.lineTo(markerSize * 0.78, markerSize * 0.82);
+      ctx.lineTo(0, markerSize * 0.42);
+      ctx.lineTo(-markerSize * 0.78, markerSize * 0.82);
+      ctx.closePath();
+      ctx.fillStyle = v.color;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = Math.max(1.4, 1.8 * lineScale);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
     }
   }
 
@@ -269,31 +534,59 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
   const padX = Math.round(width * 0.035);
   const padY = Math.round(height * 0.035);
   const minDim = Math.min(width, height);
-  const subtitleSize = Math.round(minDim * 0.022);
+  const subtitleSize = Math.round(minDim * 0.022 * styleMeta.titleScale);
   const brandSize = Math.round(minDim * 0.016);
   const attrSize = Math.round(minDim * 0.012);
 
   ctx.textBaseline = 'alphabetic';
 
-  // Optional content subtitle (e.g. "Biotrén completo", "Vista actual ·
-  // N recorridos"). Skipped if caller passed nothing — the brand line
-  // alone is enough.
+  if (showScale || style === 'technical') {
+    drawScaleBar(ctx, {
+      width,
+      height,
+      centerLat,
+      zoom,
+      lineScale,
+      renderTheme,
+      padX,
+      padY,
+    });
+  }
+
+  const shouldDrawLegend = showLegend ?? styleMeta.legend;
+  if (shouldDrawLegend && legendItems && legendItems.length > 0) {
+    drawLegend(ctx, legendItems, {
+      width,
+      height,
+      lineScale,
+      renderTheme,
+      padX,
+      padY,
+    });
+  }
+
   let cursor = height - padY;
-  ctx.fillStyle = theme === 'dark' ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)';
+  ctx.fillStyle = renderTheme === 'dark' ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)';
   ctx.font = `400 ${attrSize}px Inter, system-ui, sans-serif`;
   ctx.fillText('OSM contributors © CARTO · GTFS Gran Concepción CC BY 4.0', padX, cursor);
   cursor -= attrSize + 4;
 
-  ctx.fillStyle = theme === 'dark' ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.78)';
+  ctx.fillStyle = renderTheme === 'dark' ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.78)';
   ctx.font = `600 ${brandSize}px Inter, system-ui, sans-serif`;
   ctx.fillText('conce.patagua.dev', padX, cursor);
   cursor -= brandSize + 4;
 
-  const headline = title ?? subtitle;
-  if (headline) {
-    ctx.fillStyle = theme === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.62)';
+  if (subtitle) {
+    ctx.fillStyle = renderTheme === 'dark' ? 'rgba(255,255,255,0.64)' : 'rgba(0,0,0,0.56)';
+    ctx.font = `400 ${Math.round(subtitleSize * 0.72)}px Inter, system-ui, sans-serif`;
+    ctx.fillText(subtitle, padX, cursor);
+    cursor -= Math.round(subtitleSize * 0.72) + 6;
+  }
+
+  if (title) {
+    ctx.fillStyle = renderTheme === 'dark' ? 'rgba(255,255,255,0.86)' : 'rgba(0,0,0,0.78)';
     ctx.font = `500 ${subtitleSize}px Inter, system-ui, sans-serif`;
-    ctx.fillText(headline, padX, cursor);
+    ctx.fillText(title, padX, cursor);
   }
 
   return new Promise<Blob>((resolve, reject) => {
@@ -306,6 +599,125 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
       0.95,
     );
   });
+}
+
+function drawScaleBar(
+  ctx: CanvasRenderingContext2D,
+  opts: {
+    width: number;
+    height: number;
+    centerLat: number;
+    zoom: number;
+    lineScale: number;
+    renderTheme: WallpaperTheme;
+    padX: number;
+    padY: number;
+  },
+) {
+  const metersPerPixel =
+    (156543.03392 * Math.cos((opts.centerLat * Math.PI) / 180)) /
+    Math.pow(2, opts.zoom);
+  const kmPx = 1000 / metersPerPixel;
+  const x = opts.width - opts.padX - kmPx;
+  const y = opts.height - opts.padY - 18 * opts.lineScale;
+  if (!Number.isFinite(kmPx) || kmPx < 24 || x < opts.width * 0.5) return;
+  ctx.save();
+  ctx.strokeStyle = opts.renderTheme === 'dark' ? 'rgba(255,255,255,0.82)' : 'rgba(0,0,0,0.72)';
+  ctx.lineWidth = 2 * opts.lineScale;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + kmPx, y);
+  ctx.stroke();
+  ctx.fillStyle = opts.renderTheme === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.58)';
+  ctx.font = `500 ${Math.round(11 * opts.lineScale)}px Inter, system-ui, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('1 km', x + kmPx / 2, y - 6 * opts.lineScale);
+  ctx.restore();
+}
+
+function drawLegend(
+  ctx: CanvasRenderingContext2D,
+  items: WallpaperLegendItem[],
+  opts: {
+    width: number;
+    height: number;
+    lineScale: number;
+    renderTheme: WallpaperTheme;
+    padX: number;
+    padY: number;
+  },
+) {
+  const fontSize = Math.round(11 * opts.lineScale);
+  const rowH = Math.round(18 * opts.lineScale);
+  const panelW = Math.min(opts.width * 0.46, 280 * opts.lineScale);
+  const panelH = 18 * opts.lineScale + items.length * rowH;
+  const x = opts.width - opts.padX - panelW;
+  const y = opts.padY;
+  ctx.save();
+  ctx.fillStyle = opts.renderTheme === 'dark' ? 'rgba(8,10,14,0.72)' : 'rgba(255,255,255,0.78)';
+  ctx.strokeStyle = opts.renderTheme === 'dark' ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, x, y, panelW, panelH, 10 * opts.lineScale);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.font = `600 ${Math.round(10 * opts.lineScale)}px Inter, system-ui, sans-serif`;
+  ctx.fillStyle = opts.renderTheme === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
+  ctx.fillText('LEYENDA', x + 12 * opts.lineScale, y + 16 * opts.lineScale);
+  ctx.font = `500 ${fontSize}px Inter, system-ui, sans-serif`;
+  items.forEach((item, idx) => {
+    const rowY = y + 30 * opts.lineScale + idx * rowH;
+    const iconX = x + 14 * opts.lineScale;
+    const iconY = rowY - 4 * opts.lineScale;
+    ctx.strokeStyle = item.color;
+    ctx.fillStyle = item.color;
+    ctx.lineWidth = 2.2 * opts.lineScale;
+    if (item.kind === 'line') {
+      ctx.beginPath();
+      ctx.moveTo(iconX, iconY);
+      ctx.lineTo(iconX + 18 * opts.lineScale, iconY);
+      ctx.stroke();
+    } else if (item.kind === 'square' || item.kind === 'polygon') {
+      ctx.fillRect(iconX, iconY - 5 * opts.lineScale, 10 * opts.lineScale, 10 * opts.lineScale);
+    } else if (item.kind === 'vehicle') {
+      ctx.beginPath();
+      ctx.moveTo(iconX + 5 * opts.lineScale, iconY - 7 * opts.lineScale);
+      ctx.lineTo(iconX + 11 * opts.lineScale, iconY + 6 * opts.lineScale);
+      ctx.lineTo(iconX - 1 * opts.lineScale, iconY + 6 * opts.lineScale);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = opts.renderTheme === 'dark' ? '#111827' : '#fff';
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(iconX + 5 * opts.lineScale, iconY, 4 * opts.lineScale, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = opts.renderTheme === 'dark' ? 'rgba(255,255,255,0.78)' : 'rgba(0,0,0,0.72)';
+    ctx.fillText(item.label, x + 42 * opts.lineScale, rowY);
+  });
+  ctx.restore();
+}
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {

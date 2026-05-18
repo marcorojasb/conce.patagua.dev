@@ -157,6 +157,20 @@ try {
     throw new Error('Layer panel stayed open after opening a tool panel.');
   }
 
+  await page.getByRole('button', { name: 'Fondo de pantalla' }).click();
+  await page.getByRole('dialog', { name: 'Fondo de pantalla' }).waitFor({ timeout: 5_000 });
+  await page.getByRole('button', { name: /Editorial/ }).click();
+  await page.getByRole('button', { name: 'Manual', exact: true }).click();
+  await page.getByRole('button', { name: 'Generar preview' }).click();
+  await page.getByAltText('Previsualización del wallpaper').waitFor({ timeout: 30_000 });
+  const downloadPromise = page.waitForEvent('download', { timeout: 45_000 });
+  await page.getByRole('button', { name: 'Descargar PNG' }).click();
+  const download = await downloadPromise;
+  const filename = download.suggestedFilename();
+  if (!filename.endsWith('.png')) {
+    throw new Error(`Expected PNG wallpaper download, got ${filename}`);
+  }
+
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(BASE_URL, { waitUntil: 'load' });
   await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
