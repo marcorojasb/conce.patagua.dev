@@ -1,6 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  CircleMarker,
   MapContainer,
   Marker,
   Polyline,
@@ -62,6 +61,7 @@ interface ConceMapProps {
   plannerDestination: { lat: number; lng: number } | null;
   simulatedVehicles: SimulatedVehicle[];
   routeColorById: Map<string, string>;
+  routeLabelById: Map<string, string>;
   onSelectSimulatedVehicle: (id: string) => void;
   showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
@@ -200,6 +200,16 @@ function midpointIcon(): L.DivIcon {
   });
 }
 
+function vehicleIcon(color: string, bearing: number): L.DivIcon {
+  const rotation = Number.isFinite(bearing) ? bearing : 0;
+  return L.divIcon({
+    className: 'vehicle-marker-wrap',
+    html: `<div class="vehicle-marker" style="--vehicle-bg:${color};--vehicle-rotation:${rotation.toFixed(1)}deg" aria-hidden="true"><svg class="vehicle-marker-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 19 21 12 17 5 21 12 3Z"/></svg></div>`,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  });
+}
+
 function InvalidateOnResize({ trigger }: { trigger: unknown }) {
   const map = useMap();
   useEffect(() => {
@@ -319,6 +329,7 @@ export function ConceMap({
   plannerDestination,
   simulatedVehicles,
   routeColorById,
+  routeLabelById,
   onSelectSimulatedVehicle,
   showCoverage,
   coverageThreshold,
@@ -577,29 +588,29 @@ export function ConceMap({
       {simulatedVehicles.length > 0 &&
         simulatedVehicles.map((v) => {
           const color = routeColorById.get(v.routeId) ?? '#0ea5e9';
+          const label = routeLabelById.get(v.routeId) ?? v.routeId;
           return (
-            <CircleMarker
+            <Marker
               key={v.id}
-              center={[v.lat, v.lng]}
-              radius={5}
-              pathOptions={{
-                color: '#ffffff',
-                weight: 1.5,
-                fillColor: color,
-                fillOpacity: 0.95,
-              }}
-              renderer={paraderoRenderer}
+              position={[v.lat, v.lng]}
+              icon={vehicleIcon(color, v.bearing)}
+              keyboard={false}
+              zIndexOffset={900}
               eventHandlers={{ click: () => onSelectSimulatedVehicle(v.id) }}
             >
               <LeafletTooltip
                 direction="top"
-                offset={[0, -6]}
+                offset={[0, -16]}
                 opacity={0.95}
                 className="!text-[11px]"
               >
+                <span className="font-medium">{label}</span>
+                <br />
                 Servicio en curso · {Math.round(v.progress * 100)}% del trayecto
+                <br />
+                Simulación por horario GTFS
               </LeafletTooltip>
-            </CircleMarker>
+            </Marker>
           );
         })}
 

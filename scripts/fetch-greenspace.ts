@@ -86,6 +86,64 @@ function ringAreaM2(ring: Array<[number, number]>): number {
   return Math.abs(area / 2);
 }
 
+function pointSegmentDistanceSquared(
+  p: [number, number],
+  a: [number, number],
+  b: [number, number],
+): number {
+  const x = p[1];
+  const y = p[0];
+  const x1 = a[1];
+  const y1 = a[0];
+  const x2 = b[1];
+  const y2 = b[0];
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  if (dx === 0 && dy === 0) {
+    const px = x - x1;
+    const py = y - y1;
+    return px * px + py * py;
+  }
+  const t = Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / (dx * dx + dy * dy)));
+  const projX = x1 + t * dx;
+  const projY = y1 + t * dy;
+  const px = x - projX;
+  const py = y - projY;
+  return px * px + py * py;
+}
+
+function simplifyLine(points: Array<[number, number]>, tolerance: number): Array<[number, number]> {
+  if (points.length <= 2) return points;
+  let maxDistance = 0;
+  let index = 0;
+  const first = points[0];
+  const last = points[points.length - 1];
+  for (let i = 1; i < points.length - 1; i++) {
+    const distance = pointSegmentDistanceSquared(points[i], first, last);
+    if (distance > maxDistance) {
+      index = i;
+      maxDistance = distance;
+    }
+  }
+  if (maxDistance <= tolerance * tolerance) return [first, last];
+  const left = simplifyLine(points.slice(0, index + 1), tolerance);
+  const right = simplifyLine(points.slice(index), tolerance);
+  return [...left.slice(0, -1), ...right];
+}
+
+function simplifyRing(ring: Array<[number, number]>): Array<[number, number]> {
+  // About 7 meters at Concepción's latitude. This keeps the visual shape of
+  // parks while cutting the generated JS chunk by avoiding OSM micro-vertices.
+  const tolerance = 0.00006;
+  if (ring.length < 12) return ring;
+  const first = ring[0];
+  const last = ring[ring.length - 1];
+  const closed = first[0] === last[0] && first[1] === last[1];
+  const openRing = closed ? ring.slice(0, -1) : ring;
+  const simplified = simplifyLine(openRing, tolerance);
+  return simplified.length >= 4 ? simplified : ring;
+}
+
 function buildResolved(elements: OverpassEl[]): Resolved[] {
   const out: Resolved[] = [];
   const seen = new Set<string>();
@@ -109,6 +167,7 @@ function buildResolved(elements: OverpassEl[]): Resolved[] {
     }
     if (!ring || ring.length < 4) continue;
 
+    ring = simplifyRing(ring);
     const areaM2 = ringAreaM2(ring);
     // Filter tiny noise: ignore parks under 200 m² (smaller than a basketball
     // court — usually mis-tagged residential corners).
@@ -156,7 +215,7 @@ export interface GreenSpace {
 
   const lines = items.map((it) => {
     const ring = it.ring
-      .map(([lat, lng]) => `[${lat.toFixed(5)},${lng.toFixed(5)}]`)
+      .map(([lat, lng]) => `[${lat.toFixed(4)},${lng.toFixed(4)}]`)
       .join(',');
     return `  {id:${JSON.stringify(it.id)},kind:${JSON.stringify(it.kind)},name:${JSON.stringify(it.name)},areaM2:${Math.round(it.areaM2)},ring:[${ring}]},`;
   });

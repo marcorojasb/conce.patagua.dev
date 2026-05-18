@@ -93,11 +93,7 @@ export function useSimulatedVehicles({
       cancelled = true;
       if (timer != null) window.clearInterval(timer);
     };
-    // `routes` reference changes each render; we intentionally only restart
-    // when enabled or interval changes. Schedule recomputation per tick reads
-    // current routes through the closure.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, intervalMs]);
+  }, [enabled, routes, intervalMs]);
 
   // When disabled, clear stale vehicles so the map repaints empty.
   useEffect(() => {

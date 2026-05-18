@@ -251,6 +251,43 @@
   border-top-color: hsl(var(--background));
 }
 
+.vehicle-marker-wrap {
+  background: transparent;
+  border: 0;
+}
+.vehicle-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--vehicle-bg, #0ea5e9);
+  color: #fff;
+  border: 3px solid #fff;
+  box-shadow:
+    0 2px 7px rgba(0, 0, 0, 0.45),
+    0 0 0 2px rgba(15, 23, 42, 0.35);
+  cursor: pointer;
+  transition:
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+.vehicle-marker:hover {
+  transform: scale(1.12);
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.5),
+    0 0 0 3px rgba(255, 255, 255, 0.45);
+}
+.vehicle-marker-arrow {
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  transform: rotate(var(--vehicle-rotation, 0deg));
+  transform-origin: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
 /* Interurban corridor pins — sit above the urban network to signal that
    the entity is "off-map" (no GTFS shape). Larger than micro stops, with
    a tag-like silhouette so they read as labels, not waypoints. */

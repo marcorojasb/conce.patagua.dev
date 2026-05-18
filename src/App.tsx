@@ -43,7 +43,7 @@ const INITIAL_FOCUS = readFocusParam();
 export default function App() {
   // Subscribes to the micros-loaded event so the sidebar/search/etc.
   // re-render the moment the bus-routes lazy chunk lands.
-  useRoutesVersion();
+  const routesVersion = useRoutesVersion();
   const [theme, toggleTheme] = useTheme();
   // Default closed on mobile (sidebar overlays the map below md:), open on
   // desktop where it docks alongside.
@@ -107,7 +107,7 @@ export default function App() {
       [plannerDestination.lat, plannerDestination.lng],
       pool,
     );
-  }, [plannerOrigin, plannerDestination, visibleRouteIds]);
+  }, [plannerOrigin, plannerDestination, visibleRouteIds, routesVersion]);
 
   const onPickPoint = useCallback(
     (latlng: { lat: number; lng: number }) => {
@@ -181,21 +181,30 @@ export default function App() {
   const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(false);
 
   // Pool of routes the simulator can project vehicles for. We feed all
-  // micro routes (Biotrén doesn't have GTFS schedule data in the feed).
+  // urban GTFS micro routes (Biotrén/interurban routes don't have GTFS
+  // schedule data in this feed).
   const simulationRoutes = useMemo(
     () =>
-      ROUTES.filter((r) => r.type === 'micro').map((r) => ({
+      ROUTES.filter((r) => r.type === 'micro' && r.id.startsWith('gtfs-route-')).map((r) => ({
         id: r.id,
         color: r.color,
         path: r.path,
       })),
-    [],
+    [routesVersion],
   );
   const routeColorById = useMemo(
     () => new Map(ROUTES.map((r) => [r.id, r.color])),
-    [],
+    [routesVersion],
   );
-  const { vehicles: simulatedVehicles, loading: simulationLoading } = useSimulatedVehicles({
+  const routeLabelById = useMemo(
+    () => new Map(ROUTES.map((r) => [r.id, `${r.code} · ${r.name}`])),
+    [routesVersion],
+  );
+  const {
+    vehicles: simulatedVehicles,
+    loading: simulationLoading,
+    error: simulationError,
+  } = useSimulatedVehicles({
     enabled: showSimulatedVehicles,
     routes: simulationRoutes,
     intervalMs: 4000,
@@ -233,6 +242,7 @@ export default function App() {
   const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
 
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
+  const initialFlyAppliedRef = useRef(false);
 
   const [sourcesOpen, setSourcesOpen] = useState(false);
   // Single active tool — null means no panel is open. Floating, non-modal:
@@ -266,16 +276,20 @@ export default function App() {
 
   // Apply the initial fly-to once the map is mounted.
   useEffect(() => {
+    if (initialFlyAppliedRef.current) return;
     // 1) Deep link tradicional (?route= / ?stop= / etc.) — toma prioridad
     //    porque ya selecciona la sheet correspondiente.
     if (INITIAL_URL.route) {
       const r = ROUTES_BY_ID.get(INITIAL_URL.route);
-      if (r) setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
+      if (!r) return;
+      initialFlyAppliedRef.current = true;
+      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
       return;
     }
     if (INITIAL_URL.stop) {
       const s = STOPS.find((x) => x.id === INITIAL_URL.stop);
       if (s) {
+        initialFlyAppliedRef.current = true;
         setFlyToToken({
           key: Date.now(),
           target: { kind: 'point', lat: s.lat, lng: s.lng, zoom: 16 },
@@ -286,6 +300,7 @@ export default function App() {
     if (INITIAL_URL.terminal) {
       const t = TERMINALS.find((x) => x.id === INITIAL_URL.terminal);
       if (t) {
+        initialFlyAppliedRef.current = true;
         setFlyToToken({
           key: Date.now(),
           target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
@@ -296,6 +311,7 @@ export default function App() {
     if (INITIAL_URL.poi) {
       const p = POIS.find((x) => x.id === INITIAL_URL.poi);
       if (p) {
+        initialFlyAppliedRef.current = true;
         setFlyToToken({
           key: Date.now(),
           target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
@@ -308,11 +324,12 @@ export default function App() {
     //    propia sincronización por entidad (route/stop/…) y `focus` no
     //    necesita persistir.
     if (INITIAL_FOCUS) {
-      applyFocus(INITIAL_FOCUS);
+      if (!applyFocus(INITIAL_FOCUS)) return;
       clearFocusParam();
+      initialFlyAppliedRef.current = true;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [routesVersion]);
 
   // Resolver de focus deep-links provenientes del wiki. Cubre:
   //   - route   → si el código (route.code) está cargado, abre la sheet
@@ -325,19 +342,20 @@ export default function App() {
   //   - terminal → reutiliza onSelectTerminal.
   //   - stop    → reutiliza onSelectStop.
   //   - poi     → reutiliza onSelectPoi.
-  function applyFocus(focus: { kind: string; id: string }): void {
+  function applyFocus(focus: { kind: string; id: string }): boolean {
     if (focus.kind === 'route') {
       // Buscar por route.id O por route.code (ambos son IDs estables que
       // un autor de wiki podría usar). route.id es de la forma `gtfs-route-NNNN`,
       // route.code es la sigla mostrada al usuario.
       const direct = ROUTES_BY_ID.get(focus.id);
       const r = direct ?? ROUTES.find((x) => x.code === focus.id);
-      if (r) onSelectRoute(r.id);
-      return;
+      if (!r) return false;
+      onSelectRoute(r.id);
+      return true;
     }
     if (focus.kind === 'corridor') {
       const c = CORRIDOR_BY_ID.get(focus.id);
-      if (!c) return;
+      if (!c) return false;
       setShowInterurbanCorridors(true);
       // Enfocar el área del corredor — si conocemos los dos extremos,
       // bounds; si solo el anchor, point con zoom regional.
@@ -352,28 +370,30 @@ export default function App() {
           target: { kind: 'point', lat: c.anchor[0], lng: c.anchor[1], zoom: 11 },
         });
       }
-      return;
+      return true;
     }
     if (focus.kind === 'terminal') {
       onSelectTerminal(focus.id);
-      return;
+      return true;
     }
     if (focus.kind === 'stop') {
       onSelectStop(focus.id);
-      return;
+      return true;
     }
     if (focus.kind === 'poi') {
       onSelectPoi(focus.id);
+      return true;
     }
+    return false;
   }
 
   const selectedRoute = useMemo(
     () => (selectedRouteId ? ROUTES_BY_ID.get(selectedRouteId) ?? null : null),
-    [selectedRouteId],
+    [selectedRouteId, routesVersion],
   );
   const selectedStop = useMemo(
     () => STOPS.find((s) => s.id === selectedStopId) ?? null,
-    [selectedStopId],
+    [selectedStopId, routesVersion],
   );
   const selectedParadero = useMemo(
     () => GTFS_STOPS.find((p) => p.id === selectedParaderoId) ?? null,
@@ -396,7 +416,7 @@ export default function App() {
       if (onlyOperatingNow && !isRouteOperatingNow(r)) return false;
       return true;
     });
-  }, [visibleRouteIds, typeFilters, onlyOperatingNow]);
+  }, [visibleRouteIds, typeFilters, onlyOperatingNow, routesVersion]);
 
   const onToggleVisible = useCallback((id: string) => {
     setVisibleRouteIds((cur) =>
@@ -419,7 +439,7 @@ export default function App() {
       return cur.filter((id) => !idsOfType.has(id));
     });
     setTypeFilters((f) => ({ ...f, [typeId]: true }));
-  }, []);
+  }, [routesVersion]);
 
   const onSetAllByOperator = useCallback((operator: string, on: boolean) => {
     const idsOfOp = new Set(
@@ -438,7 +458,7 @@ export default function App() {
     if (firstRoute) {
       setTypeFilters((f) => ({ ...f, [firstRoute.type]: true }));
     }
-  }, []);
+  }, [routesVersion]);
 
   const closeSidebarOnMobile = useCallback(() => {
     if (typeof window === 'undefined') return;
@@ -639,6 +659,7 @@ export default function App() {
             plannerDestination={plannerDestination}
             simulatedVehicles={simulatedVehicles}
             routeColorById={routeColorById}
+            routeLabelById={routeLabelById}
             onSelectSimulatedVehicle={onSelectSimulatedVehicle}
             showCoverage={showCoverage}
             coverageThreshold={coverageThreshold}
@@ -684,6 +705,7 @@ export default function App() {
             simulationStatus={{
               count: simulatedVehicles.length,
               loading: simulationLoading,
+              error: simulationError,
             }}
             coverageStatus={{ loading: coverageLoading }}
             cyclewaysStatus={{ loading: cyclewaysLoading }}
