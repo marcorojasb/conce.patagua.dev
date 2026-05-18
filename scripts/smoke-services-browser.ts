@@ -92,11 +92,15 @@ try {
     /Cargando polígonos|Parques, plazas, bosques y reservas|Error al cargar polígonos/,
     'greenspace layer status',
   );
-  await page.getByRole('switch', { name: 'Servicios en curso' }).click();
+  const servicesSwitch = page.getByRole('switch', { name: 'Servicios en curso' });
+  const servicesChecked = await servicesSwitch.getAttribute('aria-checked');
+  if (servicesChecked !== 'true') {
+    throw new Error('Expected Servicios en curso to be enabled by default.');
+  }
   await page.waitForSelector('.vehicle-marker', { timeout: 15_000 });
 
   const bodyText = await page.locator('body').innerText();
-  const match = bodyText.match(/([\d.]+)\s+programados\s+·\s+GTFS urbano/);
+  const match = bodyText.match(/([\d.]+)\s+en curso\s+·\s+actualiza 1 s/);
   const count = match ? Number.parseInt(match[1].replace(/\./g, ''), 10) : 0;
   const markers = await page.locator('.vehicle-marker').count();
 

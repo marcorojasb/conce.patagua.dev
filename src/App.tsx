@@ -82,7 +82,7 @@ export default function App() {
   const [selectedPoiId, setSelectedPoiId] = useState<string | null>(INITIAL_URL.poi);
   const [sheetKind, setSheetKind] = useState<SheetKind>(initialSheet);
 
-  const [showTerminals, setShowTerminals] = useState(true);
+  const [showTerminals, setShowTerminals] = useState(false);
   const [showParaderos, setShowParaderos] = useState(INITIAL_URL.paraderos);
   const [showPois, setShowPois] = useState(INITIAL_URL.pois);
   const [showAirQuality, setShowAirQuality] = useState(INITIAL_URL.aire);
@@ -108,7 +108,7 @@ export default function App() {
     onUsePointAsDestination,
   } = usePlannerState({ visibleRouteIds, routesVersion });
 
-  const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(false);
+  const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(true);
   const [simulationRetryKey, setSimulationRetryKey] = useState(0);
 
   // Pool of routes the simulator can project vehicles for. We feed all
@@ -135,11 +135,12 @@ export default function App() {
     vehicles: simulatedVehicles,
     loading: simulationLoading,
     error: simulationError,
+    lastUpdate: simulationLastUpdate,
   } = useSimulatedVehicles({
     enabled: showSimulatedVehicles,
     routes: simulationRoutes,
     retryKey: simulationRetryKey,
-    intervalMs: 4000,
+    intervalMs: 1000,
   });
 
   const [showCoverage, setShowCoverage] = useState(false);
@@ -649,6 +650,7 @@ export default function App() {
               count: simulatedVehicles.length,
               loading: simulationLoading,
               error: simulationError,
+              lastUpdate: simulationLastUpdate,
             }}
             onRetrySimulation={() => setSimulationRetryKey((v) => v + 1)}
             coverageStatus={coverageLayer.status}

@@ -254,6 +254,8 @@
 .vehicle-marker-wrap {
   background: transparent;
   border: 0;
+  transition: transform 950ms linear;
+  will-change: transform;
 }
 .vehicle-marker {
   display: flex;
@@ -286,6 +288,13 @@
   transform: rotate(var(--vehicle-rotation, 0deg));
   transform-origin: center;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vehicle-marker-wrap,
+  .vehicle-marker {
+    transition: none;
+  }
 }
 
 /* Interurban corridor pins — sit above the urban network to signal that

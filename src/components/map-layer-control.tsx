@@ -57,7 +57,7 @@ interface MapLayerControlProps {
   onToggleSchools: () => void;
   onToggleInterurbanCorridors: () => void;
   airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
-  simulationStatus: { count: number; loading: boolean; error: string | null };
+  simulationStatus: { count: number; loading: boolean; error: string | null; lastUpdate: Date | null };
   coverageStatus: LayerLoadStatus;
   cyclewaysStatus: LayerLoadStatus;
   greenspaceStatus: LayerLoadStatus;
@@ -213,7 +213,7 @@ export function MapLayerControl({
             : simulationStatus.error
               ? 'No se pudo cargar el horario GTFS'
               : simulationStatus.count > 0
-                ? `${simulationStatus.count.toLocaleString('es-CL')} programados · GTFS urbano`
+                ? `${simulationStatus.count.toLocaleString('es-CL')} en curso · actualiza 1 s`
                 : 'Sin servicios urbanos GTFS activos ahora'
           : 'Proyección según horario GTFS',
         icon: simulationStatus.error ? AlertTriangle : simulationStatus.loading ? Loader2 : Bus,
@@ -339,6 +339,7 @@ export function MapLayerControl({
       simulationStatus.count,
       simulationStatus.error,
       simulationStatus.loading,
+      simulationStatus.lastUpdate,
       onRetrySimulation,
       coverageThreshold,
       coverageStatus.loading,
