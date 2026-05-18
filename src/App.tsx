@@ -41,6 +41,7 @@ const INITIAL_URL = readUrlState();
 // de capas, y `clearFocusParam` lo retira del query string para que la
 // URL siga limpia mientras el usuario navega.
 const INITIAL_FOCUS = readFocusParam();
+type SimulationScope = 'visible' | 'all';
 
 export default function App() {
   // Subscribes to the micros-loaded event so the sidebar/search/etc.
@@ -111,14 +112,19 @@ export default function App() {
   } = usePlannerState({ visibleRouteIds, routesVersion });
 
   const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(true);
+  const [simulationScope, setSimulationScope] = useState<SimulationScope>('visible');
   const [simulationRetryKey, setSimulationRetryKey] = useState(0);
 
   // Pool of routes the simulator can project vehicles for. GTFS urban
   // services keep their original route id; Biotrén/interurban services use
   // directional static patterns with explicit source/confidence metadata.
   const simulationRoutes = useMemo<SimulationRouteInput[]>(() => {
+    const visibleSimulationRouteIds = new Set(visibleRouteIds);
     const gtfsRoutes: SimulationRouteInput[] = ROUTES.filter(
-      (r) => r.type === 'micro' && r.id.startsWith('gtfs-route-'),
+      (r) =>
+        r.type === 'micro' &&
+        r.id.startsWith('gtfs-route-') &&
+        (simulationScope === 'all' || visibleSimulationRouteIds.has(r.id)),
     ).map((r) => ({
       id: r.id,
       routeId: r.id,
@@ -129,6 +135,9 @@ export default function App() {
       sourceLabel: 'GTFS Gran Concepción',
     }));
     const staticRoutes: SimulationRouteInput[] = STATIC_SERVICE_PATTERNS.flatMap((pattern) => {
+      if (simulationScope === 'visible' && !visibleSimulationRouteIds.has(pattern.routeId)) {
+        return [];
+      }
       const route = ROUTES_BY_ID.get(pattern.routeId);
       if (!route) return [];
       return [
@@ -147,7 +156,7 @@ export default function App() {
       ];
     });
     return [...gtfsRoutes, ...staticRoutes];
-  }, [routesVersion]);
+  }, [routesVersion, simulationScope, visibleRouteIds]);
   const routeColorById = useMemo(
     () => new Map(ROUTES.map((r) => [r.id, r.color])),
     [routesVersion],
@@ -655,11 +664,13 @@ export default function App() {
             showPois={showPois}
             showAirQuality={showAirQuality}
             showSimulatedVehicles={showSimulatedVehicles}
+            simulationScope={simulationScope}
             onToggleTerminals={() => setShowTerminals((v) => !v)}
             onToggleParaderos={() => setShowParaderos((v) => !v)}
             onTogglePois={() => setShowPois((v) => !v)}
             onToggleAirQuality={() => setShowAirQuality((v) => !v)}
             onToggleSimulatedVehicles={() => setShowSimulatedVehicles((v) => !v)}
+            onSetSimulationScope={setSimulationScope}
             showCoverage={showCoverage}
             coverageThreshold={coverageThreshold}
             onToggleCoverage={() => setShowCoverage((v) => !v)}

@@ -39,6 +39,7 @@ interface MapLayerControlProps {
   showPois: boolean;
   showAirQuality: boolean;
   showSimulatedVehicles: boolean;
+  simulationScope: 'visible' | 'all';
   showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
   showCycleways: boolean;
@@ -50,6 +51,7 @@ interface MapLayerControlProps {
   onTogglePois: () => void;
   onToggleAirQuality: () => void;
   onToggleSimulatedVehicles: () => void;
+  onSetSimulationScope: (scope: 'visible' | 'all') => void;
   onToggleCoverage: () => void;
   onSetCoverageThreshold: (t: 'all' | 'underserved') => void;
   onToggleCycleways: () => void;
@@ -119,6 +121,7 @@ export function MapLayerControl({
   showPois,
   showAirQuality,
   showSimulatedVehicles,
+  simulationScope,
   showCoverage,
   coverageThreshold,
   showCycleways,
@@ -130,6 +133,7 @@ export function MapLayerControl({
   onTogglePois,
   onToggleAirQuality,
   onToggleSimulatedVehicles,
+  onSetSimulationScope,
   onToggleCoverage,
   onSetCoverageThreshold,
   onToggleCycleways,
@@ -216,10 +220,10 @@ export function MapLayerControl({
         detail: showSimulatedVehicles
           ? simulationStatus.loading
             ? 'Cargando horario…'
-            : simulationStatus.error
+              : simulationStatus.error
               ? 'No se pudo cargar el horario'
               : simulationStatus.count > 0
-                ? `${simulationStatus.count.toLocaleString('es-CL')} en curso · ${simulationStatus.nonGtfsCount.toLocaleString('es-CL')} Biotrén/interurbanos`
+                ? `${simulationStatus.count.toLocaleString('es-CL')} en curso · ${simulationScope === 'visible' ? 'rutas visibles' : 'toda la red'}`
                 : 'Sin servicios programados activos ahora'
           : 'GTFS urbano + Biotrén/interurbanos',
         icon: simulationStatus.error ? AlertTriangle : simulationStatus.loading ? Loader2 : Bus,
@@ -332,6 +336,7 @@ export function MapLayerControl({
       onToggleParaderos,
       onTogglePois,
       onToggleSimulatedVehicles,
+      onSetSimulationScope,
       onToggleTerminals,
       onToggleCoverage,
       paraderosCount,
@@ -341,6 +346,7 @@ export function MapLayerControl({
       showParaderos,
       showPois,
       showSimulatedVehicles,
+      simulationScope,
       showTerminals,
       simulationStatus.count,
       simulationStatus.nonGtfsCount,
@@ -559,6 +565,34 @@ export function MapLayerControl({
                             )}
                           >
                             Solo zonas mal servidas
+                          </button>
+                        </div>
+                      )}
+                      {layer.id === 'simulated' && layer.checked && (
+                        <div className="ml-10 flex flex-wrap gap-1 pb-1 pl-2">
+                          <button
+                            type="button"
+                            onClick={() => onSetSimulationScope('visible')}
+                            className={cn(
+                              'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                              simulationScope === 'visible'
+                                ? 'bg-foreground text-background'
+                                : 'border bg-background text-muted-foreground hover:text-foreground',
+                            )}
+                          >
+                            Solo visibles
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onSetSimulationScope('all')}
+                            className={cn(
+                              'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                              simulationScope === 'all'
+                                ? 'bg-foreground text-background'
+                                : 'border bg-background text-muted-foreground hover:text-foreground',
+                            )}
+                          >
+                            Toda la red
                           </button>
                         </div>
                       )}

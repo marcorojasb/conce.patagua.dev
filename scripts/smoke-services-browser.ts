@@ -117,23 +117,35 @@ try {
   await page.waitForSelector('.vehicle-marker', { timeout: 15_000 });
 
   const bodyText = await page.locator('body').innerText();
-  const match = bodyText.match(/([\d.]+)\s+en curso\s+·\s+([\d.]+)\s+Biotrén\/interurbanos/);
+  const match = bodyText.match(/([\d.]+)\s+en curso\s+·\s+rutas visibles/);
   const count = match ? Number.parseInt(match[1].replace(/\./g, ''), 10) : 0;
-  const nonGtfsCount = match ? Number.parseInt(match[2].replace(/\./g, ''), 10) : 0;
   const markers = await page.locator('.vehicle-marker').count();
   const nonGtfsMarkers = await page.locator('.vehicle-marker:not([data-source-kind="gtfs"])').count();
 
   if (!Number.isFinite(count) || count <= 0) {
     throw new Error(`Expected active service count > 0, got ${match?.[1] ?? 'none'}`);
   }
-  if (!Number.isFinite(nonGtfsCount) || nonGtfsCount <= 0) {
-    throw new Error(`Expected Biotrén/interurban active service count > 0, got ${match?.[2] ?? 'none'}`);
-  }
   if (markers <= 0) {
     throw new Error('Expected at least one .vehicle-marker');
   }
   if (nonGtfsMarkers <= 0) {
     throw new Error('Expected at least one non-GTFS .vehicle-marker');
+  }
+  if (markers !== nonGtfsMarkers) {
+    throw new Error(`Expected default scope to show only visible non-GTFS routes, got ${markers} markers / ${nonGtfsMarkers} non-GTFS.`);
+  }
+  await page.getByRole('button', { name: 'Toda la red' }).click();
+  await page.waitForFunction(
+    (previous) => document.querySelectorAll('.vehicle-marker').length > previous,
+    markers,
+    { timeout: 15_000 },
+  );
+  const allScopeBodyText = await page.locator('body').innerText();
+  const allScopeMatch = allScopeBodyText.match(/([\d.]+)\s+en curso\s+·\s+toda la red/);
+  const allScopeCount = allScopeMatch ? Number.parseInt(allScopeMatch[1].replace(/\./g, ''), 10) : 0;
+  const allScopeMarkers = await page.locator('.vehicle-marker').count();
+  if (!Number.isFinite(allScopeCount) || allScopeCount <= count || allScopeMarkers <= markers) {
+    throw new Error(`Expected all-network scope to add vehicles, visible=${count}/${markers}, all=${allScopeCount}/${allScopeMarkers}`);
   }
   if (errors.length > 0) {
     throw new Error(`Console errors:\n${errors.join('\n')}`);
@@ -165,7 +177,7 @@ try {
   }
 
   console.log(
-    `Browser smoke OK: ${count.toLocaleString('es-CL')} services (${nonGtfsCount.toLocaleString('es-CL')} Biotrén/interurbanos), ${markers} markers, map/wiki/mobile checks.`,
+    `Browser smoke OK: ${count.toLocaleString('es-CL')} visible-scope services, ${allScopeCount.toLocaleString('es-CL')} all-network services, map/wiki/mobile checks.`,
   );
 } catch (err) {
   console.error(serverOutput.trim());
