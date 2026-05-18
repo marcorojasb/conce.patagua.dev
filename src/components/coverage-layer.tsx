@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { CoverageCell } from '@/types/transport';
+import type { LayerLoadStatus } from '@/hooks/use-layer-status';
 
 const STEP = 0.003;
 const HALF = STEP / 2;
@@ -42,33 +43,49 @@ interface Props {
   enabled: boolean;
   canvasRenderer: L.Canvas;
   threshold: 'all' | 'underserved';
-  onLoadingChange: (loading: boolean) => void;
+  retryKey: number;
+  onStatusChange: (status: LayerLoadStatus) => void;
 }
 
 export function CoverageLayer({
   enabled,
   canvasRenderer,
   threshold,
-  onLoadingChange,
+  retryKey,
+  onStatusChange,
 }: Props) {
   const map = useMap();
   const [cells, setCells] = useState<readonly CoverageCell[] | null>(null);
 
   useEffect(() => {
-    if (!enabled || cells) return;
-    onLoadingChange(true);
+    if (!enabled) return;
+    if (cells) {
+      onStatusChange({ loading: false, error: null, ready: true });
+      return;
+    }
+    onStatusChange({ loading: true, error: null, ready: false });
     let cancelled = false;
     void loadCells()
       .then((data) => {
-        if (!cancelled) setCells(data);
+        if (!cancelled) {
+          setCells(data);
+          onStatusChange({ loading: false, error: null, ready: true });
+        }
       })
-      .finally(() => {
-        if (!cancelled) onLoadingChange(false);
+      .catch((err) => {
+        cellsPromise = null;
+        if (!cancelled) {
+          onStatusChange({
+            loading: false,
+            error: err instanceof Error ? err.message : 'No se pudo cargar cobertura',
+            ready: false,
+          });
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [enabled, cells, onLoadingChange]);
+  }, [enabled, cells, onStatusChange, retryKey]);
 
   useEffect(() => {
     if (!enabled || !cells) return;

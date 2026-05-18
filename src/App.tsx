@@ -12,8 +12,6 @@ import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
 import { FloatingToolsPanel, type AnalysisTab } from '@/components/floating-tools-panel';
 import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
-import { findRoutes } from '@/lib/planner';
-import { routeBetween, type RoutingResult } from '@/lib/routing';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
 import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
@@ -21,6 +19,8 @@ import { TERMINALS } from '@/data/terminals.generated';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
 import { useAirQuality } from '@/hooks/use-air-quality';
+import { useLayerStatus } from '@/hooks/use-layer-status';
+import { usePlannerState } from '@/hooks/use-planner-state';
 import { useTheme } from '@/hooks/use-theme';
 import {
   clearFocusParam,
@@ -87,98 +87,29 @@ export default function App() {
   const [showPois, setShowPois] = useState(INITIAL_URL.pois);
   const [showAirQuality, setShowAirQuality] = useState(INITIAL_URL.aire);
   const [onlyOperatingNow, setOnlyOperatingNow] = useState(INITIAL_URL.activos);
+  const [airQualityRetryKey, setAirQualityRetryKey] = useState(0);
 
-  const airQuality = useAirQuality(showAirQuality);
+  const airQuality = useAirQuality(showAirQuality, airQualityRetryKey);
 
-  const [plannerOrigin, setPlannerOrigin] = useState<{ lat: number; lng: number } | null>(null);
-  const [plannerDestination, setPlannerDestination] = useState<{ lat: number; lng: number } | null>(null);
-  const [pickerMode, setPickerMode] = useState<'origin' | 'destination' | null>(null);
-
-  const plannerMatches = useMemo(() => {
-    if (!plannerOrigin || !plannerDestination) return [];
-    const visible: Route[] = [];
-    for (const id of visibleRouteIds) {
-      const r = ROUTES_BY_ID.get(id);
-      if (r) visible.push(r);
-    }
-    const pool = visible.length > 0 ? visible : ROUTES;
-    return findRoutes(
-      [plannerOrigin.lat, plannerOrigin.lng],
-      [plannerDestination.lat, plannerDestination.lng],
-      pool,
-    );
-  }, [plannerOrigin, plannerDestination, visibleRouteIds, routesVersion]);
-
-  const onPickPoint = useCallback(
-    (latlng: { lat: number; lng: number }) => {
-      if (pickerMode === 'origin') {
-        setPlannerOrigin(latlng);
-        setPickerMode(plannerDestination ? null : 'destination');
-      } else if (pickerMode === 'destination') {
-        setPlannerDestination(latlng);
-        setPickerMode(null);
-      }
-    },
-    [pickerMode, plannerDestination],
-  );
-
-  // Walking midpoint between A and B, fetched from OSRM. Path + marker live
-  // here so the user can close the analysis sheet and still see them on the
-  // map. Any change to A or B invalidates the cached result.
-  const [plannerMidpoint, setPlannerMidpoint] = useState<RoutingResult | null>(null);
-  const [plannerMidpointLoading, setPlannerMidpointLoading] = useState(false);
-  const [plannerMidpointError, setPlannerMidpointError] = useState<string | null>(null);
-  const midpointAbortRef = useRef<AbortController | null>(null);
-
-  const clearMidpointState = useCallback(() => {
-    midpointAbortRef.current?.abort();
-    midpointAbortRef.current = null;
-    setPlannerMidpoint(null);
-    setPlannerMidpointLoading(false);
-    setPlannerMidpointError(null);
-  }, []);
-
-  const onClearPlanner = useCallback(() => {
-    setPlannerOrigin(null);
-    setPlannerDestination(null);
-    setPickerMode(null);
-    clearMidpointState();
-  }, [clearMidpointState]);
-
-  // Invalidate midpoint when either endpoint moves — the previous path is
-  // stale immediately, no point keeping it around.
-  useEffect(() => {
-    clearMidpointState();
-  }, [plannerOrigin, plannerDestination, clearMidpointState]);
-
-  const onComputeMidpoint = useCallback(async () => {
-    if (!plannerOrigin || !plannerDestination) return;
-    midpointAbortRef.current?.abort();
-    const ctrl = new AbortController();
-    midpointAbortRef.current = ctrl;
-    setPlannerMidpointLoading(true);
-    setPlannerMidpointError(null);
-    try {
-      const result = await routeBetween(
-        [plannerOrigin.lat, plannerOrigin.lng],
-        [plannerDestination.lat, plannerDestination.lng],
-        { signal: ctrl.signal },
-      );
-      if (ctrl.signal.aborted) return;
-      setPlannerMidpoint(result);
-      setPlannerMidpointLoading(false);
-    } catch (err) {
-      if (ctrl.signal.aborted) return;
-      setPlannerMidpointLoading(false);
-      setPlannerMidpointError(
-        err instanceof Error
-          ? `No se pudo calcular: ${err.message}`
-          : 'No se pudo calcular el trazado',
-      );
-    }
-  }, [plannerOrigin, plannerDestination]);
+  const {
+    plannerOrigin,
+    plannerDestination,
+    pickerMode,
+    setPickerMode,
+    plannerMatches,
+    plannerMidpoint,
+    plannerMidpointLoading,
+    plannerMidpointError,
+    onPickPoint,
+    onClearPlanner,
+    onComputeMidpoint,
+    clearMidpointState,
+    onUsePointAsOrigin,
+    onUsePointAsDestination,
+  } = usePlannerState({ visibleRouteIds, routesVersion });
 
   const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(false);
+  const [simulationRetryKey, setSimulationRetryKey] = useState(0);
 
   // Pool of routes the simulator can project vehicles for. We feed all
   // urban GTFS micro routes (Biotrén/interurban routes don't have GTFS
@@ -207,30 +138,23 @@ export default function App() {
   } = useSimulatedVehicles({
     enabled: showSimulatedVehicles,
     routes: simulationRoutes,
+    retryKey: simulationRetryKey,
     intervalMs: 4000,
   });
 
-  // Clicking a simulated vehicle pops the underlying route's detail sheet —
-  // saves us building a parallel "vehicle sheet" UI when the natural thing
-  // to know is which route the projected bus belongs to.
-  const onSelectSimulatedVehicle = useCallback(
-    (vehicleId: string) => {
-      const routeId = vehicleId.split('|')[0];
-      if (routeId) onSelectRoute(routeId);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-
   const [showCoverage, setShowCoverage] = useState(false);
   const [coverageThreshold, setCoverageThreshold] = useState<'all' | 'underserved'>('all');
-  const [coverageLoading, setCoverageLoading] = useState(false);
+  const coverageLayer = useLayerStatus();
+  const [coverageRetryKey, setCoverageRetryKey] = useState(0);
   const [showCycleways, setShowCycleways] = useState(false);
-  const [cyclewaysLoading, setCyclewaysLoading] = useState(false);
+  const cyclewaysLayer = useLayerStatus();
+  const [cyclewaysRetryKey, setCyclewaysRetryKey] = useState(0);
   const [showGreenspace, setShowGreenspace] = useState(false);
-  const [greenspaceLoading, setGreenspaceLoading] = useState(false);
+  const greenspaceLayer = useLayerStatus();
+  const [greenspaceRetryKey, setGreenspaceRetryKey] = useState(0);
   const [showSchools, setShowSchools] = useState(false);
-  const [schoolsLoading, setSchoolsLoading] = useState(false);
+  const schoolsLayer = useLayerStatus();
+  const [schoolsRetryKey, setSchoolsRetryKey] = useState(0);
   // Si la URL trae `?focus=corridor:…` activamos la capa de corredores
   // inmediatamente — el usuario llegó desde el wiki y espera ver el pin.
   const [showInterurbanCorridors, setShowInterurbanCorridors] = useState(
@@ -263,15 +187,6 @@ export default function App() {
       return next;
     });
   }, []);
-
-  const onShowOperatorRoutes = useCallback(
-    (operator: string) => {
-      onSetAllByOperator(operator, true);
-      setActiveTool(null);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
 
   useSyncUrlState({
     route: selectedRouteId,
@@ -337,9 +252,10 @@ export default function App() {
       if (!applyFocus(INITIAL_FOCUS)) return;
       clearFocusParam();
       initialFlyAppliedRef.current = true;
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routesVersion]);
+    initialFlyAppliedRef.current = true;
+  }, [routesVersion, applyFocus]);
 
   // Resolver de focus deep-links provenientes del wiki. Cubre:
   //   - route   → si el código (route.code) está cargado, abre la sheet
@@ -470,6 +386,14 @@ export default function App() {
     }
   }, [routesVersion]);
 
+  const onShowOperatorRoutes = useCallback(
+    (operator: string) => {
+      onSetAllByOperator(operator, true);
+      setActiveTool(null);
+    },
+    [onSetAllByOperator],
+  );
+
   const closeSidebarOnMobile = useCallback(() => {
     if (typeof window === 'undefined') return;
     if (!window.matchMedia('(min-width: 768px)').matches) {
@@ -506,6 +430,17 @@ export default function App() {
       closeSidebarOnMobile();
     },
     [clearSelection, closeSidebarOnMobile, selectedRouteId, sheetKind],
+  );
+
+  // Clicking a simulated vehicle pops the underlying route's detail sheet —
+  // saves us building a parallel "vehicle sheet" UI when the natural thing
+  // to know is which route the projected bus belongs to.
+  const onSelectSimulatedVehicle = useCallback(
+    (vehicleId: string) => {
+      const routeId = vehicleId.split('|')[0];
+      if (routeId) onSelectRoute(routeId);
+    },
+    [onSelectRoute],
   );
 
   const onSelectStop = useCallback((id: string) => {
@@ -600,16 +535,6 @@ export default function App() {
     });
   }, []);
 
-  const onUseParaderoAsOrigin = useCallback((point: { lat: number; lng: number }) => {
-    setPlannerOrigin(point);
-    setPickerMode(plannerDestination ? null : 'destination');
-  }, [plannerDestination]);
-
-  const onUseParaderoAsDestination = useCallback((point: { lat: number; lng: number }) => {
-    setPlannerDestination(point);
-    setPickerMode(plannerOrigin ? null : 'origin');
-  }, [plannerOrigin]);
-
   return (
     <div className="flex h-full w-full flex-col bg-background text-foreground">
       <Header
@@ -676,13 +601,17 @@ export default function App() {
             onSelectSimulatedVehicle={onSelectSimulatedVehicle}
             showCoverage={showCoverage}
             coverageThreshold={coverageThreshold}
-            onCoverageLoadingChange={setCoverageLoading}
+            coverageRetryKey={coverageRetryKey}
+            onCoverageStatusChange={coverageLayer.setStatus}
             showCycleways={showCycleways}
-            onCyclewaysLoadingChange={setCyclewaysLoading}
+            cyclewaysRetryKey={cyclewaysRetryKey}
+            onCyclewaysStatusChange={cyclewaysLayer.setStatus}
             showGreenspace={showGreenspace}
-            onGreenspaceLoadingChange={setGreenspaceLoading}
+            greenspaceRetryKey={greenspaceRetryKey}
+            onGreenspaceStatusChange={greenspaceLayer.setStatus}
             showSchools={showSchools}
-            onSchoolsLoadingChange={setSchoolsLoading}
+            schoolsRetryKey={schoolsRetryKey}
+            onSchoolsStatusChange={schoolsLayer.setStatus}
             onBoundsChange={setMapBounds}
             plannerMidpoint={plannerMidpoint}
             showInterurbanCorridors={showInterurbanCorridors}
@@ -715,15 +644,21 @@ export default function App() {
             showInterurbanCorridors={showInterurbanCorridors}
             onToggleInterurbanCorridors={() => setShowInterurbanCorridors((v) => !v)}
             airQualityStatus={airQuality}
+            onRetryAirQuality={() => setAirQualityRetryKey((v) => v + 1)}
             simulationStatus={{
               count: simulatedVehicles.length,
               loading: simulationLoading,
               error: simulationError,
             }}
-            coverageStatus={{ loading: coverageLoading }}
-            cyclewaysStatus={{ loading: cyclewaysLoading }}
-            greenspaceStatus={{ loading: greenspaceLoading }}
-            schoolsStatus={{ loading: schoolsLoading }}
+            onRetrySimulation={() => setSimulationRetryKey((v) => v + 1)}
+            coverageStatus={coverageLayer.status}
+            cyclewaysStatus={cyclewaysLayer.status}
+            greenspaceStatus={greenspaceLayer.status}
+            schoolsStatus={schoolsLayer.status}
+            onRetryCoverage={() => setCoverageRetryKey((v) => v + 1)}
+            onRetryCycleways={() => setCyclewaysRetryKey((v) => v + 1)}
+            onRetryGreenspace={() => setGreenspaceRetryKey((v) => v + 1)}
+            onRetrySchools={() => setSchoolsRetryKey((v) => v + 1)}
             layersOpen={layersOpen}
             onToggleLayers={toggleLayers}
             onCloseLayers={() => setLayersOpen(false)}
@@ -855,8 +790,8 @@ export default function App() {
         paradero={selectedParadero}
         onOpenChange={(o) => (!o ? closeSheet() : undefined)}
         onSelectRoute={onSelectRoute}
-        onUseAsOrigin={onUseParaderoAsOrigin}
-        onUseAsDestination={onUseParaderoAsDestination}
+        onUseAsOrigin={onUsePointAsOrigin}
+        onUseAsDestination={onUsePointAsDestination}
       />
       <TerminalDetailSheet
         open={sheetKind === 'terminal'}

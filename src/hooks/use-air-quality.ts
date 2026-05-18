@@ -91,7 +91,7 @@ const INITIAL: AirQualityState = {
   lastFetched: null,
 };
 
-export function useAirQuality(active: boolean): AirQualityState {
+export function useAirQuality(active: boolean, retryKey = 0): AirQualityState {
   const [state, setState] = useState<AirQualityState>(INITIAL);
 
   useEffect(() => {
@@ -120,7 +120,7 @@ export function useAirQuality(active: boolean): AirQualityState {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [active]);
+  }, [active, retryKey]);
 
   return state;
 }

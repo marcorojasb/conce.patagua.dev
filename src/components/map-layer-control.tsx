@@ -1,8 +1,10 @@
 import {
+  AlertTriangle,
   Bike,
   BookOpen,
   Bus,
   Building2,
+  CheckCircle2,
   Compass,
   Crosshair,
   Download,
@@ -12,6 +14,7 @@ import {
   Layers2,
   Loader2,
   MapPin,
+  RotateCcw,
   School,
   Trees,
   Wind,
@@ -25,6 +28,7 @@ import { Tooltip } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { INTERURBAN_CORRIDORS } from '@/data/interurban-corridors';
 import type { AnalysisTab } from '@/components/floating-tools-panel';
+import type { LayerLoadStatus } from '@/hooks/use-layer-status';
 
 interface MapLayerControlProps {
   terminalsCount: number;
@@ -54,10 +58,16 @@ interface MapLayerControlProps {
   onToggleInterurbanCorridors: () => void;
   airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
   simulationStatus: { count: number; loading: boolean; error: string | null };
-  coverageStatus: { loading: boolean };
-  cyclewaysStatus: { loading: boolean };
-  greenspaceStatus: { loading: boolean };
-  schoolsStatus: { loading: boolean };
+  coverageStatus: LayerLoadStatus;
+  cyclewaysStatus: LayerLoadStatus;
+  greenspaceStatus: LayerLoadStatus;
+  schoolsStatus: LayerLoadStatus;
+  onRetryCoverage: () => void;
+  onRetryCycleways: () => void;
+  onRetryGreenspace: () => void;
+  onRetrySchools: () => void;
+  onRetryAirQuality: () => void;
+  onRetrySimulation: () => void;
   layersOpen: boolean;
   onToggleLayers: () => void;
   onCloseLayers: () => void;
@@ -72,6 +82,19 @@ interface ToolBtn {
   id: AnalysisTab;
   label: string;
   Icon: typeof Compass;
+}
+
+interface MapLayerRow {
+  id: string;
+  label: string;
+  detail: string;
+  icon: typeof Compass;
+  checked: boolean;
+  onToggle: () => void;
+  loading?: boolean;
+  error?: string | null;
+  ready?: boolean;
+  onRetry?: () => void;
 }
 
 const TOOLS: ToolBtn[] = [
@@ -113,6 +136,12 @@ export function MapLayerControl({
   cyclewaysStatus,
   greenspaceStatus,
   schoolsStatus,
+  onRetryCoverage,
+  onRetryCycleways,
+  onRetryGreenspace,
+  onRetrySchools,
+  onRetryAirQuality,
+  onRetrySimulation,
   layersOpen,
   onToggleLayers,
   onCloseLayers,
@@ -133,7 +162,7 @@ export function MapLayerControl({
     showInterurbanCorridors,
   ].filter(Boolean).length;
 
-  const layers = useMemo(
+  const layers = useMemo<MapLayerRow[]>(
     () => [
       {
         id: 'paraderos',
@@ -162,13 +191,18 @@ export function MapLayerControl({
       {
         id: 'aire',
         label: 'Calidad del aire',
-        detail: showAirQuality
+        detail: airQualityStatus.error
+          ? 'Error al cargar estaciones'
+          : showAirQuality
           ? `${airQualityStatus.stations.length.toLocaleString('es-CL')} estaciones`
           : 'Estaciones SINCA',
-        icon: airQualityStatus.loading ? Loader2 : Wind,
+        icon: airQualityStatus.error ? AlertTriangle : airQualityStatus.loading ? Loader2 : Wind,
         checked: showAirQuality,
         onToggle: onToggleAirQuality,
         loading: airQualityStatus.loading,
+        error: airQualityStatus.error,
+        ready: showAirQuality && !airQualityStatus.loading && airQualityStatus.stations.length > 0,
+        onRetry: onRetryAirQuality,
       },
       {
         id: 'simulated',
@@ -182,64 +216,87 @@ export function MapLayerControl({
                 ? `${simulationStatus.count.toLocaleString('es-CL')} programados · GTFS urbano`
                 : 'Sin servicios urbanos GTFS activos ahora'
           : 'Proyección según horario GTFS',
-        icon: simulationStatus.loading ? Loader2 : Bus,
+        icon: simulationStatus.error ? AlertTriangle : simulationStatus.loading ? Loader2 : Bus,
         checked: showSimulatedVehicles,
         onToggle: onToggleSimulatedVehicles,
         loading: simulationStatus.loading,
+        error: simulationStatus.error,
+        ready: showSimulatedVehicles && !simulationStatus.loading && simulationStatus.count > 0,
+        onRetry: onRetrySimulation,
       },
       {
         id: 'coverage',
         label: 'Cobertura territorial',
         detail: showCoverage
-          ? coverageStatus.loading
+          ? coverageStatus.error
+            ? 'Error al cargar grilla'
+            : coverageStatus.loading
             ? 'Cargando grilla…'
             : coverageThreshold === 'underserved'
               ? 'Solo zonas > 600 m del paradero'
               : 'Distancia al paradero más cercano'
           : 'Heatmap por distancia',
-        icon: coverageStatus.loading ? Loader2 : Grid3x3,
+        icon: coverageStatus.error ? AlertTriangle : coverageStatus.loading ? Loader2 : Grid3x3,
         checked: showCoverage,
         onToggle: onToggleCoverage,
         loading: coverageStatus.loading,
+        error: coverageStatus.error,
+        ready: coverageStatus.ready,
+        onRetry: onRetryCoverage,
       },
       {
         id: 'cycleways',
         label: 'Infraestructura ciclista',
         detail: showCycleways
-          ? cyclewaysStatus.loading
+          ? cyclewaysStatus.error
+            ? 'Error al cargar trazados'
+            : cyclewaysStatus.loading
             ? 'Cargando trazados…'
             : 'Ciclovías, ciclobandas y rutas compartidas (OSM)'
           : 'Red ciclista del Gran Concepción',
-        icon: cyclewaysStatus.loading ? Loader2 : Bike,
+        icon: cyclewaysStatus.error ? AlertTriangle : cyclewaysStatus.loading ? Loader2 : Bike,
         checked: showCycleways,
         onToggle: onToggleCycleways,
         loading: cyclewaysStatus.loading,
+        error: cyclewaysStatus.error,
+        ready: cyclewaysStatus.ready,
+        onRetry: onRetryCycleways,
       },
       {
         id: 'greenspace',
         label: 'Áreas verdes',
         detail: showGreenspace
-          ? greenspaceStatus.loading
+          ? greenspaceStatus.error
+            ? 'Error al cargar polígonos'
+            : greenspaceStatus.loading
             ? 'Cargando polígonos…'
             : 'Parques, plazas, bosques y reservas (OSM)'
           : 'Espacios verdes públicos',
-        icon: greenspaceStatus.loading ? Loader2 : Trees,
+        icon: greenspaceStatus.error ? AlertTriangle : greenspaceStatus.loading ? Loader2 : Trees,
         checked: showGreenspace,
         onToggle: onToggleGreenspace,
         loading: greenspaceStatus.loading,
+        error: greenspaceStatus.error,
+        ready: greenspaceStatus.ready,
+        onRetry: onRetryGreenspace,
       },
       {
         id: 'schools',
         label: 'Educación',
         detail: showSchools
-          ? schoolsStatus.loading
+          ? schoolsStatus.error
+            ? 'Error al cargar educación'
+            : schoolsStatus.loading
             ? 'Cargando establecimientos…'
             : 'Jardines, colegios, liceos, universidades'
           : 'Establecimientos educacionales (OSM)',
-        icon: schoolsStatus.loading ? Loader2 : School,
+        icon: schoolsStatus.error ? AlertTriangle : schoolsStatus.loading ? Loader2 : School,
         checked: showSchools,
         onToggle: onToggleSchools,
         loading: schoolsStatus.loading,
+        error: schoolsStatus.error,
+        ready: schoolsStatus.ready,
+        onRetry: onRetrySchools,
       },
       // Toggle de corredores interurbanos — solo aparece si hay corredores
       // sin trazado verificable en el dataset. Hoy la 201 vive como ruta
@@ -263,6 +320,8 @@ export function MapLayerControl({
     [
       airQualityStatus.loading,
       airQualityStatus.stations.length,
+      airQualityStatus.error,
+      onRetryAirQuality,
       onToggleAirQuality,
       onToggleParaderos,
       onTogglePois,
@@ -280,18 +339,31 @@ export function MapLayerControl({
       simulationStatus.count,
       simulationStatus.error,
       simulationStatus.loading,
+      onRetrySimulation,
       coverageThreshold,
       coverageStatus.loading,
+      coverageStatus.error,
+      coverageStatus.ready,
+      onRetryCoverage,
       terminalsCount,
       showCycleways,
       onToggleCycleways,
       cyclewaysStatus.loading,
+      cyclewaysStatus.error,
+      cyclewaysStatus.ready,
+      onRetryCycleways,
       showGreenspace,
       onToggleGreenspace,
       greenspaceStatus.loading,
+      greenspaceStatus.error,
+      greenspaceStatus.ready,
+      onRetryGreenspace,
       showSchools,
       onToggleSchools,
       schoolsStatus.loading,
+      schoolsStatus.error,
+      schoolsStatus.ready,
+      onRetrySchools,
       showInterurbanCorridors,
       onToggleInterurbanCorridors,
     ],
@@ -430,7 +502,24 @@ export function MapLayerControl({
                           <span className="block truncate text-[11px] text-muted-foreground">
                             {layer.detail}
                           </span>
+                          {layer.error && layer.checked && (
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                layer.onRetry?.();
+                              }}
+                              className="mt-1 inline-flex items-center gap-1 rounded border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground focus-ring"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              Reintentar
+                            </button>
+                          )}
                         </span>
+                        {layer.ready && layer.checked && !layer.loading && !layer.error && (
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                        )}
                         <Switch
                           checked={layer.checked}
                           onCheckedChange={layer.onToggle}

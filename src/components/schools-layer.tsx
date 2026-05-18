@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { School, SchoolKind } from '@/data/schools.generated';
+import type { LayerLoadStatus } from '@/hooks/use-layer-status';
 
 const KIND_COLOR: Record<SchoolKind, string> = {
   kindergarten: '#f59e0b', // amber
@@ -29,28 +30,48 @@ function loadSchools(): Promise<readonly School[]> {
 interface Props {
   enabled: boolean;
   canvasRenderer: L.Canvas;
-  onLoadingChange: (loading: boolean) => void;
+  retryKey: number;
+  onStatusChange: (status: LayerLoadStatus) => void;
 }
 
-export function SchoolsLayer({ enabled, canvasRenderer, onLoadingChange }: Props) {
+export function SchoolsLayer({
+  enabled,
+  canvasRenderer,
+  retryKey,
+  onStatusChange,
+}: Props) {
   const map = useMap();
   const [items, setItems] = useState<readonly School[] | null>(null);
 
   useEffect(() => {
-    if (!enabled || items) return;
-    onLoadingChange(true);
+    if (!enabled) return;
+    if (items) {
+      onStatusChange({ loading: false, error: null, ready: true });
+      return;
+    }
+    onStatusChange({ loading: true, error: null, ready: false });
     let cancelled = false;
     void loadSchools()
       .then((data) => {
-        if (!cancelled) setItems(data);
+        if (!cancelled) {
+          setItems(data);
+          onStatusChange({ loading: false, error: null, ready: true });
+        }
       })
-      .finally(() => {
-        if (!cancelled) onLoadingChange(false);
+      .catch((err) => {
+        dataPromise = null;
+        if (!cancelled) {
+          onStatusChange({
+            loading: false,
+            error: err instanceof Error ? err.message : 'No se pudo cargar educación',
+            ready: false,
+          });
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [enabled, items, onLoadingChange]);
+  }, [enabled, items, onStatusChange, retryKey]);
 
   useEffect(() => {
     if (!enabled || !items) return;

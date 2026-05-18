@@ -319,10 +319,8 @@ export function RouteDetailSheet({
               ) : (
                 <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
                   Los horarios y frecuencias no están publicados de forma abierta para
-                  este operador. <span className="font-mono">TODO</span> · cuando DTPR
-                  libere GTFS Gran Concepción se enchufa el campo{' '}
-                  <span className="font-mono">stop_times.txt</span> y se reemplaza este
-                  bloque.
+                  este operador. Cuando exista una fuente oficial compatible, este bloque
+                  se reemplazará con programación por viaje.
                 </div>
               )}
             </ScrollArea>

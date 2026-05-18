@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   MapContainer,
   Marker,
@@ -31,6 +31,7 @@ import { GreenspaceLayer } from '@/components/greenspace-layer';
 import { InterurbanCorridorsLayer } from '@/components/interurban-corridors-layer';
 import { ParaderosLayer } from '@/components/paraderos-layer';
 import { SchoolsLayer } from '@/components/schools-layer';
+import type { LayerLoadStatus } from '@/hooks/use-layer-status';
 
 interface ConceMapProps {
   theme: Theme;
@@ -65,13 +66,17 @@ interface ConceMapProps {
   onSelectSimulatedVehicle: (id: string) => void;
   showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
-  onCoverageLoadingChange: (loading: boolean) => void;
+  coverageRetryKey: number;
+  onCoverageStatusChange: (status: LayerLoadStatus) => void;
   showCycleways: boolean;
-  onCyclewaysLoadingChange: (loading: boolean) => void;
+  cyclewaysRetryKey: number;
+  onCyclewaysStatusChange: (status: LayerLoadStatus) => void;
   showGreenspace: boolean;
-  onGreenspaceLoadingChange: (loading: boolean) => void;
+  greenspaceRetryKey: number;
+  onGreenspaceStatusChange: (status: LayerLoadStatus) => void;
   showSchools: boolean;
-  onSchoolsLoadingChange: (loading: boolean) => void;
+  schoolsRetryKey: number;
+  onSchoolsStatusChange: (status: LayerLoadStatus) => void;
   // Optional: notifies the parent of the current visible bbox so features
   // like wallpaper export can render the same frame the user is seeing.
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
@@ -240,11 +245,11 @@ function BoundsTracker({
 }: {
   onChange: (bounds: [[number, number], [number, number]]) => void;
 }) {
-  const fire = (b: L.LatLngBounds) =>
+  const fire = useCallback((b: L.LatLngBounds) =>
     onChange([
       [b.getSouth(), b.getWest()],
       [b.getNorth(), b.getEast()],
-    ]);
+    ]), [onChange]);
   const map = useMapEvents({
     moveend() {
       fire(map.getBounds());
@@ -255,8 +260,7 @@ function BoundsTracker({
   });
   useEffect(() => {
     fire(map.getBounds());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map]);
+  }, [fire, map]);
   return null;
 }
 
@@ -333,13 +337,17 @@ export function ConceMap({
   onSelectSimulatedVehicle,
   showCoverage,
   coverageThreshold,
-  onCoverageLoadingChange,
+  coverageRetryKey,
+  onCoverageStatusChange,
   showCycleways,
-  onCyclewaysLoadingChange,
+  cyclewaysRetryKey,
+  onCyclewaysStatusChange,
   showGreenspace,
-  onGreenspaceLoadingChange,
+  greenspaceRetryKey,
+  onGreenspaceStatusChange,
   showSchools,
-  onSchoolsLoadingChange,
+  schoolsRetryKey,
+  onSchoolsStatusChange,
   onBoundsChange,
   plannerMidpoint,
   showInterurbanCorridors = false,
@@ -401,25 +409,29 @@ export function ConceMap({
         enabled={showCoverage}
         canvasRenderer={paraderoRenderer}
         threshold={coverageThreshold}
-        onLoadingChange={onCoverageLoadingChange}
+        retryKey={coverageRetryKey}
+        onStatusChange={onCoverageStatusChange}
       />
 
       <CyclewaysLayer
         enabled={showCycleways}
         canvasRenderer={paraderoRenderer}
-        onLoadingChange={onCyclewaysLoadingChange}
+        retryKey={cyclewaysRetryKey}
+        onStatusChange={onCyclewaysStatusChange}
       />
 
       <GreenspaceLayer
         enabled={showGreenspace}
         canvasRenderer={paraderoRenderer}
-        onLoadingChange={onGreenspaceLoadingChange}
+        retryKey={greenspaceRetryKey}
+        onStatusChange={onGreenspaceStatusChange}
       />
 
       <SchoolsLayer
         enabled={showSchools}
         canvasRenderer={paraderoRenderer}
-        onLoadingChange={onSchoolsLoadingChange}
+        retryKey={schoolsRetryKey}
+        onStatusChange={onSchoolsStatusChange}
       />
 
       <ParaderosLayer

@@ -69,8 +69,7 @@ export function TerminalDetailSheet({ open, terminal, onOpenChange, onFocus }: T
 
           <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
             Datos extraídos de OpenStreetMap. La cobertura depende de los aportes
-            de la comunidad — falta operador en algunos nodos. <span className="font-mono">TODO</span>{' '}
-            cruzar con la lista oficial de terminales DTPR cuando esté disponible.
+            de la comunidad; algunos nodos aún no publican operador verificable.
           </div>
         </div>
       </SheetContent>

@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { Cycleway, CyclewayKind } from '@/data/cycleways.generated';
+import type { LayerLoadStatus } from '@/hooks/use-layer-status';
 
 // Color encoding by kind — segregated stands out (the gold standard for
 // safety), shared is muted (less reliable infra), lane is in-between.
@@ -29,28 +30,48 @@ function loadCycleways(): Promise<readonly Cycleway[]> {
 interface Props {
   enabled: boolean;
   canvasRenderer: L.Canvas;
-  onLoadingChange: (loading: boolean) => void;
+  retryKey: number;
+  onStatusChange: (status: LayerLoadStatus) => void;
 }
 
-export function CyclewaysLayer({ enabled, canvasRenderer, onLoadingChange }: Props) {
+export function CyclewaysLayer({
+  enabled,
+  canvasRenderer,
+  retryKey,
+  onStatusChange,
+}: Props) {
   const map = useMap();
   const [items, setItems] = useState<readonly Cycleway[] | null>(null);
 
   useEffect(() => {
-    if (!enabled || items) return;
-    onLoadingChange(true);
+    if (!enabled) return;
+    if (items) {
+      onStatusChange({ loading: false, error: null, ready: true });
+      return;
+    }
+    onStatusChange({ loading: true, error: null, ready: false });
     let cancelled = false;
     void loadCycleways()
       .then((data) => {
-        if (!cancelled) setItems(data);
+        if (!cancelled) {
+          setItems(data);
+          onStatusChange({ loading: false, error: null, ready: true });
+        }
       })
-      .finally(() => {
-        if (!cancelled) onLoadingChange(false);
+      .catch((err) => {
+        dataPromise = null;
+        if (!cancelled) {
+          onStatusChange({
+            loading: false,
+            error: err instanceof Error ? err.message : 'No se pudo cargar ciclovías',
+            ready: false,
+          });
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [enabled, items, onLoadingChange]);
+  }, [enabled, items, onStatusChange, retryKey]);
 
   useEffect(() => {
     if (!enabled || !items) return;

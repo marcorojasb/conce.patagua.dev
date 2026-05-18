@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { chromium, type Browser } from 'playwright';
+import { chromium, type Browser, type Page } from 'playwright';
 
 const PORT = 5175;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -30,6 +30,16 @@ async function launchBrowser(): Promise<Browser> {
   }
 }
 
+async function waitForBody(page: Page, pattern: RegExp, label: string): Promise<void> {
+  await page.waitForFunction(
+    ({ source, flags }) => new RegExp(source, flags).test(document.body.innerText),
+    { source: pattern.source, flags: pattern.flags },
+    { timeout: 15_000 },
+  ).catch(() => {
+    throw new Error(`Expected body text for ${label}: ${pattern}`);
+  });
+}
+
 const child = spawn(
   process.platform === 'win32' ? 'npm.cmd' : 'npm',
   ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'],
@@ -57,7 +67,31 @@ try {
   page.on('pageerror', (err) => errors.push(err.message));
 
   await page.goto(BASE_URL, { waitUntil: 'load' });
+  await waitForBody(page, /conce\.patagua\.dev/, 'initial map shell');
+
+  await page.getByRole('button', { name: 'Buscar recorridos y paraderos' }).click();
+  await page.getByPlaceholder('Buscar recorridos, paraderos…').fill('02A');
+  await page.getByText('02A', { exact: true }).first().click();
+  await waitForBody(page, /02A/, 'route search selection');
+  await page.keyboard.press('Escape');
+
+  await page.goto(`${BASE_URL}/?route=gtfs-route-2991`, { waitUntil: 'load' });
+  await waitForBody(page, /02A|Centinela/, 'GTFS route deep link');
+  await page.goto(BASE_URL, { waitUntil: 'load' });
+
   await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
+  await page.getByRole('switch', { name: 'Cobertura territorial' }).click();
+  await waitForBody(
+    page,
+    /Cargando grilla|Distancia al paradero mas cercano|Distancia al paradero más cercano|Error al cargar grilla/,
+    'coverage layer status',
+  );
+  await page.getByRole('switch', { name: 'Áreas verdes' }).click();
+  await waitForBody(
+    page,
+    /Cargando polígonos|Parques, plazas, bosques y reservas|Error al cargar polígonos/,
+    'greenspace layer status',
+  );
   await page.getByRole('switch', { name: 'Servicios en curso' }).click();
   await page.waitForSelector('.vehicle-marker', { timeout: 15_000 });
 
@@ -76,7 +110,34 @@ try {
     throw new Error(`Console errors:\n${errors.join('\n')}`);
   }
 
-  console.log(`Services smoke OK: ${count.toLocaleString('es-CL')} services, ${markers} markers.`);
+  await page.getByRole('button', { name: 'Planificador (cobertura OD)' }).click();
+  const layerDialogsAfterTool = await page.getByRole('dialog', { name: 'Capas del mapa' }).count();
+  if (layerDialogsAfterTool !== 0) {
+    throw new Error('Layer panel stayed open after opening a tool panel.');
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(BASE_URL, { waitUntil: 'load' });
+  await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
+  await page.getByRole('dialog', { name: 'Capas del mapa' }).waitFor({ timeout: 5_000 });
+  await page.getByRole('button', { name: 'Planificador (cobertura OD)' }).click();
+  const mobileLayerDialogs = await page.getByRole('dialog', { name: 'Capas del mapa' }).count();
+  if (mobileLayerDialogs !== 0) {
+    throw new Error('Mobile layer panel stayed open after opening planner.');
+  }
+
+  for (const slug of ['gtfs-gran-concepcion', 'ruta-201-santa-juana', 'openstreetmap-fuente-visor']) {
+    await page.goto(`${BASE_URL}/wiki/${slug}`, { waitUntil: 'load' });
+    await waitForBody(page, /Wiki|Fuente|Ruta|GTFS|OpenStreetMap/, `wiki article ${slug}`);
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Console errors:\n${errors.join('\n')}`);
+  }
+
+  console.log(
+    `Browser smoke OK: ${count.toLocaleString('es-CL')} services, ${markers} markers, map/wiki/mobile checks.`,
+  );
 } catch (err) {
   console.error(serverOutput.trim());
   console.error(err);

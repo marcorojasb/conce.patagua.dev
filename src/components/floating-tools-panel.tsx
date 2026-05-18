@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { ROUTES } from '@/data/routes';
+import { ROUTES, useRoutesVersion } from '@/data/routes';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
 import { TERMINALS } from '@/data/terminals.generated';
@@ -102,12 +102,10 @@ export function FloatingToolsPanel({
 }: FloatingToolsPanelProps) {
   // Hooks must run unconditionally; we early-return after they're called.
   const operatorStats = useOperatorStats();
+  const routesVersion = useRoutesVersion();
   const microCount = useMemo(
     () => ROUTES.filter((r) => r.type === 'micro').length,
-    // operatorStats recomputes only when the routes-version bumps, so we
-    // reuse it as a dependency hint that ROUTES has changed.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [operatorStats],
+    [routesVersion],
   );
   if (!tool) return null;
   const meta = TOOL_META[tool];

@@ -21,6 +21,7 @@ interface RouteInput {
 interface Options {
   enabled: boolean;
   routes: RouteInput[];
+  retryKey?: number;
   /** Recompute interval in milliseconds. Default 8 s. */
   intervalMs?: number;
 }
@@ -43,6 +44,7 @@ function loadSchedule(): Promise<Record<string, RouteSchedule>> {
 export function useSimulatedVehicles({
   enabled,
   routes,
+  retryKey = 0,
   intervalMs = 8000,
 }: Options): State {
   const [state, setState] = useState<State>({
@@ -78,6 +80,8 @@ export function useSimulatedVehicles({
         timer = window.setInterval(tick, intervalMs);
         setState((s) => ({ ...s, loading: false, error: null }));
       } catch (err) {
+        schedulePromise = null;
+        schedulesRef.current = null;
         if (cancelled) return;
         setState({
           loading: false,
@@ -93,7 +97,7 @@ export function useSimulatedVehicles({
       cancelled = true;
       if (timer != null) window.clearInterval(timer);
     };
-  }, [enabled, routes, intervalMs]);
+  }, [enabled, routes, intervalMs, retryKey]);
 
   // When disabled, clear stale vehicles so the map repaints empty.
   useEffect(() => {
