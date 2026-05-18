@@ -5,12 +5,25 @@
 // current moment assuming on-time service. Real-world delays, cancellations,
 // and detours are invisible here. The UI must communicate that honestly.
 
-import type { LatLngTuple, RouteSchedule, SimulatedVehicle } from '@/types/transport';
+import type {
+  LatLngTuple,
+  RouteSchedule,
+  SimulatedVehicle,
+  SimulationConfidence,
+  SimulationSourceKind,
+} from '@/types/transport';
 
-interface RouteWithPath {
+export interface SimulationRouteInput {
   id: string;
+  routeId?: string;
   color: string;
   path: LatLngTuple[];
+  directionLabel?: string;
+  sourceKind?: SimulationSourceKind;
+  confidence?: SimulationConfidence;
+  sourceLabel?: string;
+  sourceUrl?: string;
+  note?: string;
 }
 
 /**
@@ -71,7 +84,7 @@ interface RouteGeometry {
 }
 
 const geometryCache = new Map<string, RouteGeometry>();
-function geometryFor(route: RouteWithPath): RouteGeometry {
+function geometryFor(route: SimulationRouteInput): RouteGeometry {
   let cached = geometryCache.get(route.id);
   if (cached) return cached;
   const cumulative = [0];
@@ -95,7 +108,7 @@ function geometryFor(route: RouteWithPath): RouteGeometry {
  */
 export function computeActiveVehicles(
   now: Date,
-  routes: RouteWithPath[],
+  routes: SimulationRouteInput[],
   schedules: Record<string, RouteSchedule>,
 ): SimulatedVehicle[] {
   const day = isoDayOfWeek(now);
@@ -127,9 +140,12 @@ export function computeActiveVehicles(
       const eff = inWindowToday ? elapsed : elapsed + 1440;
       const progress = eff / durationMin;
       const pt = pointAtProgress(geom.path, geom.cumulative, geom.total, progress);
+      const routeId = route.routeId ?? route.id;
       out.push({
         id: `${route.id}|${startMin}`,
-        routeId: route.id,
+        scheduleId: route.id,
+        routeId,
+        directionLabel: route.directionLabel,
         progress,
         lat: pt.lat,
         lng: pt.lng,
@@ -137,6 +153,11 @@ export function computeActiveVehicles(
         elapsedMin: eff,
         durationMin,
         startMin,
+        sourceKind: route.sourceKind ?? 'gtfs',
+        confidence: route.confidence ?? 'official',
+        sourceLabel: route.sourceLabel ?? 'GTFS Gran Concepción',
+        sourceUrl: route.sourceUrl,
+        note: route.note,
       });
     }
   }

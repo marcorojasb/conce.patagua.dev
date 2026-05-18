@@ -37,9 +37,9 @@ const SOURCES: Source[] = [
   {
     title: 'Servicios en curso (simulación según horario)',
     detail:
-      'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus según el horario GTFS estático para el día y hora actual — no es GPS real. Útil para entender el ritmo programado del servicio (cuántos buses circulan, frecuencias por corredor, picos por hora). Atrasos, cancelaciones y desvíos son invisibles desde acá hasta que DTPR libere GTFS-RT.',
-    count: 'Calculado en cliente cada 4 s desde los ~27 k trips del feed',
-    license: 'Capa derivada · misma licencia que el GTFS base',
+      'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus o tren según horarios públicos: GTFS urbano oficial, Biotrén por frecuencia publicada y 201/401/411/421 por ventanas/frecuencias DTPR, operador, Moovit/Red Regional y comunidad. No es GPS real: atrasos, cancelaciones y desvíos no se ven.',
+    count: 'Calculado en cliente cada 1 s desde GTFS + patrones horarios documentados',
+    license: 'Capa derivada · GTFS CC BY 4.0 + fuentes públicas citadas en wiki',
   },
   {
     title: 'OpenStreetMap · Overpass API',

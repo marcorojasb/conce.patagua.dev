@@ -75,6 +75,32 @@ export default function Biotren() {
         </Sources>
       </Section>
 
+      <Section title="Servicios en curso">
+        <p>
+          Desde el 18-may-2026 el visor incluye Biotrén en la capa{' '}
+          <strong>Servicios en curso</strong>. La posición no viene de GPS:
+          se proyecta sobre el trazado OSM usando ventanas y frecuencias
+          públicas. Para L1 se reparte la oferta diaria publicada de{' '}
+          <strong>44 servicios</strong>; para L2, <strong>82 servicios</strong>.
+        </p>
+        <KeyValueList
+          items={[
+            ['Fuente de horario', 'EFE/BioBioChile · cambios de itinerario publicados el 18-ago-2025'],
+            ['Confianza', 'Estimación por frecuencia publicada, no salida exacta por tren'],
+            ['Trazado', 'OSM railway=rail, densificado en el visor para evitar saltos largos entre estaciones'],
+            ['Limitación', 'Sin GTFS-RT ni ubicación en vivo: atrasos, cancelaciones y contingencias no aparecen'],
+          ]}
+        />
+        <Sources>
+          <SourceLink href="https://www.biobiochile.cl/noticias/servicios/toma-nota/2025/08/18/los-nuevos-servicios-en-lineas-1-y-2-de-biotren-conoce-los-horarios-y-frecuencia-de-trayectos.shtml">
+            BioBioChile · nuevos servicios L1/L2 Biotrén
+          </SourceLink>
+          <SourceLink href="https://www.efetrenes.cl/biotren">
+            EFE Trenes · Biotrén
+          </SourceLink>
+        </Sources>
+      </Section>
+
       <Section title="Historia">
         <p>
           La línea férrea Concepción-Talcahuano se inauguró en{' '}

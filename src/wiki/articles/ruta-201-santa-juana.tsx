@@ -37,6 +37,33 @@ export default function Ruta201SantaJuana() {
         </p>
       </Section>
 
+      <Section title="Servicios en curso">
+        <p>
+          La ruta 201 entra a la capa <strong>Servicios en curso</strong>{' '}
+          como simulación programada, no GPS. El visor usa la ventana
+          operacional publicada para lun-vie — Santa Juana → Concepción{' '}
+          <strong>05:30-23:45</strong> y Concepción → Santa Juana{' '}
+          <strong>06:45-23:20</strong> — y la expande con frecuencia
+          estimada para que el ritmo del servicio se vea en el mapa.
+        </p>
+        <KeyValueList
+          items={[
+            ['Fuente de horario', 'Sabes.cl + antecedentes DTPR/operador/comunidad'],
+            ['Confianza', 'Ventana horaria publicada; frecuencia estimada por fuentes públicas'],
+            ['Trazado', 'Ruta 156 / Ruta de la Madera + Puente Juan Pablo II, densificado para suavizar saltos'],
+            ['Limitación', 'No reemplaza la app Red Regional ni informa atrasos/cancelaciones'],
+          ]}
+        />
+        <Sources>
+          <SourceLink href="https://sabes.cl/2024/07/16/nuevo-transporte-publico-concepcion-santa-juana-operativo-revisa-horarios-valores/">
+            Sabes.cl · horarios 201 Santa Juana
+          </SourceLink>
+          <SourceLink href="https://dtpr.mtt.gob.cl/consultalicitaciones/webpage/ConsultaLicitaciones.aspx?id=5927">
+            DTPR · Licitación ELC0007
+          </SourceLink>
+        </Sources>
+      </Section>
+
       <Section title="La licitación (DTPR ELC0007)">
         <KeyValueList
           items={[

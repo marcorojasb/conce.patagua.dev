@@ -11,7 +11,9 @@ import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
 import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
 import { FloatingToolsPanel, type AnalysisTab } from '@/components/floating-tools-panel';
+import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
+import type { SimulationRouteInput } from '@/realtime/simulated-vehicles';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
 import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
@@ -111,18 +113,41 @@ export default function App() {
   const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(true);
   const [simulationRetryKey, setSimulationRetryKey] = useState(0);
 
-  // Pool of routes the simulator can project vehicles for. We feed all
-  // urban GTFS micro routes (Biotrén/interurban routes don't have GTFS
-  // schedule data in this feed).
-  const simulationRoutes = useMemo(
-    () =>
-      ROUTES.filter((r) => r.type === 'micro' && r.id.startsWith('gtfs-route-')).map((r) => ({
-        id: r.id,
-        color: r.color,
-        path: r.path,
-      })),
-    [routesVersion],
-  );
+  // Pool of routes the simulator can project vehicles for. GTFS urban
+  // services keep their original route id; Biotrén/interurban services use
+  // directional static patterns with explicit source/confidence metadata.
+  const simulationRoutes = useMemo<SimulationRouteInput[]>(() => {
+    const gtfsRoutes: SimulationRouteInput[] = ROUTES.filter(
+      (r) => r.type === 'micro' && r.id.startsWith('gtfs-route-'),
+    ).map((r) => ({
+      id: r.id,
+      routeId: r.id,
+      color: r.color,
+      path: r.path,
+      sourceKind: 'gtfs',
+      confidence: 'official',
+      sourceLabel: 'GTFS Gran Concepción',
+    }));
+    const staticRoutes: SimulationRouteInput[] = STATIC_SERVICE_PATTERNS.flatMap((pattern) => {
+      const route = ROUTES_BY_ID.get(pattern.routeId);
+      if (!route) return [];
+      return [
+        {
+          id: pattern.id,
+          routeId: pattern.routeId,
+          color: route.color,
+          path: pattern.direction === 'reverse' ? [...route.path].reverse() : route.path,
+          directionLabel: pattern.directionLabel,
+          sourceKind: pattern.sourceKind,
+          confidence: pattern.confidence,
+          sourceLabel: pattern.sourceLabel,
+          sourceUrl: pattern.sourceUrl,
+          note: pattern.note,
+        },
+      ];
+    });
+    return [...gtfsRoutes, ...staticRoutes];
+  }, [routesVersion]);
   const routeColorById = useMemo(
     () => new Map(ROUTES.map((r) => [r.id, r.color])),
     [routesVersion],
@@ -142,6 +167,10 @@ export default function App() {
     retryKey: simulationRetryKey,
     intervalMs: 1000,
   });
+  const simulatedNonGtfsCount = useMemo(
+    () => simulatedVehicles.filter((v) => v.sourceKind !== 'gtfs').length,
+    [simulatedVehicles],
+  );
 
   const [showCoverage, setShowCoverage] = useState(false);
   const [coverageThreshold, setCoverageThreshold] = useState<'all' | 'underserved'>('all');
@@ -437,8 +466,7 @@ export default function App() {
   // saves us building a parallel "vehicle sheet" UI when the natural thing
   // to know is which route the projected bus belongs to.
   const onSelectSimulatedVehicle = useCallback(
-    (vehicleId: string) => {
-      const routeId = vehicleId.split('|')[0];
+    (routeId: string) => {
       if (routeId) onSelectRoute(routeId);
     },
     [onSelectRoute],
@@ -648,6 +676,7 @@ export default function App() {
             onRetryAirQuality={() => setAirQualityRetryKey((v) => v + 1)}
             simulationStatus={{
               count: simulatedVehicles.length,
+              nonGtfsCount: simulatedNonGtfsCount,
               loading: simulationLoading,
               error: simulationError,
               lastUpdate: simulationLastUpdate,

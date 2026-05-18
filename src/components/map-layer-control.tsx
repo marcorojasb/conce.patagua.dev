@@ -57,7 +57,13 @@ interface MapLayerControlProps {
   onToggleSchools: () => void;
   onToggleInterurbanCorridors: () => void;
   airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
-  simulationStatus: { count: number; loading: boolean; error: string | null; lastUpdate: Date | null };
+  simulationStatus: {
+    count: number;
+    nonGtfsCount: number;
+    loading: boolean;
+    error: string | null;
+    lastUpdate: Date | null;
+  };
   coverageStatus: LayerLoadStatus;
   cyclewaysStatus: LayerLoadStatus;
   greenspaceStatus: LayerLoadStatus;
@@ -211,11 +217,11 @@ export function MapLayerControl({
           ? simulationStatus.loading
             ? 'Cargando horario…'
             : simulationStatus.error
-              ? 'No se pudo cargar el horario GTFS'
+              ? 'No se pudo cargar el horario'
               : simulationStatus.count > 0
-                ? `${simulationStatus.count.toLocaleString('es-CL')} en curso · actualiza 1 s`
-                : 'Sin servicios urbanos GTFS activos ahora'
-          : 'Proyección según horario GTFS',
+                ? `${simulationStatus.count.toLocaleString('es-CL')} en curso · ${simulationStatus.nonGtfsCount.toLocaleString('es-CL')} Biotrén/interurbanos`
+                : 'Sin servicios programados activos ahora'
+          : 'GTFS urbano + Biotrén/interurbanos',
         icon: simulationStatus.error ? AlertTriangle : simulationStatus.loading ? Loader2 : Bus,
         checked: showSimulatedVehicles,
         onToggle: onToggleSimulatedVehicles,
@@ -337,6 +343,7 @@ export function MapLayerControl({
       showSimulatedVehicles,
       showTerminals,
       simulationStatus.count,
+      simulationStatus.nonGtfsCount,
       simulationStatus.error,
       simulationStatus.loading,
       simulationStatus.lastUpdate,

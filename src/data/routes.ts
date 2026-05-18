@@ -31,6 +31,7 @@ import {
   INTERURBAN_BUS_ROUTES,
   INTERURBAN_PARADEROS,
 } from '@/data/interurban-routes.generated';
+import { densifyPath } from '@/lib/geo';
 import type {
   BusRoute,
   MapCenter,
@@ -67,6 +68,8 @@ const BIOTREN_FREQUENCY = {
   Domingo: 'cada 20–30 min',
 };
 const BIOTREN_HOURS = '05:45 — 23:10 (Lun-Vie)';
+const RAIL_MAX_SEGMENT_METERS = 300;
+const ROAD_MAX_SEGMENT_METERS = 300;
 
 // Hash operator name → stable hue so the same operator's routes share a color.
 function operatorColor(operator: string | undefined, fallbackSeed: string): string {
@@ -89,7 +92,7 @@ const BIOTREN_ROUTES: Route[] = [
     hours: BIOTREN_HOURS,
     frequencyByDay: BIOTREN_FREQUENCY,
     stops: BIOTREN_L1_STOPS,
-    path: BIOTREN_L1_TRACK,
+    path: densifyPath(BIOTREN_L1_TRACK, RAIL_MAX_SEGMENT_METERS),
   },
   {
     id: 'bt-l2',
@@ -102,7 +105,7 @@ const BIOTREN_ROUTES: Route[] = [
     hours: BIOTREN_HOURS,
     frequencyByDay: BIOTREN_FREQUENCY,
     stops: BIOTREN_L2_STOPS,
-    path: BIOTREN_L2_TRACK,
+    path: densifyPath(BIOTREN_L2_TRACK, RAIL_MAX_SEGMENT_METERS),
   },
 ];
 
@@ -150,7 +153,7 @@ function busRouteToRoute(b: BusRoute, paraderoIndex: Map<string, Paradero>): Rou
     hours: isGtfs ? 'Según calendario GTFS' : 'Según horario publicado por operador',
     frequencyByDay: {},
     stops,
-    path: b.path,
+    path: densifyPath(b.path, ROAD_MAX_SEGMENT_METERS),
     network: b.network,
     digitized: b.digitized,
   };

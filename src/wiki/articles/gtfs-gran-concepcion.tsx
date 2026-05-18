@@ -134,22 +134,24 @@ export default function GtfsGranConcepcion() {
                 <td className="px-3 py-2 font-medium">
                   Servicios 401 / 411 / 421 Tomé
                 </td>
-                <td className="px-3 py-2"><strong>No</strong></td>
+                <td className="px-3 py-2"><strong>No</strong> (sí en visor)</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
                   Pertenecen al <em>Perímetro de Exclusión de Tomé</em>
                   {' '}(decreto MTT jul-2016, operativo mar-2022) y no
                   comparten feed. El visor los integra nativamente con
-                  trazado digitalizado desde OSM. Ver{' '}
+                  trazado digitalizado desde OSM y simulación horaria
+                  estimada desde DTPR/Moovit/Red Regional. Ver{' '}
                   <a href="/wiki/concepcion-tome" className="underline underline-offset-2">Concepción ↔ Tomé</a>.
                 </td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Ruta 201 Santa Juana</td>
-                <td className="px-3 py-2"><strong>No</strong></td>
+                <td className="px-3 py-2"><strong>No</strong> (sí en visor)</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
                   Licitación DTPR ELC0007 separada (2024). Sin GTFS
                   publicado por el operador. El visor digitaliza el
-                  trazado desde OSM. Ver{' '}
+                  trazado desde OSM y proyecta servicios por ventana
+                  horaria publicada/estimada. Ver{' '}
                   <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ruta 201</a>.
                 </td>
               </tr>
@@ -175,13 +177,14 @@ export default function GtfsGranConcepcion() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Biotrén (EFE Trenes Metropolitanos)</td>
-                <td className="px-3 py-2"><strong>No</strong> (feed aparte)</td>
+                <td className="px-3 py-2"><strong>No</strong> (sí en visor)</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
                   Sistema de EFE bajo otra gobernanza de datos. El visor
                   lo procesa por{' '}
                   <code className="font-mono">scripts/fetch-biotren.ts</code>{' '}
                   y <code className="font-mono">fetch-biotren-track.ts</code>{' '}
-                  consumiendo OpenStreetMap (Overpass). Ver{' '}
+                  consumiendo OpenStreetMap (Overpass), y lo proyecta en
+                  Servicios en curso por frecuencia publicada. Ver{' '}
                   <a href="/wiki/biotren" className="underline underline-offset-2">Biotrén</a>.
                 </td>
               </tr>
@@ -194,6 +197,13 @@ export default function GtfsGranConcepcion() {
           geográfica metropolitana. Por eso los corredores satélite
           (Tomé, Santa Juana, Florida, Yumbel) quedan fuera y requieren
           tratamiento aparte aunque comparten urbe.
+        </p>
+        <p className="text-[12px] text-muted-foreground">
+          Nota visor 18-may-2026: la capa Servicios en curso ya no depende
+          solo del GTFS urbano. Combina GTFS oficial con patrones horarios
+          documentados para Biotrén, 201 Santa Juana y 401/411/421 Tomé.
+          Los marcadores no-GTFS se etiquetan como estimados/comunitarios
+          cuando no hay tabla pública exacta.
         </p>
       </Section>
 

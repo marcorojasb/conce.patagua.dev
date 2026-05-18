@@ -5,22 +5,15 @@
 // feature that the user might never turn on.
 
 import { useEffect, useRef, useState } from 'react';
-import { computeActiveVehicles } from '@/realtime/simulated-vehicles';
+import { computeActiveVehicles, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
 import type {
-  LatLngTuple,
   RouteSchedule,
   SimulatedVehicle,
 } from '@/types/transport';
 
-interface RouteInput {
-  id: string;
-  color: string;
-  path: LatLngTuple[];
-}
-
 interface Options {
   enabled: boolean;
-  routes: RouteInput[];
+  routes: SimulationRouteInput[];
   retryKey?: number;
   /** Recompute interval in milliseconds. Default 8 s. */
   intervalMs?: number;
@@ -35,9 +28,13 @@ interface State {
 
 let schedulePromise: Promise<Record<string, RouteSchedule>> | null = null;
 function loadSchedule(): Promise<Record<string, RouteSchedule>> {
-  schedulePromise ??= import('@/data/gtfs-schedule.generated').then(
-    (mod) => mod.ROUTE_SCHEDULES,
-  );
+  schedulePromise ??= Promise.all([
+    import('@/data/gtfs-schedule.generated'),
+    import('@/realtime/static-service-schedules'),
+  ]).then(([gtfs, staticSchedules]) => ({
+    ...gtfs.ROUTE_SCHEDULES,
+    ...staticSchedules.STATIC_ROUTE_SCHEDULES,
+  }));
   return schedulePromise;
 }
 

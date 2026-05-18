@@ -124,22 +124,24 @@ export default function ConcepcionTome() {
         </div>
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">
-            NO están en el visor (servicios interurbanos Tomé)
+            Están en el visor, pero fuera del GTFS urbano
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
             Los servicios 401 / 411 / 421 que llegan a Tomé y Dichato
             operan bajo el Perímetro de Exclusión de Tomé y no
             comparten el feed GTFS. Una consulta directa al dataset
             GTFS confirma que no hay ninguna ruta con esos códigos en
-            el feed urbano. El por qué institucional vive en{' '}
+            el feed urbano. El visor los incorpora como rutas nativas
+            digitalizadas y los proyecta en Servicios en curso con
+            fuentes públicas/comunitarias. El por qué institucional vive en{' '}
             <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
               PE Tomé · Hueco GTFS
             </a>
             .
           </p>
           <p className="mt-1 text-[12px]">
-            Lo más cercano que el visor tiene del corredor es la{' '}
-            <strong>terminal en Concepción</strong>: nodo OSM way 425356582
+            El nodo principal del corredor en Concepción es la{' '}
+            <strong>terminal a Tomé</strong>: OSM way 425356582
             "Terminal de líneas a Tomé" (Manuel Rodríguez 2424 aprox.,{' '}
             <code className="font-mono">−36.8191, −73.0620</code>).
           </p>
@@ -155,6 +157,38 @@ export default function ConcepcionTome() {
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n">
             Wikipedia · Buses licitados Gran Concepción — fin licitación 2002 (31-mar-2024)
+          </SourceLink>
+        </Sources>
+      </Section>
+
+      <Section title="Servicios en curso">
+        <p>
+          Los servicios <strong>401</strong>, <strong>411</strong> y{' '}
+          <strong>421</strong> se proyectan en la capa Servicios en curso
+          con datos públicos de DTPR, Moovit/Red Regional y PDFs de línea.
+          No es GPS: el marcador indica dónde debería ir un bus si salió
+          según la frecuencia publicada.
+        </p>
+        <KeyValueList
+          items={[
+            ['401', 'Tomé Alto ↔ Concepción · 05:00-21:00 hacia Concepción; regreso hasta aprox. 23:30'],
+            ['411', 'Dichato ↔ Concepción · ventana regular 06:01-18:31, frecuencia 20-60 min'],
+            ['421', 'Av. Estadio ↔ Concepción · refuerzo laboral punta AM/PM, sin sábado/domingo en PDF Moovit'],
+            ['Trazado', 'Ruta 150, Penco/Lirquén, Bellavista, Tomé centro y variantes a Dichato/Av. Estadio; paths densificados para reducir saltos'],
+          ]}
+        />
+        <Sources>
+          <SourceLink href="https://www.dtpr.cl/pdf/perimetros/tome/resolucionesgenerales/Res_22_2021_Subsecretaria_de_Transportes.pdf">
+            DTPR · Perímetro de Exclusión de Tomé
+          </SourceLink>
+          <SourceLink href="https://moovitapp.com/index/es-419/transporte_p%C3%BAblico-line-401-Concepcion-3122-3753673-146991722-0">
+            Moovit · línea 401
+          </SourceLink>
+          <SourceLink href="https://moovitapp.com/index/es-419/transporte_p%25C3%25BAblico-line-411-Concepcion-3122-3753673-146991723-0">
+            Moovit · línea 411
+          </SourceLink>
+          <SourceLink href="https://appassets.mvtdev.com/map/188/l/3122/146991724.pdf">
+            Moovit PDF · línea 421
           </SourceLink>
         </Sources>
       </Section>

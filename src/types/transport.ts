@@ -113,10 +113,16 @@ export type RouteSchedule = [
   ScheduledTrip[],
 ];
 
+export type SimulationSourceKind = 'gtfs' | 'official' | 'operator' | 'community' | 'estimated';
+export type SimulationConfidence = 'official' | 'operator' | 'community' | 'estimated';
+
 export interface SimulatedVehicle {
   /** Stable id tied to `routeId|tripStartMin` so React keys/animations are stable per trip. */
   id: string;
+  /** Internal schedule/pattern id. For GTFS this is equal to `routeId`. */
+  scheduleId: string;
   routeId: string;
+  directionLabel?: string;
   /** 0..1 fraction along the polyline. */
   progress: number;
   lat: number;
@@ -129,6 +135,11 @@ export interface SimulatedVehicle {
   durationMin: number;
   /** Scheduled departure as minutes from midnight (for display). */
   startMin: number;
+  sourceKind: SimulationSourceKind;
+  confidence: SimulationConfidence;
+  sourceLabel?: string;
+  sourceUrl?: string;
+  note?: string;
 }
 
 export interface BusRoute {
