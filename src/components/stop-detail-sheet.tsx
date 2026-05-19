@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Accessibility, ChevronRight, ExternalLink, Footprints, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { NextStopServicesBlock } from '@/components/next-stop-services';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
@@ -161,11 +162,11 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
             loading={frequency.loading}
           />
 
-          <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-            Próximas llegadas en tiempo real (GTFS-RT vehicle positions +
-            stop_time_updates) cuando DTPR publique el feed. Hasta entonces, los
-            datos son el horario estático.
-          </div>
+          <NextStopServicesBlock
+            stopId={stop.id}
+            routeIds={stop.routes}
+            enabled={open}
+          />
         </div>
       </SheetContent>
     </Sheet>

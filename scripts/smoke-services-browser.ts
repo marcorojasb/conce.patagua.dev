@@ -94,6 +94,9 @@ try {
 
   await page.goto(`${BASE_URL}/?route=gtfs-route-2991`, { waitUntil: 'load' });
   await waitForBody(page, /02A|Centinela/, 'GTFS route deep link');
+  await page.goto(`${BASE_URL}/?stop=gtfs-stop-1506365`, { waitUntil: 'load' });
+  await waitForBody(page, /Próximos servicios|Cargando próximos servicios programados/, 'stop next services');
+  await waitForBody(page, /GTFS estático|Horarios estimados|Horas estimadas/, 'programmed stop services source copy');
   await page.goto(BASE_URL, { waitUntil: 'load' });
 
   await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
@@ -156,6 +159,10 @@ try {
   if (layerDialogsAfterTool !== 0) {
     throw new Error('Layer panel stayed open after opening a tool panel.');
   }
+
+  await page.getByRole('button', { name: 'Calidad de datos' }).click();
+  await page.getByRole('dialog', { name: 'Calidad de datos' }).waitFor({ timeout: 10_000 });
+  await waitForBody(page, /Cobertura de simulación|Segmento largo|Calidad de datos/, 'data quality tool');
 
   await page.getByRole('button', { name: 'Fondo de pantalla' }).click();
   await page.getByRole('dialog', { name: 'Fondo de pantalla' }).waitFor({ timeout: 5_000 });

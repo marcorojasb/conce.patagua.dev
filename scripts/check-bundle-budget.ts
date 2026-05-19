@@ -7,10 +7,11 @@ const KB = 1024;
 
 const budgets: Array<{ pattern: RegExp; maxBytes: number; maxGzipBytes: number; label: string }> = [
   { pattern: /^index-.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 90 * KB, label: 'main app' },
-  { pattern: /^App-.*\.js$/, maxBytes: 750 * KB, maxGzipBytes: 190 * KB, label: 'React app shell' },
+  { pattern: /^App-.*\.js$/, maxBytes: 700 * KB, maxGzipBytes: 180 * KB, label: 'React app shell' },
   { pattern: /gtfs-bus-routes.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 120 * KB, label: 'GTFS routes' },
   { pattern: /gtfs-schedule.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 65 * KB, label: 'GTFS schedules' },
   { pattern: /gtfs-stop-frequency.*\.js$/, maxBytes: 1_100 * KB, maxGzipBytes: 75 * KB, label: 'GTFS stop frequency' },
+  { pattern: /gtfs-stop-services.*\.js$/, maxBytes: 5_600 * KB, maxGzipBytes: 360 * KB, label: 'GTFS stop services' },
   { pattern: /greenspace.*\.js$/, maxBytes: 1_500 * KB, maxGzipBytes: 230 * KB, label: 'green spaces' },
 ];
 

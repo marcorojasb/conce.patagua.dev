@@ -8,6 +8,7 @@ import {
   Compass,
   Crosshair,
   Download,
+  Gauge,
   GraduationCap,
   Grid3x3,
   ImageDown,
@@ -108,6 +109,7 @@ interface MapLayerRow {
 const TOOLS: ToolBtn[] = [
   { id: 'cobertura', label: 'Planificador (cobertura OD)', Icon: Compass },
   { id: 'operadores', label: 'Operadores', Icon: Building2 },
+  { id: 'calidad', label: 'Calidad de datos', Icon: Gauge },
   { id: 'export', label: 'Export GeoJSON', Icon: Download },
   { id: 'wallpaper', label: 'Fondo de pantalla', Icon: ImageDown },
 ];

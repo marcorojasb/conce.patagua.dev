@@ -2,6 +2,7 @@ import { ArrowDownToDot, ArrowUpFromDot, ChevronRight, MapPin } from 'lucide-rea
 import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { NextStopServicesBlock } from '@/components/next-stop-services';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
@@ -127,10 +128,17 @@ export function ParaderoDetailSheet({
             )}
           </ScrollArea>
 
-          <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-            Próximas llegadas quedan pendientes hasta verificar un feed GTFS-RT público para
-            Gran Concepción.
-          </div>
+          {stop ? (
+            <NextStopServicesBlock
+              stopId={stop.id}
+              routeIds={stop.routes}
+              enabled={open}
+            />
+          ) : (
+            <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+              Sin recorridos vinculados: no se puede estimar próximos servicios para este punto.
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>
