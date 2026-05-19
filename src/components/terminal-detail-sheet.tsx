@@ -1,7 +1,7 @@
 import { Building2, Map as MapIcon, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { WikiLinkButton } from '@/components/wiki-link';
 import type { Terminal } from '@/types/transport';
 
@@ -18,62 +18,60 @@ export function TerminalDetailSheet({ open, terminal, onOpenChange, onFocus }: T
   const osmUrl = `https://www.openstreetmap.org/node/${terminal.osmId}`;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full gap-4 sm:max-w-md sm:w-[420px]">
-        <SheetHeader>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Building2 className="h-3.5 w-3.5" />
-            Terminal / Estación intermodal
-          </div>
-          <SheetTitle className="pr-8">{terminal.name}</SheetTitle>
-          <SheetDescription className="font-mono text-xs">
-            {terminal.lat.toFixed(5)}, {terminal.lng.toFixed(5)}
-          </SheetDescription>
-        </SheetHeader>
-
-        <div className="flex min-h-0 flex-1 flex-col gap-4 px-5 pb-5">
-          <div className="flex flex-wrap gap-1.5">
-            <Button size="sm" variant="outline" onClick={onFocus}>
-              <MapIcon className="h-3.5 w-3.5" />
-              Centrar en mapa
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => window.open(osmUrl, '_blank', 'noopener')}
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-              Ver en OSM
-            </Button>
-            {/* Si el terminal es nodo de servicios documentados en el wiki
-                (ej.: Estación Intermodal Concepción → recorridos interurbanos)
-                mostramos un enlace al artículo correspondiente. */}
-            <WikiLinkButton kind="terminal" terminalId={terminal.id} />
-          </div>
-
-          <div className="space-y-2 rounded-md border bg-card p-3 text-sm">
-            <Row label="Red">
-              {terminal.network ? (
-                <Badge variant="secondary" className="font-mono">{terminal.network}</Badge>
-              ) : (
-                <span className="text-muted-foreground">—</span>
-              )}
-            </Row>
-            <Row label="Operador">
-              <span className="text-foreground">{terminal.operator ?? '—'}</span>
-            </Row>
-            <Row label="OSM ID">
-              <span className="font-mono text-[11px] text-muted-foreground">{terminal.osmId}</span>
-            </Row>
-          </div>
-
-          <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-            Datos extraídos de OpenStreetMap. La cobertura depende de los aportes
-            de la comunidad; algunos nodos aún no publican operador verificable.
-          </div>
+    <FloatingInfoPanel
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={terminal.name}
+      eyebrow={(
+        <>
+          <Building2 className="h-3.5 w-3.5" />
+          Terminal / Estación intermodal
+        </>
+      )}
+      description={(
+        <span className="font-mono text-xs">
+          {terminal.lat.toFixed(5)}, {terminal.lng.toFixed(5)}
+        </span>
+      )}
+      actions={(
+        <div className="flex flex-wrap gap-1.5">
+          <Button size="sm" variant="outline" onClick={onFocus}>
+            <MapIcon className="h-3.5 w-3.5" />
+            Centrar en mapa
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => window.open(osmUrl, '_blank', 'noopener')}
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Ver en OSM
+          </Button>
+          <WikiLinkButton kind="terminal" terminalId={terminal.id} />
         </div>
-      </SheetContent>
-    </Sheet>
+      )}
+    >
+      <div className="space-y-2 rounded-md border bg-card p-3 text-sm">
+        <Row label="Red">
+          {terminal.network ? (
+            <Badge variant="secondary" className="font-mono">{terminal.network}</Badge>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          )}
+        </Row>
+        <Row label="Operador">
+          <span className="text-foreground">{terminal.operator ?? '—'}</span>
+        </Row>
+        <Row label="OSM ID">
+          <span className="font-mono text-[11px] text-muted-foreground">{terminal.osmId}</span>
+        </Row>
+      </div>
+
+      <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+        Datos extraídos de OpenStreetMap. La cobertura depende de los aportes
+        de la comunidad; algunos nodos aún no publican operador verificable.
+      </div>
+    </FloatingInfoPanel>
   );
 }
 

@@ -1,12 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { ROUTES } from '@/data/routes';
 import { GTFS_CONCEPCION_SOURCE, GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { TERMINALS } from '@/data/terminals.generated';
@@ -91,54 +84,46 @@ interface DataSourcesSheetProps {
 
 export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full gap-4 sm:max-w-md sm:w-[440px]">
-        <SheetHeader>
-          <SheetTitle className="pr-8">Fuentes de datos</SheetTitle>
-          <SheetDescription>
-            Todo lo que ves en este visor viene de fuentes abiertas. conce.patagua.dev es un
-            proyecto open source.
-          </SheetDescription>
-        </SheetHeader>
+    <FloatingInfoPanel
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title="Fuentes de datos"
+      widthClassName="sm:w-[440px]"
+      description="Todo lo que ves en este visor viene de fuentes abiertas. conce.patagua.dev es un proyecto open source."
+    >
+      <SourceList title="En uso ahora" sources={SOURCES} />
+      <SourceList title="Pendientes (esperando publicación oficial)" sources={PENDING} />
 
-        <ScrollArea className="flex-1">
-          <div className="space-y-4 px-5 pb-5">
-            <SourceList title="En uso ahora" sources={SOURCES} />
-            <SourceList title="Pendientes (esperando publicación oficial)" sources={PENDING} />
+      <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+        Si encuentras un error en un paradero o recorrido de micro, corrígelo en la
+        fuente GTFS primaria cuando esté confirmada. Para terminales, POIs o Biotrén,
+        sigue siendo útil{' '}
+        <a
+          className="underline underline-offset-2 hover:text-foreground"
+          href="https://www.openstreetmap.org/edit"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          editar OSM directamente
+        </a>
+        . Los cambios se reflejan en la próxima sincronización (
+        <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
+          npm run sync:all
+        </code>
+        ).
+      </div>
 
-            <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-              Si encuentras un error en un paradero o recorrido de micro, corrígelo en la
-              fuente GTFS primaria cuando esté confirmada. Para terminales, POIs o Biotrén,
-              sigue siendo útil{' '}
-              <a
-                className="underline underline-offset-2 hover:text-foreground"
-                href="https://www.openstreetmap.org/edit"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                editar OSM directamente
-              </a>
-              . Los cambios se reflejan en la próxima sincronización (
-              <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
-                npm run sync:all
-              </code>
-              ).
-            </div>
-
-            <div className="text-[11px] text-muted-foreground">
-              <a
-                className="underline underline-offset-2 hover:text-foreground"
-                href="https://github.com/marcorojasb/conce.patagua.dev"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                github.com/marcorojasb/conce.patagua.dev
-              </a>
-            </div>
-          </div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+      <div className="text-[11px] text-muted-foreground">
+        <a
+          className="underline underline-offset-2 hover:text-foreground"
+          href="https://github.com/marcorojasb/conce.patagua.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          github.com/marcorojasb/conce.patagua.dev
+        </a>
+      </div>
+    </FloatingInfoPanel>
   );
 }
 

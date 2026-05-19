@@ -97,7 +97,35 @@ try {
   await page.goto(`${BASE_URL}/?stop=gtfs-stop-1506365`, { waitUntil: 'load' });
   await waitForBody(page, /Próximos servicios|Cargando próximos servicios programados/, 'stop next services');
   await waitForBody(page, /GTFS estático|Horarios estimados|Horas estimadas/, 'programmed stop services source copy');
+  await page.getByRole('dialog').filter({ hasText: /Ruta 160|Próximos servicios/ }).first().waitFor({ timeout: 5_000 });
+  const modalDetailCount = await page.locator('[role="dialog"][aria-modal="true"]').count();
+  if (modalDetailCount > 0) {
+    throw new Error('Expected detail panels to be non-modal.');
+  }
+  await page.getByText(/Biotrén L1/).first().click();
+  await waitForBody(page, /Hualqui|Mercado/, 'sidebar click while detail panel is open');
+  await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
+  await page.getByRole('dialog', { name: 'Capas del mapa' }).waitFor({ timeout: 5_000 });
+  const routeDialogsAfterLayers = await page.getByRole('dialog').filter({ hasText: /Hualqui|Mercado/ }).count();
+  if (routeDialogsAfterLayers > 0) {
+    throw new Error('Detail panel stayed open after opening layers.');
+  }
   await page.goto(BASE_URL, { waitUntil: 'load' });
+
+  const pwaMetadata = await page.evaluate(() => ({
+    manifest: document.querySelector<HTMLLinkElement>('link[rel="manifest"]')?.href ?? '',
+    appleIcon: document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]')?.href ?? '',
+    appleTitle: document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-title"]')?.content ?? '',
+    appleCapable: document.querySelector<HTMLMetaElement>('meta[name="apple-mobile-web-app-capable"]')?.content ?? '',
+  }));
+  if (
+    !pwaMetadata.manifest.endsWith('/manifest.webmanifest') ||
+    !pwaMetadata.appleIcon.endsWith('/apple-touch-icon.png') ||
+    pwaMetadata.appleTitle !== 'conce.patagua.dev' ||
+    pwaMetadata.appleCapable !== 'yes'
+  ) {
+    throw new Error(`Unexpected PWA/iOS metadata: ${JSON.stringify(pwaMetadata)}`);
+  }
 
   await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
   await page.getByRole('switch', { name: 'Cobertura territorial' }).click();
@@ -179,6 +207,11 @@ try {
   }
 
   await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${BASE_URL}/?stop=gtfs-stop-1506365`, { waitUntil: 'load' });
+  await waitForBody(page, /Próximos servicios|Cargando próximos servicios programados/, 'mobile stop panel');
+  await page.mouse.wheel(0, 1400);
+  await waitForBody(page, /GPS ni GTFS-RT|Sin próximos servicios programados/, 'mobile detail scroll');
+  await page.getByRole('button', { name: 'Cerrar' }).first().waitFor({ timeout: 5_000 });
   await page.goto(BASE_URL, { waitUntil: 'load' });
   await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
   await page.getByRole('dialog', { name: 'Capas del mapa' }).waitFor({ timeout: 5_000 });

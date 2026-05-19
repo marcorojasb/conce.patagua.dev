@@ -213,19 +213,34 @@ export default function App() {
   const [activeTool, setActiveTool] = useState<AnalysisTab | null>(null);
   const [layersOpen, setLayersOpen] = useState(false);
 
+  const closeDetailPanels = useCallback(() => {
+    setSheetKind(null);
+    setSelectedRouteId(null);
+    setSelectedStopId(null);
+    setSelectedParaderoId(null);
+    setSelectedTerminalId(null);
+    setSelectedPoiId(null);
+  }, []);
+
   // Toolbar button behavior: click same tool = close; different = switch.
   const toggleTool = useCallback((t: AnalysisTab) => {
+    closeDetailPanels();
+    setSourcesOpen(false);
     setLayersOpen(false);
     setActiveTool((cur) => (cur === t ? null : t));
-  }, []);
+  }, [closeDetailPanels]);
 
   const toggleLayers = useCallback(() => {
     setLayersOpen((cur) => {
       const next = !cur;
-      if (next) setActiveTool(null);
+      if (next) {
+        closeDetailPanels();
+        setSourcesOpen(false);
+        setActiveTool(null);
+      }
       return next;
     });
-  }, []);
+  }, [closeDetailPanels]);
 
   useSyncUrlState({
     route: selectedRouteId,
@@ -440,14 +455,7 @@ export default function App() {
     }
   }, []);
 
-  const clearSelection = useCallback(() => {
-    setSheetKind(null);
-    setSelectedRouteId(null);
-    setSelectedStopId(null);
-    setSelectedParaderoId(null);
-    setSelectedTerminalId(null);
-    setSelectedPoiId(null);
-  }, []);
+  const clearSelection = closeDetailPanels;
 
   const onSelectRoute = useCallback(
     (id: string) => {
@@ -465,6 +473,9 @@ export default function App() {
       setSelectedTerminalId(null);
       setSelectedPoiId(null);
       setSheetKind('route');
+      setSourcesOpen(false);
+      setLayersOpen(false);
+      setActiveTool(null);
       setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
       closeSidebarOnMobile();
     },
@@ -489,6 +500,9 @@ export default function App() {
     setSelectedTerminalId(null);
     setSelectedPoiId(null);
     setSheetKind('stop');
+    setSourcesOpen(false);
+    setLayersOpen(false);
+    setActiveTool(null);
     setFlyToToken({
       key: Date.now(),
       target: { kind: 'point', lat: s.lat, lng: s.lng, zoom: 16 },
@@ -504,6 +518,9 @@ export default function App() {
     setSelectedParaderoId(null);
     setSelectedPoiId(null);
     setSheetKind('terminal');
+    setSourcesOpen(false);
+    setLayersOpen(false);
+    setActiveTool(null);
     setFlyToToken({
       key: Date.now(),
       target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
@@ -519,6 +536,9 @@ export default function App() {
     setSelectedParaderoId(null);
     setSelectedTerminalId(null);
     setSheetKind('poi');
+    setSourcesOpen(false);
+    setLayersOpen(false);
+    setActiveTool(null);
     setFlyToToken({
       key: Date.now(),
       target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
@@ -534,6 +554,9 @@ export default function App() {
     setSelectedTerminalId(null);
     setSelectedPoiId(null);
     setSheetKind('paradero');
+    setSourcesOpen(false);
+    setLayersOpen(false);
+    setActiveTool(null);
     setFlyToToken({
       key: Date.now(),
       target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 17 },
@@ -598,10 +621,19 @@ export default function App() {
           onSetAllByOperator={onSetAllByOperator}
           onlyOperatingNow={onlyOperatingNow}
           onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
-          onOpenSources={() => setSourcesOpen(true)}
+          onOpenSources={() => {
+            closeDetailPanels();
+            setLayersOpen(false);
+            setActiveTool(null);
+            setSourcesOpen(true);
+            closeSidebarOnMobile();
+          }}
           onOpenAnalysis={() => {
+            closeDetailPanels();
+            setSourcesOpen(false);
             setLayersOpen(false);
             setActiveTool('cobertura');
+            closeSidebarOnMobile();
           }}
         />
 
@@ -709,7 +741,7 @@ export default function App() {
             activeTool={activeTool}
           />
 
-          {!sheetKind && !activeTool && !layersOpen && (
+          {!sheetKind && !sourcesOpen && !activeTool && !layersOpen && (
             <div className="pointer-events-none absolute left-2 top-2 z-10 animate-fade-in md:left-3 md:top-3">
               <Card className="pointer-events-auto max-w-[220px] border-border/80 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:max-w-[260px]">
                 <CardHeader className="space-y-1 p-3">
@@ -752,7 +784,7 @@ export default function App() {
           <div
             className={cn(
               'pointer-events-none absolute bottom-10 left-2 z-10 md:bottom-6 md:left-3',
-              (activeTool || layersOpen) && 'hidden md:block',
+              (sheetKind || sourcesOpen || activeTool || layersOpen) && 'hidden md:block',
             )}
           >
             <div className="pointer-events-auto max-h-[35vh] overflow-y-auto thin-scroll rounded-md border bg-background/90 px-3 py-2 text-[11px] shadow-sm backdrop-blur md:max-h-[40vh]">

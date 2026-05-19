@@ -2,14 +2,8 @@ import { Clock, CreditCard, Github, Info, Route as RouteIcon, Wallet, XCircle } 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ROUTE_TYPES } from '@/data/routes';
 import { WikiLinkButton } from '@/components/wiki-link';
@@ -56,13 +50,14 @@ export function RouteDetailSheet({
   const hasFrequency = Object.keys(route.frequencyByDay).length > 0;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="w-full gap-4 sm:max-w-md sm:w-[420px]"
-      >
-        <SheetHeader>
-          <div className="flex flex-wrap items-center gap-2">
+    <FloatingInfoPanel
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={route.name}
+      description={route.operator}
+      scroll={false}
+      eyebrow={(
+        <div className="flex flex-wrap items-center gap-2">
             <span
               className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white"
               style={{ background: route.color }}
@@ -89,43 +84,37 @@ export function RouteDetailSheet({
                 Interurbano · licitado DTPR
               </Badge>
             )}
-          </div>
-          <SheetTitle className="pr-8">{route.name}</SheetTitle>
-          <SheetDescription>{route.operator}</SheetDescription>
-        </SheetHeader>
-
-        <div className="px-5">
-          <div className="flex flex-wrap gap-1.5">
-            <Button size="sm" variant="outline" onClick={onFocusRoute}>
-              <RouteIcon className="h-3.5 w-3.5" />
-              Centrar en mapa
-            </Button>
-            <Button size="sm" variant="secondary" onClick={onDeselectRoute}>
-              <XCircle className="h-3.5 w-3.5" />
-              Deseleccionar
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() =>
-                window.open(
-                  'https://github.com/marcorojasb/conce.patagua.dev/issues',
-                  '_blank',
-                  'noopener',
-                )
-              }
-            >
-              <Github className="h-3.5 w-3.5" />
-              Reportar
-            </Button>
-            {/* "Ver en el wiki" se renderiza solo si la ruta tiene artículo
-                dedicado (ej.: 201 Santa Juana). Para el resto el componente
-                no devuelve nada y la fila queda exactamente igual. */}
-            <WikiLinkButton kind="route" code={route.code} />
-          </div>
         </div>
-
-        <Tabs defaultValue="info" className="flex min-h-0 flex-1 flex-col px-5 pb-5">
+      )}
+      actions={(
+        <div className="flex flex-wrap gap-1.5">
+          <Button size="sm" variant="outline" onClick={onFocusRoute}>
+            <RouteIcon className="h-3.5 w-3.5" />
+            Centrar en mapa
+          </Button>
+          <Button size="sm" variant="secondary" onClick={onDeselectRoute}>
+            <XCircle className="h-3.5 w-3.5" />
+            Deseleccionar
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              window.open(
+                'https://github.com/marcorojasb/conce.patagua.dev/issues',
+                '_blank',
+                'noopener',
+              )
+            }
+          >
+            <Github className="h-3.5 w-3.5" />
+            Reportar
+          </Button>
+          <WikiLinkButton kind="route" code={route.code} />
+        </div>
+      )}
+    >
+        <Tabs defaultValue="info" className="flex h-full min-h-0 flex-col px-5 pb-5 pt-4">
           <TabsList className="self-start">
             <TabsTrigger value="info">
               <Info className="h-3 w-3" />
@@ -326,7 +315,6 @@ export function RouteDetailSheet({
             </ScrollArea>
           </TabsContent>
         </Tabs>
-      </SheetContent>
-    </Sheet>
+    </FloatingInfoPanel>
   );
 }
