@@ -109,7 +109,7 @@ export function Header({
 
       <div className="ml-2 hidden md:flex">
         <Badge variant="outline" className="font-mono text-[10px]">
-          open source · demo
+          open source
         </Badge>
       </div>
 
