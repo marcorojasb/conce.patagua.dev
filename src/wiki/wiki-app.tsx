@@ -36,14 +36,14 @@ export default function WikiApp() {
       <header className="relative z-10 flex h-12 items-center gap-1.5 border-b bg-background/95 px-2 backdrop-blur md:h-14 md:gap-3 md:px-4">
         <a
           href="/"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md hover:bg-accent md:h-9 md:w-9"
+          className="flex size-10 shrink-0 items-center justify-center rounded-md hover:bg-accent md:h-9 md:w-9"
           aria-label="Volver al visor"
         >
-          <ArrowLeft className="h-[18px] w-[18px]" />
+          <ArrowLeft className="size-[18px]" />
         </a>
         <div className="flex min-w-0 items-center gap-2">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <BookOpen className="h-4 w-4" />
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <BookOpen className="size-4" />
           </div>
           <div className="min-w-0 leading-tight">
             <div className="truncate font-mono text-sm font-semibold tracking-tight">
@@ -62,18 +62,18 @@ export default function WikiApp() {
             window.open(`${REPO_BASE}/tree/main/src/wiki/articles`, '_blank', 'noopener')
           }
           aria-label="Repositorio del wiki"
-          className="h-10 w-10 shrink-0 md:h-9 md:w-9"
+          className="size-10 shrink-0 md:h-9 md:w-9"
         >
-          <Github className="h-[18px] w-[18px]" />
+          <Github className="size-[18px]" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
           aria-label="Cambiar tema"
-          className="h-10 w-10 shrink-0 md:h-9 md:w-9"
+          className="size-10 shrink-0 md:h-9 md:w-9"
         >
-          {theme === 'dark' ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}
+          {theme === 'dark' ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
         </Button>
       </header>
 
@@ -191,7 +191,7 @@ function ArticleHeader({ article }: { article: ArticleMeta }) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 hover:text-foreground hover:underline"
         >
-          <Pencil className="h-3 w-3" />
+          <Pencil className="size-3" />
           Editar en GitHub
         </a>
       </div>
@@ -250,7 +250,7 @@ function WikiHome({ onSelect }: { onSelect: (slug: string | null) => void }) {
             className="underline underline-offset-2 hover:text-foreground"
           >
             github.com/marcorojasb/conce.patagua.dev/tree/main/src/wiki/articles
-            <ExternalLink className="ml-1 inline h-3 w-3" />
+            <ExternalLink className="ml-1 inline size-3" />
           </a>
           . Cada artículo cita sus fuentes. Cuando una fuente oficial cambia,
           actualizamos el artículo.

@@ -9,7 +9,7 @@
 // The dataset itself is lazy-loaded via dynamic import — the chunk only
 // downloads the first time the layer is enabled.
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { CoverageCell } from '@/types/transport';
@@ -33,9 +33,14 @@ function colorFor(distance: number): string {
   return BINS[BINS.length - 1].color;
 }
 
+let cellsCache: readonly CoverageCell[] | null = null;
 let cellsPromise: Promise<readonly CoverageCell[]> | null = null;
 function loadCells(): Promise<readonly CoverageCell[]> {
-  cellsPromise ??= import('@/data/coverage.generated').then((mod) => mod.COVERAGE_CELLS);
+  if (cellsCache) return Promise.resolve(cellsCache);
+  cellsPromise ??= import('@/data/coverage.generated').then((mod) => {
+    cellsCache = mod.COVERAGE_CELLS;
+    return cellsCache;
+  });
   return cellsPromise;
 }
 
@@ -55,66 +60,61 @@ export function CoverageLayer({
   onStatusChange,
 }: Props) {
   const map = useMap();
-  const [cells, setCells] = useState<readonly CoverageCell[] | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
-    if (cells) {
-      onStatusChange({ loading: false, error: null, ready: true });
-      return;
-    }
-    onStatusChange({ loading: true, error: null, ready: false });
     let cancelled = false;
-    void loadCells()
-      .then((data) => {
-        if (!cancelled) {
-          setCells(data);
-          onStatusChange({ loading: false, error: null, ready: true });
-        }
-      })
-      .catch((err) => {
-        cellsPromise = null;
-        if (!cancelled) {
-          onStatusChange({
-            loading: false,
-            error: err instanceof Error ? err.message : 'No se pudo cargar cobertura',
-            ready: false,
-          });
-        }
-      });
+    const group = L.featureGroup();
+
+    const draw = (cells: readonly CoverageCell[]) => {
+      if (cancelled) return;
+      const minDist = threshold === 'underserved' ? 600 : 0;
+      for (const [lat, lng, dist] of cells) {
+        if (dist < minDist) continue;
+        const fill = colorFor(dist);
+        const rect = L.rectangle(
+          [
+            [lat - HALF, lng - HALF],
+            [lat + HALF, lng + HALF],
+          ],
+          {
+            color: fill,
+            fillColor: fill,
+            fillOpacity: threshold === 'underserved' ? 0.55 : 0.4,
+            weight: 0,
+            interactive: false,
+            renderer: canvasRenderer,
+          },
+        );
+        group.addLayer(rect);
+      }
+      group.addTo(map);
+      onStatusChange({ loading: false, error: null, ready: true });
+    };
+
+    if (cellsCache) {
+      draw(cellsCache);
+    } else {
+      onStatusChange({ loading: true, error: null, ready: false });
+      void loadCells()
+        .then(draw)
+        .catch((err) => {
+          cellsPromise = null;
+          if (!cancelled) {
+            onStatusChange({
+              loading: false,
+              error: err instanceof Error ? err.message : 'No se pudo cargar cobertura',
+              ready: false,
+            });
+          }
+        });
+    }
+
     return () => {
       cancelled = true;
-    };
-  }, [enabled, cells, onStatusChange, retryKey]);
-
-  useEffect(() => {
-    if (!enabled || !cells) return;
-    const group = L.featureGroup();
-    const minDist = threshold === 'underserved' ? 600 : 0;
-    for (const [lat, lng, dist] of cells) {
-      if (dist < minDist) continue;
-      const fill = colorFor(dist);
-      const rect = L.rectangle(
-        [
-          [lat - HALF, lng - HALF],
-          [lat + HALF, lng + HALF],
-        ],
-        {
-          color: fill,
-          fillColor: fill,
-          fillOpacity: threshold === 'underserved' ? 0.55 : 0.4,
-          weight: 0,
-          interactive: false,
-          renderer: canvasRenderer,
-        },
-      );
-      group.addLayer(rect);
-    }
-    group.addTo(map);
-    return () => {
       group.remove();
     };
-  }, [enabled, cells, threshold, canvasRenderer, map]);
+  }, [enabled, threshold, canvasRenderer, map, onStatusChange, retryKey]);
 
   return null;
 }

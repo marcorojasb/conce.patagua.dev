@@ -241,7 +241,7 @@ function SidebarFilters({
                 onClick={() => onToggleType(t.id)}
                 aria-pressed={active}
                 className={cn(
-                  'inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-md border px-2 py-2 text-xs transition-colors focus-ring md:min-h-8 md:px-2.5 md:py-1.5',
+                  'inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-md border p-2 text-xs transition-colors focus-ring md:min-h-8 md:px-2.5 md:py-1.5',
                   active
                     ? 'border-foreground/70 bg-foreground text-background shadow-sm'
                     : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground',
@@ -415,7 +415,7 @@ function OperatorSection({
         >
           <ChevronRight
             className={cn(
-              'mr-1 h-3 w-3 shrink-0 text-muted-foreground transition-transform',
+              'mr-1 size-3 shrink-0 text-muted-foreground transition-transform',
               expanded && 'rotate-90',
             )}
           />
@@ -524,7 +524,7 @@ function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProp
   return (
     <div
       className={cn(
-        'group flex min-h-11 min-w-0 max-w-full overflow-hidden rounded-md border border-transparent px-2 py-2 transition-colors',
+        'group flex min-h-11 min-w-0 max-w-full overflow-hidden rounded-md border border-transparent p-2 transition-colors',
         selected ? 'border-border bg-accent' : 'hover:bg-accent/60',
       )}
     >

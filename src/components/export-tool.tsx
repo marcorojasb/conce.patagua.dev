@@ -58,7 +58,13 @@ const EXPORT_ROWS: ExportRow[] = [
 
 export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: string[] }) {
   const [selected, setSelected] = useState<Set<ExportLayer>>(
-    () => new Set(EXPORT_ROWS.filter((r) => r.defaultChecked).map((r) => r.key)),
+    () => {
+      const initial = new Set<ExportLayer>();
+      for (const row of EXPORT_ROWS) {
+        if (row.defaultChecked) initial.add(row.key);
+      }
+      return initial;
+    },
   );
   const [busy, setBusy] = useState(false);
 
@@ -141,7 +147,7 @@ export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: strin
         disabled={selected.size === 0 || busy}
         className="w-full"
       >
-        <Download className="h-4 w-4" />
+        <Download className="size-4" />
         {busy ? 'Generando…' : 'Descargar GeoJSON'}
       </Button>
 
@@ -154,4 +160,3 @@ export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: strin
     </div>
   );
 }
-

@@ -85,15 +85,15 @@ export function Header({
           size="icon"
           onClick={onToggleSidebar}
           aria-label="Mostrar u ocultar barra lateral"
-          className="h-10 w-10 shrink-0 md:h-9 md:w-9"
+          className="size-10 shrink-0 md:h-9 md:w-9"
         >
-          <PanelLeft className="h-[18px] w-[18px]" />
+          <PanelLeft className="size-[18px]" />
         </Button>
       </Tooltip>
 
       <div className="flex min-w-0 items-center gap-2">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <BrandIcon className="h-4 w-4" />
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+          <BrandIcon className="size-4" />
         </div>
         {/* min-w-0 + truncate keeps the title on a single line on narrow
             viewports even when the toolbar (search, github, theme) crowds it. */}
@@ -118,10 +118,10 @@ export function Header({
       <button
         type="button"
         onClick={() => setCommandOpen(true)}
-        className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md border bg-background text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-ring md:h-9 md:w-full md:max-w-[280px] md:justify-start md:gap-2 md:px-3"
+        className="group relative flex size-10 shrink-0 items-center justify-center rounded-md border bg-background text-sm text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-ring md:h-9 md:w-full md:max-w-[280px] md:justify-start md:gap-2 md:px-3"
         aria-label="Buscar recorridos y paraderos"
       >
-        <Search className="h-4 w-4 opacity-60 md:h-[15px] md:w-[15px]" />
+        <Search className="size-4 opacity-60 md:h-[15px] md:w-[15px]" />
         <span className="hidden truncate md:inline">Buscar recorridos, paraderos…</span>
         <span className="ml-auto hidden items-center gap-1 md:flex">
           <Kbd>⌘</Kbd>
@@ -143,9 +143,9 @@ export function Header({
             )
           }
           aria-label="Repositorio en GitHub"
-          className="h-10 w-10 shrink-0 md:h-9 md:w-9"
+          className="size-10 shrink-0 md:h-9 md:w-9"
         >
-          <Github className="h-[18px] w-[18px]" />
+          <Github className="size-[18px]" />
         </Button>
       </Tooltip>
 
@@ -155,12 +155,12 @@ export function Header({
           size="icon"
           onClick={onToggleTheme}
           aria-label="Cambiar tema"
-          className="h-10 w-10 shrink-0 md:h-9 md:w-9"
+          className="size-10 shrink-0 md:h-9 md:w-9"
         >
           {theme === 'dark' ? (
-            <Sun className="h-[18px] w-[18px]" />
+            <Sun className="size-[18px]" />
           ) : (
-            <Moon className="h-[18px] w-[18px]" />
+            <Moon className="size-[18px]" />
           )}
         </Button>
       </Tooltip>
@@ -192,10 +192,10 @@ export function Header({
                     }}
                   >
                     <span
-                      className="flex h-6 w-6 items-center justify-center rounded-md text-white"
+                      className="flex size-6 items-center justify-center rounded-md text-white"
                       style={{ background: r.color }}
                     >
-                      <Icon className="h-[13px] w-[13px]" />
+                      <Icon className="size-[13px]" />
                     </span>
                     <span className="font-medium">{r.code}</span>
                     <span className="truncate text-muted-foreground">{r.name}</span>
@@ -217,12 +217,14 @@ export function Header({
                     onSelectStop(s.id);
                   }}
                 >
-                  <MapPin className="h-[15px] w-[15px] text-muted-foreground" />
+                  <MapPin className="size-[15px] text-muted-foreground" />
                   <span className="font-medium">{s.name}</span>
                   <CommandShortcut>
                     {s.routes
-                      .map((rid) => ROUTES_BY_ID.get(rid)?.code)
-                      .filter(Boolean)
+                      .flatMap((rid) => {
+                        const code = ROUTES_BY_ID.get(rid)?.code;
+                        return code ? [code] : [];
+                      })
                       .join(' · ')}
                   </CommandShortcut>
                 </CommandItem>
@@ -244,7 +246,7 @@ export function Header({
                     window.location.assign(`/wiki/${a.slug}`);
                   }}
                 >
-                  <BookOpen className="h-[15px] w-[15px] text-muted-foreground" />
+                  <BookOpen className="size-[15px] text-muted-foreground" />
                   <span className="font-medium">{a.title}</span>
                 </CommandItem>
               ))}

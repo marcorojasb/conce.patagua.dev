@@ -99,7 +99,7 @@ function SeverityCard({ severity, count }: { severity: DataQualitySeverity; coun
   return (
     <div className="rounded-md border bg-card p-2">
       <div className={`flex items-center gap-1 text-[10px] uppercase tracking-wider ${color}`}>
-        <Icon className="h-3 w-3" />
+        <Icon className="size-3" />
         {SEVERITY_LABEL[severity]}
       </div>
       <div className="font-mono text-base font-semibold">{count}</div>
@@ -125,7 +125,7 @@ function IssueRow({
   return (
     <div className="p-3">
       <div className="flex items-start gap-2">
-        <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${tone}`} />
+        <Icon className={`mt-0.5 size-4 shrink-0 ${tone}`} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-sm font-medium">{issue.title}</span>
@@ -142,11 +142,11 @@ function IssueRow({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-7 w-7 shrink-0"
+            className="size-7 shrink-0"
             onClick={() => onSelectRoute(issue.routeId!)}
             aria-label={`Ver ruta ${issue.routeId}`}
           >
-            <RouteIcon className="h-3.5 w-3.5" />
+            <RouteIcon className="size-3.5" />
           </Button>
         )}
       </div>

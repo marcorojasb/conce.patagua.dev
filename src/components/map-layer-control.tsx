@@ -338,7 +338,6 @@ export function MapLayerControl({
       onToggleParaderos,
       onTogglePois,
       onToggleSimulatedVehicles,
-      onSetSimulationScope,
       onToggleTerminals,
       onToggleCoverage,
       paraderosCount,
@@ -351,10 +350,8 @@ export function MapLayerControl({
       simulationScope,
       showTerminals,
       simulationStatus.count,
-      simulationStatus.nonGtfsCount,
       simulationStatus.error,
       simulationStatus.loading,
-      simulationStatus.lastUpdate,
       onRetrySimulation,
       coverageThreshold,
       coverageStatus.loading,
@@ -388,7 +385,7 @@ export function MapLayerControl({
   // Sized smaller in mobile so 6 stacked buttons + separator fit comfortably
   // without dominating the right edge of the map.
   const BTN_CLASS =
-    'pointer-events-auto h-9 w-9 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85 md:h-10 md:w-10';
+    'pointer-events-auto size-9 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85 md:h-10 md:w-10';
 
   return (
     <>
@@ -402,7 +399,7 @@ export function MapLayerControl({
           aria-label="Centrar Gran Concepción"
           className={BTN_CLASS}
         >
-          <Crosshair className="h-4 w-4" />
+          <Crosshair className="size-4" />
         </Button>
       </Tooltip>
 
@@ -416,7 +413,7 @@ export function MapLayerControl({
               aria-label="Abrir capas del mapa"
               className={cn(BTN_CLASS, layersOpen && 'bg-accent text-accent-foreground')}
         >
-          <Layers2 className="h-4 w-4" />
+          <Layers2 className="size-4" />
           {enabledCount > 0 && (
             <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium leading-none text-background">
               {enabledCount}
@@ -449,7 +446,7 @@ export function MapLayerControl({
                 isActive && 'bg-accent text-accent-foreground border-foreground/40',
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="size-4" />
             </Button>
           </Tooltip>
         );
@@ -465,9 +462,7 @@ export function MapLayerControl({
           )}
           aria-live="polite"
         >
-          <div
-            role="dialog"
-            aria-modal={false}
+          <aside
             aria-label="Capas del mapa"
             className="pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90 animate-fade-in"
           >
@@ -478,8 +473,8 @@ export function MapLayerControl({
             <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
-                    <Layers2 className="h-3.5 w-3.5" />
+                  <span className="grid size-7 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
+                    <Layers2 className="size-3.5" />
                   </span>
                   <h2 className="truncate text-sm font-semibold tracking-tight">
                     Capas del mapa
@@ -493,23 +488,23 @@ export function MapLayerControl({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="-mr-1 -mt-1 h-8 w-8 shrink-0"
+                className="-mr-1 -mt-1 size-8 shrink-0"
                 onClick={onCloseLayers}
                 aria-label="Cerrar capas"
               >
-                <X className="h-4 w-4" />
+                <X className="size-4" />
               </Button>
             </div>
 
             <ScrollArea className="min-h-0 flex-1">
-              <div className="space-y-1 px-3 py-3">
+              <div className="space-y-1 p-3">
                 {layers.map((layer) => {
                   const Icon = layer.icon;
                   return (
                     <div key={layer.id}>
-                      <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent/50">
-                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
-                          <Icon className={cn('h-4 w-4', layer.loading && 'animate-spin')} />
+                      <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-accent/50">
+                        <span className="grid size-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
+                          <Icon className={cn('size-4', layer.loading && 'animate-spin')} />
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-medium leading-tight">
@@ -528,13 +523,13 @@ export function MapLayerControl({
                               }}
                               className="mt-1 inline-flex items-center gap-1 rounded border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground focus-ring"
                             >
-                              <RotateCcw className="h-3 w-3" />
+                              <RotateCcw className="size-3" />
                               Reintentar
                             </button>
                           )}
                         </span>
                         {layer.ready && layer.checked && !layer.loading && !layer.error && (
-                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                          <CheckCircle2 className="size-3.5 shrink-0 text-emerald-500" />
                         )}
                         <Switch
                           checked={layer.checked}
@@ -651,7 +646,7 @@ export function MapLayerControl({
                 )}
               </div>
             </ScrollArea>
-          </div>
+          </aside>
         </div>
       )}
     </>

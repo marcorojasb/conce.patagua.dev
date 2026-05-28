@@ -60,5 +60,8 @@ function compute(): OperatorStat[] {
  */
 export function useOperatorStats(): OperatorStat[] {
   const version = useRoutesVersion();
-  return useMemo(() => compute(), [version]);
+  return useMemo(() => {
+    void version;
+    return compute();
+  }, [version]);
 }

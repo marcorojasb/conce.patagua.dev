@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Building2, Map as MapIcon, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,31 +13,27 @@ interface TerminalDetailSheetProps {
   onFocus: () => void;
 }
 
+const TERMINAL_EYEBROW = (
+  <>
+    <Building2 className="size-3.5" />
+    Terminal / Estación intermodal
+  </>
+);
+
 export function TerminalDetailSheet({ open, terminal, onOpenChange, onFocus }: TerminalDetailSheetProps) {
-  if (!terminal) return null;
-
-  const osmUrl = `https://www.openstreetmap.org/node/${terminal.osmId}`;
-
-  return (
-    <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
-      title={terminal.name}
-      eyebrow={(
-        <>
-          <Building2 className="h-3.5 w-3.5" />
-          Terminal / Estación intermodal
-        </>
-      )}
-      description={(
+  const panelChrome = useMemo(() => {
+    if (!terminal) return null;
+    const osmUrl = `https://www.openstreetmap.org/node/${terminal.osmId}`;
+    return {
+      description: (
         <span className="font-mono text-xs">
           {terminal.lat.toFixed(5)}, {terminal.lng.toFixed(5)}
         </span>
-      )}
-      actions={(
+      ),
+      actions: (
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="outline" onClick={onFocus}>
-            <MapIcon className="h-3.5 w-3.5" />
+            <MapIcon className="size-3.5" />
             Centrar en mapa
           </Button>
           <Button
@@ -44,12 +41,25 @@ export function TerminalDetailSheet({ open, terminal, onOpenChange, onFocus }: T
             variant="outline"
             onClick={() => window.open(osmUrl, '_blank', 'noopener')}
           >
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="size-3.5" />
             Ver en OSM
           </Button>
           <WikiLinkButton kind="terminal" terminalId={terminal.id} />
         </div>
-      )}
+      ),
+    };
+  }, [onFocus, terminal]);
+
+  if (!terminal || !panelChrome) return null;
+
+  return (
+    <FloatingInfoPanel
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={terminal.name}
+      eyebrow={TERMINAL_EYEBROW}
+      description={panelChrome.description}
+      actions={panelChrome.actions}
     >
       <div className="space-y-2 rounded-md border bg-card p-3 text-sm">
         <Row label="Red">

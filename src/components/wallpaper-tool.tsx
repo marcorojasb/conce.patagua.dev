@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Eye, ImageDown, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -64,10 +64,10 @@ export default function WallpaperTool({
   const [sizeId, setSizeId] = useState<string>(WALLPAPER_SIZES[0].id);
   const [curatedId, setCuratedId] = useState<string>(CURATED_VIEWS[0].id);
   const [routeMode, setRouteMode] = useState<WallpaperRouteMode>('visible');
-  const [servicesScope, setServicesScope] = useState<'visible' | 'all'>(simulationScope);
+  const [servicesScopeOverride, setServicesScopeOverride] = useState<'visible' | 'all' | null>(null);
   const [framePadding, setFramePadding] = useState(8);
   const [zoomDelta, setZoomDelta] = useState(0);
-  const [manualBbox, setManualBbox] = useState<[[number, number], [number, number]] | null>(mapBounds);
+  const manualBboxRef = useRef<[[number, number], [number, number]] | null>(mapBounds);
   const [titleText, setTitleText] = useState('Gran Concepción en movimiento');
   const [subtitleText, setSubtitleText] = useState('Red de transporte público y capas urbanas');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -91,8 +91,8 @@ export default function WallpaperTool({
     setLayers((cur) => ({ ...cur, [key]: !cur[key] }));
 
   useEffect(() => {
-    if (!manualBbox && mapBounds) setManualBbox(mapBounds);
-  }, [manualBbox, mapBounds]);
+    if (!manualBboxRef.current && mapBounds) manualBboxRef.current = mapBounds;
+  }, [mapBounds]);
 
   useEffect(() => {
     return () => {
@@ -103,13 +103,14 @@ export default function WallpaperTool({
   const size = WALLPAPER_SIZES.find((s) => s.id === sizeId) ?? WALLPAPER_SIZES[0];
   const curated = CURATED_VIEWS.find((c) => c.id === curatedId) ?? CURATED_VIEWS[0];
   const midpointAvailable = !!plannerMidpoint;
+  const servicesScope = servicesScopeOverride ?? simulationScope;
 
   const resolveBbox = () => {
     const raw =
       mode === 'curated'
         ? curated.bbox
         : mode === 'manual'
-          ? manualBbox ?? mapBounds
+          ? manualBboxRef.current ?? mapBounds
           : mapBounds;
     if (!raw) throw new Error('Aún no hay vista del mapa para capturar.');
     return padBbox(raw, { paddingPct: framePadding, zoomDelta });
@@ -164,18 +165,26 @@ export default function WallpaperTool({
     ]);
 
     const paraderosLayer = layers.paraderos
-      ? GTFS_STOPS.filter((p) => pointInBbox(p.lat, p.lng, bbox)).map((p) => ({ lat: p.lat, lng: p.lng }))
+      ? GTFS_STOPS.flatMap((p) =>
+          pointInBbox(p.lat, p.lng, bbox) ? [{ lat: p.lat, lng: p.lng }] : [],
+        )
       : undefined;
     const terminalesLayer = layers.terminales
-      ? TERMINALS.filter((t) => pointInBbox(t.lat, t.lng, bbox)).map((t) => ({ lat: t.lat, lng: t.lng }))
+      ? TERMINALS.flatMap((t) =>
+          pointInBbox(t.lat, t.lng, bbox) ? [{ lat: t.lat, lng: t.lng }] : [],
+        )
       : undefined;
     const poisLayer = layers.centros
-      ? POIS.filter((p) => pointInBbox(p.lat, p.lng, bbox)).map((p) => ({
-          lat: p.lat,
-          lng: p.lng,
-          color: p.category === 'hospital' ? '#ef4444' : p.category === 'mall' ? '#f97316' : '#7c3aed',
-          radius: p.category === 'hospital' ? 3.6 : 3,
-        }))
+      ? POIS.flatMap((p) =>
+          pointInBbox(p.lat, p.lng, bbox)
+            ? [{
+                lat: p.lat,
+                lng: p.lng,
+                color: p.category === 'hospital' ? '#ef4444' : p.category === 'mall' ? '#f97316' : '#7c3aed',
+                radius: p.category === 'hospital' ? 3.6 : 3,
+              }]
+            : [],
+        )
       : undefined;
     const midpointLayer =
       layers.punto_medio && plannerMidpoint
@@ -384,12 +393,12 @@ export default function WallpaperTool({
           size="sm"
           disabled={!mapBounds}
           onClick={() => {
-            if (mapBounds) setManualBbox(mapBounds);
+            if (mapBounds) manualBboxRef.current = mapBounds;
             setMode('manual');
           }}
           className="w-full"
         >
-          <RefreshCw className="h-3.5 w-3.5" />
+          <RefreshCw className="size-3.5" />
           Usar vista actual para encuadre manual
         </Button>
       </div>
@@ -447,7 +456,7 @@ export default function WallpaperTool({
                 ['all', 'Toda red'],
               ]}
               value={servicesScope}
-              onChange={(v) => setServicesScope(v as 'visible' | 'all')}
+              onChange={(v) => setServicesScopeOverride(v as 'visible' | 'all')}
             />
           )}
           <LayerToggle
@@ -527,13 +536,13 @@ export default function WallpaperTool({
           </div>
         )}
         <Button type="button" variant="outline" onClick={generatePreview} disabled={previewBusy || busy} className="w-full">
-          <Eye className="h-4 w-4" />
+          <Eye className="size-4" />
           {previewBusy ? progress ?? 'Generando preview…' : 'Generar preview'}
         </Button>
       </div>
 
       <Button type="button" onClick={generate} disabled={busy} className="w-full">
-        <ImageDown className="h-4 w-4" />
+        <ImageDown className="size-4" />
         {busy ? progress ?? 'Generando…' : 'Descargar PNG'}
       </Button>
 
@@ -668,58 +677,68 @@ function SizeGroup({
 
 async function loadCoverage(bbox?: [[number, number], [number, number]]) {
   const mod = await import('@/data/coverage.generated');
-  return mod.COVERAGE_CELLS.map(([lat, lng, dist]: CoverageCell) => ({
-    lat,
-    lng,
-    bucket:
-      dist <= 200
-        ? ('excelente' as const)
-        : dist <= 400
-          ? ('buena' as const)
-          : dist <= 600
-            ? ('marginal' as const)
-            : dist <= 1000
-              ? ('pobre' as const)
-            : ('muy-pobre' as const),
-  })).filter((cell) => !bbox || pointInBbox(cell.lat, cell.lng, bbox));
+  return mod.COVERAGE_CELLS.flatMap(([lat, lng, dist]: CoverageCell) => {
+    if (bbox && !pointInBbox(lat, lng, bbox)) return [];
+    return [{
+      lat,
+      lng,
+      bucket:
+        dist <= 200
+          ? ('excelente' as const)
+          : dist <= 400
+            ? ('buena' as const)
+            : dist <= 600
+              ? ('marginal' as const)
+              : dist <= 1000
+                ? ('pobre' as const)
+              : ('muy-pobre' as const),
+    }];
+  });
 }
 
 async function loadCycleways(bbox: [[number, number], [number, number]]) {
   const mod = await import('@/data/cycleways.generated');
-  return mod.CYCLEWAYS
-    .filter((c) => pathIntersectsBbox(c.path, bbox))
-    .map((c) => ({
+  return mod.CYCLEWAYS.flatMap((c) =>
+    pathIntersectsBbox(c.path, bbox)
+      ? [{
       path: c.path,
       color: c.kind === 'segregated' ? '#2563eb' : c.kind === 'shared' ? '#6366f1' : '#06b6d4',
       weight: c.kind === 'segregated' ? 2.4 : 1.8,
-    }));
+        }]
+      : [],
+  );
 }
 
 async function loadGreenspace(bbox: [[number, number], [number, number]]) {
   const mod = await import('@/data/greenspace.generated');
-  return mod.GREEN_SPACES
-    .filter((g) => pathIntersectsBbox(g.ring, bbox))
-    .slice(0, 900)
-    .map((g) => ({
+  const spaces = [];
+  for (const g of mod.GREEN_SPACES) {
+    if (!pathIntersectsBbox(g.ring, bbox)) continue;
+    spaces.push({
       ring: g.ring,
       fill:
         g.kind === 'forest' || g.kind === 'nature_reserve'
           ? 'rgba(22, 163, 74, 0.24)'
           : 'rgba(34, 197, 94, 0.32)',
       stroke: 'rgba(22, 163, 74, 0.42)',
-    }));
+    });
+    if (spaces.length >= 900) break;
+  }
+  return spaces;
 }
 
 async function loadSchools(bbox: [[number, number], [number, number]]) {
   const mod = await import('@/data/schools.generated');
-  return mod.SCHOOLS
-    .filter((s) => pointInBbox(s.lat, s.lng, bbox))
-    .map((s) => ({
+  return mod.SCHOOLS.flatMap((s) =>
+    pointInBbox(s.lat, s.lng, bbox)
+      ? [{
       lat: s.lat,
       lng: s.lng,
       color: s.kind === 'university' || s.kind === 'college' ? '#7c3aed' : '#dc2626',
       radius: s.kind === 'university' || s.kind === 'college' ? 3.1 : 2.3,
-    }));
+        }]
+      : [],
+  );
 }
 
 async function loadWallpaperVehicles(
@@ -744,17 +763,19 @@ async function loadWallpaperVehicles(
 }
 
 function buildSimulationRoutesForWallpaper(): SimulationRouteInput[] {
-  const gtfsRoutes: SimulationRouteInput[] = ROUTES.filter(
-    (r) => r.type === 'micro' && r.id.startsWith('gtfs-route-'),
-  ).map((r) => ({
-    id: r.id,
-    routeId: r.id,
-    color: r.color,
-    path: r.path,
-    sourceKind: 'gtfs',
-    confidence: 'official',
-    sourceLabel: 'GTFS Gran Concepción',
-  }));
+  const gtfsRoutes: SimulationRouteInput[] = [];
+  for (const r of ROUTES) {
+    if (r.type !== 'micro' || !r.id.startsWith('gtfs-route-')) continue;
+    gtfsRoutes.push({
+      id: r.id,
+      routeId: r.id,
+      color: r.color,
+      path: r.path,
+      sourceKind: 'gtfs',
+      confidence: 'official',
+      sourceLabel: 'GTFS Gran Concepción',
+    });
+  }
   const staticRoutes = STATIC_SERVICE_PATTERNS.flatMap((pattern) => {
     const route = ROUTES.find((r) => r.id === pattern.routeId);
     if (!route) return [];

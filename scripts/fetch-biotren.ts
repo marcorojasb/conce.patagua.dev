@@ -174,12 +174,6 @@ import type { LatLngTuple, Stop } from '@/types/transport';
 export const BIOTREN_L1_STOPS: Stop[] = ${stopsLiteral(l1)};
 
 export const BIOTREN_L2_STOPS: Stop[] = ${stopsLiteral(l2)};
-
-// Path geometry: stations connected in order. OSM does not currently have the
-// Biotrén lines as route relations, so for now we connect the dots. A future
-// iteration can replace this with the actual \`railway=rail\` ways.
-export const BIOTREN_L1_PATH: LatLngTuple[] = BIOTREN_L1_STOPS.map((s) => [s.lat, s.lng]);
-export const BIOTREN_L2_PATH: LatLngTuple[] = BIOTREN_L2_STOPS.map((s) => [s.lat, s.lng]);
 `;
 }
 

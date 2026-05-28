@@ -45,6 +45,7 @@ export async function overpass<E = unknown>(query: string): Promise<OverpassResp
   for (const mirror of OVERPASS_MIRRORS) {
     try {
       console.log(`  → ${new URL(mirror).host}`);
+      // react-doctor-disable-next-line react-doctor/async-await-in-loop -- Overpass mirrors are fallbacks; querying all public mirrors in parallel is wasteful and can trip rate limits.
       const body = await curlGet(`${mirror}?data=${encoded}`);
       const parsed = JSON.parse(body) as OverpassResponse<E>;
       if (!Array.isArray(parsed.elements)) {

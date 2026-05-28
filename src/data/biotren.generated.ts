@@ -3,7 +3,7 @@
 // Station order is from EFE Trenes (efe.cl/biotren/servicio-y-trazado).
 // Re-generate: `npm run sync:biotren`. Do not edit by hand.
 
-import type { LatLngTuple, Stop } from '@/types/transport';
+import type { Stop } from '@/types/transport';
 
 export const BIOTREN_L1_STOPS: Stop[] = [
   { id:'osm-4455930417', name:"Hualqui", lat:-36.9805523, lng:-72.9411329, ref:'HQ' },
@@ -36,9 +36,3 @@ export const BIOTREN_L2_STOPS: Stop[] = [
   { id:'osm-315019820', name:"Juan Pablo II", lat:-36.8384342, lng:-73.0979637, ref:'BB', wikidata:'Q5842945' },
   { id:'osm-310000768', name:"Concepción", lat:-36.8301581, lng:-73.0610353, ref:'CC', wikidata:'Q5841708' },
 ];
-
-// Path geometry: stations connected in order. OSM does not currently have the
-// Biotrén lines as route relations, so for now we connect the dots. A future
-// iteration can replace this with the actual `railway=rail` ways.
-export const BIOTREN_L1_PATH: LatLngTuple[] = BIOTREN_L1_STOPS.map((s) => [s.lat, s.lng]);
-export const BIOTREN_L2_PATH: LatLngTuple[] = BIOTREN_L2_STOPS.map((s) => [s.lat, s.lng]);

@@ -63,33 +63,26 @@ export function PoiDetailSheet({
   onSelectRoute,
 }: PoiDetailSheetProps) {
   const nearby = useMemo(() => (poi ? nearbyRoutes(poi) : []), [poi]);
-
-  if (!poi) return null;
-
-  const CategoryIcon = CATEGORY_ICON[poi.category];
-  const osmUrl = `https://www.openstreetmap.org/${poi.osmType}/${poi.osmId}`;
-
-  return (
-    <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
-      title={poi.name}
-      widthClassName="sm:w-[440px]"
-      eyebrow={(
+  const panelChrome = useMemo(() => {
+    if (!poi) return null;
+    const CategoryIcon = CATEGORY_ICON[poi.category];
+    const osmUrl = `https://www.openstreetmap.org/${poi.osmType}/${poi.osmId}`;
+    return {
+      eyebrow: (
         <>
-          <CategoryIcon className="h-3.5 w-3.5" />
+          <CategoryIcon className="size-3.5" />
           <span>Centro de atracción · {CATEGORY_LABEL[poi.category]}</span>
         </>
-      )}
-      description={(
+      ),
+      description: (
         <span className="font-mono text-xs">
           {poi.lat.toFixed(5)}, {poi.lng.toFixed(5)}
         </span>
-      )}
-      actions={(
+      ),
+      actions: (
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="outline" onClick={onFocus}>
-            <MapIcon className="h-3.5 w-3.5" />
+            <MapIcon className="size-3.5" />
             Centrar en mapa
           </Button>
           <Button
@@ -97,16 +90,30 @@ export function PoiDetailSheet({
             variant="outline"
             onClick={() => window.open(osmUrl, '_blank', 'noopener')}
           >
-            <ExternalLink className="h-3.5 w-3.5" />
+            <ExternalLink className="size-3.5" />
             Ver en OSM
           </Button>
         </div>
-      )}
+      ),
+    };
+  }, [onFocus, poi]);
+
+  if (!poi || !panelChrome) return null;
+
+  return (
+    <FloatingInfoPanel
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={poi.name}
+      widthClassName="sm:w-[440px]"
+      eyebrow={panelChrome.eyebrow}
+      description={panelChrome.description}
+      actions={panelChrome.actions}
     >
       <div>
         <div className="mb-2 flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           <span>
-            <RouteIcon className="mr-1 inline h-3 w-3" />
+            <RouteIcon className="mr-1 inline size-3" />
             Recorridos a ≤{NEARBY_RADIUS_M} m
           </span>
           <span className="font-mono">{nearby.length} encontrados</span>
@@ -137,7 +144,7 @@ export function PoiDetailSheet({
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{route.name}</div>
                     <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                      <Icon className="h-[11px] w-[11px]" />
+                      <Icon className="size-[11px]" />
                       {ROUTE_TYPES[route.type].short}
                       <span aria-hidden>·</span>
                       <span>{Math.round(minDistance)} m</span>

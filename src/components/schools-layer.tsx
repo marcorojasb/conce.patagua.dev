@@ -1,7 +1,7 @@
 // Establecimientos educacionales (kindergarten / school / college /
 // university) — puntos con marcador. Capa lazy, render imperativo.
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { School, SchoolKind } from '@/data/schools.generated';
@@ -21,9 +21,14 @@ const KIND_LABEL: Record<SchoolKind, string> = {
   university: 'Universidad',
 };
 
+let dataCache: readonly School[] | null = null;
 let dataPromise: Promise<readonly School[]> | null = null;
 function loadSchools(): Promise<readonly School[]> {
-  dataPromise ??= import('@/data/schools.generated').then((mod) => mod.SCHOOLS);
+  if (dataCache) return Promise.resolve(dataCache);
+  dataPromise ??= import('@/data/schools.generated').then((mod) => {
+    dataCache = mod.SCHOOLS;
+    return dataCache;
+  });
   return dataPromise;
 }
 
@@ -41,62 +46,57 @@ export function SchoolsLayer({
   onStatusChange,
 }: Props) {
   const map = useMap();
-  const [items, setItems] = useState<readonly School[] | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
-    if (items) {
-      onStatusChange({ loading: false, error: null, ready: true });
-      return;
-    }
-    onStatusChange({ loading: true, error: null, ready: false });
     let cancelled = false;
-    void loadSchools()
-      .then((data) => {
-        if (!cancelled) {
-          setItems(data);
-          onStatusChange({ loading: false, error: null, ready: true });
-        }
-      })
-      .catch((err) => {
-        dataPromise = null;
-        if (!cancelled) {
-          onStatusChange({
-            loading: false,
-            error: err instanceof Error ? err.message : 'No se pudo cargar educación',
-            ready: false,
-          });
-        }
-      });
+    const group = L.featureGroup();
+
+    const draw = (items: readonly School[]) => {
+      if (cancelled) return;
+      for (const s of items) {
+        const color = KIND_COLOR[s.kind];
+        const tooltip = `${s.name} · ${KIND_LABEL[s.kind]}${
+          s.operator ? ` · ${s.operator}` : ''
+        }${s.religion && s.religion !== 'none' ? ` · ${s.religion}` : ''}`;
+        const marker = L.circleMarker([s.lat, s.lng], {
+          radius: s.kind === 'university' ? 6 : s.kind === 'school' ? 4.5 : 3.5,
+          color: '#ffffff',
+          weight: 1.2,
+          fillColor: color,
+          fillOpacity: 0.92,
+          renderer: canvasRenderer,
+        });
+        marker.bindTooltip(tooltip, { direction: 'top', offset: [0, -4], opacity: 0.95 });
+        group.addLayer(marker);
+      }
+      group.addTo(map);
+      onStatusChange({ loading: false, error: null, ready: true });
+    };
+
+    if (dataCache) {
+      draw(dataCache);
+    } else {
+      onStatusChange({ loading: true, error: null, ready: false });
+      void loadSchools()
+        .then(draw)
+        .catch((err) => {
+          dataPromise = null;
+          if (!cancelled) {
+            onStatusChange({
+              loading: false,
+              error: err instanceof Error ? err.message : 'No se pudo cargar educación',
+              ready: false,
+            });
+          }
+        });
+    }
+
     return () => {
       cancelled = true;
-    };
-  }, [enabled, items, onStatusChange, retryKey]);
-
-  useEffect(() => {
-    if (!enabled || !items) return;
-    const group = L.featureGroup();
-    for (const s of items) {
-      const color = KIND_COLOR[s.kind];
-      const tooltip = `${s.name} · ${KIND_LABEL[s.kind]}${
-        s.operator ? ` · ${s.operator}` : ''
-      }${s.religion && s.religion !== 'none' ? ` · ${s.religion}` : ''}`;
-      const marker = L.circleMarker([s.lat, s.lng], {
-        radius: s.kind === 'university' ? 6 : s.kind === 'school' ? 4.5 : 3.5,
-        color: '#ffffff',
-        weight: 1.2,
-        fillColor: color,
-        fillOpacity: 0.92,
-        renderer: canvasRenderer,
-      });
-      marker.bindTooltip(tooltip, { direction: 'top', offset: [0, -4], opacity: 0.95 });
-      group.addLayer(marker);
-    }
-    group.addTo(map);
-    return () => {
       group.remove();
     };
-  }, [enabled, items, canvasRenderer, map]);
+  }, [enabled, canvasRenderer, map, onStatusChange, retryKey]);
 
   return null;
 }

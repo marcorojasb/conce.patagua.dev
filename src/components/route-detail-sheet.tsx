@@ -1,4 +1,5 @@
 import { Clock, CreditCard, Github, Info, Route as RouteIcon, Wallet, XCircle } from 'lucide-react';
+import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,57 +44,45 @@ export function RouteDetailSheet({
   onDeselectRoute,
   onSelectStop,
 }: RouteDetailSheetProps) {
-  if (!route) return null;
-  const TypeIcon = ROUTE_TYPES[route.type].Icon;
-  const lengthKm = pathKilometers(route.path);
-  const hasStops = route.stops.length > 0;
-  const hasFrequency = Object.keys(route.frequencyByDay).length > 0;
-
-  return (
-    <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
-      title={route.name}
-      description={route.operator}
-      scroll={false}
-      eyebrow={(
+  const panelChrome = useMemo(() => {
+    if (!route) return null;
+    const TypeIcon = ROUTE_TYPES[route.type].Icon;
+    return {
+      eyebrow: (
         <div className="flex flex-wrap items-center gap-2">
-            <span
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md text-white"
-              style={{ background: route.color }}
-            >
-              <TypeIcon className="h-4 w-4" />
-            </span>
+          <span
+            className="inline-flex size-8 items-center justify-center rounded-md text-white"
+            style={{ background: route.color }}
+          >
+            <TypeIcon className="size-4" />
+          </span>
+          <Badge
+            className="border-transparent font-mono"
+            style={{ background: route.color, color: '#fff' }}
+          >
+            {route.code}
+          </Badge>
+          <span className="text-xs text-muted-foreground">
+            {ROUTE_TYPES[route.type].label}
+          </span>
+          {route.network === 'Interurbano Biobío' && (
             <Badge
-              className="border-transparent font-mono"
-              style={{ background: route.color, color: '#fff' }}
+              variant="outline"
+              className="border-teal-600/40 bg-teal-500/10 text-[10px] font-normal text-teal-900 dark:text-teal-200"
             >
-              {route.code}
+              Interurbano · licitado DTPR
             </Badge>
-            <span className="text-xs text-muted-foreground">
-              {ROUTE_TYPES[route.type].label}
-            </span>
-            {route.network === 'Interurbano Biobío' && (
-              // Badge sutil que distingue al 201 (y futuros licitados rurales)
-              // del corredor urbano GTFS. Misma forma que el chip de código
-              // pero outline, sin saturar la cabecera.
-              <Badge
-                variant="outline"
-                className="border-teal-600/40 bg-teal-500/10 text-[10px] font-normal text-teal-900 dark:text-teal-200"
-              >
-                Interurbano · licitado DTPR
-              </Badge>
-            )}
+          )}
         </div>
-      )}
-      actions={(
+      ),
+      actions: (
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="outline" onClick={onFocusRoute}>
-            <RouteIcon className="h-3.5 w-3.5" />
+            <RouteIcon className="size-3.5" />
             Centrar en mapa
           </Button>
           <Button size="sm" variant="secondary" onClick={onDeselectRoute}>
-            <XCircle className="h-3.5 w-3.5" />
+            <XCircle className="size-3.5" />
             Deseleccionar
           </Button>
           <Button
@@ -107,25 +96,43 @@ export function RouteDetailSheet({
               )
             }
           >
-            <Github className="h-3.5 w-3.5" />
+            <Github className="size-3.5" />
             Reportar
           </Button>
           <WikiLinkButton kind="route" code={route.code} />
         </div>
-      )}
+      ),
+    };
+  }, [onDeselectRoute, onFocusRoute, route]);
+
+  if (!route) return null;
+  if (!panelChrome) return null;
+  const lengthKm = pathKilometers(route.path);
+  const hasStops = route.stops.length > 0;
+  const hasFrequency = Object.keys(route.frequencyByDay).length > 0;
+
+  return (
+    <FloatingInfoPanel
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={route.name}
+      description={route.operator}
+      scroll={false}
+      eyebrow={panelChrome.eyebrow}
+      actions={panelChrome.actions}
     >
         <Tabs defaultValue="info" className="flex h-full min-h-0 flex-col px-5 pb-5 pt-4">
           <TabsList className="self-start">
             <TabsTrigger value="info">
-              <Info className="h-3 w-3" />
+              <Info className="size-3" />
               Info
             </TabsTrigger>
             <TabsTrigger value="recorrido">
-              <RouteIcon className="h-3 w-3" />
+              <RouteIcon className="size-3" />
               Recorrido
             </TabsTrigger>
             <TabsTrigger value="horarios">
-              <Clock className="h-3 w-3" />
+              <Clock className="size-3" />
               Horarios
             </TabsTrigger>
           </TabsList>
@@ -178,7 +185,7 @@ export function RouteDetailSheet({
                 <div className="rounded-md border bg-card p-3">
                   <div className="flex items-baseline justify-between gap-2">
                     <div className="flex items-center gap-1.5 text-sm font-medium">
-                      <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Wallet className="size-3.5 text-muted-foreground" />
                       {route.type === 'biotren'
                         ? '$680 – $2.400'
                         : '$750'}
@@ -187,7 +194,7 @@ export function RouteDetailSheet({
                       </span>
                     </div>
                     <Badge variant="outline" className="gap-1 font-normal">
-                      <CreditCard className="h-3 w-3" />
+                      <CreditCard className="size-3" />
                       Pago electrónico próximamente
                     </Badge>
                   </div>
@@ -251,7 +258,7 @@ export function RouteDetailSheet({
                       <button
                         type="button"
                         onClick={() => onSelectStop(s.id)}
-                        className="relative z-10 mt-1 h-3.5 w-3.5 shrink-0 rounded-full border-2 bg-background"
+                        className="relative z-10 mt-1 size-3.5 shrink-0 rounded-full border-2 bg-background"
                         style={{ borderColor: route.color }}
                         aria-label={`Centrar paradero ${s.name}`}
                       />

@@ -20,7 +20,12 @@ interface StopDetailSheetProps {
 export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: StopDetailSheetProps) {
   const routes = useMemo(() => {
     if (!stop) return [];
-    return stop.routes.map((rid) => ROUTES_BY_ID.get(rid)).filter((r) => !!r);
+    const linkedRoutes = [];
+    for (const id of stop.routes) {
+      const route = ROUTES_BY_ID.get(id);
+      if (route) linkedRoutes.push(route);
+    }
+    return linkedRoutes;
   }, [stop]);
 
   const activeCount = useMemo(
@@ -34,28 +39,37 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
   const freqStopId = open && stop ? stop.id : null;
   const frequency = useStopFrequency(freqStopId);
 
+  const panelChrome = useMemo(() => {
+    if (!stop) return null;
+    return {
+      eyebrow: (
+        <>
+          <MapPin className="size-3.5" />
+          {stop.wikidata ? 'Estación Biotrén' : 'Paradero'}
+        </>
+      ),
+      description: (
+        <span className="font-mono text-xs">
+          {stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}
+        </span>
+      ),
+    };
+  }, [stop]);
+
   if (!stop) return null;
 
   const wikidata = stop.wikidata ? BIOTREN_WIKIDATA[stop.wikidata] : undefined;
   const hasAccessibility = stop.wheelchair || stop.tactilePaving;
   const hasEnrichment = !!wikidata && (wikidata.openedYear || wikidata.imageUrl || wikidata.wikipediaEs);
+  if (!panelChrome) return null;
 
   return (
     <FloatingInfoPanel
       open={open}
       onClose={() => onOpenChange(false)}
       title={stop.name}
-      eyebrow={(
-        <>
-          <MapPin className="h-3.5 w-3.5" />
-          {stop.wikidata ? 'Estación Biotrén' : 'Paradero'}
-        </>
-      )}
-      description={(
-        <span className="font-mono text-xs">
-          {stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}
-        </span>
-      )}
+      eyebrow={panelChrome.eyebrow}
+      description={panelChrome.description}
     >
       {(hasEnrichment || hasAccessibility) && (
         <div className="space-y-2">
@@ -75,19 +89,19 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
             )}
             {stop.wheelchair === 'yes' && (
               <Badge variant="secondary" className="gap-1 font-normal">
-                <Accessibility className="h-3 w-3" />
+                <Accessibility className="size-3" />
                 Accesible
               </Badge>
             )}
             {stop.wheelchair === 'limited' && (
               <Badge variant="outline" className="gap-1 font-normal">
-                <Accessibility className="h-3 w-3" />
+                <Accessibility className="size-3" />
                 Acceso limitado
               </Badge>
             )}
             {stop.tactilePaving && (
               <Badge variant="secondary" className="gap-1 font-normal">
-                <Footprints className="h-3 w-3" />
+                <Footprints className="size-3" />
                 Pavimento podotáctil
               </Badge>
             )}
@@ -98,7 +112,7 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
                 rel="noopener noreferrer"
                 className="ml-auto inline-flex items-center gap-1 rounded-sm text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline focus-ring"
               >
-                Wikipedia <ExternalLink className="h-3 w-3" />
+                Wikipedia <ExternalLink className="size-3" />
               </a>
             )}
           </div>
@@ -131,19 +145,19 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-medium">{r.name}</div>
                 <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                  <Icon className="h-[11px] w-[11px]" />
+                  <Icon className="size-[11px]" />
                   {ROUTE_TYPES[r.type].short}
                   {r.headway !== '—' && ` · cada ${r.headway}`}
                 </div>
               </div>
               <span
                 className={cn(
-                  'inline-flex h-2 w-2 shrink-0 rounded-full',
+                  'inline-flex size-2 shrink-0 rounded-full',
                   active ? 'bg-emerald-500' : 'bg-muted-foreground/40',
                 )}
                 aria-label={active ? 'Operando ahora' : 'Fuera de horario o sin datos'}
               />
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+              <ChevronRight className="size-3.5 text-muted-foreground" />
             </button>
           );
         })}

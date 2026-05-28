@@ -111,7 +111,10 @@ export function FloatingToolsPanel({
   const operatorStats = useOperatorStats();
   const routesVersion = useRoutesVersion();
   const microCount = useMemo(
-    () => ROUTES.filter((r) => r.type === 'micro').length,
+    () => {
+      void routesVersion;
+      return ROUTES.filter((r) => r.type === 'micro').length;
+    },
     [routesVersion],
   );
   if (!tool) return null;
@@ -132,9 +135,7 @@ export function FloatingToolsPanel({
       )}
       aria-live="polite"
     >
-      <div
-        role="dialog"
-        aria-modal={false}
+      <aside
         aria-label={meta.label}
         // Grid layout instead of flex so the ScrollArea row has a definite
         // (not "computed via flex") height — required for Radix ScrollArea's
@@ -165,9 +166,9 @@ export function FloatingToolsPanel({
             size="icon"
             onClick={onClose}
             aria-label="Cerrar herramienta"
-            className="-mr-1 -mt-1 h-8 w-8 shrink-0"
+            className="-mr-1 -mt-1 size-8 shrink-0"
           >
-            <X className="h-4 w-4" />
+            <X className="size-4" />
           </Button>
         </div>
 
@@ -211,7 +212,7 @@ export function FloatingToolsPanel({
                           <span className="flex min-w-0 items-center gap-2">
                             <span
                               aria-hidden
-                              className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
+                              className="inline-block size-2.5 shrink-0 rounded-full"
                               style={{ background: s.color }}
                             />
                             <span className="truncate text-sm font-medium">
@@ -267,7 +268,7 @@ export function FloatingToolsPanel({
             )}
           </div>
         </ScrollArea>
-      </div>
+      </aside>
     </div>
   );
 }
@@ -284,8 +285,8 @@ function ToolIcon({ tool }: { tool: AnalysisTab }) {
             ? Gauge
             : ImageDown;
   return (
-    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
-      <Icon className="h-3.5 w-3.5" />
+    <span className="grid size-7 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
+      <Icon className="size-3.5" />
     </span>
   );
 }

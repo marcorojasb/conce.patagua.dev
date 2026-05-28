@@ -26,6 +26,7 @@ import { usePlannerState } from '@/hooks/use-planner-state';
 import { useTheme } from '@/hooks/use-theme';
 import {
   clearFocusParam,
+  type FocusParam,
   readFocusParam,
   readUrlState,
   useSyncUrlState,
@@ -119,21 +120,27 @@ export default function App() {
   // services keep their original route id; Biotrén/interurban services use
   // directional static patterns with explicit source/confidence metadata.
   const simulationRoutes = useMemo<SimulationRouteInput[]>(() => {
+    void routesVersion;
     const visibleSimulationRouteIds = new Set(visibleRouteIds);
-    const gtfsRoutes: SimulationRouteInput[] = ROUTES.filter(
-      (r) =>
-        r.type === 'micro' &&
-        r.id.startsWith('gtfs-route-') &&
-        (simulationScope === 'all' || visibleSimulationRouteIds.has(r.id)),
-    ).map((r) => ({
-      id: r.id,
-      routeId: r.id,
-      color: r.color,
-      path: r.path,
-      sourceKind: 'gtfs',
-      confidence: 'official',
-      sourceLabel: 'GTFS Gran Concepción',
-    }));
+    const gtfsRoutes: SimulationRouteInput[] = [];
+    for (const r of ROUTES) {
+      if (
+        r.type !== 'micro' ||
+        !r.id.startsWith('gtfs-route-') ||
+        (simulationScope === 'visible' && !visibleSimulationRouteIds.has(r.id))
+      ) {
+        continue;
+      }
+      gtfsRoutes.push({
+        id: r.id,
+        routeId: r.id,
+        color: r.color,
+        path: r.path,
+        sourceKind: 'gtfs',
+        confidence: 'official',
+        sourceLabel: 'GTFS Gran Concepción',
+      });
+    }
     const staticRoutes: SimulationRouteInput[] = STATIC_SERVICE_PATTERNS.flatMap((pattern) => {
       if (simulationScope === 'visible' && !visibleSimulationRouteIds.has(pattern.routeId)) {
         return [];
@@ -158,11 +165,17 @@ export default function App() {
     return [...gtfsRoutes, ...staticRoutes];
   }, [routesVersion, simulationScope, visibleRouteIds]);
   const routeColorById = useMemo(
-    () => new Map(ROUTES.map((r) => [r.id, r.color])),
+    () => {
+      void routesVersion;
+      return new Map(ROUTES.map((r) => [r.id, r.color]));
+    },
     [routesVersion],
   );
   const routeLabelById = useMemo(
-    () => new Map(ROUTES.map((r) => [r.id, `${r.code} · ${r.name}`])),
+    () => {
+      void routesVersion;
+      return new Map(ROUTES.map((r) => [r.id, `${r.code} · ${r.name}`]));
+    },
     [routesVersion],
   );
   const {
@@ -262,126 +275,18 @@ export default function App() {
     aire: showAirQuality,
   });
 
-  // Apply the initial fly-to once the map is mounted.
-  useEffect(() => {
-    if (initialFlyAppliedRef.current) return;
-    // 1) Deep link tradicional (?route= / ?stop= / etc.) — toma prioridad
-    //    porque ya selecciona la sheet correspondiente.
-    if (INITIAL_URL.route) {
-      const r = ROUTES_BY_ID.get(INITIAL_URL.route);
-      if (!r) return;
-      initialFlyAppliedRef.current = true;
-      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
-      return;
-    }
-    if (INITIAL_URL.stop) {
-      const s = STOPS.find((x) => x.id === INITIAL_URL.stop);
-      if (s) {
-        initialFlyAppliedRef.current = true;
-        setFlyToToken({
-          key: Date.now(),
-          target: { kind: 'point', lat: s.lat, lng: s.lng, zoom: 16 },
-        });
-      }
-      return;
-    }
-    if (INITIAL_URL.terminal) {
-      const t = TERMINALS.find((x) => x.id === INITIAL_URL.terminal);
-      if (t) {
-        initialFlyAppliedRef.current = true;
-        setFlyToToken({
-          key: Date.now(),
-          target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
-        });
-      }
-      return;
-    }
-    if (INITIAL_URL.poi) {
-      const p = POIS.find((x) => x.id === INITIAL_URL.poi);
-      if (p) {
-        initialFlyAppliedRef.current = true;
-        setFlyToToken({
-          key: Date.now(),
-          target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
-        });
-      }
-      return;
-    }
-    // 2) `?focus=<kind>:<id>` — viene desde el wiki vía `<MapLink>`. Limpiamos
-    //    el parámetro de la URL después de aplicarlo: el visor mantiene su
-    //    propia sincronización por entidad (route/stop/…) y `focus` no
-    //    necesita persistir.
-    if (INITIAL_FOCUS) {
-      if (!applyFocus(INITIAL_FOCUS)) return;
-      clearFocusParam();
-      initialFlyAppliedRef.current = true;
-      return;
-    }
-    initialFlyAppliedRef.current = true;
-  }, [routesVersion, applyFocus]);
-
-  // Resolver de focus deep-links provenientes del wiki. Cubre:
-  //   - route   → si el código (route.code) está cargado, abre la sheet
-  //               y enfoca el shape. Útil si en el futuro el GTFS urbano
-  //               incluye un servicio que el wiki documenta.
-  //   - corridor → enciende la capa interurbana, centra el pin del corredor
-  //                y abre su popup automáticamente sería ideal — el popup
-  //                lo abre el usuario; nosotros enfocamos el área entre
-  //                terminal y anchor.
-  //   - terminal → reutiliza onSelectTerminal.
-  //   - stop    → reutiliza onSelectStop.
-  //   - poi     → reutiliza onSelectPoi.
-  function applyFocus(focus: { kind: string; id: string }): boolean {
-    if (focus.kind === 'route') {
-      // Buscar por route.id O por route.code (ambos son IDs estables que
-      // un autor de wiki podría usar). route.id es de la forma `gtfs-route-NNNN`,
-      // route.code es la sigla mostrada al usuario.
-      const direct = ROUTES_BY_ID.get(focus.id);
-      const r = direct ?? ROUTES.find((x) => x.code === focus.id);
-      if (!r) return false;
-      onSelectRoute(r.id);
-      return true;
-    }
-    if (focus.kind === 'corridor') {
-      const c = CORRIDOR_BY_ID.get(focus.id);
-      if (!c) return false;
-      setShowInterurbanCorridors(true);
-      // Enfocar el área del corredor — si conocemos los dos extremos,
-      // bounds; si solo el anchor, point con zoom regional.
-      if (c.terminal) {
-        setFlyToToken({
-          key: Date.now(),
-          target: { kind: 'bounds', path: [c.terminal, c.anchor] },
-        });
-      } else {
-        setFlyToToken({
-          key: Date.now(),
-          target: { kind: 'point', lat: c.anchor[0], lng: c.anchor[1], zoom: 11 },
-        });
-      }
-      return true;
-    }
-    if (focus.kind === 'terminal') {
-      onSelectTerminal(focus.id);
-      return true;
-    }
-    if (focus.kind === 'stop') {
-      onSelectStop(focus.id);
-      return true;
-    }
-    if (focus.kind === 'poi') {
-      onSelectPoi(focus.id);
-      return true;
-    }
-    return false;
-  }
-
   const selectedRoute = useMemo(
-    () => (selectedRouteId ? ROUTES_BY_ID.get(selectedRouteId) ?? null : null),
+    () => {
+      void routesVersion;
+      return selectedRouteId ? ROUTES_BY_ID.get(selectedRouteId) ?? null : null;
+    },
     [selectedRouteId, routesVersion],
   );
   const selectedStop = useMemo(
-    () => STOPS.find((s) => s.id === selectedStopId) ?? null,
+    () => {
+      void routesVersion;
+      return STOPS.find((s) => s.id === selectedStopId) ?? null;
+    },
     [selectedStopId, routesVersion],
   );
   const selectedParadero = useMemo(
@@ -398,6 +303,7 @@ export default function App() {
   );
 
   const visibleIdsAfterTypeFilter = useMemo(() => {
+    void routesVersion;
     return visibleRouteIds.filter((id) => {
       const r = ROUTES_BY_ID.get(id);
       if (!r) return false;
@@ -418,7 +324,11 @@ export default function App() {
   }, []);
 
   const onSetAllByType = useCallback((typeId: RouteTypeId, on: boolean) => {
-    const idsOfType = new Set(ROUTES.filter((r) => r.type === typeId).map((r) => r.id));
+    void routesVersion;
+    const idsOfType = new Set<string>();
+    for (const route of ROUTES) {
+      if (route.type === typeId) idsOfType.add(route.id);
+    }
     setVisibleRouteIds((cur) => {
       if (on) {
         const next = new Set(cur);
@@ -431,9 +341,14 @@ export default function App() {
   }, [routesVersion]);
 
   const onSetAllByOperator = useCallback((operator: string, on: boolean) => {
-    const idsOfOp = new Set(
-      ROUTES.filter((r) => r.operator === operator).map((r) => r.id),
-    );
+    void routesVersion;
+    const idsOfOp = new Set<string>();
+    let firstRoute: Route | undefined;
+    for (const route of ROUTES) {
+      if (route.operator !== operator) continue;
+      idsOfOp.add(route.id);
+      firstRoute ??= route;
+    }
     setVisibleRouteIds((cur) => {
       if (on) {
         const next = new Set(cur);
@@ -443,7 +358,6 @@ export default function App() {
       return cur.filter((id) => !idsOfOp.has(id));
     });
     // Enable the relevant type filter so the operator's routes actually render.
-    const firstRoute = ROUTES.find((r) => r.operator === operator);
     if (firstRoute) {
       setTypeFilters((f) => ({ ...f, [firstRoute.type]: true }));
     }
@@ -564,6 +478,108 @@ export default function App() {
       target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 17 },
     });
   }, []);
+
+  // Resolver de focus deep-links provenientes del wiki. Cubre:
+  //   - route   → si el código (route.code) está cargado, abre la sheet
+  //               y enfoca el shape.
+  //   - corridor → enciende la capa interurbana y centra el área del corredor.
+  //   - terminal / stop / poi → reutilizan los handlers de selección.
+  const applyFocus = useCallback(
+    (focus: FocusParam): boolean => {
+      if (focus.kind === 'route') {
+        const direct = ROUTES_BY_ID.get(focus.id);
+        const r = direct ?? ROUTES.find((x) => x.code === focus.id);
+        if (!r) return false;
+        onSelectRoute(r.id);
+        return true;
+      }
+      if (focus.kind === 'corridor') {
+        const c = CORRIDOR_BY_ID.get(focus.id);
+        if (!c) return false;
+        setShowInterurbanCorridors(true);
+        if (c.terminal) {
+          setFlyToToken({
+            key: Date.now(),
+            target: { kind: 'bounds', path: [c.terminal, c.anchor] },
+          });
+        } else {
+          setFlyToToken({
+            key: Date.now(),
+            target: { kind: 'point', lat: c.anchor[0], lng: c.anchor[1], zoom: 11 },
+          });
+        }
+        return true;
+      }
+      if (focus.kind === 'terminal') {
+        onSelectTerminal(focus.id);
+        return true;
+      }
+      if (focus.kind === 'stop') {
+        onSelectStop(focus.id);
+        return true;
+      }
+      if (focus.kind === 'poi') {
+        onSelectPoi(focus.id);
+        return true;
+      }
+      return false;
+    },
+    [onSelectPoi, onSelectRoute, onSelectStop, onSelectTerminal],
+  );
+
+  // Apply the initial fly-to once the map is mounted.
+  useEffect(() => {
+    if (initialFlyAppliedRef.current) return;
+    // 1) Deep link tradicional (?route= / ?stop= / etc.) — toma prioridad
+    //    porque ya selecciona la sheet correspondiente.
+    if (INITIAL_URL.route) {
+      const r = ROUTES_BY_ID.get(INITIAL_URL.route);
+      if (!r) return;
+      initialFlyAppliedRef.current = true;
+      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
+      return;
+    }
+    if (INITIAL_URL.stop) {
+      const s = STOPS.find((x) => x.id === INITIAL_URL.stop);
+      if (s) {
+        initialFlyAppliedRef.current = true;
+        setFlyToToken({
+          key: Date.now(),
+          target: { kind: 'point', lat: s.lat, lng: s.lng, zoom: 16 },
+        });
+      }
+      return;
+    }
+    if (INITIAL_URL.terminal) {
+      const t = TERMINALS.find((x) => x.id === INITIAL_URL.terminal);
+      if (t) {
+        initialFlyAppliedRef.current = true;
+        setFlyToToken({
+          key: Date.now(),
+          target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
+        });
+      }
+      return;
+    }
+    if (INITIAL_URL.poi) {
+      const p = POIS.find((x) => x.id === INITIAL_URL.poi);
+      if (p) {
+        initialFlyAppliedRef.current = true;
+        setFlyToToken({
+          key: Date.now(),
+          target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
+        });
+      }
+      return;
+    }
+    if (INITIAL_FOCUS) {
+      if (!applyFocus(INITIAL_FOCUS)) return;
+      clearFocusParam();
+      initialFlyAppliedRef.current = true;
+      return;
+    }
+    initialFlyAppliedRef.current = true;
+  }, [applyFocus, routesVersion]);
 
   const closeSheet = clearSelection;
 
@@ -748,7 +764,7 @@ export default function App() {
               <Card className="pointer-events-auto max-w-[220px] border-border/80 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:max-w-[260px]">
                 <CardHeader className="space-y-1 p-3">
                   <CardTitle className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
+                    <MapPin className="size-3" />
                     Concepción · Biobío
                   </CardTitle>
                   <CardDescription className="text-[12px] leading-snug text-foreground">

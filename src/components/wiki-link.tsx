@@ -40,7 +40,7 @@ export function WikiLinkButton(props: Props) {
   return (
     <Button size="sm" variant="outline" asChild>
       <a href={wikiUrl(slug)} className={props.className}>
-        <BookOpen className="h-3.5 w-3.5" />
+        <BookOpen className="size-3.5" />
         Ver en el wiki
       </a>
     </Button>

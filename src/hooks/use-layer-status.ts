@@ -6,7 +6,7 @@ export interface LayerLoadStatus {
   ready: boolean;
 }
 
-export const IDLE_LAYER_STATUS: LayerLoadStatus = {
+const IDLE_LAYER_STATUS: LayerLoadStatus = {
   loading: false,
   error: null,
   ready: false,

@@ -7,7 +7,7 @@
 // coverage-layer.tsx. The dataset is lazy-loaded — chunk only downloads
 // the first time the layer is enabled.
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { Cycleway, CyclewayKind } from '@/data/cycleways.generated';
@@ -21,9 +21,14 @@ const KIND_STYLE: Record<CyclewayKind, { color: string; weight: number; dash?: s
   lane: { color: '#06b6d4', weight: 2 }, // cyan-500
 };
 
+let dataCache: readonly Cycleway[] | null = null;
 let dataPromise: Promise<readonly Cycleway[]> | null = null;
 function loadCycleways(): Promise<readonly Cycleway[]> {
-  dataPromise ??= import('@/data/cycleways.generated').then((mod) => mod.CYCLEWAYS);
+  if (dataCache) return Promise.resolve(dataCache);
+  dataPromise ??= import('@/data/cycleways.generated').then((mod) => {
+    dataCache = mod.CYCLEWAYS;
+    return dataCache;
+  });
   return dataPromise;
 }
 
@@ -41,64 +46,59 @@ export function CyclewaysLayer({
   onStatusChange,
 }: Props) {
   const map = useMap();
-  const [items, setItems] = useState<readonly Cycleway[] | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
-    if (items) {
-      onStatusChange({ loading: false, error: null, ready: true });
-      return;
-    }
-    onStatusChange({ loading: true, error: null, ready: false });
     let cancelled = false;
-    void loadCycleways()
-      .then((data) => {
-        if (!cancelled) {
-          setItems(data);
-          onStatusChange({ loading: false, error: null, ready: true });
-        }
-      })
-      .catch((err) => {
-        dataPromise = null;
-        if (!cancelled) {
-          onStatusChange({
-            loading: false,
-            error: err instanceof Error ? err.message : 'No se pudo cargar ciclovías',
-            ready: false,
-          });
-        }
-      });
+    const group = L.featureGroup();
+
+    const draw = (items: readonly Cycleway[]) => {
+      if (cancelled) return;
+      for (const c of items) {
+        const style = KIND_STYLE[c.kind];
+        const tooltip = c.name
+          ? `${c.name} · ${KIND_LABEL[c.kind]}${c.surface ? ` · ${c.surface}` : ''}`
+          : `${KIND_LABEL[c.kind]}${c.surface ? ` · ${c.surface}` : ''}`;
+        const line = L.polyline(c.path, {
+          color: style.color,
+          weight: style.weight,
+          opacity: 0.85,
+          dashArray: style.dash,
+          lineCap: 'round',
+          lineJoin: 'round',
+          renderer: canvasRenderer,
+          interactive: true,
+        });
+        line.bindTooltip(tooltip, { sticky: true, direction: 'top', opacity: 0.9 });
+        group.addLayer(line);
+      }
+      group.addTo(map);
+      onStatusChange({ loading: false, error: null, ready: true });
+    };
+
+    if (dataCache) {
+      draw(dataCache);
+    } else {
+      onStatusChange({ loading: true, error: null, ready: false });
+      void loadCycleways()
+        .then(draw)
+        .catch((err) => {
+          dataPromise = null;
+          if (!cancelled) {
+            onStatusChange({
+              loading: false,
+              error: err instanceof Error ? err.message : 'No se pudo cargar ciclovías',
+              ready: false,
+            });
+          }
+        });
+    }
+
     return () => {
       cancelled = true;
-    };
-  }, [enabled, items, onStatusChange, retryKey]);
-
-  useEffect(() => {
-    if (!enabled || !items) return;
-    const group = L.featureGroup();
-    for (const c of items) {
-      const style = KIND_STYLE[c.kind];
-      const tooltip = c.name
-        ? `${c.name} · ${KIND_LABEL[c.kind]}${c.surface ? ` · ${c.surface}` : ''}`
-        : `${KIND_LABEL[c.kind]}${c.surface ? ` · ${c.surface}` : ''}`;
-      const line = L.polyline(c.path, {
-        color: style.color,
-        weight: style.weight,
-        opacity: 0.85,
-        dashArray: style.dash,
-        lineCap: 'round',
-        lineJoin: 'round',
-        renderer: canvasRenderer,
-        interactive: true,
-      });
-      line.bindTooltip(tooltip, { sticky: true, direction: 'top', opacity: 0.9 });
-      group.addLayer(line);
-    }
-    group.addTo(map);
-    return () => {
       group.remove();
     };
-  }, [enabled, items, canvasRenderer, map]);
+  }, [enabled, canvasRenderer, map, onStatusChange, retryKey]);
 
   return null;
 }

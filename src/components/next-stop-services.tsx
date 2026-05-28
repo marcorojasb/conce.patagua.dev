@@ -8,6 +8,7 @@ import {
   type StopServiceSnapshot,
 } from '@/lib/stop-services';
 import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
+import type { Route } from '@/types/transport';
 
 interface Props {
   stopId: string;
@@ -34,15 +35,22 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
     if (!enabled || !stopId) return;
     let cancelled = false;
     setState((s) => ({ ...s, loading: true, error: null }));
-    const routes = routeIds.map((id) => ROUTES_BY_ID.get(id)).filter((route) => route != null);
-    const hasGtfsRoute = routeIds.some((id) => id.startsWith('gtfs-route-'));
+    void routesVersion;
+    const ids = routeKey ? routeKey.split('|') : [];
+    const routes: Route[] = [];
+    let hasGtfsRoute = false;
+    for (const id of ids) {
+      const route = ROUTES_BY_ID.get(id);
+      if (route) routes.push(route);
+      if (id.startsWith('gtfs-route-')) hasGtfsRoute = true;
+    }
     if (!stopId.startsWith('gtfs-stop-') || !hasGtfsRoute) {
       setState({
         loading: false,
         error: null,
         snapshot: getNextStopServices({
           stopId,
-          routeIds,
+          routeIds: ids,
           windows: undefined,
           now: new Date(),
           staticRoutes: routes,
@@ -57,12 +65,12 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
         setState({
           loading: false,
           error: null,
-          snapshot: getNextStopServices({
-            stopId,
-            routeIds,
-            windows,
-            now: new Date(),
-            staticRoutes: routes,
+            snapshot: getNextStopServices({
+              stopId,
+              routeIds: ids,
+              windows,
+              now: new Date(),
+              staticRoutes: routes,
           }),
         });
       })
@@ -80,7 +88,11 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
   }, [enabled, stopId, routeKey, routesVersion]);
 
   const services = state.snapshot?.services ?? [];
-  const routeById = useMemo(() => new Map(routeIds.map((id) => [id, ROUTES_BY_ID.get(id)])), [routeKey, routesVersion]);
+  const routeById = useMemo(() => {
+    void routesVersion;
+    const entries = (routeKey ? routeKey.split('|') : []).map((id) => [id, ROUTES_BY_ID.get(id)] as const);
+    return new Map(entries);
+  }, [routeKey, routesVersion]);
 
   if (state.loading) {
     return (
@@ -111,7 +123,7 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
     <div className="mt-4 rounded-md border bg-card p-3">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          <Clock3 className="h-3.5 w-3.5" />
+          <Clock3 className="size-3.5" />
           Próximos servicios
         </div>
         <span className="font-mono text-[11px] text-muted-foreground">

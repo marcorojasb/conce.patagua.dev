@@ -16,6 +16,13 @@ interface ParaderoDetailSheetProps {
   onUseAsDestination: (point: { lat: number; lng: number }) => void;
 }
 
+const PARADERO_EYEBROW = (
+  <>
+    <MapPin className="size-3.5" />
+    Paradero GTFS
+  </>
+);
+
 export function ParaderoDetailSheet({
   open,
   paradero,
@@ -31,31 +38,25 @@ export function ParaderoDetailSheet({
 
   const routes = useMemo(() => {
     if (!stop) return [];
-    return stop.routes.map((id) => ROUTES_BY_ID.get(id)).filter((r) => !!r);
+    const linkedRoutes = [];
+    for (const id of stop.routes) {
+      const route = ROUTES_BY_ID.get(id);
+      if (route) linkedRoutes.push(route);
+    }
+    return linkedRoutes;
   }, [stop]);
 
-  if (!paradero) return null;
-
-  const name = paradero.name ?? `Paradero ${paradero.ref ?? paradero.sourceId ?? ''}`.trim();
-  const point = { lat: paradero.lat, lng: paradero.lng };
-
-  return (
-    <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
-      title={name}
-      eyebrow={(
-        <>
-          <MapPin className="h-3.5 w-3.5" />
-          Paradero GTFS
-        </>
-      )}
-      description={(
+  const panelChrome = useMemo(() => {
+    if (!paradero) return null;
+    const point = { lat: paradero.lat, lng: paradero.lng };
+    return {
+      name: paradero.name ?? `Paradero ${paradero.ref ?? paradero.sourceId ?? ''}`.trim(),
+      description: (
         <span className="font-mono text-xs">
           {paradero.lat.toFixed(5)}, {paradero.lng.toFixed(5)}
         </span>
-      )}
-      actions={(
+      ),
+      actions: (
         <div className="grid grid-cols-2 gap-2">
           <Button
             type="button"
@@ -63,7 +64,7 @@ export function ParaderoDetailSheet({
             className="justify-start"
             onClick={() => onUseAsOrigin(point)}
           >
-            <ArrowUpFromDot className="h-4 w-4 text-emerald-600" />
+            <ArrowUpFromDot className="size-4 text-emerald-600" />
             Origen
           </Button>
           <Button
@@ -72,11 +73,24 @@ export function ParaderoDetailSheet({
             className="justify-start"
             onClick={() => onUseAsDestination(point)}
           >
-            <ArrowDownToDot className="h-4 w-4 text-red-600" />
+            <ArrowDownToDot className="size-4 text-red-600" />
             Destino
           </Button>
         </div>
-      )}
+      ),
+    };
+  }, [onUseAsDestination, onUseAsOrigin, paradero]);
+
+  if (!paradero || !panelChrome) return null;
+
+  return (
+    <FloatingInfoPanel
+      open={open}
+      onClose={() => onOpenChange(false)}
+      title={panelChrome.name}
+      eyebrow={PARADERO_EYEBROW}
+      description={panelChrome.description}
+      actions={panelChrome.actions}
     >
       <div className="mb-2 flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         <span>Recorridos vinculados</span>
@@ -105,11 +119,11 @@ export function ParaderoDetailSheet({
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{route.name}</div>
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Icon className="h-[11px] w-[11px]" />
+                    <Icon className="size-[11px]" />
                     {ROUTE_TYPES[route.type].short} · {route.operator}
                   </div>
                 </div>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                <ChevronRight className="size-3.5 text-muted-foreground" />
               </button>
             );
           })}

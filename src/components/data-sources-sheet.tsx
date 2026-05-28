@@ -149,7 +149,7 @@ function SourceList({ title, sources }: { title: string; sources: Source[] }) {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <ExternalLink className="h-3 w-3" />
+                  <ExternalLink className="size-3" />
                   {s.link.label}
                 </a>
               )}

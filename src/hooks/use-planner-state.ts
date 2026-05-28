@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { ROUTES, ROUTES_BY_ID } from '@/data/routes';
 import { findRoutes } from '@/lib/planner';
 import { routeBetween, type RoutingResult } from '@/lib/routing';
@@ -23,6 +23,9 @@ export function usePlannerState({ visibleRouteIds, routesVersion }: Options) {
 
   const plannerMatches = useMemo(() => {
     if (!plannerOrigin || !plannerDestination) return [];
+    // ROUTES_BY_ID is extended when the lazy route chunk loads; routesVersion
+    // intentionally invalidates this memo even if visibleRouteIds is unchanged.
+    void routesVersion;
     const visible: Route[] = [];
     for (const id of visibleRouteIds) {
       const route = ROUTES_BY_ID.get(id);
@@ -47,14 +50,16 @@ export function usePlannerState({ visibleRouteIds, routesVersion }: Options) {
   const onPickPoint = useCallback(
     (latlng: PlannerPoint) => {
       if (pickerMode === 'origin') {
+        clearMidpointState();
         setPlannerOrigin(latlng);
         setPickerMode(plannerDestination ? null : 'destination');
       } else if (pickerMode === 'destination') {
+        clearMidpointState();
         setPlannerDestination(latlng);
         setPickerMode(null);
       }
     },
-    [pickerMode, plannerDestination],
+    [clearMidpointState, pickerMode, plannerDestination],
   );
 
   const onClearPlanner = useCallback(() => {
@@ -63,10 +68,6 @@ export function usePlannerState({ visibleRouteIds, routesVersion }: Options) {
     setPickerMode(null);
     clearMidpointState();
   }, [clearMidpointState]);
-
-  useEffect(() => {
-    clearMidpointState();
-  }, [plannerOrigin, plannerDestination, clearMidpointState]);
 
   const onComputeMidpoint = useCallback(async () => {
     if (!plannerOrigin || !plannerDestination) return;
@@ -81,34 +82,38 @@ export function usePlannerState({ visibleRouteIds, routesVersion }: Options) {
         [plannerDestination.lat, plannerDestination.lng],
         { signal: ctrl.signal },
       );
-      if (ctrl.signal.aborted) return;
-      setPlannerMidpoint(result);
-      setPlannerMidpointLoading(false);
+      if (!ctrl.signal.aborted) {
+        setPlannerMidpoint(result);
+        setPlannerMidpointLoading(false);
+      }
     } catch (err) {
-      if (ctrl.signal.aborted) return;
-      setPlannerMidpointLoading(false);
-      setPlannerMidpointError(
-        err instanceof Error
-          ? `No se pudo calcular: ${err.message}`
-          : 'No se pudo calcular el trazado',
-      );
+      if (!ctrl.signal.aborted) {
+        setPlannerMidpointLoading(false);
+        setPlannerMidpointError(
+          err instanceof Error
+            ? `No se pudo calcular: ${err.message}`
+            : 'No se pudo calcular el trazado',
+        );
+      }
     }
   }, [plannerOrigin, plannerDestination]);
 
   const onUsePointAsOrigin = useCallback(
     (point: PlannerPoint) => {
+      clearMidpointState();
       setPlannerOrigin(point);
       setPickerMode(plannerDestination ? null : 'destination');
     },
-    [plannerDestination],
+    [clearMidpointState, plannerDestination],
   );
 
   const onUsePointAsDestination = useCallback(
     (point: PlannerPoint) => {
+      clearMidpointState();
       setPlannerDestination(point);
       setPickerMode(plannerOrigin ? null : 'origin');
     },
-    [plannerOrigin],
+    [clearMidpointState, plannerOrigin],
   );
 
   return {

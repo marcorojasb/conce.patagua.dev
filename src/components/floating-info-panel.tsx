@@ -59,8 +59,6 @@ export function FloatingInfoPanel({
       aria-live="polite"
     >
       <section
-        role="dialog"
-        aria-modal={false}
         aria-label={typeof title === 'string' ? title : undefined}
         className="pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90 animate-fade-in"
       >
@@ -91,9 +89,9 @@ export function FloatingInfoPanel({
               size="icon"
               onClick={onClose}
               aria-label="Cerrar"
-              className="-mr-2 -mt-2 h-9 w-9 shrink-0"
+              className="-mr-2 -mt-2 size-9 shrink-0"
             >
-              <X className="h-5 w-5" />
+              <X className="size-5" />
             </Button>
           </div>
           {actions && <div className="mt-3">{actions}</div>}

@@ -50,7 +50,7 @@ export function MapLink(props: Props) {
         'inline-flex items-center gap-1 rounded-sm text-[12px] underline underline-offset-2 hover:text-foreground'
       }
     >
-      <MapPin className="h-3 w-3" aria-hidden />
+      <MapPin className="size-3" aria-hidden />
       {label}
     </a>
   );
