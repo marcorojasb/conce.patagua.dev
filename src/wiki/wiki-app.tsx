@@ -3,7 +3,7 @@
 // a routing library yet. State changes via history.pushState; back/forward
 // works because we listen to popstate.
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useSyncExternalStore } from 'react';
 import { ArrowLeft, BookOpen, ExternalLink, Github, Moon, Pencil, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,15 +27,7 @@ function navigateTo(slug: string | null): void {
 
 export default function WikiApp() {
   const [theme, toggleTheme] = useTheme();
-  const [slug, setSlug] = useState<string | null>(() =>
-    getSlugFromPath(window.location.pathname),
-  );
-
-  useEffect(() => {
-    const onPop = () => setSlug(getSlugFromPath(window.location.pathname));
-    window.addEventListener('popstate', onPop);
-    return () => window.removeEventListener('popstate', onPop);
-  }, []);
+  const slug = useSyncExternalStore(subscribeToHistory, getCurrentSlug, getCurrentSlug);
 
   const article = slug ? findArticle(slug) : null;
 
@@ -117,6 +109,15 @@ export default function WikiApp() {
       </div>
     </div>
   );
+}
+
+function subscribeToHistory(onStoreChange: () => void): () => void {
+  window.addEventListener('popstate', onStoreChange);
+  return () => window.removeEventListener('popstate', onStoreChange);
+}
+
+function getCurrentSlug(): string | null {
+  return getSlugFromPath(window.location.pathname);
 }
 
 function WikiNav({

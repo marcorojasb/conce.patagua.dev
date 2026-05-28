@@ -130,11 +130,12 @@ export function Sidebar({
             : 'w-0 max-w-0 -translate-x-full border-r-0 md:translate-x-0',
         )}
         data-state={open ? 'open' : 'closed'}
+        aria-hidden={!open}
       >
       <div
         className={cn(
           'flex h-full min-w-0 flex-col overflow-hidden transition-opacity',
-          open ? 'opacity-100' : 'pointer-events-none opacity-0',
+          open ? 'opacity-100' : 'hidden pointer-events-none opacity-0',
         )}
       >
         <div className="min-w-0 border-b p-3">

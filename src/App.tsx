@@ -222,13 +222,21 @@ export default function App() {
     setSelectedPoiId(null);
   }, []);
 
+  const closeSidebarOnMobile = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (!window.matchMedia('(min-width: 768px)').matches) {
+      setSidebarOpen(false);
+    }
+  }, []);
+
   // Toolbar button behavior: click same tool = close; different = switch.
   const toggleTool = useCallback((t: AnalysisTab) => {
     closeDetailPanels();
     setSourcesOpen(false);
     setLayersOpen(false);
+    closeSidebarOnMobile();
     setActiveTool((cur) => (cur === t ? null : t));
-  }, [closeDetailPanels]);
+  }, [closeDetailPanels, closeSidebarOnMobile]);
 
   const toggleLayers = useCallback(() => {
     setLayersOpen((cur) => {
@@ -237,10 +245,11 @@ export default function App() {
         closeDetailPanels();
         setSourcesOpen(false);
         setActiveTool(null);
+        closeSidebarOnMobile();
       }
       return next;
     });
-  }, [closeDetailPanels]);
+  }, [closeDetailPanels, closeSidebarOnMobile]);
 
   useSyncUrlState({
     route: selectedRouteId,
@@ -447,13 +456,6 @@ export default function App() {
     },
     [onSetAllByOperator],
   );
-
-  const closeSidebarOnMobile = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    if (!window.matchMedia('(min-width: 768px)').matches) {
-      setSidebarOpen(false);
-    }
-  }, []);
 
   const clearSelection = closeDetailPanels;
 

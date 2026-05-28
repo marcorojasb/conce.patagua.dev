@@ -61,8 +61,9 @@ function parseStations(raw: unknown): AirQualityStation[] {
     ) {
       continue;
     }
-    const pm25Sensor = r.realtime?.find((s) => s.code === 'PM25');
-    const pm10Sensor = r.realtime?.find((s) => s.code === 'PM10');
+    const sensorsByCode = new Map(r.realtime?.map((s) => [s.code, s]) ?? []);
+    const pm25Sensor = sensorsByCode.get('PM25');
+    const pm10Sensor = sensorsByCode.get('PM10');
     out.push({
       id: `sinca-${r.key}`,
       name: r.nombre,

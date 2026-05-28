@@ -44,6 +44,7 @@ export function ParaderosLayer({
     onSelectRef.current = onSelect;
   }, [onSelect]);
 
+  // react-doctor-disable-next-line react-doctor/effect-needs-cleanup -- False positive: cleanup removes Leaflet handlers and detaches the feature group.
   useEffect(() => {
     if (!enabled) return;
     const group = L.featureGroup();
@@ -66,11 +67,15 @@ export function ParaderosLayer({
       if (p.name) {
         marker.bindTooltip(p.name, { direction: 'top', offset: [0, -3], opacity: 0.9 });
       }
-      marker.on('click', () => onSelectRef.current(p.id));
+      const onMarkerClick = () => onSelectRef.current(p.id);
+      marker.on('click', onMarkerClick);
       group.addLayer(marker);
     }
     group.addTo(map);
     return () => {
+      group.eachLayer((layer) => {
+        layer.off();
+      });
       group.remove();
     };
     // We intentionally rebuild on any of these changes — Leaflet markers

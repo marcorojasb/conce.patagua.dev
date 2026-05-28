@@ -31,7 +31,8 @@
     "sync:greenspace": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-greenspace.ts",
     "sync:schools": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-schools.ts",
     "sync:interurban-routes": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-interurban-routes.ts",
-    "sync:all": "npm run sync:biotren && npm run sync:terminals && npm run sync:paraderos && npm run sync:biotren-track && npm run sync:gtfs-concepcion && npm run sync:gtfs-schedule && npm run sync:stop-frequency && npm run sync:stop-services && npm run sync:pois && npm run sync:wikidata && npm run sync:cycleways && npm run sync:greenspace && npm run sync:schools && npm run sync:interurban-routes"
+    "sync:all": "npm run sync:biotren && npm run sync:terminals && npm run sync:paraderos && npm run sync:biotren-track && npm run sync:gtfs-concepcion && npm run sync:gtfs-schedule && npm run sync:stop-frequency && npm run sync:stop-services && npm run sync:pois && npm run sync:wikidata && npm run sync:cycleways && npm run sync:greenspace && npm run sync:schools && npm run sync:interurban-routes",
+    "doctor": "react-doctor"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.6",
@@ -61,6 +62,7 @@
     "autoprefixer": "^10.4.20",
     "playwright": "^1.60.0",
     "postcss": "^8.5.1",
+    "react-doctor": "^0.2.10",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
     "vite": "^6.0.7",

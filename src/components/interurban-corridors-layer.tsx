@@ -56,6 +56,7 @@ export function InterurbanCorridorsLayer({ enabled, onSelectCorridor }: Props) {
     onSelectRef.current = onSelectCorridor;
   }, [onSelectCorridor]);
 
+  // react-doctor-disable-next-line react-doctor/effect-needs-cleanup -- False positive: cleanup removes Leaflet handlers and detaches the feature group.
   useEffect(() => {
     if (!enabled) return;
     const group = L.featureGroup();
@@ -102,15 +103,19 @@ export function InterurbanCorridorsLayer({ enabled, onSelectCorridor }: Props) {
         className: 'interurban-popup-wrap',
       });
       marker.bindTooltip(c.title, { direction: 'top', offset: [0, -34], opacity: 0.95 });
-      marker.on('click', () => {
+      const onMarkerClick = () => {
         marker.openPopup();
         onSelectRef.current?.(c.id);
-      });
+      };
+      marker.on('click', onMarkerClick);
       group.addLayer(marker);
     }
 
     group.addTo(map);
     return () => {
+      group.eachLayer((layer) => {
+        layer.off();
+      });
       group.remove();
     };
   }, [enabled, map]);

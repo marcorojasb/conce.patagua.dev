@@ -22,7 +22,7 @@ export function KeyValueList({ items }: { items: Array<[string, ReactNode]> }) {
     <dl className="overflow-hidden rounded-md border">
       {items.map(([key, value], i) => (
         <div
-          key={i}
+          key={key}
           className={`grid grid-cols-[140px_1fr] gap-3 px-3 py-2 text-[13px] ${
             i === 0 ? '' : 'border-t'
           }`}
@@ -69,8 +69,8 @@ export function Timeline({
 }) {
   return (
     <ol className="space-y-2 border-l-2 border-muted pl-4">
-      {items.map((item, i) => (
-        <li key={i} className="relative">
+      {items.map((item) => (
+        <li key={`${item.date}-${item.source?.href ?? item.source?.label ?? ''}`} className="relative">
           <span
             aria-hidden
             className="absolute -left-[18px] mt-1 inline-block h-2 w-2 rounded-full bg-muted-foreground"
@@ -144,8 +144,8 @@ export function OperatorTable({ rows }: { rows: OperatorRow[] }) {
           </tr>
         </thead>
         <tbody className="divide-y align-top">
-          {rows.map((row, i) => (
-            <tr key={i}>
+          {rows.map((row) => (
+            <tr key={`${row.name}-${row.routes}-${row.terminal}`}>
               <td className="px-3 py-2 font-medium">{row.name}</td>
               <td className="px-3 py-2 text-muted-foreground">{row.routes}</td>
               <td className="px-3 py-2 text-muted-foreground">{row.terminal}</td>
@@ -245,8 +245,8 @@ export function CorridorMap({
       )}
       {waypoints && waypoints.length > 0 && (
         <ol className="mt-2 space-y-1 text-[12px]">
-          {waypoints.map((wp, i) => (
-            <li key={i} className="flex gap-2">
+          {waypoints.map((wp) => (
+            <li key={`${wp.km}-${wp.label}`} className="flex gap-2">
               <span className="w-12 shrink-0 font-mono text-muted-foreground">
                 {wp.km}
               </span>

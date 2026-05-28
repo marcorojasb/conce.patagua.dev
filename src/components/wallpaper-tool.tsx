@@ -357,6 +357,7 @@ export default function WallpaperTool({
             Padding {framePadding}%
             <input
               type="range"
+              aria-label="Padding del encuadre"
               min="0"
               max="24"
               value={framePadding}
@@ -368,6 +369,7 @@ export default function WallpaperTool({
             Zoom {zoomDelta > 0 ? `+${zoomDelta}` : zoomDelta}
             <input
               type="range"
+              aria-label="Zoom del encuadre"
               min="-3"
               max="3"
               value={zoomDelta}

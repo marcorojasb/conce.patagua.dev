@@ -123,11 +123,19 @@ function getStaticFrequencyServices({
   const dayKind = day < 5 ? 'weekday' : day === 5 ? 'saturday' : 'sunday';
   const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
   const out: NextStopService[] = [];
+  const patternsByRoute = new Map<string, typeof STATIC_SERVICE_PATTERNS>();
+  for (const pattern of STATIC_SERVICE_PATTERNS) {
+    if (!pattern.days.some((day) => day === dayKind)) continue;
+    const patterns = patternsByRoute.get(pattern.routeId);
+    if (patterns) {
+      patterns.push(pattern);
+    } else {
+      patternsByRoute.set(pattern.routeId, [pattern]);
+    }
+  }
 
   for (const route of staticRoutes) {
-    const patterns = STATIC_SERVICE_PATTERNS.filter(
-      (pattern) => pattern.routeId === route.id && pattern.days.includes(dayKind),
-    );
+    const patterns = patternsByRoute.get(route.id) ?? [];
     for (const pattern of patterns) {
       const next = nextFromWindow(
         pattern.startMin,

@@ -221,14 +221,20 @@ function appendMicros(routes: Route[]): void {
   // Extend the stops index with the new routes' stops in place — same
   // array identity so paradero detail sheets keep working.
   const stopIndex = new Map(STOPS.map((s) => [s.id, s]));
+  const stopRouteIndex = new Map(STOPS.map((s) => [s.id, new Set(s.routes)]));
   for (const r of routes) {
     for (const s of r.stops) {
       const existing = stopIndex.get(s.id);
       if (existing) {
-        if (!existing.routes.includes(r.id)) existing.routes.push(r.id);
+        const routeIds = stopRouteIndex.get(s.id)!;
+        if (!routeIds.has(r.id)) {
+          routeIds.add(r.id);
+          existing.routes.push(r.id);
+        }
       } else {
         const entry: StopWithRoutes = { ...s, routes: [r.id] };
         stopIndex.set(s.id, entry);
+        stopRouteIndex.set(s.id, new Set(entry.routes));
         STOPS.push(entry);
       }
     }
