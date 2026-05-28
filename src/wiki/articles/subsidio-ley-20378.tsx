@@ -1,4 +1,4 @@
-// Subsidio Nacional al Transporte Público (Ley 20.378) — ficha
+// Subsidio Nacional al Transporte Público (Ley 20.378), ficha
 // estructural del marco financiero que sostiene al transporte
 // público regional fuera de Santiago. Publicada 5-sep-2009 como
 // "ley espejo" del subsidio implícito al Transantiago.
@@ -19,6 +19,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function SubsidioLey20378() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -124,7 +125,7 @@ export default function SubsidioLey20378() {
           El origen político está atado al <strong>colapso del
           Transantiago en 2007</strong>. Los problemas operativos
           masivos obligaron al fisco a inyectar recursos extraordinarios
-          —el <em>subsidio implícito al Transantiago</em>—. La oposición
+          , el <em>subsidio implícito al Transantiago</em>, . La oposición
           y las regiones plantearon que si la RM recibe ese flujo, las
           regiones merecen una transferencia equivalente. Esa es la
           lógica de "ley espejo" que aterrizó en el proyecto presentado
@@ -184,11 +185,11 @@ export default function SubsidioLey20378() {
             ],
             [
               'Subsidio a la renovación de flotas',
-              'Programa "Renueva tu Micro" y variantes posteriores. Aporte estatal para que operadores reemplacen buses Euro III/IV por unidades Euro V/VI o eléctricas. Hay debate vigente sobre si la actualización 2024-2025 incorpora incentivos explícitos a electromovilidad — pendiente de cotejo en texto refundido.',
+              'Programa "Renueva tu Micro" y variantes posteriores. Aporte estatal para que operadores reemplacen buses Euro III/IV por unidades Euro V/VI o eléctricas. Hay debate vigente sobre si la actualización 2024-2025 incorpora incentivos explícitos a electromovilidad, pendiente de cotejo en texto refundido.',
             ],
             [
               'Reembolso adulto mayor en perímetros',
-              'En perímetros de exclusión (PE Gran Concepción, PE Tomé) el contrato fija una tarifa rebajada para adulto mayor ($290 adulto mayor vs $580 adulto en el PE Gran Concepción a feb-2025). La diferencia entre la tarifa rebajada y la tarifa de equilibrio operacional se reembolsa al operador — base normativa entre Ley 20.378 y los contratos específicos.',
+              'En perímetros de exclusión (PE Gran Concepción, PE Tomé) el contrato fija una tarifa rebajada para adulto mayor ($290 adulto mayor vs $580 adulto en el PE Gran Concepción a feb-2025). La diferencia entre la tarifa rebajada y la tarifa de equilibrio operacional se reembolsa al operador, base normativa entre Ley 20.378 y los contratos específicos.',
             ],
           ]}
         />
@@ -224,7 +225,7 @@ export default function SubsidioLey20378() {
         </p>
         <PendingBanner>
           <strong>Fórmula exacta y porcentajes Biobío 2024-2026
-          pendientes</strong> — texto refundido + resoluciones MTT, vía
+          pendientes</strong>, texto refundido + resoluciones MTT, vía
           Ley 20.285.
         </PendingBanner>
       </Section>
@@ -246,7 +247,7 @@ export default function SubsidioLey20378() {
             ],
             [
               'PE Tomé',
-              'Subsidio operacional al operador único Transportes Tomé (líneas 401 / 411 / 421). Refuerzos may-2025 (+11% punta tarde) anunciados por la SEREMITT — financiados con cargo al subsidio Ley 20.378.',
+              'Subsidio operacional al operador único Transportes Tomé (líneas 401 / 411 / 421). Refuerzos may-2025 (+11% punta tarde) anunciados por la SEREMITT, financiados con cargo al subsidio Ley 20.378.',
             ],
             [
               'Ruta 201 Santa Juana (ELC0007)',
@@ -340,8 +341,7 @@ export default function SubsidioLey20378() {
 
       <Section title="Cifras 2024-2026">
         <PendingBanner>
-          <strong>Cifras presupuestarias pendientes de DIPRES</strong>{' '}
-          — Partida 19 MTT, Programa 06. Valores exactos por año
+          <strong>Cifras presupuestarias pendientes de DIPRES</strong>{' '}, Partida 19 MTT, Programa 06. Valores exactos por año
           (2024-2026) y desagregación Biobío no publicados aquí sin
           fuente primaria confirmada.
         </PendingBanner>
@@ -386,8 +386,8 @@ export default function SubsidioLey20378() {
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
               15 años después, la RM sigue recibiendo más subsidio per
               cápita que la suma de regiones. La DTPR fiscaliza pero el
-              ranking de cumplimiento del PE Gran Concepción 2024 —su
-              palanca más fuerte— no se publica desagregado.
+              ranking de cumplimiento del PE Gran Concepción 2024 , su
+              palanca más fuerte, no se publica desagregado.
             </p>
           </div>
         </div>
@@ -444,7 +444,7 @@ export default function SubsidioLey20378() {
           items={[
             {
               date: 'Feb-2007',
-              event: 'Lanzamiento del Transantiago bajo el primer gobierno de Michelle Bachelet. Problemas operativos agudos en los primeros meses obligan al fisco a inyectar recursos extraordinarios — el "subsidio implícito".',
+              event: 'Lanzamiento del Transantiago bajo el primer gobierno de Michelle Bachelet. Problemas operativos agudos en los primeros meses obligan al fisco a inyectar recursos extraordinarios, el "subsidio implícito".',
             },
             {
               date: '2008',
@@ -461,11 +461,11 @@ export default function SubsidioLey20378() {
             },
             {
               date: '27-sep-2019',
-              event: 'Publicación de la Ley 21.175 — primera prórroga del Subsidio Nacional al Transporte Público (número pendiente de cotejo definitivo en BCN).',
+              event: 'Publicación de la Ley 21.175, primera prórroga del Subsidio Nacional al Transporte Público (número pendiente de cotejo definitivo en BCN).',
             },
             {
               date: '2022',
-              event: 'Publicación de la Ley 21.439 — segunda prórroga del subsidio, extendiendo su vigencia hasta 2024 (número pendiente de cotejo definitivo en BCN).',
+              event: 'Publicación de la Ley 21.439, segunda prórroga del subsidio, extendiendo su vigencia hasta 2024 (número pendiente de cotejo definitivo en BCN).',
             },
             {
               date: '1-ene-2024',
@@ -474,12 +474,12 @@ export default function SubsidioLey20378() {
             },
             {
               date: '15-jul-2024',
-              event: 'Inicio operativo de la Ruta 201 Santa Juana bajo licitación DTPR ELC0007 — primera licitación pública del Biobío en más de una década, financiada con cargo al art. 4° Ley 20.378.',
+              event: 'Inicio operativo de la Ruta 201 Santa Juana bajo licitación DTPR ELC0007, primera licitación pública del Biobío en más de una década, financiada con cargo al art. 4° Ley 20.378.',
               source: { href: 'https://dprbiobio.dpr.gob.cl/2024/07/22/santa-juana-cuenta-con-nuevo-sistema-de-transporte-publico-licitado-y-renovada-flota-de-buses/', label: 'DPR Biobío · 22-jul-2024' },
             },
             {
               date: '2024-2025',
-              event: 'Tercera prórroga del Subsidio Nacional al Transporte Público (Ley 21.659 o número similar — pendiente de cotejo definitivo en BCN). Extiende la vigencia del régimen aproximadamente hasta 2030.',
+              event: 'Tercera prórroga del Subsidio Nacional al Transporte Público (Ley 21.659 o número similar, pendiente de cotejo definitivo en BCN). Extiende la vigencia del régimen aproximadamente hasta 2030.',
             },
             {
               date: 'Feb-2025',
@@ -488,7 +488,7 @@ export default function SubsidioLey20378() {
             },
             {
               date: 'Oct-2025',
-              event: 'La SEREMITT Biobío anuncia la capa subsidiada Concepción ↔ Florida zona norte bajo art. 4° Ley 20.378 — sin licitación integral del corredor todavía.',
+              event: 'La SEREMITT Biobío anuncia la capa subsidiada Concepción ↔ Florida zona norte bajo art. 4° Ley 20.378, sin licitación integral del corredor todavía.',
             },
             {
               date: '28-ene-2026',
@@ -529,69 +529,60 @@ export default function SubsidioLey20378() {
           <li>
             <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
               SEREMITT Biobío y la DTPR
-            </a>{' '}
-            — la institución que ejecuta el subsidio en la
+            </a>{' '}, la institución que ejecuta el subsidio en la
             región. La DTPR liquida mensualmente a cada
             operador con cargo a Ley 20.378.
           </li>
           <li>
             <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
               Perímetro de Exclusión del Gran Concepción 2024
-            </a>{' '}
-            — el régimen mayor de la región, financiado por el
+            </a>{' '}, el régimen mayor de la región, financiado por el
             subsidio operacional Ley 20.378 a 36 unidades de
             negocio.
           </li>
           <li>
             <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
               Perímetro de Exclusión de Tomé
-            </a>{' '}
-            — segundo régimen subsidiado del Biobío. Refuerzos
+            </a>{' '}, segundo régimen subsidiado del Biobío. Refuerzos
             may-2025 también se financiaron con cargo a Ley
             20.378.
           </li>
           <li>
             <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
               Ruta 201 Concepción ↔ Santa Juana
-            </a>{' '}
-            — caso paradigmático de art. 4° Ley 20.378
+            </a>{' '}, caso paradigmático de art. 4° Ley 20.378
             (servicio deficitario obligado por bien público).
           </li>
           <li>
             <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
               Concepción ↔ Florida
-            </a>{' '}
-            — capas subsidiadas 2025 bajo art. 4° Ley 20.378
+            </a>{' '}, capas subsidiadas 2025 bajo art. 4° Ley 20.378
             sumadas al corredor troncal privado.
           </li>
           <li>
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Recorridos interurbanos del Gran Concepción
-            </a>{' '}
-            — índice general; cada servicio licitado en el
+            </a>{' '}, índice general; cada servicio licitado en el
             índice depende de Ley 20.378 art. 4°.
           </li>
           <li>
             <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
-            </a>{' '}
-            — el sistema de recaudación no es Ley 20.378 pero
+            </a>{' '}, el sistema de recaudación no es Ley 20.378 pero
             recauda en buses cuya operación sí está
             subsidiada por ella.
           </li>
           <li>
             <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
               Electrocorredores MOP del Biobío
-            </a>{' '}
-            — la infraestructura la paga el MOP por concesión;
+            </a>{' '}, la infraestructura la paga el MOP por concesión;
             la operación de buses sobre la infraestructura
             seguirá financiada por Ley 20.378.
           </li>
           <li>
             <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén y sus extensiones
-            </a>{' '}
-            — EFE no se financia con Ley 20.378, pero la
+            </a>{' '}, EFE no se financia con Ley 20.378, pero la
             integración tarifaria con buses subsidiados es
             tema abierto.
           </li>
@@ -618,7 +609,7 @@ export default function SubsidioLey20378() {
         <p>
           Si tienes número y fecha de la última prórroga al 2026,
           cifras DIPRES Partida 19 desagregadas o resoluciones MTT de
-          distribución regional — abre un pull request en{' '}
+          distribución regional, abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/subsidio-ley-20378.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/subsidio-ley-20378.tsx
           </SourceLink>

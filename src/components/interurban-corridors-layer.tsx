@@ -1,11 +1,11 @@
-// Corredores interurbanos — overlay opcional que dibuja un pin grande
+// Corredores interurbanos, overlay opcional que dibuja un pin grande
 // por cada servicio licitado documentado en el wiki que NO está en el
 // feed GTFS urbano (Santa Juana, Florida, Yumbel, Tomé rural, etc.).
 //
 // Cada pin abre un tooltip persistente con título, operador/estado y un
 // link "Ver en el wiki →". Si el corredor tiene también un terminal
 // urbano conocido, dibujamos una línea discontinua entre ambos para
-// sugerir que existe servicio en el corredor — NO un trazado real del
+// sugerir que existe servicio en el corredor, NO un trazado real del
 // GTFS (eso lo aclara el tooltip).
 //
 // Render imperativo (Leaflet plano) por consistencia con coverage/
@@ -20,7 +20,7 @@ import { wikiUrl } from '@/wiki/map-links';
 
 interface Props {
   enabled: boolean;
-  /** Notifica al padre cuando el usuario clickea un corredor — para que
+  /** Notifica al padre cuando el usuario clickea un corredor, para que
    * el visor pueda centrar el mapa en ese par origen-destino. */
   onSelectCorridor?: (corridorId: string) => void;
 }

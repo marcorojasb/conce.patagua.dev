@@ -1,4 +1,4 @@
-// Parques, jardines, plazas y reservas naturales — polígonos rellenos
+// Parques, jardines, plazas y reservas naturales, polígonos rellenos
 // dibujados imperativamente con L.featureGroup + L.polygon en el canvas
 // renderer compartido. Lazy-loaded chunk para no inflar el main bundle.
 
@@ -6,14 +6,14 @@ import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { GreenKind, GreenSpace } from '@/data/greenspace.generated';
-import type { LayerLoadStatus } from '@/hooks/use-layer-status';
+import type { LayerStatusControls } from '@/hooks/use-layer-status';
 
 const KIND_STYLE: Record<GreenKind, { fill: string; stroke: string }> = {
-  // Parque "típico" — verde frondoso.
+  // Parque "típico", verde frondoso.
   park: { fill: 'rgba(34, 197, 94, 0.45)', stroke: 'rgba(21, 128, 61, 0.85)' },
-  // Jardines / centros botánicos — verde más oscuro.
+  // Jardines / centros botánicos, verde más oscuro.
   garden: { fill: 'rgba(22, 163, 74, 0.4)', stroke: 'rgba(20, 83, 45, 0.8)' },
-  // Plazas — más amarillento, indica pavimento.
+  // Plazas, más amarillento, indica pavimento.
   plaza: { fill: 'rgba(132, 204, 22, 0.4)', stroke: 'rgba(77, 124, 15, 0.8)' },
   // Bosques urbanos.
   forest: { fill: 'rgba(5, 150, 105, 0.5)', stroke: 'rgba(6, 95, 70, 0.85)' },
@@ -47,14 +47,14 @@ interface Props {
   enabled: boolean;
   canvasRenderer: L.Canvas;
   retryKey: number;
-  onStatusChange: (status: LayerLoadStatus) => void;
+  loadStatus: LayerStatusControls;
 }
 
 export function GreenspaceLayer({
   enabled,
   canvasRenderer,
   retryKey,
-  onStatusChange,
+  loadStatus,
 }: Props) {
   const map = useMap();
 
@@ -84,23 +84,19 @@ export function GreenspaceLayer({
       }
       group.addTo(map);
       group.bringToBack();
-      onStatusChange({ loading: false, error: null, ready: true });
+      loadStatus.succeed();
     };
 
     if (dataCache) {
       draw(dataCache);
     } else {
-      onStatusChange({ loading: true, error: null, ready: false });
+      loadStatus.start();
       void loadGreenspace()
         .then(draw)
         .catch((err) => {
           dataPromise = null;
           if (!cancelled) {
-            onStatusChange({
-              loading: false,
-              error: err instanceof Error ? err.message : 'No se pudo cargar áreas verdes',
-              ready: false,
-            });
+            loadStatus.fail(err, 'No se pudo cargar áreas verdes');
           }
         });
     }
@@ -109,7 +105,7 @@ export function GreenspaceLayer({
       cancelled = true;
       group.remove();
     };
-  }, [enabled, canvasRenderer, map, onStatusChange, retryKey]);
+  }, [enabled, canvasRenderer, map, loadStatus, retryKey]);
 
   return null;
 }

@@ -18,6 +18,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function BusPay() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -72,7 +73,7 @@ export default function BusPay() {
           <li>
             <strong>Integra regímenes distintos en un solo medio.</strong>{' '}
             PE Gran Concepción (7 comunas), PE Tomé (1), regulación
-            especial Coronel-Lota (Res. Ex. 457/2012-2013 — PE formal
+            especial Coronel-Lota (Res. Ex. 457/2012-2013, PE formal
             en bases a jul-2025) y la 201 Santa Juana, primer servicio
             rural de Chile con pago electrónico
             (
@@ -126,7 +127,7 @@ export default function BusPay() {
             },
             {
               date: '2016',
-              event: <><strong>Piloto Biobús — fallido</strong>. Se repartieron más de <strong>50.000 tarjetas</strong> pero la licitación 2002 no obligaba a los operadores a instalar validadores y los acuerdos voluntarios no prosperaron.</>,
+              event: <><strong>Piloto Biobús, fallido</strong>. Se repartieron más de <strong>50.000 tarjetas</strong> pero la licitación 2002 no obligaba a los operadores a instalar validadores y los acuerdos voluntarios no prosperaron.</>,
               source: { href: 'https://www.diarioconcepcion.cl/ciudad/2024/11/29/pago-con-tarjeta-en-buses-empresa-que-opera-en-transantiago-espera-participar-en-licitacion-en-la-zona.html', label: 'Diario Concepción · 29-nov-2024' },
             },
             {
@@ -198,15 +199,15 @@ export default function BusPay() {
         <KeyValueList
           items={[
             ['Mandante', 'Ministerio de Transportes y Telecomunicaciones (MTT) · División de Transporte Público Regional (DTPR)'],
-            ['Bases publicadas', 'Mediados de 2025 (mes exacto pendiente — apertura efectiva 23-sep-2025)'],
-            ['Cierre de ofertas', '23 de septiembre de 2025 — 6 oferentes recibidos'],
+            ['Bases publicadas', 'Mediados de 2025 (mes exacto pendiente, apertura efectiva 23-sep-2025)'],
+            ['Cierre de ofertas', '23 de septiembre de 2025, 6 oferentes recibidos'],
             ['Comisión evaluadora', 'DTPR (Diario Concepción · 23-sep-2025)'],
-            ['Adjudicación', '28 de enero de 2026 — Consorcio Buspay'],
-            ['Visa Contraloría', 'Enero-febrero 2026 (fecha exacta no publicada — Subtrans confirma el 30-ene-2026 que el contrato "queda en condiciones para su firma")'],
+            ['Adjudicación', '28 de enero de 2026, Consorcio Buspay'],
+            ['Visa Contraloría', 'Enero-febrero 2026 (fecha exacta no publicada, Subtrans confirma el 30-ene-2026 que el contrato "queda en condiciones para su firma")'],
             ['Inversión estatal', '~$750 millones anuales durante todo el período de la concesión'],
             ['Cobertura', '11 comunas: 7 PE Gran Concepción + Tomé + Coronel + Lota + Santa Juana (rural)'],
             ['Validadores', '1.800 unidades (la prensa también cita "~2.000 máquinas" según el TVU)'],
-            ['Tarifa', '$580 sin alteración — el sistema lo paga el Estado'],
+            ['Tarifa', '$580 sin alteración, el sistema lo paga el Estado'],
           ]}
         />
         <PendingBanner>
@@ -219,13 +220,13 @@ export default function BusPay() {
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/09/23/gran-concepcion-avanza-hacia-el-pago-electronico-en-buses-mtt-recibe-seis-ofertas.html">
-            Diario Concepción · 23-sep-2025 — Cierre licitación, 6 ofertas
+            Diario Concepción · 23-sep-2025, Cierre licitación, 6 ofertas
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-            BioBioChile · 28-ene-2026 — Adjudicación al Consorcio Buspay
+            BioBioChile · 28-ene-2026, Adjudicación al Consorcio Buspay
           </SourceLink>
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-            Subtrans · 30-ene-2026 — Confirmación oficial y visa Contraloría
+            Subtrans · 30-ene-2026, Confirmación oficial y visa Contraloría
           </SourceLink>
         </Sources>
       </Section>
@@ -235,7 +236,7 @@ export default function BusPay() {
           items={[
             ['Marca del sistema', 'BusPay'],
             ['Razón social adjudicada', 'Consorcio Buspay (composición societaria, RUT y registro mercantil pendientes en fuente abierta)'],
-            ['Operador técnico', 'Busmatick — antecedente operacional en Antofagasta Conectado (Antofagasta, Calama, Tocopilla). Experiencia previa en Europa, América Latina y el Caribe.'],
+            ['Operador técnico', 'Busmatick, antecedente operacional en Antofagasta Conectado (Antofagasta, Calama, Tocopilla). Experiencia previa en Europa, América Latina y el Caribe.'],
             ['Director identificado', 'Hollman Suárez (reunión técnica 27-feb-2026)'],
             ['URL del operador Antofagasta', 'antofagasta.busmatick.com'],
           ]}
@@ -259,20 +260,20 @@ export default function BusPay() {
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.radioudec.cl/empresa-a-cargo-del-pago-electronico-se-reune-con-operadores-del-transporte-publico-del-gran-concepcion/">
-            Radio UdeC · 27-feb-2026 — Reunión Busmatick / Hollman Suárez / operadores
+            Radio UdeC · 27-feb-2026, Reunión Busmatick / Hollman Suárez / operadores
           </SourceLink>
           <SourceLink href="https://antofagasta.busmatick.com/">
-            antofagasta.busmatick.com — Portal del sistema en Antofagasta
+            antofagasta.busmatick.com, Portal del sistema en Antofagasta
           </SourceLink>
         </Sources>
       </Section>
 
-      <Section title="Cobertura — 11 comunas, tres regímenes">
+      <Section title="Cobertura, 11 comunas, tres regímenes">
         <p>
           Cuatro regímenes unificados en un solo medio de pago:
           Perímetro Gran Concepción (7 comunas), Perímetro Tomé,
           regulación especial Coronel-Lota (Res. Ex. 457 MTT,
-          2012-2013 — PE formal en licitación, no vigente al cierre
+          2012-2013, PE formal en licitación, no vigente al cierre
           2025) y la licitación rural Santa Juana
           (
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
@@ -322,7 +323,7 @@ export default function BusPay() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Coronel · Lota</td>
-                <td className="px-3 py-2">Regulación especial (Res. Ex. 457 MTT 2012-2013 — PE formal en licitación, no vigente)</td>
+                <td className="px-3 py-2">Regulación especial (Res. Ex. 457 MTT 2012-2013, PE formal en licitación, no vigente)</td>
                 <td className="px-3 py-2 text-muted-foreground">Operadores locales (Las Galaxias, Buses J. Ewert, etc.)</td>
               </tr>
               <tr>
@@ -346,7 +347,7 @@ export default function BusPay() {
       <Section title="Funcionamiento técnico">
         <p>
           Recaudo de múltiples medios sobre validadores embarcados. No
-          es tarjeta única obligatoria — el usuario elige el medio
+          es tarjeta única obligatoria, el usuario elige el medio
           (
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026
@@ -356,7 +357,7 @@ export default function BusPay() {
         <KeyValueList
           items={[
             ['Tarjeta dedicada BusPay', 'Sin contacto (NFC), diseño Campanil UdeC. Costo ~$1.550 (El Mostrador · 17-mar-2026). Versiones adulto, AM y TNE.'],
-            ['Tarjetas bancarias', 'Pago contactless directo (débito o crédito Visa/Mastercard) — mismo gesto que el Biotrén desde nov-2024.'],
+            ['Tarjetas bancarias', 'Pago contactless directo (débito o crédito Visa/Mastercard), mismo gesto que el Biotrén desde nov-2024.'],
             ['Celular (QR / NFC)', 'Equivalente a Bipay y Antofagasta Conectado.'],
             ['TNE', 'Billetera electrónica con tarifa $190 (~33%). Coordinación JUNAEB.'],
             ['Tarjeta AM', 'Tarifa $290 (~50%). Coordinación SENAMA.'],
@@ -372,13 +373,13 @@ export default function BusPay() {
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.df.cl/regiones/biobio/empresas/nuevo-pago-electronico-en-transporte-publico-del-gran-concepcion-reducira">
-            Diario Financiero · 2026 — Funciones, medios de pago, costos
+            Diario Financiero · 2026, Funciones, medios de pago, costos
           </SourceLink>
           <SourceLink href="https://www.elmostrador.cl/datos-utiles/2026/03/17/nuevo-sistema-de-pago-en-transporte-de-concepcion-en-que-comunas-se-implementara/">
-            El Mostrador · 17-mar-2026 — Precio tarjeta ~$1.550
+            El Mostrador · 17-mar-2026, Precio tarjeta ~$1.550
           </SourceLink>
           <SourceLink href="https://www.radioudec.cl/penquistas-eligieron-al-campanil-como-la-imagen-de-la-primera-tarjeta-de-pago-electronico-del-transporte-publico/">
-            Radio UdeC — Resultado consulta: Campanil UdeC
+            Radio UdeC, Resultado consulta: Campanil UdeC
           </SourceLink>
         </Sources>
       </Section>
@@ -388,7 +389,7 @@ export default function BusPay() {
           A diferencia de Bip! Santiago (que tuvo años con diferencial
           tarjeta/efectivo explícito), BusPay <strong>no anuncia
           descuento</strong> por usar tarjeta vs efectivo. La tarifa
-          adulto sigue en $580 con cualquier medio — el costo lo
+          adulto sigue en $580 con cualquier medio, el costo lo
           absorbe el Estado vía el subsidio ~$750 millones/año
           (
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
@@ -438,18 +439,18 @@ export default function BusPay() {
           <strong>Integración tarifaria pendiente.</strong>{' '}
           ¿Transbordo gratuito entre buses? ¿Integración bus ↔
           Biotrén con tarifa combinada? ¿Saldo monedero o cobro por
-          viaje? Una integración bus ↔ tren sería innovación — ningún
+          viaje? Una integración bus ↔ tren sería innovación, ningún
           sistema regional de Chile la tiene hoy salvo parcialmente
           Antofagasta Conectado.
         </PendingBanner>
       </Section>
 
-      <Section title="Despliegue — cronograma">
+      <Section title="Despliegue, cronograma">
         <p className="text-[12px]">
           Cronograma detallado en la Timeline. <strong>Volumen del
           retrofit:</strong> 1.800-2.000 validadores en 11 comunas
           (1.800 en BioBioChile/DF, ~2.000 en TVU y reunión técnica
-          27-feb-2026 — la diferencia probablemente corresponde a
+          27-feb-2026, la diferencia probablemente corresponde a
           flota efectiva más reserva).
         </p>
         <PendingBanner>
@@ -465,7 +466,7 @@ export default function BusPay() {
         <KeyValueList
           items={[
             ['Centros de Atención al Usuario (CAU)', '5: Concepción, San Pedro de la Paz, Talcahuano, Tomé y Lota (Subtrans · 30-ene-2026)'],
-            ['Puntos físicos de recarga', '~500 con comercio minorista (modelo Antofagasta) — densidad ~2.000 hab./punto, comparable a Bipay Temuco'],
+            ['Puntos físicos de recarga', '~500 con comercio minorista (modelo Antofagasta), densidad ~2.000 hab./punto, comparable a Bipay Temuco'],
             ['Portal web + app móvil', 'Consulta saldo, historial, bloqueo por extravío, billetera digital con QR'],
             ['Call center', 'Mesa de ayuda telefónica (Sala de Prensa)'],
             ['Tarjetas gratis iniciales', '~29.000: 14.500 estudiantes (JUNAEB) + 14.500 AM (Sala de Prensa)'],
@@ -503,7 +504,7 @@ export default function BusPay() {
               <tr>
                 <td className="px-3 py-2 font-medium">Operador</td>
                 <td className="px-3 py-2">Consorcio Buspay (Busmatick)</td>
-                <td className="px-3 py-2">AFT — controlado por bancos</td>
+                <td className="px-3 py-2">AFT, controlado por bancos</td>
                 <td className="px-3 py-2">Bipay (BancoEstado · CompraQui)</td>
                 <td className="px-3 py-2">Busmatick</td>
               </tr>
@@ -523,7 +524,7 @@ export default function BusPay() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Evasión post-impl.</td>
-                <td className="px-3 py-2">—</td>
+                <td className="px-3 py-2">Sin dato</td>
                 <td className="px-3 py-2">Histórica 20-30% en buses</td>
                 <td className="px-3 py-2">1,6% (3.000+ pax fiscalizados oct-2025)</td>
                 <td className="px-3 py-2">Sin dato público</td>
@@ -579,7 +580,7 @@ export default function BusPay() {
           <li>
             <strong>Float y liquidación a operadores.</strong> ¿Plazos
             y comisión? ¿Quién retiene el saldo no ejecutado? El
-            Consorcio Buspay es recaudador y liquidador a la vez — no
+            Consorcio Buspay es recaudador y liquidador a la vez, no
             hay AFT equivalente, arquitectura no probada en metrópoli
             de este tamaño.
           </li>
@@ -598,7 +599,7 @@ export default function BusPay() {
           <li>
             <strong>Posible asimetría con Bipay nacional.</strong>{' '}
             Bipay (BancoEstado) opera en Temuco, Chillán, Valdivia.
-            El Gran Concepción adjudicó a Busmatick — riesgo de dos
+            El Gran Concepción adjudicó a Busmatick, riesgo de dos
             tarjetas paralelas sin interoperabilidad en el sur de
             Chile.
           </li>
@@ -633,7 +634,7 @@ export default function BusPay() {
           <li>
             <strong>Pago vía liquidación periódica.</strong> El
             operador recibe del Consorcio Buspay una liquidación
-            periódica — mecanismo y plazo pendientes.
+            periódica, mecanismo y plazo pendientes.
           </li>
           <li>
             <strong>Datos auditables.</strong> DTPR y MTT tendrán por
@@ -657,22 +658,22 @@ export default function BusPay() {
       <Section title="Vínculos con otros artículos">
         <ul className="ml-5 list-disc space-y-1.5 text-[13px]">
           <li>
-            <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">Perímetro de Exclusión del Gran Concepción 2024</a>{' '}— el régimen del que BusPay es la pieza tecnológica que faltaba.
+            <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">Perímetro de Exclusión del Gran Concepción 2024</a>{', '}el régimen del que BusPay es la pieza tecnológica que faltaba.
           </li>
           <li>
-            <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ruta 201 Santa Juana</a>{' '}— primer servicio rural de Chile con pago electrónico (licitación DTPR ELC0007 / Ley 20.378, NO bajo PE).
+            <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ruta 201 Santa Juana</a>{', '}primer servicio rural de Chile con pago electrónico (licitación DTPR ELC0007 / Ley 20.378, NO bajo PE).
           </li>
           <li>
-            <a href="/wiki/concepcion-tome" className="underline underline-offset-2">Concepción ↔ Tomé</a>{' '}— corredor norte (401/411/421) entra a BusPay vía el PE Tomé (decreto MTT jul-2016).
+            <a href="/wiki/concepcion-tome" className="underline underline-offset-2">Concepción ↔ Tomé</a>{', '}corredor norte (401/411/421) entra a BusPay vía el PE Tomé (decreto MTT jul-2016).
           </li>
           <li>
-            <a href="/wiki/biotren" className="underline underline-offset-2">Biotrén</a>{' '}— el modo masivo NO está en BusPay; sigue con Conecta. Integración bus ↔ tren pendiente.
+            <a href="/wiki/biotren" className="underline underline-offset-2">Biotrén</a>{', '}el modo masivo NO está en BusPay; sigue con Conecta. Integración bus ↔ tren pendiente.
           </li>
           <li>
-            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">Concepción ↔ Florida</a>{' '}— fuera de BusPay (operadores privados sin régimen formal, tarifa libre).
+            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">Concepción ↔ Florida</a>{', '}fuera de BusPay (operadores privados sin régimen formal, tarifa libre).
           </li>
           <li>
-            <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">Sobre este wiki</a>{' '}— modelo editorial.
+            <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">Sobre este wiki</a>{', '}modelo editorial.
           </li>
         </ul>
       </Section>
@@ -682,7 +683,7 @@ export default function BusPay() {
           <li>Razón social, RUT y composición societaria exacta del Consorcio Buspay (¿Busmatick + socio chileno? ¿SpA? ¿joint venture?).</li>
           <li>ID de licitación en MercadoPublico.cl / DTPR Biobío y lista de las 6 oferentes con puntajes.</li>
           <li>Plazo del contrato (años) y monto total agregado (más allá del flujo anual de $750 millones).</li>
-          <li>Identidad de las 5 oferentes derrotadas — sólo Sonda está confirmada como interesada (no como oferente formal).</li>
+          <li>Identidad de las 5 oferentes derrotadas, sólo Sonda está confirmada como interesada (no como oferente formal).</li>
           <li>Esquema concreto de liquidación a operadores: plazo, comisión, modelo de float, base de cálculo.</li>
           <li>¿Hay descuento tarjeta vs efectivo? ¿transbordo gratuito? ¿integración Biotrén?</li>
           <li>Conducta del sistema ante validador caído (tarifa de respaldo, reembolso, fuera de operación).</li>
@@ -703,61 +704,61 @@ export default function BusPay() {
       <Section title="Bibliografía">
         <Sources>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-            BioBioChile · 28-ene-2026 — Adjudicación al Consorcio Buspay
+            BioBioChile · 28-ene-2026, Adjudicación al Consorcio Buspay
           </SourceLink>
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-            Subtrans · 30-ene-2026 — Comunicado oficial MTT, visa Contraloría, 11 comunas
+            Subtrans · 30-ene-2026, Comunicado oficial MTT, visa Contraloría, 11 comunas
           </SourceLink>
           <SourceLink href="https://www.df.cl/regiones/biobio/empresas/nuevo-pago-electronico-en-transporte-publico-del-gran-concepcion-reducira">
-            Diario Financiero · 2026 — 1.800 buses, $750M/año, evasión, cronograma abr-may, fin 2026
+            Diario Financiero · 2026, 1.800 buses, $750M/año, evasión, cronograma abr-may, fin 2026
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/09/23/gran-concepcion-avanza-hacia-el-pago-electronico-en-buses-mtt-recibe-seis-ofertas.html">
-            Diario Concepción · 23-sep-2025 — Cierre licitación, 6 ofertas
+            Diario Concepción · 23-sep-2025, Cierre licitación, 6 ofertas
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/29/pago-con-tarjeta-en-buses-empresa-que-opera-en-transantiago-espera-participar-en-licitacion-en-la-zona.html">
-            Diario Concepción · 29-nov-2024 — Sonda manifiesta interés, antecedente Biobús 2016 (50.000 tarjetas)
+            Diario Concepción · 29-nov-2024, Sonda manifiesta interés, antecedente Biobús 2016 (50.000 tarjetas)
           </SourceLink>
           <SourceLink href="https://www.radioudec.cl/empresa-a-cargo-del-pago-electronico-se-reune-con-operadores-del-transporte-publico-del-gran-concepcion/">
-            Radio UdeC · 27-feb-2026 — Reunión Busmatick/operadores
+            Radio UdeC · 27-feb-2026, Reunión Busmatick/operadores
           </SourceLink>
           <SourceLink href="https://www.radioudec.cl/penquistas-eligieron-al-campanil-como-la-imagen-de-la-primera-tarjeta-de-pago-electronico-del-transporte-publico/">
-            Radio UdeC — Resultado consulta: Campanil UdeC
+            Radio UdeC, Resultado consulta: Campanil UdeC
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
-            Subtrans · 23-dic-2025 — Consulta ciudadana, 3 diseños, voto vía @mttbiobio
+            Subtrans · 23-dic-2025, Consulta ciudadana, 3 diseños, voto vía @mttbiobio
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/servicios/toma-nota/2026/02/19/cuando-inicia-el-nuevo-sistema-de-pago-electronico-del-transporte-en-el-gran-concepcion.shtml">
-            BioBioChile · 19-feb-2026 — Inicio Q3 2026, marcha blanca
+            BioBioChile · 19-feb-2026, Inicio Q3 2026, marcha blanca
           </SourceLink>
           <SourceLink href="https://www.elmostrador.cl/datos-utiles/2026/03/17/nuevo-sistema-de-pago-en-transporte-de-concepcion-en-que-comunas-se-implementara/">
-            El Mostrador · 17-mar-2026 — 11 comunas, 5 CAU, ~500 puntos de recarga, costo tarjeta ~$1.550
+            El Mostrador · 17-mar-2026, 11 comunas, 5 CAU, ~500 puntos de recarga, costo tarjeta ~$1.550
           </SourceLink>
           <SourceLink href="https://revistanos.cl/pago-electronico-llegara-al-transporte-publico-del-gran-concepcion-el-tercer-trimestre-de-2026/">
-            Revista Nos · 2026 — Marcha blanca Q3, 3 meses de coexistencia con efectivo
+            Revista Nos · 2026, Marcha blanca Q3, 3 meses de coexistencia con efectivo
           </SourceLink>
           <SourceLink href="https://www.saladeprensa.cl/alcanzara-a-estar-listo-en-2026-pago-electronico-en-el-gran-concepcion-sufre-nuevo-atraso/">
-            Sala de Prensa — Atraso, 14.500 tarjetas estudiantes + 14.500 AM, JUNAEB/SENAMA
+            Sala de Prensa, Atraso, 14.500 tarjetas estudiantes + 14.500 AM, JUNAEB/SENAMA
           </SourceLink>
           <SourceLink href="https://tiemporeal.periodismoudec.cl/2026/03/19/el-gran-concepcion-tendra-anhelado-pago-electronico-del-transporte-publico/">
-            Tiempo Real UdeC · 19-mar-2026 — Antecedente Biobús 2016, espera histórica
+            Tiempo Real UdeC · 19-mar-2026, Antecedente Biobús 2016, espera histórica
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/politica/2026/02/01/pago-electronico-gobierno-planea-que-este-implementado-100-durante-este-ano-en-el-gran-concepcion.html">
-            Diario Concepción · 1-feb-2026 — Plan 100% durante 2026
+            Diario Concepción · 1-feb-2026, Plan 100% durante 2026
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Transporte_p%C3%BAblico_en_el_Gran_Concepci%C3%B3n">
             Wikipedia · Transporte público en el Gran Concepción (tarjeta Biotrén 2005, Conecta 2023, integración Biobús hasta 2019)
           </SourceLink>
           <SourceLink href="https://dtpr.gob.cl/implementacion-del-sistema-de-pago-electronico-antofagasta-conectado/">
-            DTPR · Antofagasta Conectado — Modelo de referencia operacional
+            DTPR · Antofagasta Conectado, Modelo de referencia operacional
           </SourceLink>
           <SourceLink href="https://antofagasta.busmatick.com/">
-            antofagasta.busmatick.com — Portal del sistema en Antofagasta
+            antofagasta.busmatick.com, Portal del sistema en Antofagasta
           </SourceLink>
           <SourceLink href="https://alertanoticiastemuco.cl/2025/10/11/pago-electronico-buses-temuco-padre-las-casas-4m-validaciones/">
-            Alerta Temuco · 11-oct-2025 — Comparativo Bipay: 4M validaciones, 1,6% evasión
+            Alerta Temuco · 11-oct-2025, Comparativo Bipay: 4M validaciones, 1,6% evasión
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2026/02/26/transporte-publico-del-gran-concepcion-prepara-salto-digital-2-mil-maquinas-operaran-con-pago-electronico.html">
-            TVU · 26-feb-2026 — 2.000 validadores y "salto digital"
+            TVU · 26-feb-2026, 2.000 validadores y "salto digital"
           </SourceLink>
         </Sources>
       </Section>

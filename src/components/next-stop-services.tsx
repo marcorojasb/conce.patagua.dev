@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 import { Clock3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ROUTES_BY_ID, useRoutesVersion } from '@/data/routes';
@@ -22,19 +22,36 @@ interface State {
   snapshot: StopServiceSnapshot | null;
 }
 
+type Action =
+  | { type: 'loading' }
+  | { type: 'success'; snapshot: StopServiceSnapshot }
+  | { type: 'error'; error: string };
+
+const initialState: State = {
+  loading: false,
+  error: null,
+  snapshot: null,
+};
+
+function reducer(state: State, action: Action): State {
+  if (action.type === 'loading') {
+    return { ...state, loading: true, error: null };
+  }
+  if (action.type === 'success') {
+    return { loading: false, error: null, snapshot: action.snapshot };
+  }
+  return { loading: false, error: action.error, snapshot: null };
+}
+
 export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
   const routesVersion = useRoutesVersion();
-  const [state, setState] = useState<State>({
-    loading: false,
-    error: null,
-    snapshot: null,
-  });
+  const [state, dispatch] = useReducer(reducer, initialState);
   const routeKey = routeIds.join('|');
 
   useEffect(() => {
     if (!enabled || !stopId) return;
     let cancelled = false;
-    setState((s) => ({ ...s, loading: true, error: null }));
+    dispatch({ type: 'loading' });
     void routesVersion;
     const ids = routeKey ? routeKey.split('|') : [];
     const routes: Route[] = [];
@@ -45,9 +62,8 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
       if (id.startsWith('gtfs-route-')) hasGtfsRoute = true;
     }
     if (!stopId.startsWith('gtfs-stop-') || !hasGtfsRoute) {
-      setState({
-        loading: false,
-        error: null,
+      dispatch({
+        type: 'success',
         snapshot: getNextStopServices({
           stopId,
           routeIds: ids,
@@ -62,24 +78,22 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
       .then((mod) => {
         if (cancelled) return;
         const windows = mod.STOP_SERVICE_WINDOWS[stopId] as StopServiceWindow[] | undefined;
-        setState({
-          loading: false,
-          error: null,
-            snapshot: getNextStopServices({
-              stopId,
-              routeIds: ids,
-              windows,
-              now: new Date(),
-              staticRoutes: routes,
+        dispatch({
+          type: 'success',
+          snapshot: getNextStopServices({
+            stopId,
+            routeIds: ids,
+            windows,
+            now: new Date(),
+            staticRoutes: routes,
           }),
         });
       })
       .catch((err) => {
         if (cancelled) return;
-        setState({
-          loading: false,
+        dispatch({
+          type: 'error',
           error: err instanceof Error ? err.message : 'No se pudieron cargar próximos servicios',
-          snapshot: null,
         });
       });
     return () => {

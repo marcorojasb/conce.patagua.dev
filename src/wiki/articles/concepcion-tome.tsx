@@ -1,4 +1,4 @@
-// Concepción ↔ Tomé — ficha OPERACIONAL del corredor norte del Gran
+// Concepción ↔ Tomé, ficha OPERACIONAL del corredor norte del Gran
 // Concepción.
 //
 // División editorial con `perimetro-exclusion-tome.tsx`:
@@ -24,6 +24,7 @@ import {
 } from './_components';
 import { MapLink } from '@/wiki/map-link';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function ConcepcionTome() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -53,7 +54,7 @@ export default function ConcepcionTome() {
           <strong>Penco</strong> (47.367 hab. Censo 2017),{' '}
           <strong>Lirquén</strong> (distrito censal de Penco con 11.544 hab.)
           y <strong>Tomé</strong> (54.946 hab.) por la <strong>Ruta 150</strong>{' '}
-          ("Cruce Ruta 146 — Bypass Penco — Tomé").
+          ("Cruce Ruta 146, Bypass Penco, Tomé").
         </p>
         <p>
           Operacionalmente, el corredor se mueve sobre <strong>dos
@@ -95,7 +96,7 @@ export default function ConcepcionTome() {
             corredor MOP
           </a>
           ) cuya licitación recibió oferta única en
-          diciembre 2025 — puesta en servicio proyectada 2032.
+          diciembre 2025, puesta en servicio proyectada 2032.
         </p>
       </Section>
 
@@ -156,7 +157,7 @@ export default function ConcepcionTome() {
             Wikipedia · Perímetro de Exclusión del Gran Concepción
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n">
-            Wikipedia · Buses licitados Gran Concepción — fin licitación 2002 (31-mar-2024)
+            Wikipedia · Buses licitados Gran Concepción, fin licitación 2002 (31-mar-2024)
           </SourceLink>
         </Sources>
       </Section>
@@ -197,24 +198,23 @@ export default function ConcepcionTome() {
         <KeyValueList
           items={[
             ['Distancia Concepción → Tomé', 'Aprox. 30 km por Ruta 150 (eje costero, sin grandes pendientes)'],
-            ['Distancia Concepción → Dichato', 'Aprox. 42 km — Dichato es localidad costera al norte de Tomé urbano'],
+            ['Distancia Concepción → Dichato', 'Aprox. 42 km, Dichato es localidad costera al norte de Tomé urbano'],
             ['Tiempo en bus Concepción → Tomé', '~50 a 70 min según hora del día y trazado (parada Penco / Lirquén)'],
             [
               'Eje vial primario',
               <>
                 <strong>Ruta 150</strong> (OSM <code className="font-mono">ref=150</code>,
-                official_name "Cruce Ruta 146 (Concepción) — Bypass Penco —
-                Tomé"). Doble vía concesionada en parte del tramo, pavimento
+                official_name "Cruce Ruta 146 (Concepción), Bypass Penco, Tomé"). Doble vía concesionada en parte del tramo, pavimento
                 de hormigón, máx. 60 km/h en bypass urbano.
               </>,
             ],
             [
               'Vías secundarias',
-              'Camino histórico Penco - Cosmito - Concepción por Av. Latorre / La Atalaya; eje urbano Av. Manuel Rodríguez y Av. Los Carrera (Concepción) — Costanera (Tomé)',
+              'Camino histórico Penco - Cosmito - Concepción por Av. Latorre / La Atalaya; eje urbano Av. Manuel Rodríguez y Av. Los Carrera (Concepción), Costanera (Tomé)',
             ],
             [
               'Estaciones / paraderos clave',
-              'Plaza de Penco, Plaza de Lirquén, Bellavista Tomé, Costanera de Tomé, Tomé Alto, Dichato Av. Daniel Vera. El Biotrén no llega al corredor (terminal norte L1 es Mercado de Talcahuano); la extensión a Penco/Lirquén lleva años en estudio EFE — ver artículo Biotrén y sus extensiones.',
+              'Plaza de Penco, Plaza de Lirquén, Bellavista Tomé, Costanera de Tomé, Tomé Alto, Dichato Av. Daniel Vera. El Biotrén no llega al corredor (terminal norte L1 es Mercado de Talcahuano); la extensión a Penco/Lirquén lleva años en estudio EFE, ver artículo Biotrén y sus extensiones.',
             ],
             ['Hidrografía cruzada', 'Río Andalién (entre Concepción y Penco), río Tomé y río Coliumo (en Tomé urbano), estero Dichato (en Dichato)'],
             ['Cordillera y geomorfología', 'Corredor costero plano-ondulado, sin cuesta dura como el corredor de El Pimentón; el tramo Lirquén-Tomé bordea acantilados de baja altura'],
@@ -225,7 +225,7 @@ export default function ConcepcionTome() {
             OSM way 1082594953 · Ruta 150 (ref=150, official_name verificado)
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-            Diario Concepción · 1-nov-2022 — Corredor Ruta 150 y debate Biotrén-Penco
+            Diario Concepción · 1-nov-2022, Corredor Ruta 150 y debate Biotrén-Penco
           </SourceLink>
         </Sources>
       </Section>
@@ -268,10 +268,10 @@ export default function ConcepcionTome() {
             Memoria Chilena · Fábrica de Paños Bellavista de Tomé
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/2015/02/27/el-antes-y-despues-de-la-reconstruccion-de-dichato-a-cinco-anos-del-terremoto-y-tsunami.shtml">
-            BioBioChile · 27-feb-2015 — Reconstrucción de Dichato
+            BioBioChile · 27-feb-2015, Reconstrucción de Dichato
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/tvu-noticias/2024/02/27/a-14-anos-del-terremoto-y-tsunami-del-2010-como-luce-dichato-una-de-las-localidades-mas-afectadas.html">
-            TVU · 27-feb-2024 — Dichato 14 años después
+            TVU · 27-feb-2024, Dichato 14 años después
           </SourceLink>
         </Sources>
       </Section>
@@ -293,7 +293,7 @@ export default function ConcepcionTome() {
             <thead>
               <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 font-medium">Código</th>
-                <th className="px-3 py-2 font-medium">Origen — destino</th>
+                <th className="px-3 py-2 font-medium">Origen, destino</th>
                 <th className="px-3 py-2 font-medium">Estado / observaciones</th>
               </tr>
             </thead>
@@ -398,7 +398,7 @@ export default function ConcepcionTome() {
               'Dichato → Conce',
               'Mayo 2025 sumó cuarta salida entre 06:00-07:00, cada 15 min.',
             ],
-            ['Información en tiempo real', 'App Red Regional de Movilidad — buscar "401" / "411".'],
+            ['Información en tiempo real', 'App Red Regional de Movilidad, buscar "401" / "411".'],
             ['GTFS público', 'NO publicado. El servicio no aparece en el feed GTFS Gran Concepción.'],
           ]}
         />
@@ -409,7 +409,7 @@ export default function ConcepcionTome() {
           cortes de la hora punta. El ajuste se decidió localmente,
           "evitando decisiones desde Santiago", como reacción a la
           presión de la <strong>Unión Comunal de Juntas de Vecinos de
-          Tomé</strong> (presidente 2025: Gonzalo Reyes) — resuelta en
+          Tomé</strong> (presidente 2025: Gonzalo Reyes), resuelta en
           menos de 20 días desde la solicitud.
         </p>
         <p className="text-[12px] text-muted-foreground">
@@ -431,13 +431,13 @@ export default function ConcepcionTome() {
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html">
-            Diario Concepción · 7-may-2025 — Refuerzo en hora punta
+            Diario Concepción · 7-may-2025, Refuerzo en hora punta
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/08/en-11-aumentaron-las-salidas-de-buses-desde-concepcion-hacia-tome-en-horario-punta.html">
-            Diario Concepción · 8-may-2025 — Salidas Conce→Tomé +11%
+            Diario Concepción · 8-may-2025, Salidas Conce→Tomé +11%
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2025/05/07/transporte-publico-refuerza-rutas-entre-tome-y-concepcion-con-mas-salidas-y-horarios-extendidos.html">
-            TVU · 7-may-2025 — Refuerzo rutas Concepción-Tomé
+            TVU · 7-may-2025, Refuerzo rutas Concepción-Tomé
           </SourceLink>
         </Sources>
       </Section>
@@ -452,7 +452,7 @@ export default function ConcepcionTome() {
                 el terminal norte de la Línea 1 es{' '}
                 <strong>Mercado de Talcahuano</strong>. Para un viaje
                 Tomé → Concepción no hay transbordo intermodal posible
-                con el tren — los servicios 401/411/421 hacen el trayecto
+                con el tren, los servicios 401/411/421 hacen el trayecto
                 completo en bus. La <strong>extensión Biotrén a Penco /
                 Lirquén</strong> lleva años en estudio EFE y queda
                 tensionada con el corredor MOP Ruta 150. Ver{' '}
@@ -466,7 +466,7 @@ export default function ConcepcionTome() {
               'Terminal en Concepción',
               <>
                 <strong>Terminal Manuel Rodríguez</strong> (Angol esquina
-                M. Rodríguez) — base de Transportes Tomé. <strong>NO</strong>{' '}
+                M. Rodríguez), base de Transportes Tomé. <strong>NO</strong>{' '}
                 es Terminal Camilo Henríquez ni Collao. Nodo OSM way
                 425356582 "Terminal de líneas a Tomé".
               </>,
@@ -485,7 +485,7 @@ export default function ConcepcionTome() {
             ],
             [
               'GTFS urbano (visor)',
-              'Las micros urbanas 17M/30B/30C/30E/31F/57Y/62H sí aparecen en el visor y conectan los mismos puntos hasta Penco/Lirquén — útil para el tramo corto si el pasajero no necesita continuar a Tomé.',
+              'Las micros urbanas 17M/30B/30C/30E/31F/57Y/62H sí aparecen en el visor y conectan los mismos puntos hasta Penco/Lirquén, útil para el tramo corto si el pasajero no necesita continuar a Tomé.',
             ],
             [
               'BusPay 2026',
@@ -507,7 +507,7 @@ export default function ConcepcionTome() {
         />
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-            Diario Concepción · 1-nov-2022 — Debate Biotrén-Penco y corredor Ruta 150
+            Diario Concepción · 1-nov-2022, Debate Biotrén-Penco y corredor Ruta 150
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
             Subtrans · Perímetro BusPay = Gran Concepción + Santa Juana + Tomé
@@ -518,24 +518,24 @@ export default function ConcepcionTome() {
       <Section title="Demanda y población">
         <KeyValueList
           items={[
-            ['Tomé (comuna)', '54.946 hab. (Censo 2017 INE) — Gran Concepción metropolitano · Coliumo, Cocholgüe, Dichato, Pingueral, Rafael, Menque'],
-            ['Penco (comuna)', '47.367 hab. (Censo 2017 INE) — 107,6 km² · incluye Lirquén como distrito censal'],
-            ['Lirquén (distrito de Penco)', '11.544 hab. (Censo 2017) — 24,4% de la población comunal de Penco'],
+            ['Tomé (comuna)', '54.946 hab. (Censo 2017 INE), Gran Concepción metropolitano · Coliumo, Cocholgüe, Dichato, Pingueral, Rafael, Menque'],
+            ['Penco (comuna)', '47.367 hab. (Censo 2017 INE), 107,6 km² · incluye Lirquén como distrito censal'],
+            ['Lirquén (distrito de Penco)', '11.544 hab. (Censo 2017), 24,4% de la población comunal de Penco'],
             ['Demanda diaria declarada al inicio del perímetro (2022)', 'Cerca de 10.000 pasajeros/día en el corredor Conce-Tomé'],
-            ['Estacionalidad', 'Peak fuerte en verano (Dichato, Pingueral, Coliumo, Cocholgüe — turismo de playa) y fines de semana largos. En invierno: corredor netamente pendular trabajo-estudio.'],
+            ['Estacionalidad', 'Peak fuerte en verano (Dichato, Pingueral, Coliumo, Cocholgüe, turismo de playa) y fines de semana largos. En invierno: corredor netamente pendular trabajo-estudio.'],
             ['Punto de inflexión histórico', 'Cierre Bellavista Oveja Tomé 2007 → corredor pasa de "obrero textil" a "residencial dormitorio + turismo estacional"'],
-            ['Vector de presión política', 'Unión Comunal de Juntas de Vecinos de Tomé (presidente 2025: Gonzalo Reyes) — gatilla peticiones de frecuencia atendidas en <20 días según mayo 2025'],
+            ['Vector de presión política', 'Unión Comunal de Juntas de Vecinos de Tomé (presidente 2025: Gonzalo Reyes), gatilla peticiones de frecuencia atendidas en <20 días según mayo 2025'],
           ]}
         />
         <Sources>
           <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8111">
-            BCN · Reportes comunales Tomé 2017 — 54.946 hab.
+            BCN · Reportes comunales Tomé 2017, 54.946 hab.
           </SourceLink>
           <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8107">
-            BCN · Reportes comunales Penco 2017 — 47.367 hab.
+            BCN · Reportes comunales Penco 2017, 47.367 hab.
           </SourceLink>
           <SourceLink href="https://telencuestas.com/censos-de-poblacion/chile/2017/biobio/concepcion/penco/lirquen">
-            Telencuestas · INE Censo 2017 Lirquén — 11.544 hab.
+            Telencuestas · INE Censo 2017 Lirquén, 11.544 hab.
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Tom%C3%A9">
             Wikipedia · Tomé (localidades de la comuna)
@@ -552,7 +552,7 @@ export default function ConcepcionTome() {
         </p>
         <KeyValueList
           items={[
-            ['Tramo cubierto', 'Rotonda Bonilla (Concepción) ↔ Enlace Penco — aprox. 8-9 km'],
+            ['Tramo cubierto', 'Rotonda Bonilla (Concepción) ↔ Enlace Penco, aprox. 8-9 km'],
             ['Tipo de obra', 'Pista bidireccional exclusiva para transporte público + ciclovía + veredas + estaciones de alta capacidad'],
             ['Adjudicación esperada', 'Primer semestre 2026 (oferta única consorcio Electro-Cointer II)'],
             ['Puesta en servicio (proyectada)', '2032'],
@@ -580,10 +580,10 @@ export default function ConcepcionTome() {
         </p>
         <Sources>
           <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-            MOP Concesiones · 10-dic-2025 — Recepción ofertas Ruta 150 + Conce-Talcahuano II
+            MOP Concesiones · 10-dic-2025, Recepción ofertas Ruta 150 + Conce-Talcahuano II
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-            Diario Concepción · 7-nov-2025 — Corredores MOP del Gran Concepción
+            Diario Concepción · 7-nov-2025, Corredores MOP del Gran Concepción
           </SourceLink>
         </Sources>
       </Section>
@@ -609,7 +609,7 @@ export default function ConcepcionTome() {
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
               En enero-febrero y fines de semana largos, los servicios
               411 a Dichato/Pingueral colapsan. No hay refuerzo
-              documentado contractualmente para temporada alta — el
+              documentado contractualmente para temporada alta, el
               régimen no exige al operador único una flota o frecuencia
               extra estival.
             </p>
@@ -649,7 +649,7 @@ export default function ConcepcionTome() {
         <Timeline
           items={[
             { date: '1865', event: 'Guillermo Délano Ferguson funda la fábrica textil Bellavista en Tomé. Inicia el ciclo industrial que define el corredor.' },
-            { date: '1897', event: 'Carlos Werner adquiere Bellavista y construye la ciudad obrera (iglesia, escuela, casas) — primer "commuting" hacia la fábrica.' },
+            { date: '1897', event: 'Carlos Werner adquiere Bellavista y construye la ciudad obrera (iglesia, escuela, casas), primer "commuting" hacia la fábrica.' },
             {
               date: 'Era de oro mitad s.XX',
               event: 'Bellavista Oveja Tomé llega a producir el ~77% de los paños de lana de Chile. Buses obreros desde Concepción consolidan el corredor.',
@@ -754,7 +754,7 @@ export default function ConcepcionTome() {
               <tr>
                 <td className="px-3 py-2 font-medium">GTFS publicado</td>
                 <td className="px-3 py-2">No (operador no publica feed; servicios 401/411/421 ausentes del feed urbano)</td>
-                <td className="px-3 py-2">No (operador no publica feed). Trazado integrado nativamente al visor desde mayo 2026 vía digitalización OSM — ver artículo Ruta 201.</td>
+                <td className="px-3 py-2">No (operador no publica feed). Trazado integrado nativamente al visor desde mayo 2026 vía digitalización OSM, ver artículo Ruta 201.</td>
                 <td className="px-3 py-2">No (operador no publica feed)</td>
               </tr>
               <tr>
@@ -769,7 +769,7 @@ export default function ConcepcionTome() {
         <p className="text-[12px] text-muted-foreground">
           La hipótesis editorial: Tomé fue el <em>primer</em> ensayo
           regional del modelo "perímetro de exclusión + operador único
-          fusionado" — y, junto con{' '}
+          fusionado", y, junto con{' '}
           <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
             Santa Juana
           </a>
@@ -794,7 +794,7 @@ export default function ConcepcionTome() {
       <Section title="Datos operacionales pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>Tabla horaria oficial lun-vie / sáb / dom / festivos para 401, 411 y 421.</li>
-          <li>Composición de flota verificada (marca, modelo, año, norma Euro) — la cifra declarada de 71 buses requiere cotejo con padrón DTPR.</li>
+          <li>Composición de flota verificada (marca, modelo, año, norma Euro), la cifra declarada de 71 buses requiere cotejo con padrón DTPR.</li>
           <li>Número de conductores y composición laboral del operador.</li>
           <li>Operación temporada alta verano: ¿hay flota o frecuencia extra observada en terreno? No documentado.</li>
           <li>Estado de la prefactibilidad EFE para extender Biotrén a Penco / Tomé.</li>
@@ -829,32 +829,32 @@ export default function ConcepcionTome() {
           </li>
           <li>
             <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
-              BioBioChile · 11-mar-2022 — Inicio del perímetro
+              BioBioChile · 11-mar-2022, Inicio del perímetro
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html">
-              Diario Concepción · 7-may-2025 — Nuevos servicios y +11% en hora punta
+              Diario Concepción · 7-may-2025, Nuevos servicios y +11% en hora punta
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/08/en-11-aumentaron-las-salidas-de-buses-desde-concepcion-hacia-tome-en-horario-punta.html">
-              Diario Concepción · 8-may-2025 — Detalle del 11%
+              Diario Concepción · 8-may-2025, Detalle del 11%
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.tvu.cl/prensa/2025/05/07/transporte-publico-refuerza-rutas-entre-tome-y-concepcion-con-mas-salidas-y-horarios-extendidos.html">
-              TVU · 7-may-2025 — Refuerzo y horarios extendidos
+              TVU · 7-may-2025, Refuerzo y horarios extendidos
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-              Diario Concepción · 1-nov-2022 — Corredor Ruta 150 vs Biotrén Penco
+              Diario Concepción · 1-nov-2022, Corredor Ruta 150 vs Biotrén Penco
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-              MOP Concesiones · 10-dic-2025 — Ofertas Ruta 150
+              MOP Concesiones · 10-dic-2025, Ofertas Ruta 150
             </SourceLink>
           </li>
           <li>
@@ -869,7 +869,7 @@ export default function ConcepcionTome() {
           </li>
           <li>
             <SourceLink href="https://www.biobiochile.cl/noticias/2015/02/27/el-antes-y-despues-de-la-reconstruccion-de-dichato-a-cinco-anos-del-terremoto-y-tsunami.shtml">
-              BioBioChile · 27-feb-2015 — Reconstrucción de Dichato
+              BioBioChile · 27-feb-2015, Reconstrucción de Dichato
             </SourceLink>
           </li>
           <li>
@@ -894,7 +894,7 @@ export default function ConcepcionTome() {
         <p>
           Si tienes foto del cartel de horarios en la terminal Manuel
           Rodríguez de Concepción o en Tomé Alto, conteo de pasajeros
-          actualizado, o información operacional del corredor — abre un
+          actualizado, o información operacional del corredor, abre un
           pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-tome.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-tome.tsx

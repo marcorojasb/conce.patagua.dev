@@ -1,4 +1,4 @@
-// GTFS Gran Concepción — ficha metodológica del feed sobre el cual está
+// GTFS Gran Concepción, ficha metodológica del feed sobre el cual está
 // construido el visor urbano. Es la pieza que los otros artículos del wiki
 // referencian cuando explican "está en el feed" / "no está en el feed".
 //
@@ -6,7 +6,7 @@
 // ------------
 // Verificado con fuente:
 //   - Existencia del dataset "GTFS Gran Concepción" en el Portal de Datos
-//     Abiertos del Estado (datos.gob.cl) — confirmado por catálogo
+//     Abiertos del Estado (datos.gob.cl), confirmado por catálogo
 //     amerigeoss (mirror oficial de datos.gob.cl) y resultados de búsqueda
 //     del portal. La instancia archivada más antigua que pudo trazarse
 //     declara última actualización 1-may-2019; el archivo más reciente no
@@ -18,7 +18,7 @@
 //     (descarga simplificación shapes RDP, split en gtfs-stops.generated.ts +
 //     gtfs-bus-routes.generated.ts) y scripts/extract-gtfs-schedule.ts.
 //   - Comparación con feed Santiago (RED Metropolitana de Movilidad,
-//     dtpm.cl): verificado vía transitland — feed activo, publicación
+//     dtpm.cl): verificado vía transitland, feed activo, publicación
 //     periódica (varias actualizaciones al año), URL canónica con
 //     versionado por fecha (GTFS_YYYYMMDD.zip).
 //   - Tomé sin GTFS, 201 sin GTFS, Yumbel/Florida sin GTFS, Biotrén
@@ -47,6 +47,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function GtfsGranConcepcion() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -58,7 +59,7 @@ export default function GtfsGranConcepcion() {
         del feed, cadencia formal de republicación, identidad del
         publicador vigente (Subsecretaría de Transportes / DTPR Biobío /
         repositorio candidato del backend operacional). El portal
-        datos.gob.cl no respondió en los intentos de fetch al cierre — la
+        datos.gob.cl no respondió en los intentos de fetch al cierre, la
         ficha se actualiza cuando vuelva.
       </PendingBanner>
 
@@ -70,8 +71,8 @@ export default function GtfsGranConcepcion() {
           colaboración entre la agencia TriMet de Portland (Oregon) y
           Google, y hoy lo administra MobilityData como especificación
           abierta. Una agencia que publica su GTFS estático habilita que
-          cualquier aplicación —planificadores de viajes, visores cívicos,
-          análisis académicos— lea el mismo input.
+          cualquier aplicación , planificadores de viajes, visores cívicos,
+          análisis académicos, lea el mismo input.
         </p>
         <p>
           El feed <strong>GTFS Gran Concepción</strong> es el archivo que
@@ -88,7 +89,7 @@ export default function GtfsGranConcepcion() {
           Su importancia no es técnica sino política: lo que está en el
           feed entra al visor sin trabajo manual. Lo que <em>no</em> está
           requiere digitalización ad-hoc desde OpenStreetMap, prensa
-          regional o trabajo en terreno — y por eso ocupa los demás
+          regional o trabajo en terreno, y por eso ocupa los demás
           artículos de este wiki.
         </p>
         <Sources>
@@ -105,7 +106,7 @@ export default function GtfsGranConcepcion() {
         <p>
           El feed describe los servicios de buses urbanos del área
           metropolitana del Gran Concepción. Su alcance está acotado al
-          régimen del Perímetro de Exclusión 2024 — 7 comunas, 36 unidades
+          régimen del Perímetro de Exclusión 2024, 7 comunas, 36 unidades
           de negocio, 35 empresas. Servicios fuera de ese régimen no
           aparecen en el ZIP y por lo tanto no aparecen en el visor sin
           integración manual.
@@ -269,7 +270,7 @@ export default function GtfsGranConcepcion() {
             ],
             [
               'shapes.txt',
-              'Polilínea de cada trazado de viaje en coordenadas geográficas — lo que el visor renderiza como recorrido sobre el mapa Leaflet.',
+              'Polilínea de cada trazado de viaje en coordenadas geográficas, lo que el visor renderiza como recorrido sobre el mapa Leaflet.',
             ],
           ]}
         />
@@ -314,13 +315,11 @@ export default function GtfsGranConcepcion() {
               Selecciona un <strong>viaje representativo por ruta</strong>{' '}
               (el que tiene más paradas, desempate por{' '}
               <code className="font-mono">trip_id</code>) y arma el
-              trazado desde <code className="font-mono">shapes.txt</code> —
-              si no hay shape, cae a la secuencia de paraderos.
+              trazado desde <code className="font-mono">shapes.txt</code>, si no hay shape, cae a la secuencia de paraderos.
             </li>
             <li>
               Aplica <strong>simplificación Ramer-Douglas-Peucker</strong>{' '}
-              con tolerancia ≈0,00008° (~9 m a la latitud de Concepción) —
-              recorta entre 80% y 95% de los vértices sin pérdida visible
+              con tolerancia ≈0,00008° (~9 m a la latitud de Concepción), recorta entre 80% y 95% de los vértices sin pérdida visible
               al zoom urbano. Implementado en{' '}
               <code className="font-mono">scripts/lib/simplify.ts</code>.
             </li>
@@ -334,7 +333,7 @@ export default function GtfsGranConcepcion() {
             <li>
               Escribe dos archivos generados para que el visor{' '}
               <em>lazy-load</em> las rutas pesadas (con geometría) sin
-              bloquear el primer render — los paraderos sí van eager
+              bloquear el primer render, los paraderos sí van eager
               porque el detalle de paradero los necesita al instante.
             </li>
           </ol>
@@ -409,7 +408,7 @@ export default function GtfsGranConcepcion() {
           para los datasets publicados por organismos del Estado. El
           dataset GTFS Gran Concepción se publica en ese mismo catálogo,
           por lo que la licencia operativa razonable de asumir es CC BY
-          4.0 — atribución a la Subsecretaría de Transportes / DTPR como
+          4.0, atribución a la Subsecretaría de Transportes / DTPR como
           publicadora.
         </p>
         <PendingBanner>
@@ -418,7 +417,7 @@ export default function GtfsGranConcepcion() {
           pudo capturarse al cierre por HTTP 503. Cualquier uso productivo
           o redistribución del feed debe verificar la licencia exacta en
           la ficha original antes. El wiki marca este artículo como CC BY
-          4.0 (su propio contenido) — no extiende esa licencia al feed
+          4.0 (su propio contenido), no extiende esa licencia al feed
           upstream.
         </PendingBanner>
         <Sources>
@@ -461,7 +460,7 @@ export default function GtfsGranConcepcion() {
           <li>
             <strong>Servicios fuera del Perímetro de Exclusión no entran.</strong>{' '}
             Tomé, Santa Juana, Florida, Yumbel y Hualqui rural no
-            aparecen — ver tabla "Qué cubre y qué no" arriba.
+            aparecen, ver tabla "Qué cubre y qué no" arriba.
           </li>
           <li>
             <strong>Biotrén no está en este feed.</strong> EFE Trenes
@@ -474,7 +473,7 @@ export default function GtfsGranConcepcion() {
             <strong>Calidad de la geometría depende de shapes.txt.</strong>{' '}
             Cuando un viaje no declara <code className="font-mono">shape_id</code>,
             el visor cae a una polilínea que conecta paraderos con líneas
-            rectas — visible como zigzag artificial en algunos servicios.
+            rectas, visible como zigzag artificial en algunos servicios.
           </li>
         </ul>
         <Sources>
@@ -573,7 +572,7 @@ export default function GtfsGranConcepcion() {
           </li>
           <li>
             <strong>Inclusión de servicios 401/411/421 Tomé</strong>{' '}
-            bajo la misma lógica — Tomé está en el perímetro Buspay
+            bajo la misma lógica, Tomé está en el perímetro Buspay
             2026, lo que crea presión técnica para unificar feeds.
           </li>
           <li>
@@ -589,7 +588,7 @@ export default function GtfsGranConcepcion() {
           <li>
             <strong>Validación contra MobilityData Canonical GTFS
             Validator</strong> antes de cada republicación, con reporte
-            de warnings publicado junto al ZIP — práctica estándar en
+            de warnings publicado junto al ZIP, práctica estándar en
             jurisdicciones que cuidan calidad de feed (Bay Area, NYC,
             Helsinki).
           </li>
@@ -603,15 +602,14 @@ export default function GtfsGranConcepcion() {
 
       <Section title="Cómo contribuir">
         <p>
-          Si encuentras un error en el feed —un paradero corrido de
+          Si encuentras un error en el feed , un paradero corrido de
           posición, una ruta desactualizada, un horario que ya no calza
-          con la operación real— tienes tres caminos de reporte:
+          con la operación real, tienes tres caminos de reporte:
         </p>
         <ul className="ml-5 list-disc space-y-1">
           <li>
             <strong>DTPR Biobío</strong> directamente, vía contacto en
-            {' '}<SourceLink href="https://transformacion.dtpr.cl/">transformacion.dtpr.cl</SourceLink>{' '}
-            — es la dependencia que opera el feed regional.
+            {' '}<SourceLink href="https://transformacion.dtpr.cl/">transformacion.dtpr.cl</SourceLink>{' '}, es la dependencia que opera el feed regional.
           </li>
           <li>
             <strong>MTT Consultas Ciudadanas</strong>{' '}
@@ -657,12 +655,12 @@ export default function GtfsGranConcepcion() {
             },
             {
               date: '2024',
-              event: 'DTPR abre la "Convocatoria Acceso a Datos GTFS-RT" — primer paso público hacia tiempo real. Sin fecha de implementación al cierre.',
+              event: 'DTPR abre la "Convocatoria Acceso a Datos GTFS-RT", primer paso público hacia tiempo real. Sin fecha de implementación al cierre.',
               source: { href: 'https://transformacion.dtpr.cl/', label: 'DTPR' },
             },
             {
               date: 'May-2025',
-              event: 'Refuerzos +11% en hora punta tarde Conce→Tomé y nuevas inyecciones tempranas Dichato (servicios 401/411). Los cambios afectan operación, no el feed urbano — porque Tomé no está en el feed.',
+              event: 'Refuerzos +11% en hora punta tarde Conce→Tomé y nuevas inyecciones tempranas Dichato (servicios 401/411). Los cambios afectan operación, no el feed urbano, porque Tomé no está en el feed.',
               source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html', label: 'Diario Concepción' },
             },
             {
@@ -688,13 +686,13 @@ export default function GtfsGranConcepcion() {
             <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
               Perímetro de Exclusión del Gran Concepción 2024
             </a>
-            {' '}— el régimen regulatorio al que está acotado el feed.
+            {', '}el régimen regulatorio al que está acotado el feed.
           </li>
           <li>
             <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
             </a>
-            {' '}— pago electrónico, motor de la unificación operativa
+            {', '}pago electrónico, motor de la unificación operativa
             que probablemente termine empujando una unificación del
             feed.
           </li>
@@ -702,7 +700,7 @@ export default function GtfsGranConcepcion() {
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Recorridos interurbanos
             </a>
-            {' '}— índice de servicios que <em>no</em> están en este
+            {', '}índice de servicios que <em>no</em> están en este
             feed.
           </li>
           <li>
@@ -710,23 +708,23 @@ export default function GtfsGranConcepcion() {
             <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ruta 201 Santa Juana</a>,{' '}
             <a href="/wiki/concepcion-florida" className="underline underline-offset-2">Concepción ↔ Florida (corredor de El Pimentón)</a>,{' '}
             <a href="/wiki/concepcion-yumbel" className="underline underline-offset-2">Concepción ↔ Yumbel</a>
-            {' '}— corredores que documentan por qué el feed los deja
+            {', '}corredores que documentan por qué el feed los deja
             afuera y cómo el visor los integra (o no) de otra manera.
           </li>
           <li>
             <a href="/wiki/biotren" className="underline underline-offset-2">Biotrén</a>
-            {' '}— el otro modo urbano del Gran Concepción, fuera del feed
+            {', '}el otro modo urbano del Gran Concepción, fuera del feed
             GTFS de buses y procesado por OSM.
           </li>
           <li>
             <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">SEREMITT Biobío y la DTPR</a>
-            {' '}— la autoridad regional que publica el GTFS vía la DTPR
+            {', '}la autoridad regional que publica el GTFS vía la DTPR
             Biobío. Sucesión SEREMI documentada: Silva → Fierro
             (10-ene-2025 ↔ 28-nov-2025) → Cautivo (desde 28-nov-2025).
           </li>
           <li>
             <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">Sobre este wiki</a>
-            {' '}— compromiso editorial general: si no hay fuente abierta,
+            {', '}compromiso editorial general: si no hay fuente abierta,
             no entra al visor.
           </li>
         </ul>

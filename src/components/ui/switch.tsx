@@ -12,7 +12,7 @@ export const Switch = React.forwardRef<
       'peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50',
       // Solid colors instead of opacity-modulated. The previous attempt
       // (bg-muted-foreground/20) composited with bg-background to ~9 %
-      // contrast in dark mode — basically invisible. Now: checked =
+      // contrast in dark mode, basically invisible. Now: checked =
       // filled primary, unchecked = card-colored fill with a hard
       // muted-foreground border. Reads clearly as "empty toggle" vs
       // "filled toggle" in both themes.

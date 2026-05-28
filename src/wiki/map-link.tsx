@@ -1,4 +1,4 @@
-// Componente <MapLink> — disponible para artículos del wiki que quieran
+// Componente <MapLink>, disponible para artículos del wiki que quieran
 // enlazar a una vista enfocada del visor. Renderiza un anchor con la URL
 // `/` + `?focus=<kind>:<id>` que el visor reconoce en su primer render
 // (ver `src/hooks/use-url-state.ts` y `src/App.tsx`).
@@ -11,7 +11,7 @@
 //   <MapLink route="10A">Trazado 10A en el visor →</MapLink>
 //   <MapLink terminal="osm-way-135488014">Estación Intermodal →</MapLink>
 //
-// El componente NO valida que la entidad exista — eso es decisión del
+// El componente NO valida que la entidad exista, eso es decisión del
 // autor del artículo. El visor sí hace fallback graceful: si el id no
 // se encuentra, abre la vista por defecto sin centrar nada.
 

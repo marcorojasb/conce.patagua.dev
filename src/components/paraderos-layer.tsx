@@ -1,9 +1,9 @@
-// Paraderos GTFS layer — 2110 points rendered imperatively via Leaflet
+// Paraderos GTFS layer, 2110 points rendered imperatively via Leaflet
 // instead of as react-leaflet <CircleMarker> children of <MapContainer>.
 //
 // Why: each tick of the simulated-vehicles state (every 4 s) re-renders
 // <ConceMap>, which previously walked all 2110 <CircleMarker> children
-// through React's reconciler — even though Leaflet's canvas renderer
+// through React's reconciler, even though Leaflet's canvas renderer
 // underneath does its own efficient drawing. This component owns its
 // L.featureGroup outside React's tree, so it doesn't repaint until
 // `paraderos`, `selectedId`, `shouldDim`, or `enabled` actually change.
@@ -78,7 +78,7 @@ export function ParaderosLayer({
       });
       group.remove();
     };
-    // We intentionally rebuild on any of these changes — Leaflet markers
+    // We intentionally rebuild on any of these changes, Leaflet markers
     // are cheap to recreate and avoiding granular per-marker mutation keeps
     // the code small. For perf compared to React the win is already huge
     // because we no longer reconcile 2110 elements on every parent render.

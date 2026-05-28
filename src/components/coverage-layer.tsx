@@ -6,14 +6,14 @@
 // rectangles share a single L.canvas renderer (`paraderoRenderer`) so they
 // paint to one canvas, not 7 k SVG nodes.
 //
-// The dataset itself is lazy-loaded via dynamic import — the chunk only
+// The dataset itself is lazy-loaded via dynamic import, the chunk only
 // downloads the first time the layer is enabled.
 
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { CoverageCell } from '@/types/transport';
-import type { LayerLoadStatus } from '@/hooks/use-layer-status';
+import type { LayerStatusControls } from '@/hooks/use-layer-status';
 
 const STEP = 0.003;
 const HALF = STEP / 2;
@@ -49,7 +49,7 @@ interface Props {
   canvasRenderer: L.Canvas;
   threshold: 'all' | 'underserved';
   retryKey: number;
-  onStatusChange: (status: LayerLoadStatus) => void;
+  loadStatus: LayerStatusControls;
 }
 
 export function CoverageLayer({
@@ -57,7 +57,7 @@ export function CoverageLayer({
   canvasRenderer,
   threshold,
   retryKey,
-  onStatusChange,
+  loadStatus,
 }: Props) {
   const map = useMap();
 
@@ -89,23 +89,19 @@ export function CoverageLayer({
         group.addLayer(rect);
       }
       group.addTo(map);
-      onStatusChange({ loading: false, error: null, ready: true });
+      loadStatus.succeed();
     };
 
     if (cellsCache) {
       draw(cellsCache);
     } else {
-      onStatusChange({ loading: true, error: null, ready: false });
+      loadStatus.start();
       void loadCells()
         .then(draw)
         .catch((err) => {
           cellsPromise = null;
           if (!cancelled) {
-            onStatusChange({
-              loading: false,
-              error: err instanceof Error ? err.message : 'No se pudo cargar cobertura',
-              ready: false,
-            });
+            loadStatus.fail(err, 'No se pudo cargar cobertura');
           }
         });
     }
@@ -114,7 +110,7 @@ export function CoverageLayer({
       cancelled = true;
       group.remove();
     };
-  }, [enabled, threshold, canvasRenderer, map, onStatusChange, retryKey]);
+  }, [enabled, threshold, canvasRenderer, map, loadStatus, retryKey]);
 
   return null;
 }

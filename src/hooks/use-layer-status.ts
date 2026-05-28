@@ -1,9 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 
 export interface LayerLoadStatus {
   loading: boolean;
   error: string | null;
   ready: boolean;
+}
+
+export interface LayerStatusControls {
+  start: () => void;
+  succeed: () => void;
+  fail: (err: unknown, fallback: string) => void;
+  reset: () => void;
 }
 
 const IDLE_LAYER_STATUS: LayerLoadStatus = {
@@ -12,7 +19,11 @@ const IDLE_LAYER_STATUS: LayerLoadStatus = {
   ready: false,
 };
 
-export function useLayerStatus() {
+export function useLayerStatus(): {
+  status: LayerLoadStatus;
+  setStatus: Dispatch<SetStateAction<LayerLoadStatus>>;
+  controls: LayerStatusControls;
+} {
   const [status, setStatus] = useState<LayerLoadStatus>(IDLE_LAYER_STATUS);
 
   const start = useCallback(() => {
@@ -35,5 +46,10 @@ export function useLayerStatus() {
     setStatus(IDLE_LAYER_STATUS);
   }, []);
 
-  return { status, setStatus, start, succeed, fail, reset };
+  const controls = useMemo(
+    () => ({ start, succeed, fail, reset }),
+    [start, succeed, fail, reset],
+  );
+
+  return { status, setStatus, controls };
 }

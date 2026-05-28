@@ -1,4 +1,4 @@
-// Biotrén — tren urbano operacional del Gran Concepción.
+// Biotrén, tren urbano operacional del Gran Concepción.
 // L1 Hualqui ↔ Mercado de Talcahuano, L2 Coronel ↔ Concepción,
 // 26 estaciones (OSM), tarifas Z1-Z10 vigentes desde 2-ene-2026.
 // Extensiones futuras → `biotren-extensiones-proyectos`.
@@ -14,6 +14,7 @@ import {
 } from './_components';
 import { MapLink } from '@/wiki/map-link';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function Biotren() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -33,13 +34,13 @@ export default function Biotren() {
           Gran Concepción, operado por <strong>EFE Trenes Metropolitanos
           S.A.</strong> (filial de EFE Sur). Es el{' '}
           <strong>único tren urbano de Chile en operación regular fuera
-          de la red Metro de Santiago</strong> — Merval y EFE Central son
+          de la red Metro de Santiago</strong>, Merval y EFE Central son
           cercanías-interurbano.
         </p>
         <ul className="ml-5 list-disc space-y-1">
           <li>
             <strong>Capacidad estructural</strong>: cada composición
-            Xtrapolis o ABe lleva centenares de pasajeros — un orden de
+            Xtrapolis o ABe lleva centenares de pasajeros, un orden de
             magnitud sobre cualquier bus.
           </li>
           <li>
@@ -180,7 +181,7 @@ export default function Biotren() {
             ['Línea 2', <><strong>Coronel ↔ Concepción</strong> · ramal del carbón (Lomas Coloradas, San Pedro, Juan Pablo II) · 14 estaciones · azul oscuro. <MapLink route="L2">Ver L2 →</MapLink></>],
             ['Operador', 'EFE Trenes Metropolitanos S.A. (filial EFE Sur), con subsidio operacional MTT.'],
             ['Headway', '6-12 min punta · 15 min valle (Lun-Vie); 12-20 min sábado; 20-30 min domingo.'],
-            ['Ventana operativa', '05:45 — 23:10 (Lun-Vie). Festivos en app oficial.'],
+            ['Ventana operativa', '05:45, 23:10 (Lun-Vie). Festivos en app oficial.'],
             ['Material rodante', 'Xtrapolis (Alstom Brasil) y ABe históricas; 3 coches articulados; 3 kV DC catenaria.'],
             ['Estructura tarifaria', 'Zonas Z1-Z10 desde 2-ene-2026 (rango $420-$850 adulto). Ver sección "Tarifas vigentes 2026".'],
             ['Tiempo real', 'App "EFE Trenes" y avisos en estaciones.'],
@@ -291,10 +292,10 @@ export default function Biotren() {
         />
         <Sources>
           <SourceLink href="https://www.efe.cl/efe-sur-informa-nueva-estructura-tarifaria-del-biotren-a-partir-del-2-de-enero-de-2026/">
-            EFE Trenes · 30-dic-2025 — Nueva estructura tarifaria Biotrén vigente 2-ene-2026
+            EFE Trenes · 30-dic-2025, Nueva estructura tarifaria Biotrén vigente 2-ene-2026
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/servicios/toma-nota/2025/12/30/efe-sur-anuncia-alza-en-la-tarifa-del-biotren-para-2026-revisa-a-cuanto-subira-el-pasaje.shtml">
-            BioBioChile · 30-dic-2025 — Alza promedio $60, tabla por zona
+            BioBioChile · 30-dic-2025, Alza promedio $60, tabla por zona
           </SourceLink>
           <SourceLink href="https://www.efe.cl/nuestros-servicios/biotren/tarifas-del-servicio/">
             EFE Trenes · Tarifas del servicio Biotrén (cuadro vigente)
@@ -459,7 +460,7 @@ export default function Biotren() {
               <tr>
                 <td className="px-3 py-2 font-mono">L2</td>
                 <td className="px-3 py-2">Cardenal Raúl Silva Henríquez</td>
-                <td className="px-3 py-2 text-muted-foreground">—</td>
+                <td className="px-3 py-2 text-muted-foreground">Sin dato</td>
                 <td className="px-3 py-2 font-mono">osm-4124945257</td>
                 <td className="px-3 py-2"><MapLink stop="osm-4124945257">→</MapLink></td>
               </tr>
@@ -512,7 +513,7 @@ export default function Biotren() {
           <strong>Concepción</strong> es la única estación común a ambas
           líneas (transbordo cross-platform).{' '}
           <strong>Juan Pablo II</strong> es el transbordo natural entre L2
-          y los servicios a Santa Juana — ver{' '}
+          y los servicios a Santa Juana, ver{' '}
           <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
             Ruta 201
           </a>
@@ -531,14 +532,14 @@ export default function Biotren() {
       <Section title="Material rodante y operación">
         <KeyValueList
           items={[
-            ['Operador', 'EFE Trenes Metropolitanos S.A. — filial de EFE Sur (reorganización 2017; antes FESUR, 1995).'],
+            ['Operador', 'EFE Trenes Metropolitanos S.A., filial de EFE Sur (reorganización 2017; antes FESUR, 1995).'],
             ['Tipo de tren', 'Xtrapolis modular (Alstom Brasil), 3 coches articulados, motorización distribuida. ABe históricas en complemento.'],
             ['Electrificación', '3 kV DC catenaria (misma tensión que la Línea Central Santiago ↔ Chillán).'],
             ['Vía', 'Ancho ibérico 1.676 mm. Doble vía en el tramo urbano (Concepción ↔ Talcahuano, Concepción ↔ Hualqui).'],
             ['Frecuencias', '6-12 min punta · 15 min valle (Lun-Vie); 12-20 min sábado; 20-30 min domingo.'],
             ['Capacidad por composición', 'No documentada con cifra única. Cierre por ficha del fabricante.'],
             ['Subsidio operacional', 'EFE Trenes Metropolitanos vía Ley de Presupuestos anual. Monto y polinomio pendientes. EFE no se financia con Ley 20.378.'],
-            ['Accidentes en pasos a nivel', 'Issue recurrente — Lorenzo Arenas, Los Cóndores, Lomas Coloradas. Campañas y señalética sin resolver el problema estructural.'],
+            ['Accidentes en pasos a nivel', 'Issue recurrente, Lorenzo Arenas, Los Cóndores, Lomas Coloradas. Campañas y señalética sin resolver el problema estructural.'],
           ]}
         />
         <PendingBanner>
@@ -582,7 +583,7 @@ export default function Biotren() {
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
               Gremios perciben al Biotrén como competencia desleal por el
-              subsidio. Tensión sube con cada extensión — ver{' '}
+              subsidio. Tensión sube con cada extensión, ver{' '}
               <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
                 Biotrén · extensiones y proyectos
               </a>
@@ -628,8 +629,7 @@ export default function Biotren() {
             <li>Frecuencias por franja horaria detallada.</li>
             <li>Cuadro tarifario Z1-Z10 en el visor (vive en esta ficha).</li>
             <li>
-              Extensiones propuestas (Penco, Tomé, Lota, Carriel Sur) —
-              sin trazado oficial digitalizable. Ver{' '}
+              Extensiones propuestas (Penco, Tomé, Lota, Carriel Sur), sin trazado oficial digitalizable. Ver{' '}
               <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
                 ficha de proyectos
               </a>
@@ -644,48 +644,41 @@ export default function Biotren() {
           <li>
             <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén · extensiones y proyectos
-            </a>{' '}
-            — Tren a Lota, ramales a Penco / Tomé, Carriel Sur; tensión
+            </a>{' '}, Tren a Lota, ramales a Penco / Tomé, Carriel Sur; tensión
             con el electrocorredor MOP Ruta 150.
           </li>
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS Gran Concepción
-            </a>{' '}
-            — el feed urbano NO incluye al Biotrén; el visor lo arma desde
+            </a>{' '}, el feed urbano NO incluye al Biotrén; el visor lo arma desde
             OSM.
           </li>
           <li>
             <a href="/wiki/openstreetmap-fuente-visor" className="underline underline-offset-2">
               OpenStreetMap como fuente del visor
-            </a>{' '}
-            — ficha metodológica de las estaciones y trazado.
+            </a>{' '}, ficha metodológica de las estaciones y trazado.
           </li>
           <li>
             <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay · pago electrónico del Gran Concepción
-            </a>{' '}
-            — el Biotrén NO entra en el perímetro inicial; sigue con
+            </a>{' '}, el Biotrén NO entra en el perímetro inicial; sigue con
             tarjeta Conecta / Biotrén.
           </li>
           <li>
             <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
               Ruta 201 · Concepción ↔ Santa Juana
-            </a>{' '}
-            — transbordo natural en Juan Pablo II (L2).
+            </a>{' '}, transbordo natural en Juan Pablo II (L2).
           </li>
           <li>
             <a href="/wiki/concepcion-coronel-lota" className="underline underline-offset-2">
               Concepción ↔ Coronel ↔ Lota
-            </a>{' '}
-            — la L2 cubre el eje sur hasta Coronel; los buses llegan a
+            </a>{' '}, la L2 cubre el eje sur hasta Coronel; los buses llegan a
             Lota (sin tren).
           </li>
           <li>
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Índice de recorridos interurbanos
-            </a>{' '}
-            — Talcamávida, Unihue y Quilacoya conectan por ferrocarril
+            </a>{' '}, Talcamávida, Unihue y Quilacoya conectan por ferrocarril
             (cabecera sur L1 y servicios EFE Sur).
           </li>
         </ul>
@@ -696,7 +689,7 @@ export default function Biotren() {
           <li>Tarifas exactas Z5, Z7, Z8, Z9.</li>
           <li>Demanda diaria 2025-2026 por línea.</li>
           <li>Fechas exactas de inauguración L1 (1999 vs 2005) y L2 (2009).</li>
-          <li>Subsidio MTT al Biotrén — monto anual y polinomio.</li>
+          <li>Subsidio MTT al Biotrén, monto anual y polinomio.</li>
           <li>Capacidad por composición Xtrapolis (norma de aforo).</li>
           <li>Accidentalidad histórica en pasos a nivel.</li>
           <li>Integración tarifaria BusPay ↔ Conecta / Biotrén.</li>
@@ -717,7 +710,7 @@ export default function Biotren() {
           </li>
           <li>
             <SourceLink href="https://www.efe.cl/efe-sur-informa-nueva-estructura-tarifaria-del-biotren-a-partir-del-2-de-enero-de-2026/">
-              EFE Sur · 30-dic-2025 — Nueva estructura tarifaria 2-ene-2026
+              EFE Sur · 30-dic-2025, Nueva estructura tarifaria 2-ene-2026
             </SourceLink>
           </li>
           <li>
@@ -727,7 +720,7 @@ export default function Biotren() {
           </li>
           <li>
             <SourceLink href="https://www.biobiochile.cl/noticias/servicios/toma-nota/2025/12/30/efe-sur-anuncia-alza-en-la-tarifa-del-biotren-para-2026-revisa-a-cuanto-subira-el-pasaje.shtml">
-              BioBioChile · 30-dic-2025 — Alza promedio $60, tabla por zona
+              BioBioChile · 30-dic-2025, Alza promedio $60, tabla por zona
             </SourceLink>
           </li>
           <li>

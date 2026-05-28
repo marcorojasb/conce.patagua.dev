@@ -35,18 +35,9 @@ interface MapLayerControlProps {
   terminalsCount: number;
   paraderosCount: number;
   poisCount: number;
-  showTerminals: boolean;
-  showParaderos: boolean;
-  showPois: boolean;
-  showAirQuality: boolean;
-  showSimulatedVehicles: boolean;
+  visibility: MapLayerControlVisibility;
   simulationScope: 'visible' | 'all';
-  showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
-  showCycleways: boolean;
-  showGreenspace: boolean;
-  showSchools: boolean;
-  showInterurbanCorridors: boolean;
   onToggleTerminals: () => void;
   onToggleParaderos: () => void;
   onTogglePois: () => void;
@@ -83,8 +74,21 @@ interface MapLayerControlProps {
   onRecenter: () => void;
   // Toggle the analysis tool panel. Click same = close, different = switch.
   onOpenTool: (tab: AnalysisTab) => void;
-  /** Active tool — drives the pressed state on toolbar buttons. */
+  /** Active tool, drives the pressed state on toolbar buttons. */
   activeTool: AnalysisTab | null;
+}
+
+interface MapLayerControlVisibility {
+  terminals: boolean;
+  paraderos: boolean;
+  pois: boolean;
+  airQuality: boolean;
+  simulatedVehicles: boolean;
+  coverage: boolean;
+  cycleways: boolean;
+  greenspace: boolean;
+  schools: boolean;
+  interurbanCorridors: boolean;
 }
 
 interface ToolBtn {
@@ -114,22 +118,14 @@ const TOOLS: ToolBtn[] = [
   { id: 'wallpaper', label: 'Fondo de pantalla', Icon: ImageDown },
 ];
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Data-driven layer rows keep the floating toolbar and its layer popover in one cohesive control surface.
 export function MapLayerControl({
   terminalsCount,
   paraderosCount,
   poisCount,
-  showTerminals,
-  showParaderos,
-  showPois,
-  showAirQuality,
-  showSimulatedVehicles,
+  visibility,
   simulationScope,
-  showCoverage,
   coverageThreshold,
-  showCycleways,
-  showGreenspace,
-  showSchools,
-  showInterurbanCorridors,
   onToggleTerminals,
   onToggleParaderos,
   onTogglePois,
@@ -161,6 +157,19 @@ export function MapLayerControl({
   onOpenTool,
   activeTool,
 }: MapLayerControlProps) {
+  const {
+    terminals: showTerminals,
+    paraderos: showParaderos,
+    pois: showPois,
+    airQuality: showAirQuality,
+    simulatedVehicles: showSimulatedVehicles,
+    coverage: showCoverage,
+    cycleways: showCycleways,
+    greenspace: showGreenspace,
+    schools: showSchools,
+    interurbanCorridors: showInterurbanCorridors,
+  } = visibility;
+
   const enabledCount = [
     showTerminals,
     showParaderos,
@@ -310,7 +319,7 @@ export function MapLayerControl({
         ready: schoolsStatus.ready,
         onRetry: onRetrySchools,
       },
-      // Toggle de corredores interurbanos — solo aparece si hay corredores
+      // Toggle de corredores interurbanos, solo aparece si hay corredores
       // sin trazado verificable en el dataset. Hoy la 201 vive como ruta
       // nativa, así que el toggle se esconde hasta que se agregue otro
       // corredor (Florida / Yumbel / Tomé rural) a interurban-corridors.ts.

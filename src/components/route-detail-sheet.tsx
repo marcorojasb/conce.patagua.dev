@@ -240,7 +240,7 @@ export function RouteDetailSheet({
                 // shape GTFS verificado. La ocultamos para los urbanos y
                 // Biotrén porque sí vienen de GTFS / OSM directos.
                 <div className="mb-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2.5 text-[11px] leading-snug text-amber-900 dark:text-amber-200">
-                  Trazado aproximado a partir de descripción oficial — no es
+                  Trazado aproximado a partir de descripción oficial, no es
                   shape GTFS verificado. Vértices reconstruidos por
                   Dijkstra-por-corredor sobre el grafo highway= de OSM.
                 </div>

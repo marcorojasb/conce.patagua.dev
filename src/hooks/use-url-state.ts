@@ -98,6 +98,7 @@ export function useSyncUrlState(state: UrlState): void {
       return;
     }
     const p = new URLSearchParams();
+    // react-doctor-disable-next-line react-doctor/no-event-handler -- URL query sync is an external browser-history side effect, not a React event handler.
     if (state.route) p.set('route', state.route);
     if (state.stop) p.set('stop', state.stop);
     if (state.terminal) p.set('terminal', state.terminal);

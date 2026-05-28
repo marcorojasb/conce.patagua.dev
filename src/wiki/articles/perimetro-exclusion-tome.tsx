@@ -1,4 +1,4 @@
-// Perímetro de Exclusión de Tomé — ficha INSTITUCIONAL / JURÍDICA del
+// Perímetro de Exclusión de Tomé, ficha INSTITUCIONAL / JURÍDICA del
 // segundo perímetro metropolitano del Biobío.
 //
 // División editorial con `concepcion-tome.tsx`:
@@ -38,6 +38,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function PerimetroExclusionTome() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -88,17 +89,16 @@ export default function PerimetroExclusionTome() {
           perímetro del Gran Concepción que recién se ejecutó el
           1-ene-2024. La hipótesis editorial es que el MTT lo
           mantuvo separado para no contaminar el calendario del
-          régimen mayor — el corredor norte tenía un único operador
+          régimen mayor, el corredor norte tenía un único operador
           consolidable y el MTT lo prefirió en pista aparte.
         </p>
         <p>
           Este artículo describe el <em>régimen</em>: decreto, operador
           adjudicatario, tarifa, polinomio de ajuste, BusPay,
           comparación con su perímetro hermano. La <strong>operación
-          cotidiana</strong> del corredor —trazado calle a calle,
+          cotidiana</strong> del corredor , trazado calle a calle,
           paraderos, frecuencias, refuerzos may-2025, contexto
-          industrial de Bellavista Oveja Tomé, demanda y población—
-          vive en{' '}
+          industrial de Bellavista Oveja Tomé, demanda y población, vive en{' '}
           <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
             Concepción ↔ Tomé
           </a>
@@ -117,7 +117,7 @@ export default function PerimetroExclusionTome() {
               'Habilitación legal',
               <>
                 <strong>Artículo 3°</strong> del DFL N° 343 / Ley 18.696
-                (Ministerio de Transportes y Telecomunicaciones — régimen de
+                (Ministerio de Transportes y Telecomunicaciones, régimen de
                 subsidio al transporte mayor). Permite al MTT definir un
                 área geográfica y, dentro de ella, imponer "tarifas,
                 estructuras tarifarias, programación vial, regularidad,
@@ -131,7 +131,7 @@ export default function PerimetroExclusionTome() {
             ],
             [
               'Operación efectiva',
-              '10 de marzo de 2022 — casi seis años después del decreto. La demora se atribuye a la negociación con los operadores históricos del corredor para fusionarse en un solo adjudicatario.',
+              '10 de marzo de 2022, casi seis años después del decreto. La demora se atribuye a la negociación con los operadores históricos del corredor para fusionarse en un solo adjudicatario.',
             ],
             [
               'Ámbito',
@@ -139,11 +139,11 @@ export default function PerimetroExclusionTome() {
             ],
             [
               'Tipo de régimen',
-              'Operador único adjudicatario (Transportes Tomé) — a diferencia del PE Gran Concepción que mantiene 35 empresas en 36 unidades de negocio.',
+              'Operador único adjudicatario (Transportes Tomé), a diferencia del PE Gran Concepción que mantiene 35 empresas en 36 unidades de negocio.',
             ],
             [
               'Plazo del contrato',
-              'No publicado en fuente abierta — pendiente.',
+              'No publicado en fuente abierta, pendiente.',
             ],
             [
               'Modificaciones posteriores',
@@ -169,10 +169,10 @@ export default function PerimetroExclusionTome() {
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
-            BCN · Ley 18.696 (art. 3° — base de los perímetros de exclusión)
+            BCN · Ley 18.696 (art. 3°, base de los perímetros de exclusión)
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
-            BioBioChile · 11-mar-2022 — Puesta en operación del perímetro
+            BioBioChile · 11-mar-2022, Puesta en operación del perímetro
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
             Wikipedia · Perímetro de Exclusión Gran Concepción (sección Tomé)
@@ -193,7 +193,7 @@ export default function PerimetroExclusionTome() {
             ],
             [
               'Penco (zonas norte y centro)',
-              '47.367 hab. (Censo 2017). Los servicios del perímetro atraviesan Penco centro y Lirquén (distrito censal de Penco con 11.544 hab.). El régimen aplica sobre el tramo en el sentido del corredor norte — no a la operación urbana local de Penco, que está dentro del PE Gran Concepción 2024.',
+              '47.367 hab. (Censo 2017). Los servicios del perímetro atraviesan Penco centro y Lirquén (distrito censal de Penco con 11.544 hab.). El régimen aplica sobre el tramo en el sentido del corredor norte, no a la operación urbana local de Penco, que está dentro del PE Gran Concepción 2024.',
             ],
             [
               'Concepción (punta sur del corredor)',
@@ -232,8 +232,8 @@ export default function PerimetroExclusionTome() {
           operadores históricos del corredor (Buses Costa Azul S.A. y
           otras pequeñas razones sociales que operaban antes del
           perímetro). Esto distingue al PE Tomé del PE Gran Concepción
-          —35 empresas— y del PE Coronel-Lota —varios operadores
-          locales—.
+          , 35 empresas, y del PE Coronel-Lota , varios operadores
+          locales, .
         </p>
         <KeyValueList
           items={[
@@ -254,7 +254,7 @@ export default function PerimetroExclusionTome() {
             ],
             [
               'Terminal en Concepción',
-              'Angol esquina Manuel Rodríguez — NO es Terminal Camilo Henríquez ni Collao. Nodo OSM way 425356582 "Terminal de líneas a Tomé" (~36.8191° S, ~73.0620° O).',
+              'Angol esquina Manuel Rodríguez, NO es Terminal Camilo Henríquez ni Collao. Nodo OSM way 425356582 "Terminal de líneas a Tomé" (~36.8191° S, ~73.0620° O).',
             ],
             ['Sede operativa en Tomé', 'Tomé Alto (base de retorno de la 401). Sin confirmación de dirección comercial publicada.'],
             [
@@ -280,7 +280,7 @@ export default function PerimetroExclusionTome() {
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html">
-            Diario Concepción · 7-may-2025 — Declaraciones Bernardo Montoya
+            Diario Concepción · 7-may-2025, Declaraciones Bernardo Montoya
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Transporte_p%C3%BAblico_en_el_Gran_Concepci%C3%B3n">
             Wikipedia · Transporte público Gran Concepción (flota Transportes Tomé)
@@ -366,13 +366,13 @@ export default function PerimetroExclusionTome() {
         </p>
         <Sources>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
-            BioBioChile · 11-mar-2022 — Tarifa inicial $750 (rebaja de $150)
+            BioBioChile · 11-mar-2022, Tarifa inicial $750 (rebaja de $150)
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2025/02/17/gran-concepcion-pasaje-de-transporte-publico-registrara-alza-de-20-desde-el-proximo-domingo.shtml">
-            BioBioChile · 17-feb-2025 — Alza 23-feb-2025: Tomé-Concepción $780, Tomé-Dichato $830
+            BioBioChile · 17-feb-2025, Alza 23-feb-2025: Tomé-Concepción $780, Tomé-Dichato $830
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html">
-            Diario Concepción · 14-feb-2025 — Alza en Gran Concepción y Tomé
+            Diario Concepción · 14-feb-2025, Alza en Gran Concepción y Tomé
           </SourceLink>
         </Sources>
       </Section>
@@ -461,8 +461,8 @@ export default function PerimetroExclusionTome() {
         <p className="text-[12px] text-muted-foreground">
           <strong>Conclusión:</strong> son perímetros distintos con el
           mismo paraguas legal. La diferencia operacional dominante es
-          el <strong>régimen de competencia</strong> — operador único
-          en Tomé contra ~35 empresas en el Gran Concepción — y la
+          el <strong>régimen de competencia</strong>, operador único
+          en Tomé contra ~35 empresas en el Gran Concepción, y la
           escala (un corredor único contra 7 comunas con red urbana
           completa).
         </p>
@@ -475,10 +475,10 @@ export default function PerimetroExclusionTome() {
 
       <Section title="Integración con BusPay (Q3 2026)">
         <p>
-          El alcance de <strong>BusPay</strong> —sistema de recaudo
+          El alcance de <strong>BusPay</strong> , sistema de recaudo
           electrónico licitado por el MTT y adjudicado el{' '}
           <strong>28-ene-2026</strong> al <strong>Consorcio Buspay</strong>{' '}
-          (operador técnico <strong>Busmatick</strong>)— incluye al PE
+          (operador técnico <strong>Busmatick</strong>), incluye al PE
           Tomé desde la marcha blanca, junto al PE Gran Concepción, el
           PE Coronel-Lota y la licitación 201 Santa Juana. Para Tomé
           este es un cambio importante: pasa de <strong>cobro 100% en
@@ -499,11 +499,11 @@ export default function PerimetroExclusionTome() {
             ['Operador técnico', 'Busmatick (subcontratado por el Consorcio)'],
             ['Fecha adjudicación', '28 de enero de 2026'],
             ['Inicio instalación validadores', 'Abril-mayo 2026 (proyectado, alineado con PE Gran Concepción)'],
-            ['Marcha blanca', 'Tercer trimestre 2026 — efectivo y tarjeta operan en paralelo'],
+            ['Marcha blanca', 'Tercer trimestre 2026, efectivo y tarjeta operan en paralelo'],
             ['Régimen 100% electrónico', 'Proyectado para fines de 2026'],
             ['Validador físico', 'Embarcado en cada bus de la flota de Transportes Tomé. Lee NFC contactless (tarjeta bancaria, tarjeta BusPay, TNE) y código QR.'],
             ['Medios de pago aceptados', 'Tarjeta bancaria contactless, código QR vía celular, TNE estudiantes, tarjeta dedicada BusPay con diseño Campanil UdeC elegido por consulta ciudadana.'],
-            ['Tarifa', 'Sin alteración por la migración — el sistema lo paga el Estado al Consorcio, no el pasajero. La tarifa adulto vigente se mantiene bajo polinomio de ajuste regular.'],
+            ['Tarifa', 'Sin alteración por la migración, el sistema lo paga el Estado al Consorcio, no el pasajero. La tarifa adulto vigente se mantiene bajo polinomio de ajuste regular.'],
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
@@ -516,10 +516,10 @@ export default function PerimetroExclusionTome() {
         </p>
         <Sources>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-            BioBioChile · 28-ene-2026 — Adjudicación al Consorcio Buspay
+            BioBioChile · 28-ene-2026, Adjudicación al Consorcio Buspay
           </SourceLink>
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-            Subtrans · 30-ene-2026 — Cobertura BusPay incluye PE Tomé
+            Subtrans · 30-ene-2026, Cobertura BusPay incluye PE Tomé
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
             Subtrans · Consulta ciudadana diseño tarjeta Campanil UdeC
@@ -563,7 +563,7 @@ export default function PerimetroExclusionTome() {
         </p>
         <Sources>
           <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-            MOP Concesiones · 10-dic-2025 — Recepción ofertas Ruta 150
+            MOP Concesiones · 10-dic-2025, Recepción ofertas Ruta 150
           </SourceLink>
         </Sources>
       </Section>
@@ -580,7 +580,7 @@ export default function PerimetroExclusionTome() {
           MTT / SEREMITT y la presión vecinal directa, que efectivamente
           se ejerció (la Unión Comunal de Juntas de Vecinos de Tomé
           gatilló el refuerzo de may-2025 en menos de 20 días desde la
-          solicitud — detalle operacional en{' '}
+          solicitud, detalle operacional en{' '}
           <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
             Concepción ↔ Tomé
           </a>
@@ -626,7 +626,7 @@ export default function PerimetroExclusionTome() {
         </div>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html">
-            Diario Concepción · 7-may-2025 — Presión vecinal Unión Comunal Tomé
+            Diario Concepción · 7-may-2025, Presión vecinal Unión Comunal Tomé
           </SourceLink>
         </Sources>
       </Section>
@@ -653,7 +653,7 @@ export default function PerimetroExclusionTome() {
           no entrega datos de horarios y trazados al MTT en formato
           GTFS. La marcha blanca BusPay Q3 2026 puede cambiar esta
           situación si el contrato del consorcio exige al operador
-          publicar feed propio — no está confirmado en fuente abierta.
+          publicar feed propio, no está confirmado en fuente abierta.
         </p>
         <p className="text-[12px] text-muted-foreground">
           Detalle de qué sí y qué no aparece en el visor para el
@@ -679,7 +679,7 @@ export default function PerimetroExclusionTome() {
             },
             {
               date: '2016-2022',
-              event: 'Etapa de fusión de operadores: las razones sociales históricas del corredor (Buses Costa Azul S.A. y otras) se consolidan en Transportes Tomé para entrar al perímetro como adjudicatario único. Negociación lenta — toma casi seis años desde el decreto hasta la operación.',
+              event: 'Etapa de fusión de operadores: las razones sociales históricas del corredor (Buses Costa Azul S.A. y otras) se consolidan en Transportes Tomé para entrar al perímetro como adjudicatario único. Negociación lenta, toma casi seis años desde el decreto hasta la operación.',
             },
             {
               date: '10-mar-2022',
@@ -724,8 +724,7 @@ export default function PerimetroExclusionTome() {
           <li>
             <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
               Concepción ↔ Tomé
-            </a>{' '}
-            — la operación del corredor: paraderos, trazado calle a
+            </a>{' '}, la operación del corredor: paraderos, trazado calle a
             calle, frecuencias, refuerzos may-2025, contexto industrial
             (Bellavista Oveja Tomé), estacionalidad turística,
             integración intermodal observada. Si quieres saber por
@@ -735,8 +734,7 @@ export default function PerimetroExclusionTome() {
           <li>
             <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
               Perímetro de Exclusión del Gran Concepción 2024
-            </a>{' '}
-            — el perímetro "hermano". Mismo marco legal (art. 3° Ley
+            </a>{' '}, el perímetro "hermano". Mismo marco legal (art. 3° Ley
             18.696), distinta escala (7 comunas, ~35 empresas, 36 UN,
             tarifa $580). La sección "Comparación con PE Gran
             Concepción 2024" de este artículo resume las diferencias.
@@ -744,31 +742,27 @@ export default function PerimetroExclusionTome() {
           <li>
             <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay
-            </a>{' '}
-            — el sistema de recaudo electrónico que entra en marcha
+            </a>{' '}, el sistema de recaudo electrónico que entra en marcha
             blanca el Q3 2026 sobre la flota del PE Tomé. Cambia el
             cobro de efectivo a contactless sin alterar la tarifa.
           </li>
           <li>
             <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
               Corredores de Transporte Público MOP del Biobío
-            </a>{' '}
-            — el corredor exclusivo Ruta 150 (Rotonda Bonilla ↔ Enlace
+            </a>{' '}, el corredor exclusivo Ruta 150 (Rotonda Bonilla ↔ Enlace
             Penco) que entra en servicio en 2032 y solapa parcialmente
             con la traza del PE Tomé.
           </li>
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS Gran Concepción
-            </a>{' '}
-            — el feed que cubre el corredor hasta Lirquén pero no
+            </a>{' '}, el feed que cubre el corredor hasta Lirquén pero no
             incluye los servicios 401 / 411 / 421 del PE Tomé.
           </li>
           <li>
             <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén · extensiones y proyectos
-            </a>{' '}
-            — el tren urbano que no llega a Tomé y cuya extensión a
+            </a>{' '}, el tren urbano que no llega a Tomé y cuya extensión a
             Penco / Lirquén compite políticamente con el
             corredor MOP Ruta 150.
           </li>
@@ -805,7 +799,7 @@ export default function PerimetroExclusionTome() {
       <Section title="Bibliografía">
         <Sources>
           <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
-            BCN · Ley 18.696 (art. 3° — base de los perímetros de exclusión)
+            BCN · Ley 18.696 (art. 3°, base de los perímetros de exclusión)
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
             Wikipedia · Perímetro de Exclusión del Gran Concepción (sección PE Tomé)
@@ -814,28 +808,28 @@ export default function PerimetroExclusionTome() {
             Wikipedia · Transporte público en el Gran Concepción
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2022/03/11/rebajan-tarifa-de-buses-entre-tome-y-concepcion.shtml">
-            BioBioChile · 11-mar-2022 — Inicio del perímetro, tarifa $750
+            BioBioChile · 11-mar-2022, Inicio del perímetro, tarifa $750
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html">
-            Diario Concepción · 14-feb-2025 — Alza tarifaria Gran Concepción y Tomé
+            Diario Concepción · 14-feb-2025, Alza tarifaria Gran Concepción y Tomé
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2025/02/17/gran-concepcion-pasaje-de-transporte-publico-registrara-alza-de-20-desde-el-proximo-domingo.shtml">
-            BioBioChile · 17-feb-2025 — Tarifas vigentes desde 23-feb-2025
+            BioBioChile · 17-feb-2025, Tarifas vigentes desde 23-feb-2025
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html">
-            Diario Concepción · 7-may-2025 — Declaraciones Bernardo Montoya
+            Diario Concepción · 7-may-2025, Declaraciones Bernardo Montoya
           </SourceLink>
           <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-            MOP Concesiones · 10-dic-2025 — Ofertas Ruta 150 + Conce-Talcahuano II
+            MOP Concesiones · 10-dic-2025, Ofertas Ruta 150 + Conce-Talcahuano II
           </SourceLink>
           <SourceLink href="http://www.tomealdia.com/2025/11/tome-tambien-se-beneficara-con-proyecto.html">
-            Tomé al día · nov-2025 — Petición de extensión Ruta 150
+            Tomé al día · nov-2025, Petición de extensión Ruta 150
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-            BioBioChile · 28-ene-2026 — Adjudicación BusPay al Consorcio Buspay
+            BioBioChile · 28-ene-2026, Adjudicación BusPay al Consorcio Buspay
           </SourceLink>
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-            Subtrans · 30-ene-2026 — Cobertura BusPay incluye PE Tomé
+            Subtrans · 30-ene-2026, Cobertura BusPay incluye PE Tomé
           </SourceLink>
           <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8111">
             BCN · Reportes comunales Tomé 2017
@@ -851,8 +845,7 @@ export default function PerimetroExclusionTome() {
           Si tienes copia del decreto MTT 2016 que crea el perímetro,
           la razón social formal de Transportes Tomé, foto del cartel
           tarifario vigente en la terminal Manuel Rodríguez o en Tomé
-          Alto, o cualquier dato que ayude a cerrar los pendientes —
-          abre un pull request en{' '}
+          Alto, o cualquier dato que ayude a cerrar los pendientes, abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/perimetro-exclusion-tome.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/perimetro-exclusion-tome.tsx
           </SourceLink>

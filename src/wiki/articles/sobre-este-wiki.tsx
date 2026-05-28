@@ -1,8 +1,9 @@
-// Sobre este wiki — propósito, alcance, modelo editorial y la visión
+// Sobre este wiki, propósito, alcance, modelo editorial y la visión
 // de mediano plazo (centro de verdad regional).
 
 import { KeyValueList, Section } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function SobreEsteWiki() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -10,7 +11,7 @@ export default function SobreEsteWiki() {
         <p>
           El visor principal de <code className="font-mono">conce.patagua.dev</code> es
           un producto técnico que consume fuentes <strong>verificables</strong>
-          {' '}— <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS estático</a>,
+          {', '}<a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS estático</a>,
           OpenStreetMap, INE, SINCA. Si un dato no puede
           citarse a un origen abierto, no entra al visor.
         </p>
@@ -20,7 +21,7 @@ export default function SobreEsteWiki() {
           licitados que aún no tienen GTFS público, frecuencias observadas en
           paradero, tarifas vigentes, decisiones del concejo municipal sobre
           ciclovías, planes reguladores en consulta. Este wiki es donde esa
-          información se compila, cita y mantiene — sin contaminar el visor
+          información se compila, cita y mantiene, sin contaminar el visor
           técnico.
         </p>
       </Section>
@@ -48,7 +49,7 @@ export default function SobreEsteWiki() {
         <p>
           Los artículos viven como componentes React en{' '}
           <code className="font-mono">src/wiki/articles/</code> del repositorio.
-          Editar es abrir un pull request en GitHub — cada artículo tiene un
+          Editar es abrir un pull request en GitHub, cada artículo tiene un
           link "Editar en GitHub" arriba que apunta al archivo correcto.
         </p>
         <p>
@@ -72,7 +73,7 @@ export default function SobreEsteWiki() {
           <li>Notebooks de análisis (cuando aparezcan).</li>
         </ul>
         <p>
-          La idea no es competir con Wikipedia — es servir como{' '}
+          La idea no es competir con Wikipedia, es servir como{' '}
           <strong>knowledge base operacional</strong> de un dominio que
           Wikipedia no cubre con la profundidad ni la frescura necesaria.
         </p>

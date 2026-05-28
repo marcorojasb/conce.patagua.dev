@@ -1,4 +1,4 @@
-// Wiki app — entry point for /wiki and /wiki/{slug}. Same DOM root as the
+// Wiki app, entry point for /wiki and /wiki/{slug}. Same DOM root as the
 // visor, swapped at main.tsx based on location.pathname so we don't need
 // a routing library yet. State changes via history.pushState; back/forward
 // works because we listen to popstate.
@@ -212,8 +212,7 @@ function WikiHome({ onSelect }: { onSelect: (slug: string | null) => void }) {
         <p className="mt-2 text-base text-muted-foreground">
           Conocimiento contribuido sobre el transporte público, la planificación
           urbana y los servicios del Gran Concepción. Empezamos por lo que el
-          GTFS oficial deja afuera — los recorridos interurbanos licitados —
-          y crecemos hacia ser el centro de verdad regional.
+          GTFS oficial deja afuera, los recorridos interurbanos licitados, y crecemos hacia ser el centro de verdad regional.
         </p>
       </header>
 

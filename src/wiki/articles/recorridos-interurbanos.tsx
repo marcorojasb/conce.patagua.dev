@@ -33,8 +33,8 @@ export default function RecorridosInterurbanos() {
         </a>{' '}
         publicado por
         la Subsecretaría de Transportes (CC&nbsp;BY&nbsp;4.0). Ese feed cubre el área
-        urbana metropolitana — Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante,
-        Penco/Lirquén, Coronel y Lota — y deja afuera los <strong>servicios
+        urbana metropolitana, Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante,
+        Penco/Lirquén, Coronel y Lota, y deja afuera los <strong>servicios
         interurbanos licitados</strong> que conectan el Gran Concepción con comunas
         rurales o satélite del Biobío.
       </p>
@@ -46,8 +46,7 @@ export default function RecorridosInterurbanos() {
         autorizaciones puntuales) es la{' '}
         <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
           SEREMITT Biobío
-        </a>{' '}
-        — sucesión vigente Silva → Fierro → Cautivo (desde 28-nov-2025) —, y
+        </a>{' '}, sucesión vigente Silva → Fierro → Cautivo (desde 28-nov-2025) , , y
         los financiamientos se estructuran sobre el{' '}
         <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
           Subsidio Nacional al Transporte Público
@@ -96,16 +95,16 @@ export default function RecorridosInterurbanos() {
           }
         />
         <ServiceRow
-          code="—"
+          code=", "
           title="Conexiones a Hualqui rural"
-          notes="Más allá de la estación Biotrén Hualqui — sectores rurales hacia el interior. Talcamávida, Unihue y Quilacoya conectan principalmente por ferrocarril, no bus."
+          notes="Más allá de la estación Biotrén Hualqui, sectores rurales hacia el interior. Talcamávida, Unihue y Quilacoya conectan principalmente por ferrocarril, no bus."
         />
       </Section>
 
       <Section title="¿Por qué no están en el visor principal?">
         <p>
-          El feed GTFS urbano del Gran Concepción es un producto técnico — un
-          archivo conformado a un estándar específico — que la Subsecretaría
+          El feed GTFS urbano del Gran Concepción es un producto técnico, un
+          archivo conformado a un estándar específico, que la Subsecretaría
           publica con un alcance acotado al área metropolitana. Los servicios
           interurbanos están bajo licitaciones distintas y no se reflejan en
           ese feed. Sin un feed GTFS público para ellos, no hay forma directa
@@ -148,8 +147,7 @@ export default function RecorridosInterurbanos() {
               className="underline underline-offset-2"
             >
               DTPR Biobío
-            </a>{' '}
-            — bases de licitación y resoluciones por servicio.
+            </a>{' '}, bases de licitación y resoluciones por servicio.
           </li>
           <li>
             <a
@@ -159,10 +157,9 @@ export default function RecorridosInterurbanos() {
               className="underline underline-offset-2"
             >
               Subsecretaría de Transportes
-            </a>{' '}
-            — feed GTFS Gran Concepción y otros documentos normativos.
+            </a>{' '}, feed GTFS Gran Concepción y otros documentos normativos.
           </li>
-          <li>OSM Overpass — relaciones <code className="font-mono">route=bus</code> taggeadas con el ID del servicio cuando existen.</li>
+          <li>OSM Overpass, relaciones <code className="font-mono">route=bus</code> taggeadas con el ID del servicio cuando existen.</li>
         </ul>
       </Section>
     </div>

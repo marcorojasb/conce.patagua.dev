@@ -43,7 +43,7 @@ const TOOL_META: Record<AnalysisTab, { label: string; description: string }> = {
 interface FloatingToolsPanelProps {
   /** Active tool. `null` hides the panel entirely (it doesn't render). */
   tool: AnalysisTab | null;
-  /** Close handler — sets tool to null on the App side. */
+  /** Close handler, sets tool to null on the App side. */
   onClose: () => void;
   // Planner state lifted from App so it persists when the sheet closes.
   plannerOrigin: { lat: number; lng: number } | null;
@@ -56,9 +56,9 @@ interface FloatingToolsPanelProps {
   onClearPlanner: () => void;
   onSelectRoute: (id: string) => void;
   onShowOperatorRoutes: (operator: string) => void;
-  // For the GeoJSON export tab — knows which routes the user has on the map.
+  // For the GeoJSON export tab, knows which routes the user has on the map.
   visibleRouteIds: string[];
-  // For the Wallpaper tab — current viewport + theme.
+  // For the Wallpaper tab, current viewport + theme.
   mapBounds: [[number, number], [number, number]] | null;
   theme: Theme;
   simulatedVehicles: SimulatedVehicle[];
@@ -127,7 +127,7 @@ export function FloatingToolsPanel({
       className={cn(
         'pointer-events-none absolute z-[5000]',
         // Mobile: bottom-anchored card. 58vh leaves ~40% of viewport for the
-        // map above — enough to keep context while reading the panel.
+        // map above, enough to keep context while reading the panel.
         'left-2 right-2 bottom-2 h-[58vh]',
         // Desktop: detach from left, anchor to the right just left of the
         // toolbar buttons (right-3 + 40px wide). Top/bottom 12px.
@@ -138,11 +138,11 @@ export function FloatingToolsPanel({
       <aside
         aria-label={meta.label}
         // Grid layout instead of flex so the ScrollArea row has a definite
-        // (not "computed via flex") height — required for Radix ScrollArea's
+        // (not "computed via flex") height, required for Radix ScrollArea's
         // h-full viewport to size correctly inside on iOS Safari.
         className="pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden rounded-lg border bg-background shadow-xl animate-fade-in"
       >
-        {/* Cosmetic drag handle, mobile only — communicates "this is a
+        {/* Cosmetic drag handle, mobile only, communicates "this is a
             dismissable bottom sheet" the same way iOS does. Closing is
             actually done via the X button or the toolbar toggle. */}
         <div className="flex justify-center py-1.5 sm:hidden" aria-hidden>

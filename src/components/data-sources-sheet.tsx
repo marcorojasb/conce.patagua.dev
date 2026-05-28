@@ -19,7 +19,7 @@ const SOURCES: Source[] = [
   {
     title: 'GTFS estático Gran Concepción',
     detail:
-      'Recorridos de micros, paraderos, shapes y calendario programado de los 169 servicios urbanos. Publicado por la Subsecretaría de Transportes de Chile. La app consume un artefacto estático generado a partir del feed; las shapes pasan por una simplificación Douglas–Peucker (~16 m) — el resto se sirve tal cual.',
+      'Recorridos de micros, paraderos, shapes y calendario programado de los 169 servicios urbanos. Publicado por la Subsecretaría de Transportes de Chile. La app consume un artefacto estático generado a partir del feed; las shapes pasan por una simplificación Douglas–Peucker (~16 m), el resto se sirve tal cual.',
     count: `${microCount} recorridos · ${GTFS_STOPS.length} paraderos · fuente ${GTFS_CONCEPCION_SOURCE.source}`,
     link: {
       href: 'https://busmaps.com/en/chile/Subsecretaria-de-Transporte/gran-concepcion',
@@ -67,13 +67,13 @@ const PENDING: Source[] = [
   {
     title: 'Servicios interurbanos licitados (Tomé, Santa Juana, Florida)',
     detail:
-      'El feed GTFS Gran Concepción cubre el área metropolitana urbana — Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante, Penco/Lirquén, Coronel, Lota. Quedan fuera servicios licitados que conectan con Tomé, Santa Juana, Florida, Yumbel, etc. (incluyendo los 201 / 201 AU a Santa Juana). Pendiente: incorporar estos recorridos cuando estén en un GTFS público o vía Wikidata + OSM.',
+      'El feed GTFS Gran Concepción cubre el área metropolitana urbana, Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante, Penco/Lirquén, Coronel, Lota. Quedan fuera servicios licitados que conectan con Tomé, Santa Juana, Florida, Yumbel, etc. (incluyendo los 201 / 201 AU a Santa Juana). Pendiente: incorporar estos recorridos cuando estén en un GTFS público o vía Wikidata + OSM.',
     count: 'Rutas conocidas pendientes: ~12 servicios interurbanos del Biobío',
   },
   {
     title: 'Tarifa y pago electrónico DTPR',
     detail:
-      'Tarifa adulto urbana referencial $750 CLP (efectivo); rangos por tramo en Biotrén. DTPR anunció que el pago electrónico se activará en buses urbanos del Gran Concepción durante el ciclo 2026 — los valores oficiales por tarjeta integrada y reglas de transbordo se sumarán al visor cuando la resolución se publique.',
+      'Tarifa adulto urbana referencial $750 CLP (efectivo); rangos por tramo en Biotrén. DTPR anunció que el pago electrónico se activará en buses urbanos del Gran Concepción durante el ciclo 2026, los valores oficiales por tarjeta integrada y reglas de transbordo se sumarán al visor cuando la resolución se publique.',
   },
 ];
 

@@ -1,15 +1,15 @@
 // Establecimientos educacionales (kindergarten / school / college /
-// university) — puntos con marcador. Capa lazy, render imperativo.
+// university), puntos con marcador. Capa lazy, render imperativo.
 
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { School, SchoolKind } from '@/data/schools.generated';
-import type { LayerLoadStatus } from '@/hooks/use-layer-status';
+import type { LayerStatusControls } from '@/hooks/use-layer-status';
 
 const KIND_COLOR: Record<SchoolKind, string> = {
   kindergarten: '#f59e0b', // amber
-  school: '#dc2626', // red — los más comunes y más relevantes para política
+  school: '#dc2626', // red, los más comunes y más relevantes para política
   college: '#7c3aed', // violet
   university: '#2563eb', // blue
 };
@@ -36,14 +36,14 @@ interface Props {
   enabled: boolean;
   canvasRenderer: L.Canvas;
   retryKey: number;
-  onStatusChange: (status: LayerLoadStatus) => void;
+  loadStatus: LayerStatusControls;
 }
 
 export function SchoolsLayer({
   enabled,
   canvasRenderer,
   retryKey,
-  onStatusChange,
+  loadStatus,
 }: Props) {
   const map = useMap();
 
@@ -71,23 +71,19 @@ export function SchoolsLayer({
         group.addLayer(marker);
       }
       group.addTo(map);
-      onStatusChange({ loading: false, error: null, ready: true });
+      loadStatus.succeed();
     };
 
     if (dataCache) {
       draw(dataCache);
     } else {
-      onStatusChange({ loading: true, error: null, ready: false });
+      loadStatus.start();
       void loadSchools()
         .then(draw)
         .catch((err) => {
           dataPromise = null;
           if (!cancelled) {
-            onStatusChange({
-              loading: false,
-              error: err instanceof Error ? err.message : 'No se pudo cargar educación',
-              ready: false,
-            });
+            loadStatus.fail(err, 'No se pudo cargar educación');
           }
         });
     }
@@ -96,7 +92,7 @@ export function SchoolsLayer({
       cancelled = true;
       group.remove();
     };
-  }, [enabled, canvasRenderer, map, onStatusChange, retryKey]);
+  }, [enabled, canvasRenderer, map, loadStatus, retryKey]);
 
   return null;
 }

@@ -48,6 +48,7 @@ interface LayerToggleState {
   centros: boolean;
 }
 
+// react-doctor-disable-next-line react-doctor/no-giant-component, react-doctor/prefer-useReducer -- Export controls are independent form fields; keeping preview, sizing, and download flow together avoids hidden coupling.
 export default function WallpaperTool({
   visibleRouteIds,
   mapBounds,
@@ -58,7 +59,7 @@ export default function WallpaperTool({
   plannerMidpoint,
   plannerOrigin,
   plannerDestination,
-}: WallpaperTabProps) {
+}: WallpaperTabProps) { // react-doctor-disable-line react-doctor/prefer-useReducer -- Export form controls are intentionally independent, not a single state machine.
   const [mode, setMode] = useState<'current' | 'curated' | 'manual'>('current');
   const [styleId, setStyleId] = useState<WallpaperStyle>('clean');
   const [sizeId, setSizeId] = useState<string>(WALLPAPER_SIZES[0].id);

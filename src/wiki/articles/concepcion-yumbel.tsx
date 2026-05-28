@@ -1,4 +1,4 @@
-// Concepción ↔ Yumbel — corredor interurbano del valle central.
+// Concepción ↔ Yumbel, corredor interurbano del valle central.
 // Eje principal: Ruta 146 (Autopista Valles del Biobío, ex Q-50-O).
 // Cuatro operadores privados de larga distancia, sin licitación DTPR
 // específica. Evento distintivo: Fiesta de San Sebastián (20-ene y
@@ -16,6 +16,7 @@ import {
 } from './_components';
 import { MapLink } from '@/wiki/map-link';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function ConcepcionYumbel() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -39,8 +40,8 @@ export default function ConcepcionYumbel() {
         <p>
           El corredor <strong>Concepción ↔ Yumbel</strong> conecta el
           Gran Concepción con la primera comuna del valle central hacia
-          el oriente — <strong>Yumbel</strong> (21.198 hab. Censo 2017,
-          765,25 km²) — y es el eje natural de salida hacia la Ruta 5
+          el oriente, <strong>Yumbel</strong> (21.198 hab. Censo 2017,
+          765,25 km²), y es el eje natural de salida hacia la Ruta 5
           Sur por Cabrero y Ñuble. Lo recorre la <strong>Ruta 146</strong>{' '}
           (Autopista Valles del Biobío), concesionada por Sociedad
           Concesionaria Valles del Biobío S.A. (grupo Sacyr) desde 2012.
@@ -72,13 +73,13 @@ export default function ConcepcionYumbel() {
         </ul>
         <Sources>
           <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8313">
-            BCN · Reporte comunal Yumbel 2017 — 21.198 hab., 765,25 km²
+            BCN · Reporte comunal Yumbel 2017, 21.198 hab., 765,25 km²
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Yumbel">
-            Wikipedia · Yumbel (Chile) — fundación 1585, San Sebastián, vialidad
+            Wikipedia · Yumbel (Chile), fundación 1585, San Sebastián, vialidad
           </SourceLink>
           <SourceLink href="https://www.latribuna.cl/nuestra-gente/2025/01/20/tierra-de-fe-y-devocion-yumbel-recibe-a-miles-de-peregrinos-en-conmemoracion-de-san-sebastian.html">
-            La Tribuna · 20-ene-2025 — Festividad San Sebastián 2025, 400 carabineros
+            La Tribuna · 20-ene-2025, Festividad San Sebastián 2025, 400 carabineros
           </SourceLink>
         </Sources>
       </Section>
@@ -108,7 +109,7 @@ export default function ConcepcionYumbel() {
             },
             {
               date: '1960',
-              event: 'Carlos Bugmann Spielmann funda Buses Bío Bío en Temuco — uno de los operadores que pasarán a cubrir el corredor Conce-Yumbel.',
+              event: 'Carlos Bugmann Spielmann funda Buses Bío Bío en Temuco, uno de los operadores que pasarán a cubrir el corredor Conce-Yumbel.',
               source: { href: 'https://biomex.cl/que-buses-hay-desde-concepcion-hacia-yumbel/', label: 'Biomex' },
             },
             {
@@ -243,7 +244,7 @@ export default function ConcepcionYumbel() {
             Peajes de Chile · Huinanco km 33,9 Ruta 146 (Yumbel)
           </SourceLink>
           <SourceLink href="https://www.latribuna.cl/desarrollo/2026/04/17/ruta-o-60-yumbelrere-llega-a-su-fase-final-y-mejora-acceso-a-zona-con-valor-historico-y-turistico-de-biobio.html">
-            La Tribuna · 17-abr-2026 — Ruta O-60 (Q-60-O) Yumbel-Rere fase final
+            La Tribuna · 17-abr-2026, Ruta O-60 (Q-60-O) Yumbel-Rere fase final
           </SourceLink>
         </Sources>
         <PendingBanner>
@@ -251,7 +252,7 @@ export default function ConcepcionYumbel() {
           2013. <strong>Ruta 146</strong> es designación vigente del eje
           Concepción-Cabrero; <strong>O-60</strong> y <strong>Q-60-O</strong>{' '}
           son la misma vía interior Hualqui-Yumbel. Ningún operador
-          interurbano local usa la O-60/Q-60-O — todos van por la 146.
+          interurbano local usa la O-60/Q-60-O, todos van por la 146.
         </PendingBanner>
       </Section>
 
@@ -358,7 +359,7 @@ export default function ConcepcionYumbel() {
               'Origen del culto',
               'Imagen patronal en la zona desde ~1663 (segunda mitad del siglo XVII). Santuario actual es Templo Jubilar 2025 designado por la arquidiócesis de Concepción.',
             ],
-            ['Contexto religioso 2025', 'Jubileo "Peregrinos de Esperanza" — incremento adicional de afluencia'],
+            ['Contexto religioso 2025', 'Jubileo "Peregrinos de Esperanza", incremento adicional de afluencia'],
           ]}
         />
         <p>
@@ -370,7 +371,7 @@ export default function ConcepcionYumbel() {
         </p>
         <Sources>
           <SourceLink href="https://www.latribuna.cl/nuestra-gente/2025/01/20/tierra-de-fe-y-devocion-yumbel-recibe-a-miles-de-peregrinos-en-conmemoracion-de-san-sebastian.html">
-            La Tribuna · 20-ene-2025 — Yumbel recibe peregrinos, 400 carabineros
+            La Tribuna · 20-ene-2025, Yumbel recibe peregrinos, 400 carabineros
           </SourceLink>
           <SourceLink href="https://iglesiadeconcepcion.cl/noticias/conoce-los-horarios-de-la-festividad-de-san-sebastian-de-yumbel-este-20-de-enero/">
             Arzobispado de la Santísima Concepción · Horarios festividad enero
@@ -442,7 +443,7 @@ export default function ConcepcionYumbel() {
             Biomex · Rango $2.000-$3.500 y frecuencia 30-60 min
           </SourceLink>
           <SourceLink href="https://kupos.cl/en/bus/tickets/concepcion/yumbel">
-            kupos · Conce-Yumbel — operadores y rangos
+            kupos · Conce-Yumbel, operadores y rangos
           </SourceLink>
           <SourceLink href="https://www.recorrido.cl/en/bus/concepcion/yumbel">
             recorrido.cl · Conce-Yumbel
@@ -470,11 +471,11 @@ export default function ConcepcionYumbel() {
             ],
             [
               'Ruta 1 · CTR0224',
-              'Servicio La Mata ↔ Monte Águila ↔ Cabrero — entorno geográfico de Yumbel (Cabrero está al norte de Yumbel sobre la Ruta 146) pero NO cubre el tramo Conce-Yumbel ni reemplaza a los privados.',
+              'Servicio La Mata ↔ Monte Águila ↔ Cabrero, entorno geográfico de Yumbel (Cabrero está al norte de Yumbel sobre la Ruta 146) pero NO cubre el tramo Conce-Yumbel ni reemplaza a los privados.',
             ],
             [
               'Régimen del corredor troncal',
-              'Sigue siendo enteramente privado, sin obligación de frecuencia (mismo problema que Florida — el SEREMI Héctor Silva lo dijo explícito en jul-2024 para Florida; el marco legal aplica igual a Yumbel).',
+              'Sigue siendo enteramente privado, sin obligación de frecuencia (mismo problema que Florida, el SEREMI Héctor Silva lo dijo explícito en jul-2024 para Florida; el marco legal aplica igual a Yumbel).',
             ],
             [
               'Perímetro de exclusión',
@@ -491,10 +492,10 @@ export default function ConcepcionYumbel() {
             DTPR · Decreto Exento N°5863/2025 (subsidios CTR Biobío 2025)
           </SourceLink>
           <SourceLink href="https://www.dtpr.gob.cl/conectividadrural">
-            DTPR · Programa de Conectividad Rural — marco legal
+            DTPR · Programa de Conectividad Rural, marco legal
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/07/27/transportes-no-puede-obligar-a-buses-a-florida-para-que-aumenten-su-frecuencia.html">
-            Diario Concepción · 27-jul-2024 — SEREMI no puede obligar a privados (aplicable a Yumbel)
+            Diario Concepción · 27-jul-2024, SEREMI no puede obligar a privados (aplicable a Yumbel)
           </SourceLink>
         </Sources>
       </Section>
@@ -577,7 +578,7 @@ export default function ConcepcionYumbel() {
             Hualpén, San Pedro, Chiguayante, Penco/Lirquén, Coronel,
             Lota). Una revisión directa del dataset confirma que no
             existe ningún servicio con código que represente el corredor
-            a Yumbel — porque los servicios Línea Azul, Buses Bío Bío y
+            a Yumbel, porque los servicios Línea Azul, Buses Bío Bío y
             Pullman son interurbanos privados sin GTFS publicado y no
             existe licitación DTPR específica que obligue a publicar
             uno.
@@ -755,7 +756,7 @@ export default function ConcepcionYumbel() {
           Si tienes tabla horaria oficial, fotos de carteles tarifarios
           en los terminales (Camilo Henríquez, San Sebastián o San
           Francisco en Yumbel), el texto del Decreto Alcaldicio N°2348
-          de Yumbel, o el plan de contingencia para San Sebastián — abre
+          de Yumbel, o el plan de contingencia para San Sebastián, abre
           un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-yumbel.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-yumbel.tsx

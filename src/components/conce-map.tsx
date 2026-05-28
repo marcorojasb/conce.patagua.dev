@@ -31,7 +31,7 @@ import { GreenspaceLayer } from '@/components/greenspace-layer';
 import { InterurbanCorridorsLayer } from '@/components/interurban-corridors-layer';
 import { ParaderosLayer } from '@/components/paraderos-layer';
 import { SchoolsLayer } from '@/components/schools-layer';
-import type { LayerLoadStatus } from '@/hooks/use-layer-status';
+import type { LayerStatusControls } from '@/hooks/use-layer-status';
 
 interface ConceMapProps {
   theme: Theme;
@@ -43,19 +43,16 @@ interface ConceMapProps {
   onSelectStop: (id: string) => void;
   flyToToken: FlyToToken | null;
   terminals: Terminal[];
-  showTerminals: boolean;
   selectedTerminalId: string | null;
   onSelectTerminal: (id: string) => void;
   paraderos: Paradero[];
-  showParaderos: boolean;
   selectedParaderoId: string | null;
   onSelectParadero: (id: string) => void;
   pois: Poi[];
-  showPois: boolean;
   selectedPoiId: string | null;
   onSelectPoi: (id: string) => void;
   airQuality: AirQualityStation[];
-  showAirQuality: boolean;
+  layerVisibility: ConceMapLayerVisibility;
   pickerMode: 'origin' | 'destination' | null;
   onPickPoint: (latlng: { lat: number; lng: number }) => void;
   plannerOrigin: { lat: number; lng: number } | null;
@@ -64,29 +61,36 @@ interface ConceMapProps {
   routeColorById: Map<string, string>;
   routeLabelById: Map<string, string>;
   onSelectSimulatedVehicle: (id: string) => void;
-  showCoverage: boolean;
   coverageThreshold: 'all' | 'underserved';
   coverageRetryKey: number;
-  onCoverageStatusChange: (status: LayerLoadStatus) => void;
-  showCycleways: boolean;
+  coverageLoadStatus: LayerStatusControls;
   cyclewaysRetryKey: number;
-  onCyclewaysStatusChange: (status: LayerLoadStatus) => void;
-  showGreenspace: boolean;
+  cyclewaysLoadStatus: LayerStatusControls;
   greenspaceRetryKey: number;
-  onGreenspaceStatusChange: (status: LayerLoadStatus) => void;
-  showSchools: boolean;
+  greenspaceLoadStatus: LayerStatusControls;
   schoolsRetryKey: number;
-  onSchoolsStatusChange: (status: LayerLoadStatus) => void;
+  schoolsLoadStatus: LayerStatusControls;
   // Optional: notifies the parent of the current visible bbox so features
   // like wallpaper export can render the same frame the user is seeing.
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
   // Walking midpoint result drawn on top of the route layer (path + M marker).
   plannerMidpoint?: RoutingResult | null;
-  // Interurban corridors — overlay opcional con servicios licitados que
+  // Interurban corridors, overlay opcional con servicios licitados que
   // no están en el GTFS urbano (Santa Juana, Florida, etc.). Click → popup
   // con link al artículo del wiki.
-  showInterurbanCorridors?: boolean;
   onSelectInterurbanCorridor?: (corridorId: string) => void;
+}
+
+interface ConceMapLayerVisibility {
+  terminals: boolean;
+  paraderos: boolean;
+  pois: boolean;
+  airQuality: boolean;
+  coverage: boolean;
+  cycleways: boolean;
+  greenspace: boolean;
+  schools: boolean;
+  interurbanCorridors: boolean;
 }
 
 const TILE_URL = {
@@ -128,7 +132,7 @@ function FlyToOnToken({ token }: { token: FlyToToken | null }) {
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
-    // Respect users who asked the OS to reduce motion — vestibular sensitive
+    // Respect users who asked the OS to reduce motion, vestibular sensitive
     // users find auto-panning jarring. We skip the animation and snap.
     const reduceMotion =
       typeof window !== 'undefined' &&
@@ -248,10 +252,14 @@ function ZoomWatcher({ onZoom }: { onZoom: (zoom: number) => void }) {
       onZoom(map.getZoom());
     },
   });
-  useEffect(() => {
-    onZoom(map.getZoom());
-  }, [map, onZoom]);
   return null;
+}
+
+function boundsToTuple(bounds: L.LatLngBounds): [[number, number], [number, number]] {
+  return [
+    [bounds.getSouth(), bounds.getWest()],
+    [bounds.getNorth(), bounds.getEast()],
+  ];
 }
 
 function BoundsTracker({
@@ -259,11 +267,7 @@ function BoundsTracker({
 }: {
   onChange: (bounds: [[number, number], [number, number]]) => void;
 }) {
-  const fire = useCallback((b: L.LatLngBounds) =>
-    onChange([
-      [b.getSouth(), b.getWest()],
-      [b.getNorth(), b.getEast()],
-    ]), [onChange]);
+  const fire = useCallback((b: L.LatLngBounds) => onChange(boundsToTuple(b)), [onChange]);
   const map = useMapEvents({
     moveend() {
       fire(map.getBounds());
@@ -272,9 +276,6 @@ function BoundsTracker({
       fire(map.getBounds());
     },
   });
-  useEffect(() => {
-    fire(map.getBounds());
-  }, [fire, map]);
   return null;
 }
 
@@ -318,6 +319,7 @@ function aqIcon(pm25: number | null): L.DivIcon {
   });
 }
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Leaflet map shell stays together so renderer refs, event bridges, and layer ordering remain auditable in one place.
 export function ConceMap({
   theme,
   routes,
@@ -328,19 +330,16 @@ export function ConceMap({
   onSelectStop,
   flyToToken,
   terminals,
-  showTerminals,
   selectedTerminalId,
   onSelectTerminal,
   paraderos,
-  showParaderos,
   selectedParaderoId,
   onSelectParadero,
   pois,
-  showPois,
   selectedPoiId,
   onSelectPoi,
   airQuality,
-  showAirQuality,
+  layerVisibility,
   pickerMode,
   onPickPoint,
   plannerOrigin,
@@ -349,22 +348,17 @@ export function ConceMap({
   routeColorById,
   routeLabelById,
   onSelectSimulatedVehicle,
-  showCoverage,
   coverageThreshold,
   coverageRetryKey,
-  onCoverageStatusChange,
-  showCycleways,
+  coverageLoadStatus,
   cyclewaysRetryKey,
-  onCyclewaysStatusChange,
-  showGreenspace,
+  cyclewaysLoadStatus,
   greenspaceRetryKey,
-  onGreenspaceStatusChange,
-  showSchools,
+  greenspaceLoadStatus,
   schoolsRetryKey,
-  onSchoolsStatusChange,
+  schoolsLoadStatus,
   onBoundsChange,
   plannerMidpoint,
-  showInterurbanCorridors = false,
   onSelectInterurbanCorridor,
 }: ConceMapProps) {
   const mapRef = useRef<LeafletMap | null>(null);
@@ -400,8 +394,12 @@ export function ConceMap({
 
   // Shared canvas renderer keeps 1.7k paradero markers performant.
   const paraderoRenderer = useMemo(() => L.canvas({ padding: 0.2 }), []);
-  const showParaderosAtCurrentZoom = showParaderos && zoom >= 14;
+  const showParaderosAtCurrentZoom = layerVisibility.paraderos && zoom >= 14;
   const shouldDimForSelectedRoute = !!selectedRouteId;
+  const onMapReady = useCallback(() => {
+    const map = mapRef.current;
+    if (map && onBoundsChange) onBoundsChange(boundsToTuple(map.getBounds()));
+  }, [onBoundsChange]);
 
   return (
     <MapContainer
@@ -414,38 +412,39 @@ export function ConceMap({
       attributionControl
       preferCanvas
       className="absolute inset-0"
+      whenReady={onMapReady}
     >
       <TileLayer key={theme} url={TILE_URL[theme]} attribution={ATTRIBUTION} maxZoom={19} />
       <ZoomControl position="bottomright" />
       <ZoomWatcher onZoom={setZoom} />
 
       <CoverageLayer
-        enabled={showCoverage}
+        enabled={layerVisibility.coverage}
         canvasRenderer={paraderoRenderer}
         threshold={coverageThreshold}
         retryKey={coverageRetryKey}
-        onStatusChange={onCoverageStatusChange}
+        loadStatus={coverageLoadStatus}
       />
 
       <CyclewaysLayer
-        enabled={showCycleways}
+        enabled={layerVisibility.cycleways}
         canvasRenderer={paraderoRenderer}
         retryKey={cyclewaysRetryKey}
-        onStatusChange={onCyclewaysStatusChange}
+        loadStatus={cyclewaysLoadStatus}
       />
 
       <GreenspaceLayer
-        enabled={showGreenspace}
+        enabled={layerVisibility.greenspace}
         canvasRenderer={paraderoRenderer}
         retryKey={greenspaceRetryKey}
-        onStatusChange={onGreenspaceStatusChange}
+        loadStatus={greenspaceLoadStatus}
       />
 
       <SchoolsLayer
-        enabled={showSchools}
+        enabled={layerVisibility.schools}
         canvasRenderer={paraderoRenderer}
         retryKey={schoolsRetryKey}
-        onStatusChange={onSchoolsStatusChange}
+        loadStatus={schoolsLoadStatus}
       />
 
       <ParaderosLayer
@@ -458,7 +457,7 @@ export function ConceMap({
       />
 
       <InterurbanCorridorsLayer
-        enabled={showInterurbanCorridors}
+        enabled={layerVisibility.interurbanCorridors}
         onSelectCorridor={onSelectInterurbanCorridor}
       />
 
@@ -507,7 +506,7 @@ export function ConceMap({
         </Marker>
       ))}
 
-      {showTerminals &&
+      {layerVisibility.terminals &&
         terminals.map((t) => (
           <Marker
             key={t.id}
@@ -522,7 +521,7 @@ export function ConceMap({
           </Marker>
         ))}
 
-      {showPois &&
+      {layerVisibility.pois &&
         pois.map((p) => (
           <Marker
             key={p.id}
@@ -537,7 +536,7 @@ export function ConceMap({
           </Marker>
         ))}
 
-      {showAirQuality &&
+      {layerVisibility.airQuality &&
         airQuality.map((s) => {
           const cat = categorize(s.pm25);
           return (

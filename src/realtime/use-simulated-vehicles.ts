@@ -26,6 +26,13 @@ interface State {
   lastUpdate: Date | null;
 }
 
+const DISABLED_STATE: State = {
+  loading: false,
+  error: null,
+  vehicles: [],
+  lastUpdate: null,
+};
+
 let schedulePromise: Promise<Record<string, RouteSchedule>> | null = null;
 function loadSchedule(): Promise<Record<string, RouteSchedule>> {
   schedulePromise ??= Promise.all([
@@ -96,12 +103,5 @@ export function useSimulatedVehicles({
     };
   }, [enabled, routes, intervalMs, retryKey]);
 
-  // When disabled, clear stale vehicles so the map repaints empty.
-  useEffect(() => {
-    if (!enabled) {
-      setState((s) => ({ ...s, vehicles: [], lastUpdate: null }));
-    }
-  }, [enabled]);
-
-  return state;
+  return enabled ? state : DISABLED_STATE;
 }

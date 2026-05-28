@@ -1,10 +1,10 @@
-// Perímetro de Exclusión del Gran Concepción 2024 — columna vertebral
+// Perímetro de Exclusión del Gran Concepción 2024, columna vertebral
 // conceptual del visor urbano.
 //
 // Es el régimen tarifario y operativo que reemplazó a la licitación 2002
 // el 1-ene-2024 y bajo el cual operan hoy todas las líneas urbanas del
 // feed GTFS Gran Concepción. Los otros artículos del wiki lo referencian
-// sin desarrollarlo — este es el desarrollo.
+// sin desarrollarlo, este es el desarrollo.
 //
 // Cosas que están bien sostenidas con fuente primaria/secundaria:
 // - Fecha de inicio (1-ene-2024) y cierre licitación 2002 (31-mar-2024)
@@ -37,6 +37,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function PerimetroExclusionGranConcepcion2024() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -85,8 +86,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           este perímetro es <strong>la columna vertebral</strong>: define
           qué líneas son urbanas del Gran Concepción (las que aparecen
           en el feed GTFS oficial), qué tarifa pagan, qué operador las
-          corre y bajo qué reglas. Los artículos hermanos del wiki —
-          {' '}
+          corre y bajo qué reglas. Los artículos hermanos del wiki, {' '}
           <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
             Concepción ↔ Tomé
           </a>
@@ -98,7 +98,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
             Concepción ↔ Florida (corredor de El Pimentón)
           </a>
-          {' '}— lo nombran sin desarrollarlo. Aquí está el desarrollo.
+          {', '}lo nombran sin desarrollarlo. Aquí está el desarrollo.
         </p>
       </Section>
 
@@ -135,13 +135,13 @@ export default function PerimetroExclusionGranConcepcion2024() {
                 <td className="px-3 py-2 font-medium">Regulación especial Coronel-Lota</td>
                 <td className="px-3 py-2">Coronel y Lota</td>
                 <td className="px-3 py-2">Operadores locales (Las Galaxias, Buses J. Ewert, etc.)</td>
-                <td className="px-3 py-2">Resolución Exenta 457 MTT (2012-2013) — equivalente parcial a un PE, históricamente subfinanciado. El decreto formal de PE Coronel-Lota está en proceso de licitación (bases en Contraloría a jul-2025) y aún no vigente.</td>
+                <td className="px-3 py-2">Resolución Exenta 457 MTT (2012-2013), equivalente parcial a un PE, históricamente subfinanciado. El decreto formal de PE Coronel-Lota está en proceso de licitación (bases en Contraloría a jul-2025) y aún no vigente.</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Licitación DTPR ELC0007</td>
                 <td className="px-3 py-2">Santa Juana (única comuna)</td>
                 <td className="px-3 py-2">Soc. Transporte Pasajeros Santa Juana SpA</td>
-                <td className="px-3 py-2">Operativo 15-jul-2024 — primera licitación pública del Biobío en 10+ años</td>
+                <td className="px-3 py-2">Operativo 15-jul-2024, primera licitación pública del Biobío en 10+ años</td>
               </tr>
             </tbody>
           </table>
@@ -206,7 +206,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
             },
             {
               date: '27-abr-2017',
-              event: 'Resolución N° 1006 del MTT — marco normativo del perímetro de exclusión del Gran Concepción (base regulatoria que recién se ejecutó en 2024).',
+              event: 'Resolución N° 1006 del MTT, marco normativo del perímetro de exclusión del Gran Concepción (base regulatoria que recién se ejecutó en 2024).',
               source: { href: 'https://www.mtt.gob.cl/wp-content/uploads/2017/10/Resex_1005.2017.pdf', label: 'MTT (norma adyacente)' },
             },
             {
@@ -226,7 +226,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
             },
             {
               date: '2-feb-2024',
-              event: 'Diario Concepción anuncia que la tarifa adulto subirá a $550 durante el primer trimestre 2024 — primer ajuste polinómico bajo el nuevo régimen.',
+              event: 'Diario Concepción anuncia que la tarifa adulto subirá a $550 durante el primer trimestre 2024, primer ajuste polinómico bajo el nuevo régimen.',
               source: { href: 'https://www.diarioconcepcion.cl/ciudad/2024/02/02/a-550-pesos-subira-la-tarifa-del-transporte-publico-en-el-gran-concepcion.html', label: 'Diario Concepción · 2-feb-2024' },
             },
             {
@@ -282,9 +282,9 @@ export default function PerimetroExclusionGranConcepcion2024() {
             ['Concepción', 'Capital regional · centro de la red, terminales clave: Intermodal Concepción, Collao, Manuel Rodríguez'],
             ['Talcahuano', 'Puerto, Base Naval, barrios populares (Las Higueras, El Morro) y "los cerros" (zona alta históricamente sub-atendida)'],
             ['Hualpén', 'Comuna costera entre Talcahuano y Concepción, refinería ENAP, Lenga, Caleta Lenga'],
-            ['San Pedro de la Paz', 'Margen sur del Biobío, Boca Sur, San Pedro de la Costa — terminal Biotrén Juan Pablo II y San Pedro'],
+            ['San Pedro de la Paz', 'Margen sur del Biobío, Boca Sur, San Pedro de la Costa, terminal Biotrén Juan Pablo II y San Pedro'],
             ['Chiguayante', 'Río arriba del Biobío, comuna lineal sobre la ribera norte'],
-            ['Penco', 'Norte del AMC, incluye distrito de Lirquén — terminal norte del Biotrén'],
+            ['Penco', 'Norte del AMC, incluye distrito de Lirquén, terminal norte del Biotrén'],
             ['Hualqui', 'Río arriba en la margen sur, comuna interior pendiente de mejor frecuencia (zona de "refuerzo" según monitoreo Seremi)'],
           ]}
         />
@@ -292,12 +292,12 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <strong>Comunas del AMC que NO están en este perímetro:</strong>{' '}
           Tomé y Dichato (PE propio), Coronel y Lota (PE propio), Santa
           Juana (licitación pública DTPR ELC0007 bajo Ley 20.378),
-          Florida (sin régimen — operadores privados + subsidios
+          Florida (sin régimen, operadores privados + subsidios
           parciales por servicio).
         </p>
         <Sources>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/">
-            DPR Biobío · 3-ene-2024 — Lista oficial de 7 comunas cubiertas
+            DPR Biobío · 3-ene-2024, Lista oficial de 7 comunas cubiertas
           </SourceLink>
           <SourceLink href="https://www.radioudec.cl/como-entender-el-perimetro-de-exclusion-del-transporte-publico-del-gran-concepcion/">
             Radio UdeC · explicador de comunas y régimen
@@ -317,7 +317,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           Lo que sigue es la <strong>lista parcial conocida</strong>{' '}
           (operadores que la prensa o Wikipedia nombraron explícitamente).
           Una lista completa de los 36 UN con su empresa adjudicada
-          requiere acceso al expediente DTPR — pendiente.
+          requiere acceso al expediente DTPR, pendiente.
         </p>
         <OperatorTable
           rows={[
@@ -339,7 +339,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
               name: 'Nueva Sotrapel',
               routes: 'Línea 12 · UN12',
               terminal: 'Pedro de Valdivia / Concepción',
-              notes: 'Tradicional operador conocido por el recorrido Lonco — Concepción.',
+              notes: 'Tradicional operador conocido por el recorrido Lonco, Concepción.',
               source: { href: 'https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n', label: 'Wikipedia' },
             },
             {
@@ -360,7 +360,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
               name: 'Buses San Pedro del Mar',
               routes: 'UN23',
               terminal: 'San Pedro de la Paz',
-              notes: 'Adhirió en la segunda ola — operativo desde 1-mar-2024.',
+              notes: 'Adhirió en la segunda ola, operativo desde 1-mar-2024.',
               source: { href: 'https://www.tvu.cl/prensa/2024/03/01/perimetro-de-exclusion-11-empresas-se-incorporan-a-nueva-regulacion-del-transporte-publico.html', label: 'TVU · 1-mar-2024' },
             },
             {
@@ -409,7 +409,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
               name: 'Mi Expreso',
               routes: 'Línea 62 · UN62 (62H San Vicente ↔ Lirquén)',
               terminal: 'San Vicente - Lirquén',
-              notes: 'Llega hasta Lirquén dentro del PE — el tramo Lirquén → Tomé ya es PE Tomé.',
+              notes: 'Llega hasta Lirquén dentro del PE, el tramo Lirquén → Tomé ya es PE Tomé.',
               source: { href: 'https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n', label: 'Wikipedia' },
             },
             {
@@ -459,7 +459,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           Resolución 29/2023 del MTT visada por Contraloría. Operadores
           mencionados informalmente en otros artículos del wiki
           (Movix, Vía Sur, Buses Conce) <em>no</em> aparecen en fuentes
-          primarias revisadas — pendiente cotejo de nombre comercial vs
+          primarias revisadas, pendiente cotejo de nombre comercial vs
           razón social formal.
         </PendingBanner>
         <Sources>
@@ -467,10 +467,10 @@ export default function PerimetroExclusionGranConcepcion2024() {
             Wikipedia · Buses licitados Gran Concepción (estructura UN 2002 → 2024)
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2024/03/01/perimetro-de-exclusion-11-empresas-se-incorporan-a-nueva-regulacion-del-transporte-publico.html">
-            TVU · 1-mar-2024 — 11 empresas se incorporan (lista de UN23, 24, 30, 31, 32, 41, 50, 63, 65, 81)
+            TVU · 1-mar-2024, 11 empresas se incorporan (lista de UN23, 24, 30, 31, 32, 41, 50, 63, 65, 81)
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2024/04/01/35-lineas-de-taxibuses-seran-parte-del-perimetro-de-exclusion-del-gran-concepcion.html">
-            TVU · 1-abr-2024 — 35 líneas totales, Base Naval excluida
+            TVU · 1-abr-2024, 35 líneas totales, Base Naval excluida
           </SourceLink>
         </Sources>
       </Section>
@@ -521,7 +521,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <strong>valor del bus</strong> y la{' '}
           <strong>mano de obra</strong>. El SEREMI Patricio Fierro
           (feb-2025) lo describió en prensa como una fórmula que
-          considera "diésel, dólar, IPC, entre otros factores" — la
+          considera "diésel, dólar, IPC, entre otros factores", la
           forma matemática exacta del polinomio no está publicada en
           fuente abierta.
         </p>
@@ -533,18 +533,17 @@ export default function PerimetroExclusionGranConcepcion2024() {
         </PendingBanner>
         <p className="text-[12px] text-muted-foreground">
           La línea 56 Base Naval, durante el período en que estuvo fuera
-          del perímetro (post 1-abr-2024), pudo cobrar tarifa distinta —
-          no documentado.
+          del perímetro (post 1-abr-2024), pudo cobrar tarifa distinta, no documentado.
         </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/30/alza-en-el-transporte-del-gran-concepcion-en-cuanto-quedara-el-pasaje-y-cuando-sube.html">
-            Diario Concepción · 30-nov-2024 — Tarifa $560 desde 9-dic-2024
+            Diario Concepción · 30-nov-2024, Tarifa $560 desde 9-dic-2024
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html">
-            Diario Concepción · 14-feb-2025 — Tarifa $580 desde 23-feb-2025
+            Diario Concepción · 14-feb-2025, Tarifa $580 desde 23-feb-2025
           </SourceLink>
           <SourceLink href="https://www.canal9.cl/episodios/noticias/2025/02/24/pasaje-de-la-locomocion-colectiva-en-el-gran-concepcion-ya-es-de-580">
-            Canal 9 · 24-feb-2025 — Confirmación tarifa $580 operativa
+            Canal 9 · 24-feb-2025, Confirmación tarifa $580 operativa
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n">
             Wikipedia · Estructura polinómica (diésel + neumático + bus + mano de obra)
@@ -552,7 +551,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
         </Sources>
       </Section>
 
-      <Section title="BusPay — pago electrónico 2026">
+      <Section title="BusPay, pago electrónico 2026">
         <p>
           El perímetro contempla la migración al{' '}
           <strong>pago electrónico</strong> como uno de sus
@@ -573,9 +572,9 @@ export default function PerimetroExclusionGranConcepcion2024() {
             ['Inversión estatal', '~$750 millones / año (mantenimiento operativo)'],
             ['Cobertura', '1.800 a 2.000 validadores en 11 comunas: las 7 del PE Gran Concepción + Tomé + Coronel + Lota + Santa Juana'],
             ['Medios de pago', 'Tarjeta bancaria contactless, código QR vía celular, TNE para estudiantes, tarjeta dedicada con diseño UdeC Campanil'],
-            ['Tarifa', '$580 sin alteración — el sistema lo paga el Estado, no el pasajero'],
+            ['Tarifa', '$580 sin alteración, el sistema lo paga el Estado, no el pasajero'],
             ['Cronograma instalación', 'Abril-mayo 2026 instalación de validadores'],
-            ['Marcha blanca', 'Tercer trimestre 2026 (Q3) — efectivo y tarjeta en paralelo'],
+            ['Marcha blanca', 'Tercer trimestre 2026 (Q3), efectivo y tarjeta en paralelo'],
             ['Operación 100% electrónica', 'Proyectada para fines de 2026'],
             ['Diseño de tarjeta', 'Consulta ciudadana Subtrans · 3 opciones (puente ferroviario Biobío, Coliseo La Tortuga, Campanil UdeC). Resultado: Campanil UdeC.'],
           ]}
@@ -583,25 +582,25 @@ export default function PerimetroExclusionGranConcepcion2024() {
         <p className="text-[12px] text-muted-foreground">
           El sistema integra el régimen del Gran Concepción (PE 7
           comunas), el régimen Tomé (PE propio) y la licitación 201
-          Santa Juana — los <strong>tres</strong> regímenes operan bajo
+          Santa Juana, los <strong>tres</strong> regímenes operan bajo
           el mismo medio de pago. BusPay sí incluye a Coronel y Lota,
           ampliando la cobertura más allá del PE Gran Concepción.
         </p>
         <Sources>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-            BioBioChile · 28-ene-2026 — Adjudicación BusPay
+            BioBioChile · 28-ene-2026, Adjudicación BusPay
           </SourceLink>
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-            Subtrans · 2026 — Comunicado oficial
+            Subtrans · 2026, Comunicado oficial
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/09/23/gran-concepcion-avanza-hacia-el-pago-electronico-en-buses-mtt-recibe-seis-ofertas.html">
-            Diario Concepción · 23-sep-2025 — Seis ofertas recibidas
+            Diario Concepción · 23-sep-2025, Seis ofertas recibidas
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
             Subtrans · Consulta ciudadana diseño de tarjeta
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2026/02/26/transporte-publico-del-gran-concepcion-prepara-salto-digital-2-mil-maquinas-operaran-con-pago-electronico.html">
-            TVU · 26-feb-2026 — 2.000 validadores y salto digital
+            TVU · 26-feb-2026, 2.000 validadores y salto digital
           </SourceLink>
         </Sources>
       </Section>
@@ -622,7 +621,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
             Sí están en el visor (líneas dentro del PE Gran Concepción)
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            Todas las líneas urbanas del feed GTFS — códigos como{' '}
+            Todas las líneas urbanas del feed GTFS, códigos como{' '}
             <strong>10A, 11, 12, 17M, 18, 22, 30B/C/E, 31F, 50YP, 57Y,
             62H, 80, 81</strong> y todas las demás de las 36 UN
             adheridas. Tarifa $580 adulto, accesibles vía rutas urbanas
@@ -640,15 +639,15 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px]">
             <li>
               <strong>201 / 201 AU</strong> Santa Juana (licitación DTPR
-              ELC0007 — NO del PE Gran Concepción) — ver{' '}
+              ELC0007, NO del PE Gran Concepción), ver{' '}
               <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
                 artículo Ruta 201
               </a>
               .
             </li>
             <li>
-              <strong>401 / 411 / 421</strong> Tomé (PE Tomé — NO del PE
-              Gran Concepción) — ver{' '}
+              <strong>401 / 411 / 421</strong> Tomé (PE Tomé, NO del PE
+              Gran Concepción), ver{' '}
               <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
                 artículo Concepción ↔ Tomé
               </a>
@@ -687,18 +686,18 @@ export default function PerimetroExclusionGranConcepcion2024() {
         </p>
         <KeyValueList
           items={[
-            ['GPS online', 'Obligatorio en toda la flota — monitoreo continuo de posición'],
+            ['GPS online', 'Obligatorio en toda la flota, monitoreo continuo de posición'],
             ['Indicadores de servicio', 'Frecuencia, regularidad y puntualidad medidos en tiempo real'],
             ['Ranking de cumplimiento', 'El MTT publica un ranking que afecta los pagos mensuales del subsidio (sanciones / reconocimientos)'],
-            ['Control de "recortes"', 'Práctica donde el conductor termina el recorrido antes de llegar al barrio periférico — el GPS la detecta y se sanciona'],
+            ['Control de "recortes"', 'Práctica donde el conductor termina el recorrido antes de llegar al barrio periférico, el GPS la detecta y se sanciona'],
             ['Refuerzo zonal', 'Marzo 2024 en adelante, SEREMI identifica zonas de bajo desempeño: sur de San Pedro de la Paz, Hualqui, Penco, "los cerros" de Talcahuano'],
-            ['Frecuencia y horarios', 'El operador no puede acortar la ventana operativa unilateralmente — debe respetar la tabla contractual'],
-            ['Antigüedad de flota', 'El PE define un máximo (no publicado en fuente abierta) — incentivo a renovar usando subsidio "Renueva tu bus" ($6.000 millones disponibles)'],
+            ['Frecuencia y horarios', 'El operador no puede acortar la ventana operativa unilateralmente, debe respetar la tabla contractual'],
+            ['Antigüedad de flota', 'El PE define un máximo (no publicado en fuente abierta), incentivo a renovar usando subsidio "Renueva tu bus" ($6.000 millones disponibles)'],
             ['Plataforma al público', 'App "RED Regional de Movilidad" muestra recorridos y horarios al pasajero'],
           ]}
         />
         <p className="text-[12px]">
-          <strong>Caso emblemático — Línea 56 Base Naval:</strong> Es la
+          <strong>Caso emblemático, Línea 56 Base Naval:</strong> Es la
           única línea que <strong>no entró</strong> al perímetro en
           abril 2024, por deudas laborales con sus conductores. Otros
           operadores cubrieron su trazado mientras tanto. Representa
@@ -718,10 +717,10 @@ export default function PerimetroExclusionGranConcepcion2024() {
             Radio UdeC · GPS, ranking, control de recortes
           </SourceLink>
           <SourceLink href="https://hora12.cl/2024/04/01/35-lineas-de-buses-integradas-al-proceso-de-licitacion-en-el-gran-concepcion/">
-            Hora12 · 1-abr-2024 — Caso Base Naval (1,16% flota)
+            Hora12 · 1-abr-2024, Caso Base Naval (1,16% flota)
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2023/11/22/perimetro-de-exclusion-gremios-del-gran-concepcion-llegan-a-acuerdo-con-ministerio-de-transportes.shtml">
-            BioBioChile · 22-nov-2023 — Acuerdo cinco federaciones / Luis Quiroz
+            BioBioChile · 22-nov-2023, Acuerdo cinco federaciones / Luis Quiroz
           </SourceLink>
         </Sources>
       </Section>
@@ -759,7 +758,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
               El compromiso de tener pago electrónico en 2025 se
               postergó: licitación recién en sep-2025, adjudicación en
               ene-2026, marcha blanca Q3 2026, 100% electrónico a fines
-              de 2026 — dos años después del perímetro.
+              de 2026, dos años después del perímetro.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -770,8 +769,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
               Quejas recurrentes en redes sociales por buses que pasan
               llenos sin parar, recortes de recorrido en horario punta,
               choferes que cobran tarifa adulto a estudiantes sin TNE
-              firmada. El ranking no se publica desagregado por UN —
-              difícil para el usuario verificar si su operador cumple.
+              firmada. El ranking no se publica desagregado por UN, difícil para el usuario verificar si su operador cumple.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -794,8 +792,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <li>
             <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
-            </a>{' '}
-            — la capa de pago electrónico que se monta sobre este
+            </a>{' '}, la capa de pago electrónico que se monta sobre este
             perímetro. Adjudicado al Consorcio Buspay el 28-ene-2026,
             $580 sin alteración, 1.800-2.000 validadores en 11
             comunas, marcha blanca Q3 2026.
@@ -803,8 +800,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <li>
             <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
               Ruta 201 Santa Juana
-            </a>{' '}
-            — la "otra cara" del régimen: en vez de PE, una{' '}
+            </a>{' '}, la "otra cara" del régimen: en vez de PE, una{' '}
             <em>licitación pública</em> bajo Ley 20.378, art. 4°.
             Tarifa $1.000 fija, operador único nuevo, primer servicio
             rural de Chile con pago electrónico (BusPay).
@@ -812,8 +808,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <li>
             <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
               Concepción ↔ Tomé
-            </a>{' '}
-            — el "primer hermano" del PE Gran Concepción: PE propio
+            </a>{' '}, el "primer hermano" del PE Gran Concepción: PE propio
             creado en jul-2016 (anterior al de Gran Concepción),
             operativo desde 10-mar-2022, operador único Transportes
             Tomé. El tramo Conce-Penco-Lirquén es PE Gran Concepción;
@@ -822,8 +817,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <li>
             <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
               Concepción ↔ Florida (corredor de El Pimentón)
-            </a>{' '}
-            — el contraejemplo: corredor metropolitano todavía{' '}
+            </a>{' '}, el contraejemplo: corredor metropolitano todavía{' '}
             <em>sin</em> régimen formal. Cuatro privados (Delsal,
             Nueva Libertadores, Biocosta, Trinidad) operan sin
             licitación, tarifa libre, ~40 buses combinados; trazado vía
@@ -834,24 +828,21 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <li>
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Recorridos interurbanos del Gran Concepción
-            </a>{' '}
-            — índice general de los servicios que <em>no</em> están en
+            </a>{' '}, índice general de los servicios que <em>no</em> están en
             el GTFS urbano. Útil para entender qué cae dentro del PE
             (urbano) vs. qué cae fuera.
           </li>
           <li>
             <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
               Subsidio Nacional al Transporte Público (Ley 20.378)
-            </a>{' '}
-            — la Ley 20.378 (art. 2°) es la que financia el subsidio
+            </a>{' '}, la Ley 20.378 (art. 2°) es la que financia el subsidio
             que sostiene la tarifa $580 del PE. El art. 4° (servicios
             licitados subsidiados) habilita servicios como la Ruta 201.
           </li>
           <li>
             <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">
               Sobre este wiki
-            </a>{' '}
-            — modelo editorial: por qué este artículo cita 20+ fuentes
+            </a>{' '}, modelo editorial: por qué este artículo cita 20+ fuentes
             primarias y marca como "pendiente" lo que no pudo
             verificarse.
           </li>
@@ -860,15 +851,15 @@ export default function PerimetroExclusionGranConcepcion2024() {
 
       <Section title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Número y texto íntegro del decreto MTT que aprobó la adjudicación del PE Gran Concepción 2024 (probable Resolución Afecta N° 29/2023 visada por Contraloría en mayo 2023 — texto no recuperado).</li>
+          <li>Número y texto íntegro del decreto MTT que aprobó la adjudicación del PE Gran Concepción 2024 (probable Resolución Afecta N° 29/2023 visada por Contraloría en mayo 2023, texto no recuperado).</li>
           <li>Lista íntegra de las 36 UN con la razón social, RUT y N° RNTPP de cada operador adjudicado.</li>
           <li>Cláusula tarifaria con forma matemática del polinomio de ajuste (coeficiente de cada variable: diésel, neumático, bus, mano de obra, IPC).</li>
           <li>Antigüedad máxima de flota permitida por el contrato del perímetro.</li>
-          <li>Estado actual (2026) de la línea 56 Base Naval — ¿se incorporó al PE? ¿sigue fuera?</li>
+          <li>Estado actual (2026) de la línea 56 Base Naval, ¿se incorporó al PE? ¿sigue fuera?</li>
           <li>Cuotas de flota por UN (cuántos buses opera cada empresa).</li>
           <li>Ranking de cumplimiento publicado por DTPR Biobío (¿se publica? ¿con qué desagregación?).</li>
           <li>Subsidio total al perímetro: cifra agregada del aporte fiscal.</li>
-          <li>Estatus formal de Movix, Vía Sur, Buses Conce — nombres mencionados informalmente pero no verificados en fuentes primarias revisadas.</li>
+          <li>Estatus formal de Movix, Vía Sur, Buses Conce, nombres mencionados informalmente pero no verificados en fuentes primarias revisadas.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
           Vía de cierre principal: <strong>solicitud de Ley de
@@ -889,7 +880,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
             Wikipedia · Transporte público en el Gran Concepción
           </SourceLink>
           <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
-            BCN · Ley 20.378 (subsidio art. 4° — base de licitación Santa Juana)
+            BCN · Ley 20.378 (subsidio art. 4°, base de licitación Santa Juana)
           </SourceLink>
           <SourceLink href="https://mtt.gob.cl/wp-content/uploads/2017/10/Resex_1005.2017.pdf">
             MTT · Resolución Exenta N° 1006/2017 (marco normativo, base del PE)
@@ -898,52 +889,52 @@ export default function PerimetroExclusionGranConcepcion2024() {
               Mantenemos la cita por trazabilidad; pendiente snapshot en
               Wayback Machine o reubicación del PDF en el portal MTT. */}
           <SourceLink href="https://www.mtt.gob.cl/wp-content/uploads/2023/07/Rex-1482-2023.pdf">
-            MTT · Resolución Exenta N° 1482/2023 (PDF — URL puede estar caída)
+            MTT · Resolución Exenta N° 1482/2023 (PDF, URL puede estar caída)
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/">
-            DPR Biobío · 3-ene-2024 — Inicio operativo perímetro
+            DPR Biobío · 3-ene-2024, Inicio operativo perímetro
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/02/02/a-550-pesos-subira-la-tarifa-del-transporte-publico-en-el-gran-concepcion.html">
-            Diario Concepción · 2-feb-2024 — Primera alza bajo PE ($550)
+            Diario Concepción · 2-feb-2024, Primera alza bajo PE ($550)
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2024/03/01/perimetro-de-exclusion-11-empresas-se-incorporan-a-nueva-regulacion-del-transporte-publico.html">
-            TVU · 1-mar-2024 — Segunda ola: 11 empresas se incorporan
+            TVU · 1-mar-2024, Segunda ola: 11 empresas se incorporan
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2024/04/01/35-lineas-de-taxibuses-seran-parte-del-perimetro-de-exclusion-del-gran-concepcion.html">
-            TVU · 1-abr-2024 — 35 líneas finales, Base Naval excluida
+            TVU · 1-abr-2024, 35 líneas finales, Base Naval excluida
           </SourceLink>
           <SourceLink href="https://hora12.cl/2024/04/01/35-lineas-de-buses-integradas-al-proceso-de-licitacion-en-el-gran-concepcion/">
-            Hora12 · 1-abr-2024 — Cierre del proceso, caso Base Naval (1,16% flota)
+            Hora12 · 1-abr-2024, Cierre del proceso, caso Base Naval (1,16% flota)
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2023/11/22/perimetro-de-exclusion-gremios-del-gran-concepcion-llegan-a-acuerdo-con-ministerio-de-transportes.shtml">
-            BioBioChile · 22-nov-2023 — Acuerdo Luis Quiroz / cinco federaciones
+            BioBioChile · 22-nov-2023, Acuerdo Luis Quiroz / cinco federaciones
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/30/alza-en-el-transporte-del-gran-concepcion-en-cuanto-quedara-el-pasaje-y-cuando-sube.html">
-            Diario Concepción · 30-nov-2024 — Anuncio alza $560 (9-dic-2024)
+            Diario Concepción · 30-nov-2024, Anuncio alza $560 (9-dic-2024)
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html">
-            Diario Concepción · 14-feb-2025 — Anuncio alza $580 (23-feb-2025)
+            Diario Concepción · 14-feb-2025, Anuncio alza $580 (23-feb-2025)
           </SourceLink>
           <SourceLink href="https://www.canal9.cl/episodios/noticias/2025/02/24/pasaje-de-la-locomocion-colectiva-en-el-gran-concepcion-ya-es-de-580">
-            Canal 9 · 24-feb-2025 — Tarifa $580 operativa
+            Canal 9 · 24-feb-2025, Tarifa $580 operativa
           </SourceLink>
           <SourceLink href="https://www.radioudec.cl/como-entender-el-perimetro-de-exclusion-del-transporte-publico-del-gran-concepcion/">
             Radio UdeC · Explicador del régimen (GPS, ranking, sanción)
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/09/23/gran-concepcion-avanza-hacia-el-pago-electronico-en-buses-mtt-recibe-seis-ofertas.html">
-            Diario Concepción · 23-sep-2025 — Seis ofertas BusPay
+            Diario Concepción · 23-sep-2025, Seis ofertas BusPay
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-            BioBioChile · 28-ene-2026 — Adjudicación Consorcio Buspay
+            BioBioChile · 28-ene-2026, Adjudicación Consorcio Buspay
           </SourceLink>
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-            Subtrans · 2026 — Comunicado oficial BusPay
+            Subtrans · 2026, Comunicado oficial BusPay
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
             Subtrans · Consulta ciudadana diseño tarjeta (Campanil UdeC)
           </SourceLink>
           <SourceLink href="https://www.tvu.cl/prensa/2026/02/26/transporte-publico-del-gran-concepcion-prepara-salto-digital-2-mil-maquinas-operaran-con-pago-electronico.html">
-            TVU · 26-feb-2026 — 2.000 validadores BusPay
+            TVU · 26-feb-2026, 2.000 validadores BusPay
           </SourceLink>
         </Sources>
       </Section>
@@ -954,7 +945,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           íntegra de UN con su operador adjudicado, foto del cartel
           tarifario en paradero o terminal, captura del ranking de
           cumplimiento DTPR, o cualquier dato que ayude a cerrar los
-          pendientes — abre un pull request en{' '}
+          pendientes, abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/perimetro-exclusion-gran-concepcion-2024.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/perimetro-exclusion-gran-concepcion-2024.tsx
           </SourceLink>

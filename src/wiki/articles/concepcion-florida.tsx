@@ -1,4 +1,4 @@
-// Concepción ↔ Florida — único artículo del corredor (también conocido
+// Concepción ↔ Florida, único artículo del corredor (también conocido
 // coloquialmente como "el corredor de El Pimentón").
 //
 // El servicio troncal sigue siendo PRIVADO al cierre de 2025: cuatro
@@ -23,6 +23,7 @@ import {
 } from './_components';
 import { MapLink } from '@/wiki/map-link';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function ConcepcionFlorida() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -51,12 +52,12 @@ export default function ConcepcionFlorida() {
           genérica. A partir de 2025 se sumaron{' '}
           <strong>servicios subsidiados</strong> para tramos rurales
           (Rahuil, Poñén-Roa, zona norte) y un servicio nocturno
-          Concepción-Florida — pero el troncal diurno sigue privado.
+          Concepción-Florida, pero el troncal diurno sigue privado.
         </p>
         <p>
           Pieza de movilidad <em>no</em> integrada al GTFS Gran Concepción
           ni al sistema BusPay 2026. Pasa por la cuesta interior, no por
-          la costa (Ruta 156, Madera) — esa es la diferencia clave con el
+          la costa (Ruta 156, Madera), esa es la diferencia clave con el
           eje Conce ↔ Santa Juana (ver{' '}
           <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
             201 Santa Juana
@@ -154,7 +155,7 @@ export default function ConcepcionFlorida() {
         </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/07/27/transportes-no-puede-obligar-a-buses-a-florida-para-que-aumenten-su-frecuencia.html">
-            Diario Concepción · 27-jul-2024 — Flota combinada de 40 buses
+            Diario Concepción · 27-jul-2024, Flota combinada de 40 buses
           </SourceLink>
         </Sources>
         <PendingBanner>
@@ -232,7 +233,7 @@ export default function ConcepcionFlorida() {
         <div className="space-y-2">
           <div className="rounded-md border bg-card p-3">
             <div className="text-[12px] font-medium">
-              Servicio rural zona norte de Florida — operativo desde
+              Servicio rural zona norte de Florida, operativo desde
               oct-2025
             </div>
             <KeyValueList
@@ -244,7 +245,7 @@ export default function ConcepcionFlorida() {
                 ['Plazo', '36 meses'],
                 ['Inauguración formal', 'Fines de octubre 2025'],
                 ['Cobertura', 'Decena de localidades de la zona norte de la comuna'],
-                ['Operador', 'No publicado en fuente abierta — pendiente'],
+                ['Operador', 'No publicado en fuente abierta, pendiente'],
               ]}
             />
             <Sources>
@@ -258,7 +259,7 @@ export default function ConcepcionFlorida() {
           </div>
           <div className="rounded-md border bg-card p-3">
             <div className="text-[12px] font-medium">
-              Servicio nocturno Concepción ↔ Florida — anunciado abr-2025
+              Servicio nocturno Concepción ↔ Florida, anunciado abr-2025
             </div>
             <KeyValueList
               items={[
@@ -267,7 +268,7 @@ export default function ConcepcionFlorida() {
                 ['Cita Mayor Montero', '"En mayo debería comenzar a operar un servicio subvencionado cuya licitación ya fue cerrada"'],
                 ['Cita SEREMI Fierro', '"Estamos acelerando todos los procesos para reponer el servicio a la brevedad, con carácter urgente"'],
                 ['Origen político', 'Crimen de Daniela Olate (jul-2024) puso la seguridad nocturna del corredor en agenda'],
-                ['Operador / decreto', 'No publicados al cierre de búsqueda — pendiente'],
+                ['Operador / decreto', 'No publicados al cierre de búsqueda, pendiente'],
               ]}
             />
             <Sources>
@@ -278,7 +279,7 @@ export default function ConcepcionFlorida() {
           </div>
           <div className="rounded-md border bg-card p-3">
             <div className="text-[12px] font-medium">
-              Servicio Rahuil ↔ Florida urbano — desde abr-2025
+              Servicio Rahuil ↔ Florida urbano, desde abr-2025
             </div>
             <p className="mt-1 text-[12px] text-muted-foreground">
               Conecta localidad rural de Rahuil con el casco urbano de
@@ -288,7 +289,7 @@ export default function ConcepcionFlorida() {
           </div>
           <div className="rounded-md border bg-card p-3">
             <div className="text-[12px] font-medium">
-              Servicio Poñén-Roa — martes y jueves desde 2025
+              Servicio Poñén-Roa, martes y jueves desde 2025
             </div>
             <p className="mt-1 text-[12px] text-muted-foreground">
               Cobertura limitada (dos días/semana, mañana y tarde). Es
@@ -340,7 +341,7 @@ export default function ConcepcionFlorida() {
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/07/27/transportes-no-puede-obligar-a-buses-a-florida-para-que-aumenten-su-frecuencia.html">
-            Diario Concepción · 27-jul-2024 — Esperas en Colo-Colo + acuerdo Red Movilidad
+            Diario Concepción · 27-jul-2024, Esperas en Colo-Colo + acuerdo Red Movilidad
           </SourceLink>
         </Sources>
       </Section>
@@ -353,8 +354,7 @@ export default function ConcepcionFlorida() {
           $1.700-$2.500 tarifa adulto Concepción-Florida directo;{' '}
           $400-$1.500 el servicio subsidiado zona norte intra-comuna.
           La gratuidad para adultos mayores y personas con discapacidad
-          es <strong>obligatoria sólo en servicios subsidiados</strong>{' '}
-          — los privados aplican TNE (33%) pero no garantizan gratuidad.
+          es <strong>obligatoria sólo en servicios subsidiados</strong>{' '}, los privados aplican TNE (33%) pero no garantizan gratuidad.
         </PendingBanner>
       </Section>
 
@@ -447,17 +447,17 @@ export default function ConcepcionFlorida() {
                 <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
                   Tomé
                 </a>
-                {' '}— este último es el segundo perímetro de exclusión de la zona).
+                {', '}este último es el segundo perímetro de exclusión de la zona).
               </>,
             ],
           ]}
         />
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/07/27/transportes-no-puede-obligar-a-buses-a-florida-para-que-aumenten-su-frecuencia.html">
-            Diario Concepción · jul-2024 — Acuerdo de tecnología
+            Diario Concepción · jul-2024, Acuerdo de tecnología
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/08/30/taxibuses-lota-coronel-incorporan-contadores-de-pasajeros-camaras-y-gps.html">
-            Diario Concepción · ago-2024 — Lota-Coronel (referencia de comparación)
+            Diario Concepción · ago-2024, Lota-Coronel (referencia de comparación)
           </SourceLink>
         </Sources>
       </Section>
@@ -589,7 +589,7 @@ export default function ConcepcionFlorida() {
           históricas consultadas (Archivo Histórico de Concepción sobre
           los 7 puentes, municipalidad de Hualqui) tampoco mencionan el
           rótulo. Tratamos <em>"El Pimentón"</em> como nombre paraguas
-          del corredor —válido para búsqueda y memoria oral— hasta que
+          del corredor , válido para búsqueda y memoria oral, hasta que
           aparezca una fuente IGM, municipal o comunitaria que lo
           confirme o reasigne.
         </p>
@@ -613,7 +613,7 @@ export default function ConcepcionFlorida() {
           <li>Estado actual de cumplimiento del acuerdo de tecnología (GPS, cámaras, app Red Movilidad).</li>
           <li>Identidad del servicio que estaba "suspendido temporalmente" en mar-2025.</li>
           <li>GTFS público del corredor (cuando exista, se incorpora al visor principal).</li>
-          <li>Demanda diaria (vehículos·persona) verificada — no hay encuesta O/D pública 2020+.</li>
+          <li>Demanda diaria (vehículos·persona) verificada, no hay encuesta O/D pública 2020+.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
           Vías de cierre: Ley de Transparencia a DTPR Biobío por

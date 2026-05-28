@@ -66,11 +66,11 @@ export function TerminalDetailSheet({ open, terminal, onOpenChange, onFocus }: T
           {terminal.network ? (
             <Badge variant="secondary" className="font-mono">{terminal.network}</Badge>
           ) : (
-            <span className="text-muted-foreground">—</span>
+            <span className="text-muted-foreground">Sin dato</span>
           )}
         </Row>
         <Row label="Operador">
-          <span className="text-foreground">{terminal.operator ?? '—'}</span>
+          <span className="text-foreground">{terminal.operator ?? 'No informado'}</span>
         </Row>
         <Row label="OSM ID">
           <span className="font-mono text-[11px] text-muted-foreground">{terminal.osmId}</span>

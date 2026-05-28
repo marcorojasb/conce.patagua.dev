@@ -1,4 +1,4 @@
-// Taxis colectivos del Gran Concepción — modo urbano masivo
+// Taxis colectivos del Gran Concepción, modo urbano masivo
 // invisibilizado. Marco: DS 212/1992 MTT (define modalidad), Ley
 // 18.290 (Tránsito), Ley 18.696 (atribuciones MTT), Ley 20.474 (cierre
 // padrón nacional, 2011). Color reglamentario: negro con techo
@@ -15,6 +15,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function TaxisColectivosGranConcepcion() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -37,7 +38,7 @@ export default function TaxisColectivosGranConcepcion() {
           vehículo, como el taxi básico). Se mueven por recorridos
           declarados ante la autoridad, con paraderos en cabecera y desvíos
           puntuales por la línea, y cobran una tarifa plana o por tramo
-          equivalente a "media micro" — funcionan como una{' '}
+          equivalente a "media micro", funcionan como una{' '}
           <em>micro chica</em>. La modalidad está definida en el{' '}
           <strong>artículo 2°</strong> del{' '}
           <strong>DS 212/1992</strong> del MTT, Reglamento de los Servicios
@@ -78,7 +79,7 @@ export default function TaxisColectivosGranConcepcion() {
             <strong>Quedan fuera de BusPay 2026.</strong> Adjudicado al{' '}
             <strong>Consorcio Buspay</strong> (operador técnico{' '}
             <strong>Busmatick</strong>) en ene-2026, cubre buses urbanos
-            de PE GC, PE Tomé, Coronel-Lota y Ruta 201 — no menciona
+            de PE GC, PE Tomé, Coronel-Lota y Ruta 201, no menciona
             colectivos
             (
             <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
@@ -146,7 +147,7 @@ export default function TaxisColectivosGranConcepcion() {
                 Régimen general de subsidio al transporte público mayor y
                 atribuciones del MTT para regular. El{' '}
                 <strong>artículo 3°</strong> es el mismo que se usa para
-                crear los perímetros de exclusión de buses — habilita al
+                crear los perímetros de exclusión de buses, habilita al
                 MTT a fijar tarifas y condiciones operativas en zonas
                 geográficas definidas. No se ha usado al cierre 2025-2026
                 para crear un perímetro de exclusión específico de taxis
@@ -161,7 +162,7 @@ export default function TaxisColectivosGranConcepcion() {
               <>
                 Suspendió por cinco años la inscripción de nuevos taxis
                 (básicos, ejecutivos y colectivos) en el RNSTP. Prórrogas
-                sucesivas han mantenido el cierre — al cierre 2025-2026
+                sucesivas han mantenido el cierre, al cierre 2025-2026
                 no se otorgan nuevas inscripciones a nivel nacional. El
                 stock de cupos por línea queda fijo y los traspasos
                 ocurren en mercado secundario.{' '}
@@ -192,7 +193,7 @@ export default function TaxisColectivosGranConcepcion() {
           ejemplos que siguen son <em>corredores observables</em>{' '}
           documentados en prensa regional y conocimiento de campo, no la
           lista oficial de la DTPR. Cada línea opera con un número
-          (asignado por la autoridad) y una razón social — la tabla
+          (asignado por la autoridad) y una razón social, la tabla
           completa requiere acceso al catastro RNSTP regional vía Ley de
           Transparencia. Lo que sigue es el mapa cualitativo de ejes,
           no la lista cuantitativa.
@@ -209,7 +210,7 @@ export default function TaxisColectivosGranConcepcion() {
               'Eje Talcahuano',
               <>
                 Plaza Independencia ↔ Talcahuano centro (incluye variantes
-                por San Vicente, El Morro, Higueras). Eje histórico — la
+                por San Vicente, El Morro, Higueras). Eje histórico, la
                 ruta entre las dos cabeceras urbanas del área. Compite
                 directamente con la <strong>Línea 1 del Biotrén</strong>{' '}
                 (
@@ -306,7 +307,7 @@ export default function TaxisColectivosGranConcepcion() {
             ],
             [
               'Marcas y modelos dominantes',
-              'Hyundai Accent, Kia Rio, Chevrolet Sail, Suzuki Swift y derivados — segmento subcompacto y compacto económico, motorización 1.4–1.6 L bencina. Observación de calle, sin cita auditable.',
+              'Hyundai Accent, Kia Rio, Chevrolet Sail, Suzuki Swift y derivados, segmento subcompacto y compacto económico, motorización 1.4–1.6 L bencina. Observación de calle, sin cita auditable.',
             ],
             [
               'Antigüedad máxima',
@@ -314,7 +315,7 @@ export default function TaxisColectivosGranConcepcion() {
             ],
             [
               'Renovación',
-              'Sujeta al padrón cerrado (Ley 20.474) — un cupo solo puede ser ocupado por un vehículo nuevo si reemplaza a uno dado de baja. No hay entrada neta de cupos al sistema desde 2011.',
+              'Sujeta al padrón cerrado (Ley 20.474), un cupo solo puede ser ocupado por un vehículo nuevo si reemplaza a uno dado de baja. No hay entrada neta de cupos al sistema desde 2011.',
             ],
             [
               'Electrificación',
@@ -351,7 +352,7 @@ export default function TaxisColectivosGranConcepcion() {
             ],
             [
               'Forma de pago',
-              'Efectivo. No hay sistema de pago electrónico nacional para taxis colectivos. BusPay 2026 NO los cubre — ver sección "Integración con BusPay" más abajo.',
+              'Efectivo. No hay sistema de pago electrónico nacional para taxis colectivos. BusPay 2026 NO los cubre, ver sección "Integración con BusPay" más abajo.',
             ],
             [
               'Información al usuario',
@@ -385,7 +386,7 @@ export default function TaxisColectivosGranConcepcion() {
               <tr>
                 <td className="px-3 py-2 font-medium">Frecuencia</td>
                 <td className="px-3 py-2">Programada por contrato MTT (cada 5-15 min en troncales, más en alimentadores)</td>
-                <td className="px-3 py-2">"Sale cuando se llena" — frecuencia emergente más alta en ejes saturados, baja en ejes débiles</td>
+                <td className="px-3 py-2">"Sale cuando se llena", frecuencia emergente más alta en ejes saturados, baja en ejes débiles</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Confort</td>
@@ -433,7 +434,7 @@ export default function TaxisColectivosGranConcepcion() {
           La adjudicación de <strong>BusPay</strong> al{' '}
           <strong>Consorcio Buspay</strong> (operador técnico{' '}
           <strong>Busmatick</strong>) en ene-2026 abarca 11 comunas y 4
-          regímenes — <strong>todos en modo bus</strong>:
+          regímenes, <strong>todos en modo bus</strong>:
         </p>
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li><strong>PE Gran Concepción</strong> (7 comunas): 36 unidades de negocio.</li>
@@ -547,7 +548,7 @@ export default function TaxisColectivosGranConcepcion() {
             ],
             [
               'Patente',
-              'Placa patente única chilena, sin distintivo especial respecto del taxi básico — la distinción es por letrero de techo y color, no por la patente.',
+              'Placa patente única chilena, sin distintivo especial respecto del taxi básico, la distinción es por letrero de techo y color, no por la patente.',
             ],
             [
               'Conductor',
@@ -566,12 +567,12 @@ export default function TaxisColectivosGranConcepcion() {
           items={[
             {
               date: '21-nov-1992',
-              event: 'Publicación del DS 212/1992 del MTT — Reglamento de los Servicios Nacionales de Transporte Público de Pasajeros. Define la modalidad "taxi colectivo" como categoría regulada.',
+              event: 'Publicación del DS 212/1992 del MTT, Reglamento de los Servicios Nacionales de Transporte Público de Pasajeros. Define la modalidad "taxi colectivo" como categoría regulada.',
               source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=11497', label: 'BCN · DS 212/1992' },
             },
             {
               date: '11-sep-2011',
-              event: 'Publicación de la Ley 20.474 — suspende por 5 años la inscripción de nuevos taxis (básicos, ejecutivos y colectivos) en el RNSTP. Inicia el régimen de "padrón cerrado" del sector.',
+              event: 'Publicación de la Ley 20.474, suspende por 5 años la inscripción de nuevos taxis (básicos, ejecutivos y colectivos) en el RNSTP. Inicia el régimen de "padrón cerrado" del sector.',
               source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=1024893', label: 'BCN · Ley 20.474' },
             },
             {
@@ -580,12 +581,12 @@ export default function TaxisColectivosGranConcepcion() {
             },
             {
               date: '1-ene-2024',
-              event: 'Entrada en vigencia del Perímetro de Exclusión del Gran Concepción 2024 — régimen específico para buses urbanos. Los taxis colectivos quedan fuera del nuevo régimen, mantienen su esquema de líneas RNSTP.',
+              event: 'Entrada en vigencia del Perímetro de Exclusión del Gran Concepción 2024, régimen específico para buses urbanos. Los taxis colectivos quedan fuera del nuevo régimen, mantienen su esquema de líneas RNSTP.',
               source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=1005871', label: 'BCN · Ley 18.696 art. 3°' },
             },
             {
               date: '28-ene-2026',
-              event: 'MTT adjudica BusPay al Consorcio Buspay (operador técnico Busmatick). Alcance: 11 comunas, 4 regímenes regulatorios — todos en modo bus. Los taxis colectivos NO están incluidos en el alcance.',
+              event: 'MTT adjudica BusPay al Consorcio Buspay (operador técnico Busmatick). Alcance: 11 comunas, 4 regímenes regulatorios, todos en modo bus. Los taxis colectivos NO están incluidos en el alcance.',
               source: { href: 'https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/', label: 'Subtrans · 30-ene-2026' },
             },
             {
@@ -624,8 +625,7 @@ export default function TaxisColectivosGranConcepcion() {
           <li>
             <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
               Biotrén y sus extensiones
-            </a>{' '}
-            — el otro modo urbano masivo del Gran Concepción, con la
+            </a>{' '}, el otro modo urbano masivo del Gran Concepción, con la
             asimetría justo opuesta: tren regulado, agendado, digitalizado
             en el visor; colectivo regulado pero fragmentado y ausente
             del feed.
@@ -633,8 +633,7 @@ export default function TaxisColectivosGranConcepcion() {
           <li>
             <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
               Perímetro de Exclusión del Gran Concepción 2024
-            </a>{' '}
-            — el régimen paralelo de los buses urbanos. Mismo artículo 3°
+            </a>{' '}, el régimen paralelo de los buses urbanos. Mismo artículo 3°
             de la Ley 18.696 que se podría usar (y no se ha usado) para
             crear un perímetro de exclusión específico de taxis
             colectivos.
@@ -642,16 +641,14 @@ export default function TaxisColectivosGranConcepcion() {
           <li>
             <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay · pago electrónico del Gran Concepción 2026
-            </a>{' '}
-            — el sistema de recaudo electrónico del que los colectivos
+            </a>{' '}, el sistema de recaudo electrónico del que los colectivos
             quedan fuera. Lectura cruzada útil para entender qué cubre y
             qué no el régimen de pago.
           </li>
           <li>
             <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
               SEREMITT Biobío y la DTPR
-            </a>{' '}
-            — la autoridad regional que autoriza tarifas, recorridos y
+            </a>{' '}, la autoridad regional que autoriza tarifas, recorridos y
             cupos de las líneas de colectivos vía resoluciones.
             Sucesión SEREMI: Silva → Fierro (10-ene-2025 ↔ 28-nov-2025)
             → Cautivo (desde 28-nov-2025).
@@ -659,16 +656,14 @@ export default function TaxisColectivosGranConcepcion() {
           <li>
             <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
               Subsidio Nacional al Transporte Público (Ley 20.378)
-            </a>{' '}
-            — el régimen general de subsidio que sostiene los
+            </a>{' '}, el régimen general de subsidio que sostiene los
             servicios licitados. Los colectivos quedan fuera de su
             ámbito (no son licitados; operan por autorización).
           </li>
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS Gran Concepción
-            </a>{' '}
-            — explica qué cubre el feed que alimenta el visor (buses
+            </a>{' '}, explica qué cubre el feed que alimenta el visor (buses
             urbanos del Perímetro) y por qué los colectivos no están.
           </li>
         </ul>

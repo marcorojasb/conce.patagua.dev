@@ -12,7 +12,7 @@ if (!rootElement) throw new Error('Root element not found');
 // Tiny path-based switch: /wiki and /wiki/* render the wiki, everything
 // else renders the visor. Both are lazy chunks so users only download the
 // app they actually opened. Internal navigation between visor and wiki
-// uses regular <a href="/"> / <a href="/wiki"> — full reload is fine
+// uses regular <a href="/"> / <a href="/wiki">, full reload is fine
 // because they're independent products.
 function pickApp(): JSX.Element {
   if (window.location.pathname.startsWith('/wiki')) {

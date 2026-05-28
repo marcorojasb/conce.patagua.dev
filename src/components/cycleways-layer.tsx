@@ -1,19 +1,19 @@
-// Cycling infrastructure layer for the visor — segregated cycleways,
+// Cycling infrastructure layer for the visor, segregated cycleways,
 // shared paths, and on-road bike lanes from OSM.
 //
 // Uses imperative Leaflet (L.featureGroup + L.polyline on a shared canvas
 // renderer) instead of react-leaflet so the 460+ polylines don't pay
 // reconciliation cost on every parent render. Same pattern as
-// coverage-layer.tsx. The dataset is lazy-loaded — chunk only downloads
+// coverage-layer.tsx. The dataset is lazy-loaded, chunk only downloads
 // the first time the layer is enabled.
 
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { Cycleway, CyclewayKind } from '@/data/cycleways.generated';
-import type { LayerLoadStatus } from '@/hooks/use-layer-status';
+import type { LayerStatusControls } from '@/hooks/use-layer-status';
 
-// Color encoding by kind — segregated stands out (the gold standard for
+// Color encoding by kind, segregated stands out (the gold standard for
 // safety), shared is muted (less reliable infra), lane is in-between.
 const KIND_STYLE: Record<CyclewayKind, { color: string; weight: number; dash?: string }> = {
   segregated: { color: '#2563eb', weight: 3 }, // blue-600
@@ -36,14 +36,14 @@ interface Props {
   enabled: boolean;
   canvasRenderer: L.Canvas;
   retryKey: number;
-  onStatusChange: (status: LayerLoadStatus) => void;
+  loadStatus: LayerStatusControls;
 }
 
 export function CyclewaysLayer({
   enabled,
   canvasRenderer,
   retryKey,
-  onStatusChange,
+  loadStatus,
 }: Props) {
   const map = useMap();
 
@@ -73,23 +73,19 @@ export function CyclewaysLayer({
         group.addLayer(line);
       }
       group.addTo(map);
-      onStatusChange({ loading: false, error: null, ready: true });
+      loadStatus.succeed();
     };
 
     if (dataCache) {
       draw(dataCache);
     } else {
-      onStatusChange({ loading: true, error: null, ready: false });
+      loadStatus.start();
       void loadCycleways()
         .then(draw)
         .catch((err) => {
           dataPromise = null;
           if (!cancelled) {
-            onStatusChange({
-              loading: false,
-              error: err instanceof Error ? err.message : 'No se pudo cargar ciclovías',
-              ready: false,
-            });
+            loadStatus.fail(err, 'No se pudo cargar ciclovías');
           }
         });
     }
@@ -98,7 +94,7 @@ export function CyclewaysLayer({
       cancelled = true;
       group.remove();
     };
-  }, [enabled, canvasRenderer, map, onStatusChange, retryKey]);
+  }, [enabled, canvasRenderer, map, loadStatus, retryKey]);
 
   return null;
 }

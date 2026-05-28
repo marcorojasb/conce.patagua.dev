@@ -23,6 +23,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function BiotrenExtensionesProyectos() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -34,7 +35,7 @@ export default function BiotrenExtensionesProyectos() {
         El resto de la ficha (extensiones a Penco, Lota, San Pedro,
         Coronel) describe proyectos en discusión sin contrato firmado,
         sin RS MIDESO publicado y sin fecha de licitación. Ninguna
-        extensión está adjudicada al cierre 2025-2026 — todo lo que
+        extensión está adjudicada al cierre 2025-2026, todo lo que
         suene a futuro debe leerse como{' '}
         <em>propuesta o expectativa</em>, no como obra confirmada.
       </VerifiedBanner>
@@ -54,30 +55,30 @@ export default function BiotrenExtensionesProyectos() {
         <p>
           El sistema Biotrén opera hoy con dos líneas. Las propuestas de
           extensión existen desde la década de 2010 y se reactivan
-          periódicamente con cada ciclo político — pero ninguna ha
+          periódicamente con cada ciclo político, pero ninguna ha
           alcanzado RS (recomendación social) vigente en MIDESO ni
           decreto MOP/MTT al cierre de 2025-2026. Las cuatro propuestas
           principales:
         </p>
         <ul className="ml-5 list-disc space-y-1">
           <li>
-            <strong>Extensión norte a Penco</strong> — continúa la L1
+            <strong>Extensión norte a Penco</strong>, continúa la L1
             desde Mercado de Talcahuano por el corredor costero hasta
             Penco aprovechando trazas férreas existentes. Es la
             extensión más debatida.
           </li>
           <li>
-            <strong>Extensión norte a Tomé</strong> — segunda fase de la
+            <strong>Extensión norte a Tomé</strong>, segunda fase de la
             anterior, rehabilitando la traza histórica Penco-Tomé que
             tuvo riel hasta los 80.
           </li>
           <li>
-            <strong>Extensión sur a Lota</strong> — continúa la L2 desde
+            <strong>Extensión sur a Lota</strong>, continúa la L2 desde
             Coronel hasta Lota por la traza histórica del ramal del
             carbón.
           </li>
           <li>
-            <strong>Ramal al Aeropuerto Carriel Sur</strong> — idea
+            <strong>Ramal al Aeropuerto Carriel Sur</strong>, idea
             recurrente sin propuesta formal: cerrar la brecha de ~3 km
             entre la estación El Arenal (L1) y el aeropuerto.
           </li>
@@ -156,13 +157,12 @@ export default function BiotrenExtensionesProyectos() {
             advirtió en noviembre 2022 que el corredor MOP Ruta 150
             puede <em>frenar</em> la llegada del Biotrén porque baja la
             demanda potencial del tren al mejorar el bus por carretera.
-            EFE Trenes tiene un estudio de prefactibilidad en curso —
-            estado y resultado al cierre 2025-2026 no han sido
+            EFE Trenes tiene un estudio de prefactibilidad en curso, estado y resultado al cierre 2025-2026 no han sido
             publicados.
           </p>
           <div className="text-[11px] text-muted-foreground">
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-              Diario Concepción · 1-nov-2022 — Ruta 150 puede frenar Biotrén-Penco
+              Diario Concepción · 1-nov-2022, Ruta 150 puede frenar Biotrén-Penco
             </SourceLink>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function BiotrenExtensionesProyectos() {
           <p className="text-[12px] leading-snug">
             La municipalidad de Tomé pidió en noviembre 2025 que el
             beneficio del proyecto MOP se extienda hasta Tomé, no sólo
-            hasta el Enlace Penco — pero esa petición es sobre el
+            hasta el Enlace Penco, pero esa petición es sobre el
             corredor de buses, no sobre el tren. Para el detalle político
             ver{' '}
             <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
@@ -195,7 +195,7 @@ export default function BiotrenExtensionesProyectos() {
           </p>
           <div className="text-[11px] text-muted-foreground">
             <SourceLink href="http://www.tomealdia.com/2025/11/tome-tambien-se-beneficara-con-proyecto.html">
-              Tomé al día · nov-2025 — Tomé pide extensión del beneficio
+              Tomé al día · nov-2025, Tomé pide extensión del beneficio
             </SourceLink>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function BiotrenExtensionesProyectos() {
             La L2 termina hoy en <strong>Coronel</strong> (urbano).
             Continuar 8-10 km al sur hasta Lota (~43.535 hab. Censo
             2017) por la traza histórica del ramal del carbón es una
-            propuesta recurrente de autoridades locales — el ramal
+            propuesta recurrente de autoridades locales, el ramal
             existió hasta el cierre de la minería del carbón (Schwager
             cerró 1994, Lota Verde 1997). No hay proyecto EFE formal en
             curso. La traza está parcialmente desarmada, parcialmente
@@ -276,7 +276,7 @@ export default function BiotrenExtensionesProyectos() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Inversión referencial</td>
-                <td className="px-3 py-2">No publicada — estudio de prefactibilidad en EFE</td>
+                <td className="px-3 py-2">No publicada, estudio de prefactibilidad en EFE</td>
                 <td className="px-3 py-2">UF 4.431.000 ≈ USD 172M (Ruta 150 + Conce-Talcahuano II)</td>
               </tr>
               <tr>
@@ -297,7 +297,7 @@ export default function BiotrenExtensionesProyectos() {
               <tr>
                 <td className="px-3 py-2 font-medium">Horizonte de puesta en servicio</td>
                 <td className="px-3 py-2">No comprometido</td>
-                <td className="px-3 py-2">2032 proyectado (obras 2S 2029 — 1S 2030)</td>
+                <td className="px-3 py-2">2032 proyectado (obras 2S 2029, 1S 2030)</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Veto político</td>
@@ -309,7 +309,7 @@ export default function BiotrenExtensionesProyectos() {
         </div>
         <p className="text-[12px] text-muted-foreground">
           La lectura editorial: el electrocorredor <em>desplaza
-          políticamente</em> a la extensión Biotrén — no son
+          políticamente</em> a la extensión Biotrén, no son
           incompatibles técnicamente, pero el presupuesto público no
           alcanza para ambos y la priorización MOP es por carretera. Si
           el electrocorredor se ejecuta y absorbe la demanda, la
@@ -319,13 +319,13 @@ export default function BiotrenExtensionesProyectos() {
         </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-            Diario Concepción · 1-nov-2022 — Ruta 150 vs Biotrén
+            Diario Concepción · 1-nov-2022, Ruta 150 vs Biotrén
           </SourceLink>
           <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-            MOP Concesiones · 10-dic-2025 — Ofertas Ruta 150
+            MOP Concesiones · 10-dic-2025, Ofertas Ruta 150
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-            Diario Concepción · 7-nov-2025 — Electrocorredores
+            Diario Concepción · 7-nov-2025, Electrocorredores
           </SourceLink>
         </Sources>
       </Section>
@@ -337,8 +337,7 @@ export default function BiotrenExtensionesProyectos() {
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
             Las extensiones propuestas (Penco, Tomé, Lota, Carriel Sur)
-            son <em>proyectos</em> sin trazado oficial digitalizable —
-            sin RS MIDESO, sin bases licitadas, sin ingeniería básica
+            son <em>proyectos</em> sin trazado oficial digitalizable, sin RS MIDESO, sin bases licitadas, sin ingeniería básica
             pública, no hay un GeoJSON que el visor pueda renderizar de
             forma honesta. Lo único que el visor muestra hoy son las
             <strong> dos líneas operativas</strong> (L1, L2). Ver{' '}
@@ -355,8 +354,7 @@ export default function BiotrenExtensionesProyectos() {
           <li>
             <a href="/wiki/biotren" className="underline underline-offset-2">
               Biotrén
-            </a>{' '}
-            — el <em>servicio operacional vigente</em>: L1, L2,
+            </a>{' '}, el <em>servicio operacional vigente</em>: L1, L2,
             estaciones, tarifas Z1-Z10 vigentes desde 2-ene-2026,
             frecuencias, material rodante. Ficha hermana de ésta,
             dedicada al <em>presente</em>.
@@ -364,31 +362,27 @@ export default function BiotrenExtensionesProyectos() {
           <li>
             <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
               Concepción ↔ Tomé
-            </a>{' '}
-            — el corredor norte completo, con la cobertura más detallada
+            </a>{' '}, el corredor norte completo, con la cobertura más detallada
             del electrocorredor MOP y del transbordo bus-tren en
             Lirquén / Penco.
           </li>
           <li>
             <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
               Corredores de Transporte Público MOP del Biobío
-            </a>{' '}
-            — los tres electrocorredores MOP que compiten políticamente
+            </a>{' '}, los tres electrocorredores MOP que compiten políticamente
             con las extensiones Biotrén (Ruta 150 ↔ Penco, Ruta 160 ↔
             Lota, Autopista Conce-Talcahuano ↔ Carriel Sur).
           </li>
           <li>
             <a href="/wiki/concepcion-coronel-lota" className="underline underline-offset-2">
               Concepción ↔ Coronel ↔ Lota
-            </a>{' '}
-            — corredor sur post-carbón donde la extensión Biotrén a Lota
+            </a>{' '}, corredor sur post-carbón donde la extensión Biotrén a Lota
             se discute periódicamente.
           </li>
           <li>
             <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
               Perímetro de Exclusión de Tomé
-            </a>{' '}
-            — el régimen de operador único Transportes Tomé que hoy
+            </a>{' '}, el régimen de operador único Transportes Tomé que hoy
             cubre el eje Concepción ↔ Penco ↔ Tomé sin tren.
           </li>
         </ul>
@@ -414,27 +408,27 @@ export default function BiotrenExtensionesProyectos() {
         <ul className="ml-5 list-disc space-y-1 text-[12px]">
           <li>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-              Diario Concepción · 1-nov-2022 — Ruta 150 puede frenar Biotrén a Penco
+              Diario Concepción · 1-nov-2022, Ruta 150 puede frenar Biotrén a Penco
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html">
-              Diario Concepción · 13-nov-2024 — CGR visa licitaciones electrocorredores
+              Diario Concepción · 13-nov-2024, CGR visa licitaciones electrocorredores
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-              MOP Concesiones · 10-dic-2025 — Ofertas Ruta 150 + Conce-Talcahuano II
+              MOP Concesiones · 10-dic-2025, Ofertas Ruta 150 + Conce-Talcahuano II
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-              Diario Concepción · 7-nov-2025 — Electrocorredores Gran Concepción
+              Diario Concepción · 7-nov-2025, Electrocorredores Gran Concepción
             </SourceLink>
           </li>
           <li>
             <SourceLink href="http://www.tomealdia.com/2025/11/tome-tambien-se-beneficara-con-proyecto.html">
-              Tomé al día · nov-2025 — Petición de extensión del beneficio
+              Tomé al día · nov-2025, Petición de extensión del beneficio
             </SourceLink>
           </li>
           <li>
@@ -451,7 +445,7 @@ export default function BiotrenExtensionesProyectos() {
           extensión Biotrén-Penco, tienes copia de bases técnicas o
           ingeniería básica de cualquiera de las extensiones, o sabes
           de algún hito reciente de MIDESO / EFE Sur sobre las
-          extensiones — abre un pull request en{' '}
+          extensiones, abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/biotren-extensiones-proyectos.tsx">
             github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/biotren-extensiones-proyectos.tsx
           </SourceLink>

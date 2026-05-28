@@ -7,6 +7,7 @@
 import { KeyValueList, Section, SourceLink, Sources, Timeline, VerifiedBanner } from './_components';
 import { MapLink } from '@/wiki/map-link';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function Ruta201SantaJuana() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -14,7 +15,7 @@ export default function Ruta201SantaJuana() {
         <strong>Datos verificados con fuentes primarias.</strong> Licitación
         DTPR ELC0007, decreto MTT N°93/2023, comunicados oficiales y prensa
         regional 2023-2026. Algunos detalles operativos (tabla horaria
-        completa, duración exacta del contrato) siguen pendientes — ver
+        completa, duración exacta del contrato) siguen pendientes, ver
         sección "Datos pendientes" al final.
       </VerifiedBanner>
 
@@ -41,9 +42,9 @@ export default function Ruta201SantaJuana() {
         <p>
           La ruta 201 entra a la capa <strong>Servicios en curso</strong>{' '}
           como simulación programada, no GPS. El visor usa la ventana
-          operacional publicada para lun-vie — Santa Juana → Concepción{' '}
+          operacional publicada para lun-vie, Santa Juana → Concepción{' '}
           <strong>05:30-23:45</strong> y Concepción → Santa Juana{' '}
-          <strong>06:45-23:20</strong> — y la expande con frecuencia
+          <strong>06:45-23:20</strong>, y la expande con frecuencia
           estimada para que el ritmo del servicio se vea en el mapa.
         </p>
         <KeyValueList
@@ -81,13 +82,13 @@ export default function Ruta201SantaJuana() {
         />
         <Sources>
           <SourceLink href="https://dtpr.mtt.gob.cl/consultalicitaciones/webpage/ConsultaLicitaciones.aspx?id=5927">
-            DTPR Consulta licitaciones — ELC0007
+            DTPR Consulta licitaciones, ELC0007
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/01/30/mtt-y-empresa-de-buses-firman-contrato-para-nuevo-servicio-santa-juana-concepcion.html">
-            Diario Concepción 30-ene-2024 — Firma de contrato
+            Diario Concepción 30-ene-2024, Firma de contrato
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/07/22/santa-juana-cuenta-con-nuevo-sistema-de-transporte-publico-licitado-y-renovada-flota-de-buses/">
-            DPR Biobío 22-jul-2024 — Inauguración + cifras de inversión
+            DPR Biobío 22-jul-2024, Inauguración + cifras de inversión
           </SourceLink>
         </Sources>
       </Section>
@@ -107,7 +108,7 @@ export default function Ruta201SantaJuana() {
           <SourceLink href="https://transportessantajuana.cl/">transportessantajuana.cl</SourceLink>
           <SourceLink href="https://www.instagram.com/transportessantajuana/">Instagram @transportessantajuana</SourceLink>
           <SourceLink href="https://www.gob.cl/noticias/nuevo-servicio-transporte-publico-santa-juana-concepcion-buses-caracteristicas-tarifas-rebajadas/">
-            Gob.cl — Comunicado oficial
+            Gob.cl, Comunicado oficial
           </SourceLink>
         </Sources>
       </Section>
@@ -148,7 +149,7 @@ export default function Ruta201SantaJuana() {
             El Conquistador 17-jul-2024
           </SourceLink>
           <SourceLink href="https://www.facebook.com/61558500197393/posts/horarios-transportes-santa-juana-spa-pd-au-accesibilidad-universal/122129292698283339/">
-            Facebook Transportes Santa Juana — Confirmación AU
+            Facebook Transportes Santa Juana, Confirmación AU
           </SourceLink>
         </Sources>
       </Section>
@@ -187,15 +188,15 @@ export default function Ruta201SantaJuana() {
         </p>
         <p className="text-[12px] text-muted-foreground">
           <strong>Distancia aproximada:</strong> ~52 km. Tiempo de viaje
-          referencial (operadores previos) ~1 h 15 min — el tiempo oficial del
+          referencial (operadores previos) ~1 h 15 min, el tiempo oficial del
           servicio licitado no está publicado.
         </p>
         <Sources>
           <SourceLink href="https://sabes.cl/2024/07/16/nuevo-transporte-publico-concepcion-santa-juana-esta-operativo-revisa-horarios-y-valores/">
-            Sabes.cl 16-jul-2024 — Trazado calle por calle
+            Sabes.cl 16-jul-2024, Trazado calle por calle
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/07/22/santa-juana-cuenta-con-nuevo-sistema-de-transporte-publico-licitado-y-renovada-flota-de-buses/">
-            DPR Biobío 22-jul-2024 — Hitos intermedios
+            DPR Biobío 22-jul-2024, Hitos intermedios
           </SourceLink>
         </Sources>
       </Section>
@@ -207,16 +208,16 @@ export default function Ruta201SantaJuana() {
             ['Salidas Concepción → Santa Juana', '06:45 a 23:20 hrs'],
             ['Frecuencia máxima', 'Hasta 10 buses/hora en hora punta (declaración ministro Juan Carlos Muñoz)'],
             ['Servicios diarios estimados', '> 80 (no publicado como cifra exacta)'],
-            ['Sábado/domingo/festivos', 'Tabla horaria diferenciada — no publicada en fuente abierta'],
+            ['Sábado/domingo/festivos', 'Tabla horaria diferenciada, no publicada en fuente abierta'],
             ['Información en tiempo real', 'App Red Regional de Movilidad (buscar servicio "201")'],
           ]}
         />
         <Sources>
           <SourceLink href="https://sabes.cl/2024/07/16/nuevo-transporte-publico-concepcion-santa-juana-esta-operativo-revisa-horarios-y-valores/">
-            Sabes.cl — Comunicado MTT con ventana operativa
+            Sabes.cl, Comunicado MTT con ventana operativa
           </SourceLink>
           <SourceLink href="https://www.gob.cl/noticias/nuevo-servicio-transporte-publico-santa-juana-concepcion-buses-caracteristicas-tarifas-rebajadas/">
-            Gob.cl — Frecuencia y app Red Regional
+            Gob.cl, Frecuencia y app Red Regional
           </SourceLink>
         </Sources>
       </Section>
@@ -271,10 +272,10 @@ export default function Ruta201SantaJuana() {
         </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/07/10/con-tarifa-rebajada-nuevos-buses-entre-santa-juana-y-concepcion-inician-servicio-la-proxima-semana.html">
-            Diario Concepción 10-jul-2024 — Tarifas y ajuste
+            Diario Concepción 10-jul-2024, Tarifas y ajuste
           </SourceLink>
           <SourceLink href="https://www.gob.cl/noticias/nuevo-servicio-transporte-publico-santa-juana-concepcion-buses-caracteristicas-tarifas-rebajadas/">
-            Gob.cl — Tabla tarifaria completa
+            Gob.cl, Tabla tarifaria completa
           </SourceLink>
         </Sources>
       </Section>
@@ -283,7 +284,7 @@ export default function Ruta201SantaJuana() {
         <KeyValueList
           items={[
             ['Cantidad', '23 buses nuevos'],
-            ['Modelo', 'Agrale MT9000 — chasis brasileño/argentino, representado en Chile por Andes Motor'],
+            ['Modelo', 'Agrale MT9000, chasis brasileño/argentino, representado en Chile por Andes Motor'],
             ['Norma de emisiones', 'Euro V (diésel)'],
             ['Composición', '17 unidades estándar + 6 unidades estándar RED (piso bajo, rampa)'],
             ['Distinción regional', 'Primeros buses con estándar RED entregados en la Región del Biobío'],
@@ -293,18 +294,18 @@ export default function Ruta201SantaJuana() {
         />
         <Sources>
           <SourceLink href="https://www.andesmotor.cl/-/entregan-primeros-buses-con-estandar-red-para-la-region-del-biobio-conectaran-santa-juana-con-concepcion">
-            Andes Motor — Entrega de flota
+            Andes Motor, Entrega de flota
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/01/30/mtt-y-empresa-de-buses-firman-contrato-para-nuevo-servicio-santa-juana-concepcion.html">
-            Diario Concepción 30-ene-2024 — Composición de flota
+            Diario Concepción 30-ene-2024, Composición de flota
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/07/22/santa-juana-cuenta-con-nuevo-sistema-de-transporte-publico-licitado-y-renovada-flota-de-buses/">
-            DPR Biobío — Equipamiento y compromiso laboral
+            DPR Biobío, Equipamiento y compromiso laboral
           </SourceLink>
         </Sources>
       </Section>
 
-      <Section title="Pago electrónico — rollout 2026">
+      <Section title="Pago electrónico, rollout 2026">
         <p>
           El servicio 201 será el <strong>primer servicio rural de Chile</strong>{' '}
           con pago electrónico integrado. Ficha completa del sistema en{' '}
@@ -356,7 +357,7 @@ export default function Ruta201SantaJuana() {
         </p>
         <Sources>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
-            Subtrans — Consulta diseño de tarjeta
+            Subtrans, Consulta diseño de tarjeta
           </SourceLink>
         </Sources>
       </Section>
@@ -365,11 +366,11 @@ export default function Ruta201SantaJuana() {
         <Timeline
           items={[
             { date: 'Jun 2023', event: 'Publicación de bases licitación ELC0007.' },
-            { date: 'Ago 2023', event: 'Apertura de ofertas — 3 empresas postulantes.' },
+            { date: 'Ago 2023', event: 'Apertura de ofertas, 3 empresas postulantes.' },
             { date: 'Dic 2023', event: 'Adjudicación vía Decreto MTT N°93/2023.' },
             { date: 'Ene 2024', event: 'Firma de contrato con ministro Juan Carlos Muñoz.' },
             { date: 'Jul 2024', event: 'Inicio de operaciones (lunes 15). Ceremonia oficial 19.' },
-            { date: 'Sep 2024', event: 'Quejas por espacio entre asientos — SEREMI confirma incumplimiento.' },
+            { date: 'Sep 2024', event: 'Quejas por espacio entre asientos, SEREMI confirma incumplimiento.' },
             { date: 'Sep 2025', event: 'MTT recibe ofertas para pago electrónico.' },
             { date: 'Ene 2026', event: 'Adjudicación pago electrónico a Consorcio Buspay.' },
           ]}
@@ -405,7 +406,7 @@ export default function Ruta201SantaJuana() {
           <li>Duración exacta del contrato de concesión (decreto N°93/2023 íntegro).</li>
           <li>RUT de Sociedad de Transporte de Pasajeros Santa Juana SpA.</li>
           <li>Tracking del cumplimiento del compromiso de espacio entre asientos.</li>
-          <li><a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS</a> público del servicio — al publicarse, se incorpora al visor principal.</li>
+          <li><a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS</a> público del servicio, al publicarse, se incorpora al visor principal.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
           Para cerrar estos huecos: solicitar Decreto N°93/2023 al Diario
@@ -417,7 +418,7 @@ export default function Ruta201SantaJuana() {
       <Section title="Para contribuir">
         <p>
           Foto del cartel del horario en paradero o terminal, observación de
-          tiempo de viaje real, tarifa pagada con fecha — todo aporte se cita
+          tiempo de viaje real, tarifa pagada con fecha, todo aporte se cita
           en el commit con el contribuyente como autor. Abre un pull request
           en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/ruta-201-santa-juana.tsx">
@@ -430,5 +431,5 @@ export default function Ruta201SantaJuana() {
   );
 }
 
-// Componentes compartidos viven ahora en ./_components — el 201, el
+// Componentes compartidos viven ahora en ./_components, el 201, el
 // corredor de El Pimentón y Concepción↔Florida consumen la misma API.

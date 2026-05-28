@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { ConceMap } from '@/components/conce-map';
 import { Header } from '@/components/header';
@@ -26,7 +26,6 @@ import { usePlannerState } from '@/hooks/use-planner-state';
 import { useTheme } from '@/hooks/use-theme';
 import {
   clearFocusParam,
-  type FocusParam,
   readFocusParam,
   readUrlState,
   useSyncUrlState,
@@ -43,7 +42,82 @@ const INITIAL_URL = readUrlState();
 // URL siga limpia mientras el usuario navega.
 const INITIAL_FOCUS = readFocusParam();
 type SimulationScope = 'visible' | 'all';
+type SelectedDetail = Exclude<SheetKind, null>;
 
+interface SelectedDetailState {
+  kind: SelectedDetail;
+  id: string;
+}
+
+const INITIAL_FOCUS_ROUTE =
+  INITIAL_FOCUS?.kind === 'route'
+    ? ROUTES_BY_ID.get(INITIAL_FOCUS.id) ?? ROUTES.find((x) => x.code === INITIAL_FOCUS.id) ?? null
+    : null;
+const INITIAL_FOCUS_CORRIDOR =
+  INITIAL_FOCUS?.kind === 'corridor' ? CORRIDOR_BY_ID.get(INITIAL_FOCUS.id) ?? null : null;
+
+function initialSelectedDetail(): SelectedDetailState | null {
+  if (INITIAL_URL.route) return { kind: 'route', id: INITIAL_URL.route };
+  if (INITIAL_URL.stop) return { kind: 'stop', id: INITIAL_URL.stop };
+  if (INITIAL_URL.terminal) return { kind: 'terminal', id: INITIAL_URL.terminal };
+  if (INITIAL_URL.poi) return { kind: 'poi', id: INITIAL_URL.poi };
+  if (!INITIAL_FOCUS) return null;
+  if (INITIAL_FOCUS.kind === 'route' && INITIAL_FOCUS_ROUTE) {
+    return { kind: 'route', id: INITIAL_FOCUS_ROUTE.id };
+  }
+  if (INITIAL_FOCUS.kind === 'stop') return { kind: 'stop', id: INITIAL_FOCUS.id };
+  if (INITIAL_FOCUS.kind === 'terminal') return { kind: 'terminal', id: INITIAL_FOCUS.id };
+  if (INITIAL_FOCUS.kind === 'poi') return { kind: 'poi', id: INITIAL_FOCUS.id };
+  return null;
+}
+
+function pointFlyToToken(lat: number, lng: number, zoom: number): FlyToToken {
+  return { key: 0, target: { kind: 'point', lat, lng, zoom } };
+}
+
+function initialFlyToToken(): FlyToToken | null {
+  if (INITIAL_URL.route) {
+    const route = ROUTES_BY_ID.get(INITIAL_URL.route);
+    return route ? { key: 0, target: { kind: 'bounds', path: route.path } } : null;
+  }
+  if (INITIAL_URL.stop) {
+    const stop = STOPS.find((x) => x.id === INITIAL_URL.stop);
+    return stop ? pointFlyToToken(stop.lat, stop.lng, 16) : null;
+  }
+  if (INITIAL_URL.terminal) {
+    const terminal = TERMINALS.find((x) => x.id === INITIAL_URL.terminal);
+    return terminal ? pointFlyToToken(terminal.lat, terminal.lng, 16) : null;
+  }
+  if (INITIAL_URL.poi) {
+    const poi = POIS.find((x) => x.id === INITIAL_URL.poi);
+    return poi ? pointFlyToToken(poi.lat, poi.lng, 16) : null;
+  }
+  if (!INITIAL_FOCUS) return null;
+  if (INITIAL_FOCUS.kind === 'route' && INITIAL_FOCUS_ROUTE) {
+    return { key: 0, target: { kind: 'bounds', path: INITIAL_FOCUS_ROUTE.path } };
+  }
+  if (INITIAL_FOCUS.kind === 'corridor' && INITIAL_FOCUS_CORRIDOR) {
+    const { anchor, terminal } = INITIAL_FOCUS_CORRIDOR;
+    return terminal
+      ? { key: 0, target: { kind: 'bounds', path: [terminal, anchor] } }
+      : pointFlyToToken(anchor[0], anchor[1], 11);
+  }
+  if (INITIAL_FOCUS.kind === 'stop') {
+    const stop = STOPS.find((x) => x.id === INITIAL_FOCUS.id);
+    return stop ? pointFlyToToken(stop.lat, stop.lng, 16) : null;
+  }
+  if (INITIAL_FOCUS.kind === 'terminal') {
+    const terminal = TERMINALS.find((x) => x.id === INITIAL_FOCUS.id);
+    return terminal ? pointFlyToToken(terminal.lat, terminal.lng, 16) : null;
+  }
+  if (INITIAL_FOCUS.kind === 'poi') {
+    const poi = POIS.find((x) => x.id === INITIAL_FOCUS.id);
+    return poi ? pointFlyToToken(poi.lat, poi.lng, 16) : null;
+  }
+  return null;
+}
+
+// react-doctor-disable-next-line react-doctor/no-giant-component, react-doctor/prefer-useReducer -- App is the route/map shell; coupled state was consolidated, remaining state slices are independent UI controls.
 export default function App() {
   // Subscribes to the micros-loaded event so the sidebar/search/etc.
   // re-render the moment the bus-routes lazy chunk lands.
@@ -61,6 +135,9 @@ export default function App() {
     if (INITIAL_URL.route && !DEFAULT_VISIBLE_ROUTE_IDS.includes(INITIAL_URL.route)) {
       return [...DEFAULT_VISIBLE_ROUTE_IDS, INITIAL_URL.route];
     }
+    if (INITIAL_FOCUS_ROUTE && !DEFAULT_VISIBLE_ROUTE_IDS.includes(INITIAL_FOCUS_ROUTE.id)) {
+      return [...DEFAULT_VISIBLE_ROUTE_IDS, INITIAL_FOCUS_ROUTE.id];
+    }
     return DEFAULT_VISIBLE_ROUTE_IDS;
   });
   const [typeFilters, setTypeFilters] = useState<Record<RouteTypeId, boolean>>(() =>
@@ -69,22 +146,13 @@ export default function App() {
     ) as Record<RouteTypeId, boolean>,
   );
 
-  const initialSheet: SheetKind = INITIAL_URL.route
-    ? 'route'
-    : INITIAL_URL.stop
-      ? 'stop'
-      : INITIAL_URL.terminal
-        ? 'terminal'
-        : INITIAL_URL.poi
-          ? 'poi'
-          : null;
-
-  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(INITIAL_URL.route);
-  const [selectedStopId, setSelectedStopId] = useState<string | null>(INITIAL_URL.stop);
-  const [selectedParaderoId, setSelectedParaderoId] = useState<string | null>(null);
-  const [selectedTerminalId, setSelectedTerminalId] = useState<string | null>(INITIAL_URL.terminal);
-  const [selectedPoiId, setSelectedPoiId] = useState<string | null>(INITIAL_URL.poi);
-  const [sheetKind, setSheetKind] = useState<SheetKind>(initialSheet);
+  const [selectedDetail, setSelectedDetail] = useState<SelectedDetailState | null>(initialSelectedDetail);
+  const selectedRouteId = selectedDetail?.kind === 'route' ? selectedDetail.id : null;
+  const selectedStopId = selectedDetail?.kind === 'stop' ? selectedDetail.id : null;
+  const selectedParaderoId = selectedDetail?.kind === 'paradero' ? selectedDetail.id : null;
+  const selectedTerminalId = selectedDetail?.kind === 'terminal' ? selectedDetail.id : null;
+  const selectedPoiId = selectedDetail?.kind === 'poi' ? selectedDetail.id : null;
+  const sheetKind = selectedDetail?.kind ?? null;
 
   const [showTerminals, setShowTerminals] = useState(false);
   const [showParaderos, setShowParaderos] = useState(INITIAL_URL.paraderos);
@@ -208,7 +276,7 @@ export default function App() {
   const schoolsLayer = useLayerStatus();
   const [schoolsRetryKey, setSchoolsRetryKey] = useState(0);
   // Si la URL trae `?focus=corridor:…` activamos la capa de corredores
-  // inmediatamente — el usuario llegó desde el wiki y espera ver el pin.
+  // inmediatamente, el usuario llegó desde el wiki y espera ver el pin.
   const [showInterurbanCorridors, setShowInterurbanCorridors] = useState(
     INITIAL_FOCUS?.kind === 'corridor',
   );
@@ -217,22 +285,16 @@ export default function App() {
   // "vista actual" mode captures exactly what the user is looking at.
   const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
 
-  const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(null);
-  const initialFlyAppliedRef = useRef(false);
+  const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(initialFlyToToken);
 
   const [sourcesOpen, setSourcesOpen] = useState(false);
-  // Single active tool — null means no panel is open. Floating, non-modal:
+  // Single active tool, null means no panel is open. Floating, non-modal:
   // the user can keep interacting with the map while a tool is on screen.
   const [activeTool, setActiveTool] = useState<AnalysisTab | null>(null);
   const [layersOpen, setLayersOpen] = useState(false);
 
   const closeDetailPanels = useCallback(() => {
-    setSheetKind(null);
-    setSelectedRouteId(null);
-    setSelectedStopId(null);
-    setSelectedParaderoId(null);
-    setSelectedTerminalId(null);
-    setSelectedPoiId(null);
+    setSelectedDetail(null);
   }, []);
 
   const closeSidebarOnMobile = useCallback(() => {
@@ -383,12 +445,7 @@ export default function App() {
       if (!r) return;
       setVisibleRouteIds((cur) => (cur.includes(id) ? cur : [...cur, id]));
       setTypeFilters((f) => ({ ...f, [r.type]: true }));
-      setSelectedRouteId(id);
-      setSelectedStopId(null);
-      setSelectedParaderoId(null);
-      setSelectedTerminalId(null);
-      setSelectedPoiId(null);
-      setSheetKind('route');
+      setSelectedDetail({ kind: 'route', id });
       setSourcesOpen(false);
       setLayersOpen(false);
       setActiveTool(null);
@@ -398,8 +455,7 @@ export default function App() {
     [clearSelection, closeSidebarOnMobile, selectedRouteId, sheetKind],
   );
 
-  // Clicking a simulated vehicle pops the underlying route's detail sheet —
-  // saves us building a parallel "vehicle sheet" UI when the natural thing
+  // Clicking a simulated vehicle pops the underlying route's detail sheet, // saves us building a parallel "vehicle sheet" UI when the natural thing
   // to know is which route the projected bus belongs to.
   const onSelectSimulatedVehicle = useCallback(
     (routeId: string) => {
@@ -411,11 +467,7 @@ export default function App() {
   const onSelectStop = useCallback((id: string) => {
     const s = STOPS.find((x) => x.id === id);
     if (!s) return;
-    setSelectedStopId(id);
-    setSelectedParaderoId(null);
-    setSelectedTerminalId(null);
-    setSelectedPoiId(null);
-    setSheetKind('stop');
+    setSelectedDetail({ kind: 'stop', id });
     setSourcesOpen(false);
     setLayersOpen(false);
     setActiveTool(null);
@@ -428,12 +480,7 @@ export default function App() {
   const onSelectTerminal = useCallback((id: string) => {
     const t = TERMINALS.find((x) => x.id === id);
     if (!t) return;
-    setSelectedTerminalId(id);
-    setSelectedRouteId(null);
-    setSelectedStopId(null);
-    setSelectedParaderoId(null);
-    setSelectedPoiId(null);
-    setSheetKind('terminal');
+    setSelectedDetail({ kind: 'terminal', id });
     setSourcesOpen(false);
     setLayersOpen(false);
     setActiveTool(null);
@@ -446,12 +493,7 @@ export default function App() {
   const onSelectPoi = useCallback((id: string) => {
     const p = POIS.find((x) => x.id === id);
     if (!p) return;
-    setSelectedPoiId(id);
-    setSelectedRouteId(null);
-    setSelectedStopId(null);
-    setSelectedParaderoId(null);
-    setSelectedTerminalId(null);
-    setSheetKind('poi');
+    setSelectedDetail({ kind: 'poi', id });
     setSourcesOpen(false);
     setLayersOpen(false);
     setActiveTool(null);
@@ -464,12 +506,7 @@ export default function App() {
   const onSelectParadero = useCallback((id: string) => {
     const p = GTFS_STOPS.find((x) => x.id === id);
     if (!p) return;
-    setSelectedParaderoId(id);
-    setSelectedRouteId(null);
-    setSelectedStopId(null);
-    setSelectedTerminalId(null);
-    setSelectedPoiId(null);
-    setSheetKind('paradero');
+    setSelectedDetail({ kind: 'paradero', id });
     setSourcesOpen(false);
     setLayersOpen(false);
     setActiveTool(null);
@@ -479,107 +516,11 @@ export default function App() {
     });
   }, []);
 
-  // Resolver de focus deep-links provenientes del wiki. Cubre:
-  //   - route   → si el código (route.code) está cargado, abre la sheet
-  //               y enfoca el shape.
-  //   - corridor → enciende la capa interurbana y centra el área del corredor.
-  //   - terminal / stop / poi → reutilizan los handlers de selección.
-  const applyFocus = useCallback(
-    (focus: FocusParam): boolean => {
-      if (focus.kind === 'route') {
-        const direct = ROUTES_BY_ID.get(focus.id);
-        const r = direct ?? ROUTES.find((x) => x.code === focus.id);
-        if (!r) return false;
-        onSelectRoute(r.id);
-        return true;
-      }
-      if (focus.kind === 'corridor') {
-        const c = CORRIDOR_BY_ID.get(focus.id);
-        if (!c) return false;
-        setShowInterurbanCorridors(true);
-        if (c.terminal) {
-          setFlyToToken({
-            key: Date.now(),
-            target: { kind: 'bounds', path: [c.terminal, c.anchor] },
-          });
-        } else {
-          setFlyToToken({
-            key: Date.now(),
-            target: { kind: 'point', lat: c.anchor[0], lng: c.anchor[1], zoom: 11 },
-          });
-        }
-        return true;
-      }
-      if (focus.kind === 'terminal') {
-        onSelectTerminal(focus.id);
-        return true;
-      }
-      if (focus.kind === 'stop') {
-        onSelectStop(focus.id);
-        return true;
-      }
-      if (focus.kind === 'poi') {
-        onSelectPoi(focus.id);
-        return true;
-      }
-      return false;
-    },
-    [onSelectPoi, onSelectRoute, onSelectStop, onSelectTerminal],
-  );
-
-  // Apply the initial fly-to once the map is mounted.
+  // `focus` is a one-shot handoff from the wiki; selectedDetail/flyToToken
+  // already captured it during initial state creation, so keep the URL tidy.
   useEffect(() => {
-    if (initialFlyAppliedRef.current) return;
-    // 1) Deep link tradicional (?route= / ?stop= / etc.) — toma prioridad
-    //    porque ya selecciona la sheet correspondiente.
-    if (INITIAL_URL.route) {
-      const r = ROUTES_BY_ID.get(INITIAL_URL.route);
-      if (!r) return;
-      initialFlyAppliedRef.current = true;
-      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
-      return;
-    }
-    if (INITIAL_URL.stop) {
-      const s = STOPS.find((x) => x.id === INITIAL_URL.stop);
-      if (s) {
-        initialFlyAppliedRef.current = true;
-        setFlyToToken({
-          key: Date.now(),
-          target: { kind: 'point', lat: s.lat, lng: s.lng, zoom: 16 },
-        });
-      }
-      return;
-    }
-    if (INITIAL_URL.terminal) {
-      const t = TERMINALS.find((x) => x.id === INITIAL_URL.terminal);
-      if (t) {
-        initialFlyAppliedRef.current = true;
-        setFlyToToken({
-          key: Date.now(),
-          target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
-        });
-      }
-      return;
-    }
-    if (INITIAL_URL.poi) {
-      const p = POIS.find((x) => x.id === INITIAL_URL.poi);
-      if (p) {
-        initialFlyAppliedRef.current = true;
-        setFlyToToken({
-          key: Date.now(),
-          target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
-        });
-      }
-      return;
-    }
-    if (INITIAL_FOCUS) {
-      if (!applyFocus(INITIAL_FOCUS)) return;
-      clearFocusParam();
-      initialFlyAppliedRef.current = true;
-      return;
-    }
-    initialFlyAppliedRef.current = true;
-  }, [applyFocus, routesVersion]);
+    if (INITIAL_FOCUS) clearFocusParam();
+  }, []);
 
   const closeSheet = clearSelection;
 
@@ -666,19 +607,26 @@ export default function App() {
             onSelectStop={onSelectStop}
             flyToToken={flyToToken}
             terminals={TERMINALS}
-            showTerminals={showTerminals}
             selectedTerminalId={selectedTerminalId}
             onSelectTerminal={onSelectTerminal}
             paraderos={GTFS_STOPS}
-            showParaderos={showParaderos}
             selectedParaderoId={selectedParaderoId}
             onSelectParadero={onSelectParadero}
             pois={POIS}
-            showPois={showPois}
             selectedPoiId={selectedPoiId}
             onSelectPoi={onSelectPoi}
             airQuality={airQuality.stations}
-            showAirQuality={showAirQuality}
+            layerVisibility={{
+              terminals: showTerminals,
+              paraderos: showParaderos,
+              pois: showPois,
+              airQuality: showAirQuality,
+              coverage: showCoverage,
+              cycleways: showCycleways,
+              greenspace: showGreenspace,
+              schools: showSchools,
+              interurbanCorridors: showInterurbanCorridors,
+            }}
             pickerMode={pickerMode}
             onPickPoint={onPickPoint}
             plannerOrigin={plannerOrigin}
@@ -687,33 +635,35 @@ export default function App() {
             routeColorById={routeColorById}
             routeLabelById={routeLabelById}
             onSelectSimulatedVehicle={onSelectSimulatedVehicle}
-            showCoverage={showCoverage}
             coverageThreshold={coverageThreshold}
             coverageRetryKey={coverageRetryKey}
-            onCoverageStatusChange={coverageLayer.setStatus}
-            showCycleways={showCycleways}
+            coverageLoadStatus={coverageLayer.controls}
             cyclewaysRetryKey={cyclewaysRetryKey}
-            onCyclewaysStatusChange={cyclewaysLayer.setStatus}
-            showGreenspace={showGreenspace}
+            cyclewaysLoadStatus={cyclewaysLayer.controls}
             greenspaceRetryKey={greenspaceRetryKey}
-            onGreenspaceStatusChange={greenspaceLayer.setStatus}
-            showSchools={showSchools}
+            greenspaceLoadStatus={greenspaceLayer.controls}
             schoolsRetryKey={schoolsRetryKey}
-            onSchoolsStatusChange={schoolsLayer.setStatus}
+            schoolsLoadStatus={schoolsLayer.controls}
             onBoundsChange={setMapBounds}
             plannerMidpoint={plannerMidpoint}
-            showInterurbanCorridors={showInterurbanCorridors}
           />
 
           <MapLayerControl
             terminalsCount={TERMINALS.length}
             paraderosCount={GTFS_STOPS.length}
             poisCount={POIS.length}
-            showTerminals={showTerminals}
-            showParaderos={showParaderos}
-            showPois={showPois}
-            showAirQuality={showAirQuality}
-            showSimulatedVehicles={showSimulatedVehicles}
+            visibility={{
+              terminals: showTerminals,
+              paraderos: showParaderos,
+              pois: showPois,
+              airQuality: showAirQuality,
+              simulatedVehicles: showSimulatedVehicles,
+              coverage: showCoverage,
+              cycleways: showCycleways,
+              greenspace: showGreenspace,
+              schools: showSchools,
+              interurbanCorridors: showInterurbanCorridors,
+            }}
             simulationScope={simulationScope}
             onToggleTerminals={() => setShowTerminals((v) => !v)}
             onToggleParaderos={() => setShowParaderos((v) => !v)}
@@ -721,17 +671,12 @@ export default function App() {
             onToggleAirQuality={() => setShowAirQuality((v) => !v)}
             onToggleSimulatedVehicles={() => setShowSimulatedVehicles((v) => !v)}
             onSetSimulationScope={setSimulationScope}
-            showCoverage={showCoverage}
             coverageThreshold={coverageThreshold}
             onToggleCoverage={() => setShowCoverage((v) => !v)}
             onSetCoverageThreshold={setCoverageThreshold}
-            showCycleways={showCycleways}
             onToggleCycleways={() => setShowCycleways((v) => !v)}
-            showGreenspace={showGreenspace}
             onToggleGreenspace={() => setShowGreenspace((v) => !v)}
-            showSchools={showSchools}
             onToggleSchools={() => setShowSchools((v) => !v)}
-            showInterurbanCorridors={showInterurbanCorridors}
             onToggleInterurbanCorridors={() => setShowInterurbanCorridors((v) => !v)}
             airQualityStatus={airQuality}
             onRetryAirQuality={() => setAirQualityRetryKey((v) => v + 1)}

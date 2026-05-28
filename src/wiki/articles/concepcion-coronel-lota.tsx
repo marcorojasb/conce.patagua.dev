@@ -1,4 +1,4 @@
-// Concepción ↔ Coronel ↔ Lota — corredor sur metropolitano.
+// Concepción ↔ Coronel ↔ Lota, corredor sur metropolitano.
 // Eje Ruta 160 ("Camino a Lota"), también electrocorredor MOP en
 // licitación (Consorcio Electro-Cointer, UF 4.414.000, 5-nov-2025).
 //
@@ -19,6 +19,7 @@ import {
 } from './_components';
 import { MapLink } from '@/wiki/map-link';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function ConcepcionCoronelLota() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -69,13 +70,13 @@ export default function ConcepcionCoronelLota() {
         </ul>
         <Sources>
           <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8102">
-            BCN · Reportes comunales Coronel 2017 — 116.262 hab.
+            BCN · Reportes comunales Coronel 2017, 116.262 hab.
           </SourceLink>
           <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8105">
-            BCN · Reportes comunales Lota 2017 — 43.535 hab.
+            BCN · Reportes comunales Lota 2017, 43.535 hab.
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">
-            Diario Concepción · 15-jul-2025 — 80 buses nuevos para Lota y Coronel
+            Diario Concepción · 15-jul-2025, 80 buses nuevos para Lota y Coronel
           </SourceLink>
         </Sources>
       </Section>
@@ -152,8 +153,8 @@ export default function ConcepcionCoronelLota() {
         </p>
         <KeyValueList
           items={[
-            ['Estado a jul-2025', 'Bases ingresadas a CGR — pendiente toma de razón.'],
-            ['Flota proyectada', '80 buses nuevos — primera renovación masiva del corredor sur.'],
+            ['Estado a jul-2025', 'Bases ingresadas a CGR, pendiente toma de razón.'],
+            ['Flota proyectada', '80 buses nuevos, primera renovación masiva del corredor sur.'],
             ['Anuncio', 'Diario Concepción · 15-jul-2025.'],
             ['Calendario', 'Visación → llamado → adjudicación → marcha blanca. Sin fecha firme.'],
             [
@@ -193,15 +194,15 @@ export default function ConcepcionCoronelLota() {
             <tbody className="divide-y align-top">
               <tr>
                 <td className="px-3 py-2 font-medium">Instrumento</td>
-                <td className="px-3 py-2">Decreto MTT — Ley 18.696 art. 3°</td>
-                <td className="px-3 py-2">Decreto MTT — Ley 18.696 art. 3°</td>
-                <td className="px-3 py-2">Resolución Exenta 457 MTT (regulación especial — PE formal en Contraloría)</td>
+                <td className="px-3 py-2">Decreto MTT, Ley 18.696 art. 3°</td>
+                <td className="px-3 py-2">Decreto MTT, Ley 18.696 art. 3°</td>
+                <td className="px-3 py-2">Resolución Exenta 457 MTT (regulación especial, PE formal en Contraloría)</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Vigente desde</td>
                 <td className="px-3 py-2">1-ene-2024</td>
                 <td className="px-3 py-2">10-mar-2022 (decreto jul-2016)</td>
-                <td className="px-3 py-2">2012-2013 (Res. Ex.) — PE formal aún no vigente</td>
+                <td className="px-3 py-2">2012-2013 (Res. Ex.), PE formal aún no vigente</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Operadores</td>
@@ -213,7 +214,7 @@ export default function ConcepcionCoronelLota() {
                 <td className="px-3 py-2 font-medium">Tarifa adulto</td>
                 <td className="px-3 py-2">$580 (23-feb-2025)</td>
                 <td className="px-3 py-2">$750 base (2022)</td>
-                <td className="px-3 py-2">Sin tarifa única publicada — varía por operador</td>
+                <td className="px-3 py-2">Sin tarifa única publicada, varía por operador</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Pago electrónico</td>
@@ -232,7 +233,7 @@ export default function ConcepcionCoronelLota() {
         </div>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">
-            Diario Concepción · 15-jul-2025 — Bases PE Coronel-Lota en Contraloría
+            Diario Concepción · 15-jul-2025, Bases PE Coronel-Lota en Contraloría
           </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
             Wikipedia · Perímetro de Exclusión del Gran Concepción (sección PE Coronel-Lota)
@@ -245,7 +246,7 @@ export default function ConcepcionCoronelLota() {
 
       <Section title="Operadores">
         <p className="text-[12px] text-muted-foreground">
-          Múltiples empresas privadas — sin operador único. El wiki
+          Múltiples empresas privadas, sin operador único. El wiki
           cruza <strong>Las Galaxias</strong> y <strong>Buses J. Ewert</strong>:
         </p>
         <OperatorTable
@@ -259,7 +260,7 @@ export default function ConcepcionCoronelLota() {
             },
             {
               name: 'Buses J. Ewert',
-              routes: 'Troncales Concepción ↔ Coronel ↔ Lota — códigos pendientes',
+              routes: 'Troncales Concepción ↔ Coronel ↔ Lota, códigos pendientes',
               terminal: 'Pendiente',
               notes: <p>Operador histórico en la cartera DPR Biobío. Sin razón social ni padrón confirmados.</p>,
             },
@@ -303,7 +304,7 @@ export default function ConcepcionCoronelLota() {
       <Section title="Tarifa y ajuste">
         <KeyValueList
           items={[
-            ['Tarifa adulto 2026', 'Pendiente — sin tarifa única publicada. Varía por operador y tramo (Concepción ↔ Coronel < Concepción ↔ Lota).'],
+            ['Tarifa adulto 2026', 'Pendiente, sin tarifa única publicada. Varía por operador y tramo (Concepción ↔ Coronel < Concepción ↔ Lota).'],
             ['Tarifa escolar', 'Pendiente. Aplicación de Ley 20.378 bajo Res. Ex. 457 no documentada.'],
             ['Accesibilidad universal', 'Pendiente. Res. Ex. 457 no exige flota AU; el PE formal sí.'],
             ['Polinomio', 'No publicado. Reajustes se tramitan con SEREMITT caso a caso (a diferencia del PE Gran Concepción).'],
@@ -351,16 +352,16 @@ export default function ConcepcionCoronelLota() {
             ['Validadores', 'Parte del paquete de 1.800-2.000 validadores embarcados.'],
             ['Marcha blanca', 'Q3 2026. Fecha exacta para Coronel-Lota no desglosada.'],
             ['100% electrónico', 'Proyectado fin de 2026. Para operadores Res. Ex. 457 implica instalar validadores antes del PE formal.'],
-            ['Encaje con PE formal', 'El PE Coronel-Lota formal hereda la infraestructura BusPay ya instalada — sin segunda licitación de recaudo.'],
+            ['Encaje con PE formal', 'El PE Coronel-Lota formal hereda la infraestructura BusPay ya instalada, sin segunda licitación de recaudo.'],
             ['Tarjeta', 'Campanil UdeC (consulta ciudadana) + tarjeta bancaria contactless, QR.'],
           ]}
         />
         <Sources>
           <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-            Subtrans · 30-ene-2026 — Adjudicación BusPay (11 comunas)
+            Subtrans · 30-ene-2026, Adjudicación BusPay (11 comunas)
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-            BioBioChile · 28-ene-2026 — BusPay adjudicado
+            BioBioChile · 28-ene-2026, BusPay adjudicado
           </SourceLink>
         </Sources>
       </Section>
@@ -377,8 +378,8 @@ export default function ConcepcionCoronelLota() {
         <KeyValueList
           items={[
             ['Tramo', 'San Pedro ↔ Coronel · 14 km bidireccionales'],
-            ['Sector A', 'Daniel Belmar ↔ Av. Cuatro Sur — 7,3 km (San Pedro)'],
-            ['Sector B', 'Av. Cuatro Sur ↔ Parque Industrial Escuadrón I — 6,9 km (Coronel)'],
+            ['Sector A', 'Daniel Belmar ↔ Av. Cuatro Sur, 7,3 km (San Pedro)'],
+            ['Sector B', 'Av. Cuatro Sur ↔ Parque Industrial Escuadrón I, 6,9 km (Coronel)'],
             ['Inversión', 'UF 4.414.000 (~USD 171 millones)'],
             ['Oferente único', 'Consorcio Electro-Cointer (Cointer Concesiones / Grupo Azvi)'],
             ['Recepción ofertas', '5-nov-2025'],
@@ -402,10 +403,10 @@ export default function ConcepcionCoronelLota() {
             MOP Concesiones · Corredor Ruta 160
           </SourceLink>
           <SourceLink href="https://www.mop.gob.cl/consorcio-electro-cointer-presento-oferta-para-proyecto-concesion-corredor-de-transporte-publico-ruta-160/">
-            MOP · 5-nov-2025 — Oferta Electro-Cointer
+            MOP · 5-nov-2025, Oferta Electro-Cointer
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html">
-            Diario Concepción · 13-nov-2024 — CGR visa Ruta 160 / 150
+            Diario Concepción · 13-nov-2024, CGR visa Ruta 160 / 150
           </SourceLink>
         </Sources>
       </Section>
@@ -419,7 +420,7 @@ export default function ConcepcionCoronelLota() {
         </p>
         <KeyValueList
           items={[
-            ['Terminal sur del tren', 'Estación Coronel — el tren NO llega a Lota. Lota solo en bus.'],
+            ['Terminal sur del tren', 'Estación Coronel, el tren NO llega a Lota. Lota solo en bus.'],
             ['Capacidad', 'Tren: Xtrapolis cada 12-15 min punta. Bus: frecuencia agregada mayor, capacidad por vehículo menor.'],
             ['Tarifa', 'Biotrén Z1-Z10 desde 2-ene-2026 (ver artículo Biotrén). Bus Res. Ex. 457: pendiente.'],
             ['Tarjeta', 'Biotrén: Conecta (desde 2023). Bus: BusPay (Q3 2026). Integración Conecta ↔ BusPay no confirmada.'],
@@ -480,7 +481,7 @@ export default function ConcepcionCoronelLota() {
         <p>
           Ruta 160 ha sido escenario recurrente de colisiones, salidas de
           pista y atropellos (Lomas Coloradas, Coronel norte). Es uno de
-          los motores políticos del electrocorredor MOP — la pista
+          los motores políticos del electrocorredor MOP, la pista
           exclusiva reduce conflicto entre flujo residencial, industrial
           portuario y buses.
         </p>
@@ -504,8 +505,7 @@ export default function ConcepcionCoronelLota() {
           <div className="text-[12px] font-medium">Lo que sí está</div>
           <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px]">
             <li>
-              <strong>L2 del Biotrén</strong> (Concepción ↔ Coronel) —
-              trazado y 14 estaciones desde OSM. No depende del GTFS de
+              <strong>L2 del Biotrén</strong> (Concepción ↔ Coronel), trazado y 14 estaciones desde OSM. No depende del GTFS de
               buses. Ver{' '}
               <a href="/wiki/biotren" className="underline underline-offset-2">
                 Biotrén
@@ -514,7 +514,7 @@ export default function ConcepcionCoronelLota() {
             </li>
             <li>
               Algunos servicios del PE Gran Concepción que entran a San
-              Pedro (UN23, UN24) — terminan en San Pedro, no siguen a
+              Pedro (UN23, UN24), terminan en San Pedro, no siguen a
               Coronel ni Lota.
             </li>
           </ul>
@@ -522,7 +522,7 @@ export default function ConcepcionCoronelLota() {
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">Lo que NO está</div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            Todos los troncales del corredor sur — operan bajo Res. Ex.
+            Todos los troncales del corredor sur, operan bajo Res. Ex.
             457, fuera del GTFS PE 2024. A diferencia de Tomé (operador
             único, 401/411/421), la fragmentación operacional aquí
             dificulta incluso la digitalización OSM. Cuando se adjudique
@@ -552,7 +552,7 @@ export default function ConcepcionCoronelLota() {
             },
             {
               date: '2012-2013',
-              event: 'MTT emite la Res. Ex. 457 — regulación especial para Coronel y Lota "aproximada a un PE", sin contrato de largo plazo.',
+              event: 'MTT emite la Res. Ex. 457, regulación especial para Coronel y Lota "aproximada a un PE", sin contrato de largo plazo.',
             },
             {
               date: '13-nov-2024',
@@ -571,7 +571,7 @@ export default function ConcepcionCoronelLota() {
             },
             {
               date: '3-dic-2025',
-              event: 'Apertura económica Electro-Cointer — único postulante.',
+              event: 'Apertura económica Electro-Cointer, único postulante.',
             },
             {
               date: '28-ene-2026',
@@ -590,8 +590,7 @@ export default function ConcepcionCoronelLota() {
           <li>
             <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
               SEREMITT Biobío y la DTPR
-            </a>{' '}
-            — autoridad que fiscaliza Res. Ex. 457 y tramita el PE formal.
+            </a>{' '}, autoridad que fiscaliza Res. Ex. 457 y tramita el PE formal.
           </li>
           <li>
             <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
@@ -600,34 +599,29 @@ export default function ConcepcionCoronelLota() {
             y{' '}
             <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
               PE Tomé
-            </a>{' '}
-            — los otros regímenes metropolitanos para comparación.
+            </a>{' '}, los otros regímenes metropolitanos para comparación.
           </li>
           <li>
             <a href="/wiki/buspay" className="underline underline-offset-2">
               BusPay 2026
-            </a>{' '}
-            — pago electrónico que cruza los tres regímenes + 201 Santa
+            </a>{' '}, pago electrónico que cruza los tres regímenes + 201 Santa
             Juana.
           </li>
           <li>
             <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
               Electrocorredores MOP del Biobío
-            </a>{' '}
-            — infraestructura vial que reemplazará parte del corredor
+            </a>{' '}, infraestructura vial que reemplazará parte del corredor
             desde 2031-2032.
           </li>
           <li>
             <a href="/wiki/biotren" className="underline underline-offset-2">
               Biotrén
-            </a>{' '}
-            — modo competidor por el mismo eje.
+            </a>{' '}, modo competidor por el mismo eje.
           </li>
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS Gran Concepción
-            </a>{' '}
-            — por qué el visor no muestra los troncales del corredor sur.
+            </a>{' '}, por qué el visor no muestra los troncales del corredor sur.
           </li>
           <li>
             <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
@@ -636,8 +630,7 @@ export default function ConcepcionCoronelLota() {
             y{' '}
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Recorridos interurbanos
-            </a>{' '}
-            — operadores con presencia cruzada (Las Galaxias / Línea 80).
+            </a>{' '}, operadores con presencia cruzada (Las Galaxias / Línea 80).
           </li>
         </ul>
       </Section>
@@ -666,17 +659,17 @@ export default function ConcepcionCoronelLota() {
         <ul className="ml-5 list-disc space-y-1 text-[12px]">
           <li>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">
-              Diario Concepción · 15-jul-2025 — Bases PE Coronel-Lota / 80 buses
+              Diario Concepción · 15-jul-2025, Bases PE Coronel-Lota / 80 buses
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-              Subtrans · 30-ene-2026 — Adjudicación BusPay
+              Subtrans · 30-ene-2026, Adjudicación BusPay
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-              BioBioChile · 28-ene-2026 — Consorcio Buspay
+              BioBioChile · 28-ene-2026, Consorcio Buspay
             </SourceLink>
           </li>
           <li>
@@ -686,12 +679,12 @@ export default function ConcepcionCoronelLota() {
           </li>
           <li>
             <SourceLink href="https://www.mop.gob.cl/consorcio-electro-cointer-presento-oferta-para-proyecto-concesion-corredor-de-transporte-publico-ruta-160/">
-              MOP · 5-nov-2025 — Oferta Electro-Cointer
+              MOP · 5-nov-2025, Oferta Electro-Cointer
             </SourceLink>
           </li>
           <li>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html">
-              Diario Concepción · 13-nov-2024 — CGR visa Ruta 160 / 150
+              Diario Concepción · 13-nov-2024, CGR visa Ruta 160 / 150
             </SourceLink>
           </li>
           <li>

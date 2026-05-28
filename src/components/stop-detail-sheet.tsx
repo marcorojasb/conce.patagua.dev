@@ -34,7 +34,7 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
   );
 
   // Only load the frequency chunk when the sheet is actually open and we
-  // have a paradero — avoids paying the chunk download for users who never
+  // have a paradero, avoids paying the chunk download for users who never
   // tap a stop.
   const freqStopId = open && stop ? stop.id : null;
   const frequency = useStopFrequency(freqStopId);
@@ -147,7 +147,7 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
                 <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <Icon className="size-[11px]" />
                   {ROUTE_TYPES[r.type].short}
-                  {r.headway !== '—' && ` · cada ${r.headway}`}
+                  {r.headway !== 'No informado' && ` · cada ${r.headway}`}
                 </div>
               </div>
               <span
@@ -222,7 +222,7 @@ function FrequencyBlock({
   if (!hourly || !stats) {
     return (
       <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-        Sin datos de frecuencia GTFS para este paradero — probablemente solo lo
+        Sin datos de frecuencia GTFS para este paradero, probablemente solo lo
         atienden recorridos sin horario publicado (Biotrén o líneas fuera del
         feed Gran Concepción).
       </div>

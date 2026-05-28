@@ -1,4 +1,4 @@
-// Electrocorredores MOP del Biobío — tres proyectos concesionados de
+// Electrocorredores MOP del Biobío, tres proyectos concesionados de
 // corredores exclusivos para buses urbanos sobre las troncales del Gran
 // Concepción (Rutas 160, 150 y Autopista Concepción-Talcahuano Tramo
 // II). Inversión global ~USD 250M, plazo 300 meses (25 años). Oferente
@@ -15,6 +15,7 @@ import {
   VerifiedBanner,
 } from './_components';
 
+// react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function CorredoresTransportePublicoMOPBiobio() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
@@ -143,13 +144,13 @@ export default function CorredoresTransportePublicoMOPBiobio() {
             MOP Concesiones · ficha proyecto Ruta 160
           </SourceLink>
           <SourceLink href="https://www.mop.gob.cl/consorcio-electro-cointer-presento-oferta-para-proyecto-concesion-corredor-de-transporte-publico-ruta-160/">
-            MOP · 5-nov-2025 — Oferta Electro-Cointer Ruta 160
+            MOP · 5-nov-2025, Oferta Electro-Cointer Ruta 160
           </SourceLink>
           <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-            MOP Concesiones · 10-dic-2025 — Ofertas Ruta 150 + Conce-Talcahuano II
+            MOP Concesiones · 10-dic-2025, Ofertas Ruta 150 + Conce-Talcahuano II
           </SourceLink>
           <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-conocio-la-oferta-economica-del-consorcio-electro-cointer-ii-para-desarrollar-el-proyecto-de-corredores-de-transporte-publico-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-            MOP Concesiones · 15-ene-2026 — Apertura económica Electro-Cointer II
+            MOP Concesiones · 15-ene-2026, Apertura económica Electro-Cointer II
           </SourceLink>
           <SourceLink href="https://cointer.eu/quienes-somos/">
             Cointer Concesiones S.L. · Grupo Azvi (matriz)
@@ -202,7 +203,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
         />
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html">
-            Diario Concepción · 13-nov-2024 — Visa CGR a llamados de licitación
+            Diario Concepción · 13-nov-2024, Visa CGR a llamados de licitación
           </SourceLink>
           <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-publicaron-en-el-diario-oficial-los-llamados-a-licitacion-de-dos-proyectos-de-corredores-de-transporte-publico-para-concepcion/">
             MOP Concesiones · publicación en Diario Oficial
@@ -270,7 +271,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
                 : los tres tramos cruzan el perímetro inicial del
                 sistema (Gran Concepción + Tomé + Santa Juana). La
                 integración tarifaria entre BusPay y el Biotrén
-                (tarjeta Conecta) sigue pendiente — el wiki la rastrea
+                (tarjeta Conecta) sigue pendiente, el wiki la rastrea
                 en el artículo BusPay.
               </>,
             ],
@@ -278,7 +279,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
         />
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-            Diario Concepción · 7-nov-2025 — Cita de Patricio Fierro sobre flota
+            Diario Concepción · 7-nov-2025, Cita de Patricio Fierro sobre flota
           </SourceLink>
           <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1006182">
             BCN · Ley 20.378 (subsidio operacional)
@@ -351,7 +352,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
         </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2022/11/01/nuevo-corredor-vial-de-la-ruta-150-puede-frenar-llegada-de-biotren-a-penco.html">
-            Diario Concepción · 1-nov-2022 — Cita Figueroa
+            Diario Concepción · 1-nov-2022, Cita Figueroa
           </SourceLink>
         </Sources>
       </Section>
@@ -382,7 +383,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
           primera sacrificada; capacidad agregada 8.000-12.000
           pax/hora-sentido (vs metro &gt;40.000); pre-pay reduce 40-60%
           el tiempo de detención (las bases MOP contemplan estaciones
-          cerradas pero BusPay valida a bordo — decisión pendiente);
+          cerradas pero BusPay valida a bordo, decisión pendiente);
           integración multimodal con Biotrén Conecta sigue pendiente.
         </p>
       </Section>
@@ -425,7 +426,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
               event: 'Adjudicación esperada de los tres corredores (las dos concesiones, ya que Ruta 150 y Autopista Tramo II son una sola). Decreto MOP de adjudicación y firma de contrato.',
             },
             {
-              date: '2S 2029 — 1S 2030',
+              date: '2S 2029, 1S 2030',
               event: 'Inicio de obras proyectado (puede correrse según evaluación ambiental SEIA y expropiaciones).',
             },
             {
@@ -563,7 +564,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
             corredores hoy se ven en el visor compartiendo pista con
             el tráfico normal: Ruta 160 (San Pedro ↔ Coronel) en el
             feed GTFS Gran Concepción; Ruta 150 con servicios 17M,
-            30B/C/E, 31F, 57Y, 62H — ver{' '}
+            30B/C/E, 31F, 57Y, 62H, ver{' '}
             <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
               Concepción ↔ Tomé
             </a>
@@ -644,34 +645,34 @@ export default function CorredoresTransportePublicoMOPBiobio() {
           MOP Concesiones · ficha proyecto Ruta 150 + Conce-Talcahuano II
         </SourceLink>
         <SourceLink href="https://www.mop.gob.cl/consorcio-electro-cointer-presento-oferta-para-proyecto-concesion-corredor-de-transporte-publico-ruta-160/">
-          MOP · 5-nov-2025 — Oferta Electro-Cointer Ruta 160
+          MOP · 5-nov-2025, Oferta Electro-Cointer Ruta 160
         </SourceLink>
         <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-recibieron-las-ofertas-tecnicas-y-economicas-para-proyecto-corredores-de-transporte-publico-en-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-          MOP Concesiones · 10-dic-2025 — Ofertas Ruta 150 + Conce-Talcahuano II
+          MOP Concesiones · 10-dic-2025, Ofertas Ruta 150 + Conce-Talcahuano II
         </SourceLink>
         <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-conocio-la-oferta-economica-del-consorcio-electro-cointer-ii-para-desarrollar-el-proyecto-de-corredores-de-transporte-publico-ruta-150-y-autopista-concepcion-talcahuano-tramo-ii/">
-          MOP Concesiones · 15-ene-2026 — Apertura económica Electro-Cointer II
+          MOP Concesiones · 15-ene-2026, Apertura económica Electro-Cointer II
         </SourceLink>
         <SourceLink href="https://concesiones.mop.gob.cl/hoy-se-publicaron-en-el-diario-oficial-los-llamados-a-licitacion-de-dos-proyectos-de-corredores-de-transporte-publico-para-concepcion/">
           MOP Concesiones · publicación llamados Diario Oficial
         </SourceLink>
         <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html">
-          Diario Concepción · 13-nov-2024 — Visa CGR a llamados
+          Diario Concepción · 13-nov-2024, Visa CGR a llamados
         </SourceLink>
         <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/11/07/gran-concepcion-contara-con-mas-de-30-km-de-electrocorredores-los-primeros-fuera-de-santiago.html">
-          Diario Concepción · 7-nov-2025 — Electrocorredores y cita Patricio Fierro
+          Diario Concepción · 7-nov-2025, Electrocorredores y cita Patricio Fierro
         </SourceLink>
         <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2025/12/03/avanza-concesion-de-corredor-de-transporte-publico-en-la-ruta-160-consorcio-cointer-presento-oferta.shtml">
-          BioBioChile · 3-dic-2025 — Avance Ruta 160 con Cointer
+          BioBioChile · 3-dic-2025, Avance Ruta 160 con Cointer
         </SourceLink>
         <SourceLink href="https://www.elconquistadorconcepcion.cl/2025/12/04/concesiones-ratifica-unica-oferta-para-construir-14-kilometros-de-corredor-de-transporte-publico-en-la-ruta-160/">
-          El Conquistador Concepción · 4-dic-2025 — Oferta única ratificada Ruta 160
+          El Conquistador Concepción · 4-dic-2025, Oferta única ratificada Ruta 160
         </SourceLink>
         <SourceLink href="https://www.radioudec.cl/avanza-el-corredor-de-transporte-publico-de-la-ruta-160-con-apertura-de-la-oferta-economica/">
-          Radio UdeC · diciembre 2025 — Apertura económica Ruta 160
+          Radio UdeC · diciembre 2025, Apertura económica Ruta 160
         </SourceLink>
         <SourceLink href="https://reportediario.cl/2025/11/06/cointer-la-empresa-espanola-que-busca-construir-el-corredor-de-transporte-publico-de-la-ruta-160-en-chile/">
-          Reporte Diario · 6-nov-2025 — Perfil Cointer (matriz Grupo Azvi)
+          Reporte Diario · 6-nov-2025, Perfil Cointer (matriz Grupo Azvi)
         </SourceLink>
         <SourceLink href="https://cointer.eu/quienes-somos/">
           Cointer Concesiones S.L. · sitio corporativo (matriz)

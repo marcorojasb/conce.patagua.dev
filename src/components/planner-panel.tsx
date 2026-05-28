@@ -220,7 +220,7 @@ function MidpointSection({
           </div>
           <div className="text-[10px] leading-snug text-muted-foreground">
             Trazado a pie según OSRM público (OSM). El punto medio es exacto sobre
-            la mitad del recorrido peatonal — no la línea recta entre A y B.
+            la mitad del recorrido peatonal, no la línea recta entre A y B.
           </div>
         </div>
       )}

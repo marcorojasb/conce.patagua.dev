@@ -121,7 +121,7 @@ export function PoiDetailSheet({
         {nearby.length === 0 ? (
           <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
             Ningún recorrido cargado pasa a menos de {NEARBY_RADIUS_M} m. Activa más
-            micros en la sidebar para extender la búsqueda — el cálculo se hace contra
+            micros en la sidebar para extender la búsqueda, el cálculo se hace contra
             los recorridos cargados, no contra los activos en el mapa.
           </div>
         ) : (
@@ -164,7 +164,7 @@ export function PoiDetailSheet({
 
       <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
         Cálculo de proximidad por vértice del trazado. No considera distancia caminable
-        ni accesibilidad peatonal — solo proximidad euclidiana al polyline.
+        ni accesibilidad peatonal, solo proximidad euclidiana al polyline.
       </div>
     </FloatingInfoPanel>
   );

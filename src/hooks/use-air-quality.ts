@@ -4,7 +4,7 @@
 // SINCA updates roughly hourly. We poll every 10 minutes when the layer is
 // active, and dedupe by station key.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import type { AirQualityStation } from '@/types/transport';
 
 const ENDPOINT = 'https://sinca.mma.gob.cl/index.php/json/listadomapa2k19/';
@@ -92,34 +92,67 @@ const INITIAL: AirQualityState = {
   lastFetched: null,
 };
 
+let snapshot = INITIAL;
+let pollingId: number | null = null;
+let activeConsumers = 0;
+const listeners = new Set<() => void>();
+
+function setSnapshot(next: AirQualityState): void {
+  snapshot = next;
+  for (const listener of listeners) listener();
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+function getSnapshot(): AirQualityState {
+  return snapshot;
+}
+
+async function loadAirQuality(): Promise<void> {
+  setSnapshot({ ...snapshot, loading: true, error: null });
+  try {
+    const res = await fetch(ENDPOINT, { signal: AbortSignal.timeout(15_000) });
+    if (!res.ok) throw new Error(`SINCA ${res.status}`);
+    const json = await res.json();
+    setSnapshot({
+      stations: parseStations(json),
+      loading: false,
+      error: null,
+      lastFetched: Date.now(),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    setSnapshot({ ...snapshot, loading: false, error: message });
+  }
+}
+
+function startPolling(): void {
+  void loadAirQuality();
+  if (pollingId != null) return;
+  pollingId = window.setInterval(() => void loadAirQuality(), REFRESH_MS);
+}
+
+function stopPolling(): void {
+  if (pollingId == null) return;
+  window.clearInterval(pollingId);
+  pollingId = null;
+}
+
 export function useAirQuality(active: boolean, retryKey = 0): AirQualityState {
-  const [state, setState] = useState<AirQualityState>(INITIAL);
+  const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   useEffect(() => {
     if (!active) return;
-    let cancelled = false;
-
-    async function load() {
-      setState((s) => ({ ...s, loading: true, error: null }));
-      try {
-        const res = await fetch(ENDPOINT, { signal: AbortSignal.timeout(15_000) });
-        if (!res.ok) throw new Error(`SINCA ${res.status}`);
-        const json = await res.json();
-        if (cancelled) return;
-        const stations = parseStations(json);
-        setState({ stations, loading: false, error: null, lastFetched: Date.now() });
-      } catch (err) {
-        if (cancelled) return;
-        const message = err instanceof Error ? err.message : String(err);
-        setState((s) => ({ ...s, loading: false, error: message }));
-      }
-    }
-
-    void load();
-    const id = window.setInterval(() => void load(), REFRESH_MS);
+    activeConsumers += 1;
+    startPolling();
     return () => {
-      cancelled = true;
-      window.clearInterval(id);
+      activeConsumers = Math.max(0, activeConsumers - 1);
+      if (activeConsumers === 0) stopPolling();
     };
   }, [active, retryKey]);
 
