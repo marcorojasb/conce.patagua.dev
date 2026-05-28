@@ -54,7 +54,7 @@ export function Sources({ children }: { children: ReactNode }) {
   return (
     <aside
       aria-label="Fuentes citadas"
-      className="mt-2 rounded-sm border-l-2 border-muted-foreground/30 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground"
+      className="mt-2 rounded-sm border border-muted-foreground/20 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground"
     >
       <span className="font-medium uppercase tracking-wider">Fuentes</span>
       <div className="mt-1 flex flex-col gap-0.5">{children}</div>
@@ -68,12 +68,12 @@ export function Timeline({
   items: Array<{ date: string; event: ReactNode; source?: { href: string; label: string } }>;
 }) {
   return (
-    <ol className="space-y-2 border-l-2 border-muted pl-4">
+    <ol className="space-y-2 border-l border-muted pl-4">
       {items.map((item) => (
         <li key={`${item.date}-${item.source?.href ?? item.source?.label ?? ''}`} className="relative">
           <span
             aria-hidden
-            className="absolute -left-[18px] mt-1 inline-block h-2 w-2 rounded-full bg-muted-foreground"
+            className="absolute -left-[18px] mt-1 inline-block size-2 rounded-full bg-muted-foreground"
           />
           <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             {item.date}
@@ -98,25 +98,23 @@ export function Timeline({
 
 export function VerifiedBanner({ children }: { children: ReactNode }) {
   return (
-    <div
-      role="status"
+    <aside
       aria-label="Bloque verificado"
       className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-[12px] text-emerald-900 dark:text-emerald-200"
     >
       {children}
-    </div>
+    </aside>
   );
 }
 
 export function PendingBanner({ children }: { children: ReactNode }) {
   return (
-    <div
-      role="status"
+    <aside
       aria-label="Bloque pendiente de verificación"
       className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-[12px] text-amber-900 dark:text-amber-200"
     >
       {children}
-    </div>
+    </aside>
   );
 }
 
@@ -206,59 +204,6 @@ export function ServiceRow({ code, title, notes, slug, verified, extra }: Servic
           )}
           {extra}
         </div>
-      )}
-    </div>
-  );
-}
-
-// Placeholder reservado para que el agente del mapa lo conecte al visor
-// real más tarde. Mientras tanto: caja con dimensiones, nodo identificable
-// por data-corridor-id, y un mini-listado de hitos opcional.
-
-export function CorridorMap({
-  corridorId,
-  caption,
-  waypoints,
-}: {
-  corridorId: string;
-  caption?: ReactNode;
-  waypoints?: Array<{ km: string; label: string; note?: string }>;
-}) {
-  return (
-    <div
-      data-corridor-id={corridorId}
-      className="rounded-md border bg-muted/20 p-3"
-    >
-      <div className="flex items-center justify-between text-[11px] uppercase tracking-wider text-muted-foreground">
-        <span className="font-medium">Mapa del corredor</span>
-        <span className="font-mono">id: {corridorId}</span>
-      </div>
-      <div
-        aria-hidden
-        className="mt-2 flex h-[180px] items-center justify-center rounded-sm border border-dashed border-muted-foreground/30 bg-background/40 text-[12px] text-muted-foreground"
-      >
-        Placeholder · el visor enchufa el mapa cuando exista una capa propia
-        para este corredor
-      </div>
-      {caption && (
-        <p className="mt-2 text-[12px] text-muted-foreground">{caption}</p>
-      )}
-      {waypoints && waypoints.length > 0 && (
-        <ol className="mt-2 space-y-1 text-[12px]">
-          {waypoints.map((wp) => (
-            <li key={`${wp.km}-${wp.label}`} className="flex gap-2">
-              <span className="w-12 shrink-0 font-mono text-muted-foreground">
-                {wp.km}
-              </span>
-              <span>
-                <strong>{wp.label}</strong>
-                {wp.note && (
-                  <span className="text-muted-foreground"> · {wp.note}</span>
-                )}
-              </span>
-            </li>
-          ))}
-        </ol>
       )}
     </div>
   );

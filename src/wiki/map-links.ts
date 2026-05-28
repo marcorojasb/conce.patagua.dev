@@ -40,7 +40,7 @@
 // edición manual es más simple y evita conflictos con el agente que
 // escribe contenido en paralelo.
 
-export const MAP_WIKI_LINKS = {
+const MAP_WIKI_LINKS = {
   byRouteCode: {
     // Servicios licitados con artículo dedicado. Los códigos "201" y
     // "401"/"411"/"421" se enchufan contra rutas nativas interurbanas

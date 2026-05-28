@@ -13,35 +13,6 @@ export function distanceMeters(a: LatLng, b: LatLng): number {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/** Cumulative distance from path[0] to each path[i], in meters. */
-export function cumulativeDistances(path: LatLng[]): number[] {
-  const out = new Array<number>(path.length);
-  out[0] = 0;
-  for (let i = 1; i < path.length; i++) {
-    out[i] = out[i - 1] + distanceMeters(path[i - 1], path[i]);
-  }
-  return out;
-}
-
-/**
- * For a `target` lat/lng and a polyline, return the index of the nearest
- * polyline vertex along with that vertex's perpendicular distance in meters.
- * Good enough for matching transit stops to nearby routes — the polylines
- * have been pre-simplified to ~16 m so segment midpoints rarely miss.
- */
-export function nearestVertex(path: LatLng[], target: LatLng): { idx: number; d: number } {
-  let bestIdx = 0;
-  let bestD = Infinity;
-  for (let i = 0; i < path.length; i++) {
-    const d = distanceMeters(path[i], target);
-    if (d < bestD) {
-      bestD = d;
-      bestIdx = i;
-    }
-  }
-  return { idx: bestIdx, d: bestD };
-}
-
 /**
  * Perpendicular distance from `p` to the line segment a–b, in meters,
  * using an equirectangular projection centered on the segment.
