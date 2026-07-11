@@ -61,8 +61,8 @@ export default function DataQualityTool({ onSelectRoute }: Props) {
           </div>
         ) : (
           <ul className="divide-y">
-            {visible.slice(0, 80).map((issue, index) => (
-              <li key={`${issue.category}-${issue.title}-${index}`}>
+            {visible.slice(0, 80).map((issue) => (
+              <li key={`${issue.category}-${issue.title}-${issue.detail}`}>
                 <IssueRow issue={issue} onSelectRoute={onSelectRoute} />
               </li>
             ))}

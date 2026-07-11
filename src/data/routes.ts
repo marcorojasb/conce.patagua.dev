@@ -20,7 +20,7 @@
 //  ✘ Taxibús / colectivo — no open dataset exists for the metro area.
 
 import { Bus, Train } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import {
   BIOTREN_L1_STOPS,
   BIOTREN_L2_STOPS,
@@ -269,10 +269,5 @@ startMicroLoad();
  * pick branches if they want, but most just need the trigger.
  */
 export function useRoutesVersion(): number {
-  // useSyncExternalStore would be the idiomatic choice but adds a
-  // dependency on React 18 features that are already in use; we mirror it
-  // with useState + useEffect to keep the file dependency-light.
-  const [v, setV] = useState(routesVersion);
-  useEffect(() => subscribe(() => setV(routesVersion)), []);
-  return v;
+  return useSyncExternalStore(subscribe, () => routesVersion);
 }

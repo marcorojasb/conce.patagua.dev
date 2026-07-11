@@ -369,10 +369,10 @@ export function ConceMap({
     return () => window.clearTimeout(id);
   }, []);
 
-  const visibleRoutes = useMemo(
-    () => routes.filter((r) => visibleRouteIds.includes(r.id)),
-    [routes, visibleRouteIds],
-  );
+  const visibleRoutes = useMemo(() => {
+    const visibleIds = new Set(visibleRouteIds);
+    return routes.filter((r) => visibleIds.has(r.id));
+  }, [routes, visibleRouteIds]);
   const selectedRoute = useMemo(
     () => visibleRoutes.find((r) => r.id === selectedRouteId) ?? null,
     [selectedRouteId, visibleRoutes],

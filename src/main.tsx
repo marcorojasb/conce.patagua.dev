@@ -1,4 +1,4 @@
-import { StrictMode, lazy, Suspense } from 'react';
+import { StrictMode, lazy, Suspense, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import './index.css';
@@ -14,7 +14,7 @@ if (!rootElement) throw new Error('Root element not found');
 // app they actually opened. Internal navigation between visor and wiki
 // uses regular <a href="/"> / <a href="/wiki">, full reload is fine
 // because they're independent products.
-function pickApp(): JSX.Element {
+function pickApp(): ReactNode {
   if (window.location.pathname.startsWith('/wiki')) {
     return <WikiApp />;
   }
