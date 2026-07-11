@@ -233,7 +233,7 @@ export function RouteDetailSheet({
           </TabsContent>
 
           <TabsContent value="recorrido" className="min-h-0 flex-1">
-            <ScrollArea className="h-full pr-2">
+            <ScrollArea className="h-full pr-2 scroll-fade-y">
               {route.digitized && (
                 // Nota explícita: este trazado se digitalizó a partir de una
                 // descripción oficial y waypoints OSM citados; no es un
@@ -292,7 +292,7 @@ export function RouteDetailSheet({
           </TabsContent>
 
           <TabsContent value="horarios" className="min-h-0 flex-1">
-            <ScrollArea className="h-full pr-2">
+            <ScrollArea className="h-full pr-2 scroll-fade-y">
               {hasFrequency ? (
                 <div className="space-y-2">
                   {Object.entries(route.frequencyByDay).map(([day, freq]) => (

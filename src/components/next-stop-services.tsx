@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useReducer } from 'react';
 import { Clock3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ROUTES_BY_ID, useRoutesVersion } from '@/data/routes';
 import {
   formatServiceClock,
@@ -110,8 +111,10 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
 
   if (state.loading) {
     return (
-      <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-        Cargando próximos servicios programados…
+      <div className="mt-4 space-y-1.5" aria-label="Cargando próximos servicios programados" role="status">
+        {[0, 1, 2].map((i) => (
+          <Skeleton key={i} className="h-[52px] w-full rounded-md" />
+        ))}
       </div>
     );
   }

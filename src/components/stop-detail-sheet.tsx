@@ -3,6 +3,7 @@ import { Accessibility, ChevronRight, ExternalLink, Footprints, MapPin } from 'l
 import { Badge } from '@/components/ui/badge';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { NextStopServicesBlock } from '@/components/next-stop-services';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ROUTES_BY_ID, ROUTE_TYPES } from '@/data/routes';
 import { BIOTREN_WIKIDATA } from '@/data/wikidata.generated';
 import { isoDayOfWeek, useStopFrequency } from '@/hooks/use-stop-frequency';
@@ -213,8 +214,22 @@ function FrequencyBlock({
 
   if (loading) {
     return (
-      <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-        Cargando frecuencia programada…
+      <div
+        className="mt-4 rounded-md border bg-card p-3"
+        aria-label="Cargando frecuencia programada"
+        role="status"
+      >
+        <div className="mb-2 flex items-baseline justify-between gap-2">
+          <Skeleton className="h-3 w-32" />
+          <Skeleton className="h-3 w-16" />
+        </div>
+        <div className="mb-2 grid grid-cols-3 gap-2">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+        <Skeleton className="mb-1 h-3 w-40" />
+        <Skeleton className="h-12 w-full" />
       </div>
     );
   }

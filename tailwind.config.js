@@ -58,11 +58,16 @@ export default {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(100%)' },
         },
+        shimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 150ms ease-out',
         'sheet-in': 'slide-in-right 220ms cubic-bezier(0.32, 0.72, 0, 1)',
         'sheet-out': 'slide-out-right 200ms cubic-bezier(0.32, 0.72, 0, 1)',
+        shimmer: 'shimmer 1.6s ease-in-out infinite',
       },
     },
   },

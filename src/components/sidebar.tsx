@@ -318,7 +318,7 @@ function SidebarRouteList({
   onSetAllByOperator,
 }: SidebarRouteListProps) {
   return (
-    <ScrollArea className="min-w-0 flex-1">
+    <ScrollArea className="min-w-0 flex-1 scroll-fade-y">
       <div className="min-w-0 max-w-full space-y-1 overflow-hidden p-2 pr-4">
         {filteredFlat.length === 0 && (
           <div className="px-3 py-8 text-center text-sm text-muted-foreground">

@@ -90,6 +90,30 @@
   .thin-scroll::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.4);
   }
+
+  /* Custom equivalent of shadcn/ui's `scroll-fade` utility (see
+     https://ui.shadcn.com/docs/utils/scroll-fade). That utility ships as
+     part of the `shadcn` npm package's `tailwind.css` (scroll-aware, via
+     CSS scroll-driven animations) — this project doesn't consume that
+     package, so this is a hand-rolled, static approximation: a mask-image
+     that fades the top/bottom edges of a scrolling container to hint at
+     more content, without JS scroll listeners. */
+  .scroll-fade-y {
+    mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      black 16px,
+      black calc(100% - 16px),
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent,
+      black 16px,
+      black calc(100% - 16px),
+      transparent
+    );
+  }
 }
 
 /* Leaflet — make controls + attribution match the shadcn look */
@@ -358,4 +382,26 @@
 }
 .interurban-popup .interurban-popup-link:hover {
   color: hsl(var(--primary));
+}
+
+/* Wiki article rhythm — manual equivalent of shadcn/typeset's size/leading/flow
+   controls. shadcn/typeset (announced julio 2026) ships typeset.css meant to be
+   imported via `@import "tailwindcss"; @import "./typeset.css";` — the
+   single-import Tailwind v4 syntax. This project is on Tailwind v3.4.17
+   (`@tailwind base/components/utilities` above), so typeset.css cannot be
+   dropped in without a v4 migration. Until that's on the table, these rules
+   give the wiki's long-form <Section>/<p>/<h2> content (src/wiki/articles/*)
+   consistent vertical spacing and measure without touching per-article
+   classes. Scoped to .prose-wiki so it only affects wiki article bodies. */
+.prose-wiki {
+  max-width: 68ch;
+}
+.prose-wiki :where(p, ul, ol, table, dl, blockquote) {
+  line-height: 1.6;
+}
+.prose-wiki :where(h2, h3) + * {
+  margin-top: 0.25rem;
+}
+.prose-wiki :where(p) + :where(p, ul, ol) {
+  margin-top: 0.75rem;
 }

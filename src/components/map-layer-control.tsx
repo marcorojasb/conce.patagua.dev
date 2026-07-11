@@ -505,7 +505,7 @@ export function MapLayerControl({
               </Button>
             </div>
 
-            <ScrollArea className="min-h-0 flex-1">
+            <ScrollArea className="min-h-0 flex-1 scroll-fade-y">
               <div className="space-y-1 p-3">
                 {layers.map((layer) => {
                   const Icon = layer.icon;
