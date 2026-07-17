@@ -36,9 +36,16 @@ scripts/               generación de datasets (sync:*) + validación/smoke (dat
 npm run check
 ```
 
-(`typecheck` + `test` + `data:validate` + `build` + `bundle:budget` + `smoke`). Si el cambio toca capas de datos, UI del mapa o la wiki, correr además `npm run check:full` (agrega `smoke:services`, con Playwright).
+(`typecheck` + `test` + `data:validate` + `maplinks:validate` + `build` + `bundle:budget` + `smoke`). Si el cambio toca capas de datos, UI del mapa o la wiki, correr además `npm run check:full` (agrega `smoke:services`, con Playwright).
+
+`maplinks:validate` comprueba que cada `<MapLink>` de artículos apunte a una entidad real y que el índice reverso `MAP_WIKI_LINKS` en `src/wiki/map-links.ts` solo use slugs/códigos existentes.
 
 No editar directamente los `*.generated.ts` en `src/data/` — si un dataset necesita cambiar, corre el `sync:*` correspondiente (ver tabla en README.md) o edita el script que lo genera.
+
+## Wiki: legibilidad y radar X
+
+- Plantilla en capas: `FactStrip` → `ArticleSummary` → `NewsPulse` → secciones → `CollapsibleSection` (ver `src/wiki/articles/_components.tsx` y piloto `biotren.tsx`).
+- Actualizar con señales de X: skill `.agents/skills/wiki-x-research/SKILL.md`, queries en `docs/wiki-research-queries.md`, bitácoras en `docs/research/`. **X no es fuente primaria.**
 
 ## Notas pendientes / no verificado
 

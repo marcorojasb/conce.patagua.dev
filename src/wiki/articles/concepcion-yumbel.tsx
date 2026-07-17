@@ -506,6 +506,10 @@ export default function ConcepcionYumbel() {
           en Yumbel, dos terminales urbanas aún no mapeadas:
         </p>
         <p className="text-[12px]">
+          <MapLink corridor="concepcion-yumbel">
+            Ver corredor Yumbel en el mapa →
+          </MapLink>
+          {' · '}
           <MapLink terminal="osm-way-114474600">
             Terminal Camilo Henríquez en el mapa →
           </MapLink>

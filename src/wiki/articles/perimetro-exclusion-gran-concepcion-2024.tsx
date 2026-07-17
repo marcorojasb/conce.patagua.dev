@@ -168,8 +168,11 @@ export default function PerimetroExclusionGranConcepcion2024() {
           contaminar el calendario del régimen mayor.
         </p>
         <Sources>
+          <SourceLink href="https://www.subtrans.gob.cl/avanza-implementacion-de-nueva-regulacion-del-transporte-publico-en-gran-concepcion/">
+            Subtrans · 10-ene-2024, Implementación PE Gran Concepción (7 comunas, 19 empresas en operación, 31 líneas con contrato)
+          </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
-            Wikipedia · Perímetro de Exclusión del Gran Concepción (incluye PE Tomé y PE Coronel-Lota)
+            Wikipedia · Perímetro de Exclusión del Gran Concepción (incluye PE Tomé y PE Coronel-Lota; cita Res. Afecta 29/2023)
           </SourceLink>
           <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
             BCN · Ley 20.378 (subsidio Zonas Aisladas, base de la licitación 201)
@@ -262,7 +265,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
             {
               date: 'Q3 2026 (proyectado)',
               event: 'Marcha blanca BusPay con efectivo y tarjeta en paralelo. 100% pago electrónico esperado a fines de 2026.',
-              source: { href: 'https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/', label: 'Subtrans · 2026' },
+              source: { href: 'https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/', label: 'Subtrans · 2026' },
             },
             {
               date: '31-dic-2028',
@@ -590,7 +593,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
             BioBioChile · 28-ene-2026, Adjudicación BusPay
           </SourceLink>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 2026, Comunicado oficial
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/09/23/gran-concepcion-avanza-hacia-el-pago-electronico-en-buses-mtt-recibe-seis-ofertas.html">
@@ -851,8 +854,18 @@ export default function PerimetroExclusionGranConcepcion2024() {
 
       <Section title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Número y texto íntegro del decreto MTT que aprobó la adjudicación del PE Gran Concepción 2024 (probable Resolución Afecta N° 29/2023 visada por Contraloría en mayo 2023, texto no recuperado).</li>
-          <li>Lista íntegra de las 36 UN con la razón social, RUT y N° RNTPP de cada operador adjudicado.</li>
+          <li>
+            Número y texto íntegro del acto MTT que aprobó el PE (fuentes
+            secundarias citan Resolución Afecta N° 29/2023; texto no
+            recuperado en BCN en pasada 17-jul-2026). Subtrans confirma
+            la <strong>implementación operativa</strong> desde 1-ene-2024
+            (
+            <SourceLink href="https://www.subtrans.gob.cl/avanza-implementacion-de-nueva-regulacion-del-transporte-publico-en-gran-concepcion/">
+              Subtrans · 10-ene-2024
+            </SourceLink>
+            ) sin citar el número del acto.
+          </li>
+          <li>Lista íntegra de las 36 UN con la razón social, RUT y N° RNTPP de cada operador adjudicado (Subtrans listó 19 empresas en operación al 10-ene-2024 y 31 líneas con contrato; no es el padrón RNTPP completo).</li>
           <li>Cláusula tarifaria con forma matemática del polinomio de ajuste (coeficiente de cada variable: diésel, neumático, bus, mano de obra, IPC).</li>
           <li>Antigüedad máxima de flota permitida por el contrato del perímetro.</li>
           <li>Estado actual (2026) de la línea 56 Base Naval, ¿se incorporó al PE? ¿sigue fuera?</li>
@@ -864,12 +877,16 @@ export default function PerimetroExclusionGranConcepcion2024() {
         <p className="text-[12px] text-muted-foreground">
           Vía de cierre principal: <strong>solicitud de Ley de
           Transparencia</strong> a DTPR Biobío y al MTT por el
-          expediente íntegro del PE Gran Concepción 2024.
+          expediente íntegro del PE Gran Concepción 2024; búsqueda del
+          texto de la Res. Afecta 29/2023 en Diario Oficial / CGR.
         </p>
       </Section>
 
       <Section title="Bibliografía">
         <Sources>
+          <SourceLink href="https://www.subtrans.gob.cl/avanza-implementacion-de-nueva-regulacion-del-transporte-publico-en-gran-concepcion/">
+            Subtrans · 10-ene-2024, Implementación PE Gran Concepción
+          </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
             Wikipedia · Perímetro de Exclusión del Gran Concepción
           </SourceLink>
@@ -927,7 +944,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
             BioBioChile · 28-ene-2026, Adjudicación Consorcio Buspay
           </SourceLink>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 2026, Comunicado oficial BusPay
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">

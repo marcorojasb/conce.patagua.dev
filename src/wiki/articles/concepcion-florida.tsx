@@ -145,6 +145,10 @@ export default function ConcepcionFlorida() {
           como cuarto operador del corredor rural ampliado.
         </p>
         <p className="text-[12px]">
+          <MapLink corridor="concepcion-florida">
+            Ver corredor Florida en el mapa →
+          </MapLink>
+          {' · '}
           <MapLink terminal="osm-way-114474600">
             Terminal Camilo Henríquez en el mapa →
           </MapLink>

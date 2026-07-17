@@ -226,12 +226,33 @@ try {
     await waitForBody(page, /Wiki|Fuente|Ruta|GTFS|OpenStreetMap/, `wiki article ${slug}`);
   }
 
+  // Wiki → visor deep-links (`MapLink` / `?focus=`). After apply, focus is
+  // stripped from the URL; the sheet + wiki reverse button should remain.
+  await page.goto(`${BASE_URL}/?focus=route:201`, { waitUntil: 'load' });
+  await waitForBody(page, /201|Santa Juana/, 'focus route 201');
+  await page.getByRole('link', { name: /Ver en el wiki/i }).first().waitFor({ timeout: 5_000 });
+
+  await page.goto(`${BASE_URL}/?focus=route:L1`, { waitUntil: 'load' });
+  await waitForBody(page, /Hualqui|Biotrén|L1/, 'focus route L1');
+  await page.getByRole('link', { name: /Ver en el wiki/i }).first().waitFor({ timeout: 5_000 });
+
+  await page.goto(`${BASE_URL}/?focus=terminal:osm-way-135488014`, { waitUntil: 'load' });
+  await waitForBody(page, /Intermodal|Concepción/, 'focus terminal intermodal');
+  await page.getByRole('link', { name: /Ver en el wiki/i }).first().waitFor({ timeout: 5_000 });
+
+  await page.goto(`${BASE_URL}/?focus=corridor:concepcion-florida`, { waitUntil: 'load' });
+  // Corridor focus only flyTo + enables the layer (no detail sheet). Pins
+  // render as `.interurban-pin` once INTERURBAN_CORRIDORS is non-empty.
+  await page.waitForSelector('.interurban-pin', { timeout: 10_000 }).catch(() => {
+    throw new Error('Expected interurban corridor pin after ?focus=corridor:concepcion-florida');
+  });
+
   if (errors.length > 0) {
     throw new Error(`Console errors:\n${errors.join('\n')}`);
   }
 
   console.log(
-    `Browser smoke OK: ${count.toLocaleString('es-CL')} visible-scope services, ${allScopeCount.toLocaleString('es-CL')} all-network services, map/wiki/mobile checks.`,
+    `Browser smoke OK: ${count.toLocaleString('es-CL')} visible-scope services, ${allScopeCount.toLocaleString('es-CL')} all-network services, map/wiki/focus/mobile checks.`,
   );
 } catch (err) {
   console.error(serverOutput.trim());

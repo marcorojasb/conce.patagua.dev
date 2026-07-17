@@ -4,7 +4,11 @@
 // Extensiones futuras → `biotren-extensiones-proyectos`.
 
 import {
+  ArticleSummary,
+  CollapsibleSection,
+  FactStrip,
   KeyValueList,
+  NewsPulse,
   PendingBanner,
   Section,
   SourceLink,
@@ -21,50 +25,88 @@ export default function Biotren() {
       <VerifiedBanner>
         <strong>Verificado parcialmente con fuentes primarias.</strong>{' '}
         Estaciones, trazado, operador EFE Trenes Metropolitanos, hitos
-        históricos (1872, 1995 FESUR, 2005 Biotrén, 27F-2010) y tarifas
-        por zona Z1-Z10 vigentes desde 2-ene-2026 ($420-$850 adulto):
-        todo citado.{' '}
+        históricos y tarifas Z1-Z10 desde 2-ene-2026 ($420-$850 adulto):
+        citados.{' '}
         <strong>Pendientes</strong>: demanda diaria 2025-2026, monto del
         subsidio MTT, integración tarifaria con BusPay 2026.
       </VerifiedBanner>
 
+      <FactStrip
+        snapshot="2026-07-17"
+        items={[
+          { label: 'Líneas', value: 'L1 · L2' },
+          { label: 'Estaciones', value: '26 (OSM)' },
+          { label: 'Tarifa adulto', value: '$420–$850 (Z1–Z10)' },
+          { label: 'Operador', value: 'EFE Trenes Metropolitanos' },
+          { label: 'BusPay', value: 'No integrado' },
+          { label: 'Mapa', value: <><MapLink route="L1">L1</MapLink>{' · '}<MapLink route="L2">L2</MapLink></> },
+        ]}
+      />
+
+      <ArticleSummary
+        bullets={[
+          <>
+            Único tren urbano de Chile en operación regular fuera de Metro
+            Santiago; operado por EFE Trenes Metropolitanos (filial EFE Sur).
+          </>,
+          <>
+            <strong>L1</strong> Hualqui ↔ Mercado de Talcahuano (12 estaciones)
+            y <strong>L2</strong> Coronel ↔ Concepción (14), con terminal
+            común en Estación Concepción.
+          </>,
+          <>
+            Tarifas por zonas <strong>Z1–Z10</strong> desde el 2-ene-2026
+            (adulto $420–$850). Medio de pago propio (Conecta / Biotrén), no
+            BusPay.
+          </>,
+          <>
+            El visor dibuja L1/L2 desde OSM (no GTFS). Capa “Servicios en
+            curso” proyecta trenes por frecuencia publicada, no GPS en vivo.
+          </>,
+          <>
+            Extensiones (Penco, Tomé, Lota, Carriel Sur) →{' '}
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
+              ficha de proyectos
+            </a>
+            . Hay pendientes de demanda y subsidio (ver abajo).
+          </>,
+        ]}
+      />
+
+      <NewsPulse
+        items={[
+          {
+            date: 'jul–nov 2025',
+            title: 'Nuevo puente ferroviario del Biobío en servicio',
+            detail:
+              'Operación de pasajeros por la primera vía desde julio 2025; inauguración formal del puente en noviembre 2025 (EFE).',
+            source: {
+              href: 'https://www.efe.cl/proyectos/puente-bio-bio/',
+              label: 'EFE · Proyecto Puente Bío-Bío',
+            },
+          },
+          {
+            date: '2-ene-2026',
+            title: 'Nueva tarifa por zonas Z1–Z10',
+            detail: 'Rango adulto $420–$850; alza promedio ~$60 por viaje.',
+            source: {
+              href: 'https://www.efe.cl/efe-sur-informa-nueva-estructura-tarifaria-del-biotren-a-partir-del-2-de-enero-de-2026/',
+              label: 'EFE Sur · 30-dic-2025',
+            },
+          },
+        ]}
+      />
+
       <Section title="Qué es y por qué importa">
         <p>
-          El <strong>Biotrén</strong> es el sistema de tren urbano del
-          Gran Concepción, operado por <strong>EFE Trenes Metropolitanos
-          S.A.</strong> (filial de EFE Sur). Es el{' '}
-          <strong>único tren urbano de Chile en operación regular fuera
-          de la red Metro de Santiago</strong>, Merval y EFE Central son
-          cercanías-interurbano.
-        </p>
-        <ul className="ml-5 list-disc space-y-1">
-          <li>
-            <strong>Capacidad estructural</strong>: cada composición
-            Xtrapolis o ABe lleva centenares de pasajeros, un orden de
-            magnitud sobre cualquier bus.
-          </li>
-          <li>
-            <strong>Infraestructura hundida</strong>: línea férrea
-            Concepción-Talcahuano de 1872, electrificación 3 kV DC y doble
-            vía urbana ya construidas.
-          </li>
-          <li>
-            <strong>Capa nativa del visor</strong>: a diferencia de los
-            buses (feed{' '}
-            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-              GTFS Gran Concepción
-            </a>
-            ), el Biotrén se procesa desde OSM (relations 6857222 / 6857223
-            + nodos <code>railway=station</code>).
-          </li>
-        </ul>
-        <p className="text-[12px] text-muted-foreground">
-          Extensiones (Penco, Tomé, Lota, Carriel Sur) y tensión con el
-          electrocorredor MOP Ruta 150 →{' '}
-          <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
-            Biotrén · extensiones y proyectos
+          El <strong>Biotrén</strong> es el tren urbano del Gran Concepción:
+          capacidad de orden de magnitud superior a un bus, sobre la línea
+          Concepción–Talcahuano de 1872 (electrificación 3 kV DC). A
+          diferencia de los buses del feed{' '}
+          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+            GTFS Gran Concepción
           </a>
-          .
+          , el visor lo arma desde OSM (relations 6857222 / 6857223).
         </p>
         <Sources>
           <SourceLink href="https://www.efetrenes.cl/biotren">
@@ -102,7 +144,7 @@ export default function Biotren() {
         </Sources>
       </Section>
 
-      <Section title="Historia">
+      <CollapsibleSection title="Historia y cronología">
         <p>
           La línea férrea Concepción-Talcahuano se inauguró en{' '}
           <strong>1872</strong> como parte del sistema Sur de EFE. En{' '}
@@ -119,7 +161,10 @@ export default function Biotren() {
           (especialmente el puente Biobío de la L2). En <strong>2017</strong>{' '}
           FESUR fue absorbida y reorganizada como EFE Trenes Metropolitanos
           S.A. La pandemia 2020-2021 desplomó la demanda con frecuencias
-          y ventanas reducidas.
+          y ventanas reducidas. En <strong>2025</strong> entró en
+          operación el <strong>nuevo puente ferroviario del Biobío</strong>{' '}
+          (primera vía para pasajeros en julio; inauguración formal en
+          noviembre).
         </p>
         <Timeline
           items={[
@@ -155,6 +200,11 @@ export default function Biotren() {
               event: 'Pandemia COVID-19: demanda colapsa, servicio reducido en frecuencia y ventana horaria.',
             },
             {
+              date: 'jul–nov 2025',
+              event: 'Nuevo puente ferroviario del Biobío: operación de pasajeros por la 1.ª vía desde julio 2025; inauguración formal en noviembre 2025 (EFE).',
+              source: { href: 'https://www.efe.cl/proyectos/puente-bio-bio/', label: 'EFE · Proyecto Puente Bío-Bío' },
+            },
+            {
               date: '2-ene-2026',
               event: 'Entra en vigencia nueva estructura tarifaria por zonas Z1-Z10 ($420-$850 adulto), alza promedio $60 por viaje. EFE Sur cita "alza acumulada por inflación no aplicada en pandemia" como fundamento.',
               source: { href: 'https://www.efe.cl/efe-sur-informa-nueva-estructura-tarifaria-del-biotren-a-partir-del-2-de-enero-de-2026/', label: 'EFE Sur · 30-dic-2025' },
@@ -167,7 +217,7 @@ export default function Biotren() {
           L1/L2 (fuentes mencionan 1999, 2005 y 2009 inconsistentemente).
           Cierre por Ley de Transparencia a EFE Trenes.
         </PendingBanner>
-      </Section>
+      </CollapsibleSection>
 
       <Section title="Servicios actuales">
         <p>
@@ -557,7 +607,7 @@ export default function Biotren() {
         </Sources>
       </Section>
 
-      <Section title="Issues conocidos">
+      <CollapsibleSection title="Issues conocidos">
         <div className="space-y-2">
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
             <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
@@ -600,7 +650,7 @@ export default function Biotren() {
             </p>
           </div>
         </div>
-      </Section>
+      </CollapsibleSection>
 
       <Section title="Cobertura del visor">
         <div className="rounded-md border bg-card p-3">
@@ -639,7 +689,7 @@ export default function Biotren() {
         </div>
       </Section>
 
-      <Section title="Vínculos con otros artículos">
+      <CollapsibleSection title="Vínculos con otros artículos">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>
             <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
@@ -682,9 +732,9 @@ export default function Biotren() {
             (cabecera sur L1 y servicios EFE Sur).
           </li>
         </ul>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Datos pendientes">
+      <CollapsibleSection title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>Tarifas exactas Z5, Z7, Z8, Z9.</li>
           <li>Demanda diaria 2025-2026 por línea.</li>
@@ -699,13 +749,18 @@ export default function Biotren() {
           SUBTRANS Biobío; foto del cuadro tarifario en estación
           Concepción; fichas IDI de MIDESO.
         </p>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Bibliografía">
+      <CollapsibleSection title="Bibliografía y contribución">
         <ul className="ml-5 list-disc space-y-1 text-[12px]">
           <li>
             <SourceLink href="https://www.efetrenes.cl/biotren">
               EFE Trenes · sitio oficial Biotrén (estaciones, códigos, horarios)
+            </SourceLink>
+          </li>
+          <li>
+            <SourceLink href="https://www.efe.cl/proyectos/puente-bio-bio/">
+              EFE · Proyecto Puente Bío-Bío (operación 1.ª vía 07/2025, inauguración nov-2025)
             </SourceLink>
           </li>
           <li>
@@ -751,10 +806,7 @@ export default function Biotren() {
             (trazado).
           </li>
         </ul>
-      </Section>
-
-      <Section title="Para contribuir">
-        <p>
+        <p className="mt-3 text-[13px]">
           Foto del cuadro tarifario completo Z1-Z10 en estación Concepción,
           demanda diaria 2025-2026 o memoria anual EFE Trenes Metropolitanos
           → pull request en{' '}
@@ -763,7 +815,7 @@ export default function Biotren() {
           </SourceLink>
           .
         </p>
-      </Section>
+      </CollapsibleSection>
     </div>
   );
 }

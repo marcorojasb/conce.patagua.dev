@@ -154,9 +154,18 @@ export default function App() {
   const selectedPoiId = selectedDetail?.kind === 'poi' ? selectedDetail.id : null;
   const sheetKind = selectedDetail?.kind ?? null;
 
-  const [showTerminals, setShowTerminals] = useState(false);
+  // Deep-links de terminal/poi (URL durable o ?focus=) encienden la capa
+  // para que el pin sea visible al aterrizar desde el wiki.
+  const [showTerminals, setShowTerminals] = useState(
+    () =>
+      !!INITIAL_URL.terminal ||
+      INITIAL_FOCUS?.kind === 'terminal' ||
+      false,
+  );
   const [showParaderos, setShowParaderos] = useState(INITIAL_URL.paraderos);
-  const [showPois, setShowPois] = useState(INITIAL_URL.pois);
+  const [showPois, setShowPois] = useState(
+    () => !!INITIAL_URL.poi || INITIAL_FOCUS?.kind === 'poi' || false,
+  );
   const [showAirQuality, setShowAirQuality] = useState(INITIAL_URL.aire);
   const [onlyOperatingNow, setOnlyOperatingNow] = useState(INITIAL_URL.activos);
   const [airQualityRetryKey, setAirQualityRetryKey] = useState(0);

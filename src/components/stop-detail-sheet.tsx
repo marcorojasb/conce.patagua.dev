@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { NextStopServicesBlock } from '@/components/next-stop-services';
 import { Skeleton } from '@/components/ui/skeleton';
+import { WikiLinkButton } from '@/components/wiki-link';
 import { ROUTES_BY_ID, ROUTE_TYPES } from '@/data/routes';
 import { BIOTREN_WIKIDATA } from '@/data/wikidata.generated';
 import { isoDayOfWeek, useStopFrequency } from '@/hooks/use-stop-frequency';
@@ -40,13 +41,18 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
   const freqStopId = open && stop ? stop.id : null;
   const frequency = useStopFrequency(freqStopId);
 
+  const isBiotrenStation = useMemo(
+    () => !!stop?.wikidata || routes.some((r) => r.type === 'biotren'),
+    [routes, stop?.wikidata],
+  );
+
   const panelChrome = useMemo(() => {
     if (!stop) return null;
     return {
       eyebrow: (
         <>
           <MapPin className="size-3.5" />
-          {stop.wikidata ? 'Estación Biotrén' : 'Paradero'}
+          {isBiotrenStation ? 'Estación Biotrén' : 'Paradero'}
         </>
       ),
       description: (
@@ -54,8 +60,13 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
           {stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}
         </span>
       ),
+      actions: isBiotrenStation ? (
+        <div className="flex flex-wrap gap-1.5">
+          <WikiLinkButton kind="slug" slug="biotren" />
+        </div>
+      ) : undefined,
     };
-  }, [stop]);
+  }, [isBiotrenStation, stop]);
 
   if (!stop) return null;
 
@@ -71,6 +82,7 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
       title={stop.name}
       eyebrow={panelChrome.eyebrow}
       description={panelChrome.description}
+      actions={panelChrome.actions}
     >
       {(hasEnrichment || hasAccessibility) && (
         <div className="space-y-2">

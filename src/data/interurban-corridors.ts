@@ -57,30 +57,60 @@ export interface InterurbanCorridor {
 
 // 201 Santa Juana y 401/411/421 Tomé se integraron como rutas nativas del
 // visor (ver `src/data/interurban-routes.generated.ts` y `src/data/routes.ts`).
-// El sistema de corredores queda en pie para futuros servicios licitados
-// que aún no tienen trazado verificable: Concepción ↔ Florida (corredor
-// coloquialmente "de El Pimentón"), Yumbel, etc. Cuando aparezca su
-// trazado, se mueven al dataset principal
-// y este overlay se vacía o desaparece.
+// Este overlay cubre corredores sin shape verificable: Florida y Yumbel.
+// Cuando aparezca su trazado oficial, migran al dataset principal.
 //
-// Mientras el array esté vacío, el toggle del panel de capas se auto-oculta
-// (chequeado en `src/components/map-layer-control.tsx` con
-// `INTERURBAN_CORRIDORS.length > 0`), así que sin trabajo extra el overlay
-// no aparece en la UI.
+// El toggle del panel de capas se muestra cuando
+// `INTERURBAN_CORRIDORS.length > 0` (ver map-layer-control.tsx).
 //
-// Placeholder de ejemplo (comentado) — descomentá y editá cuando agregues:
-//
-//   {
-//     id: 'concepcion-florida',
-//     wikiSlug: 'concepcion-florida',
-//     title: 'Concepción ↔ Florida (corredor de El Pimentón)',
-//     subtitle: 'Sin GTFS público · operación informal',
-//     color: '#b45309',
-//     anchor: [-36.83, -72.66],
-//     sources: [{ label: 'OSM …', href: '…' }],
-//   },
+// Coordenadas de terminales urbanos citadas desde terminals.generated.ts
+// (mismo osm_id); se copian acá para que este módulo no importe datasets
+// generados (scripts Node sin alias Vite y sin arrastre de React).
 
-export const INTERURBAN_CORRIDORS: InterurbanCorridor[] = [];
+export const INTERURBAN_CORRIDORS: InterurbanCorridor[] = [
+  {
+    id: 'concepcion-florida',
+    wikiSlug: 'concepcion-florida',
+    title: 'Concepción ↔ Florida (corredor de El Pimentón)',
+    subtitle: 'Sin GTFS público · operadores privados',
+    color: '#b45309',
+    // Ilustre Municipalidad de Florida (Arturo Prat) — Nominatim 2026-07-17.
+    anchor: [-36.8237723, -72.6608169],
+    // osm-way-114474600 · Terminal Camilo Henríquez
+    terminal: [-36.8087472, -73.0340681],
+    sources: [
+      {
+        label: 'OSM node 7926543037 · Municipalidad de Florida',
+        href: 'https://www.openstreetmap.org/node/7926543037',
+      },
+      {
+        label: 'OSM way 114474600 · Terminal Camilo Henríquez',
+        href: 'https://www.openstreetmap.org/way/114474600',
+      },
+    ],
+  },
+  {
+    id: 'concepcion-yumbel',
+    wikiSlug: 'concepcion-yumbel',
+    title: 'Concepción ↔ Yumbel',
+    subtitle: 'Ruta 146 · sin PE ni licitación DTPR',
+    color: '#0f766e',
+    // Terminal Rodoviario San Francisco (Yumbel) — Nominatim 2026-07-17.
+    anchor: [-37.1034745, -72.5618012],
+    // osm-way-597586612 · Terminal Collao
+    terminal: [-36.8158265, -73.0223785],
+    sources: [
+      {
+        label: 'OSM way 116413519 · Terminal Rodoviario San Francisco',
+        href: 'https://www.openstreetmap.org/way/116413519',
+      },
+      {
+        label: 'OSM way 597586612 · Terminal Collao',
+        href: 'https://www.openstreetmap.org/way/597586612',
+      },
+    ],
+  },
+];
 
 export const CORRIDOR_BY_ID = new Map(
   INTERURBAN_CORRIDORS.map((c) => [c.id, c] as const),

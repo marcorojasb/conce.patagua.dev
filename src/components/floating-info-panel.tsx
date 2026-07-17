@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,12 +31,17 @@ export function FloatingInfoPanel({
   widthClassName = 'sm:w-[420px]',
   scroll = true,
 }: FloatingInfoPanelProps) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (!open) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKeyDown);
+    // Non-modal: no focus trap, but move keyboard focus into the panel so
+    // screen-reader users land on a labeled dialog instead of the map.
+    closeRef.current?.focus({ preventScroll: true });
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose, open]);
 
@@ -47,6 +52,8 @@ export function FloatingInfoPanel({
       {children}
     </div>
   );
+
+  const dialogLabel = typeof title === 'string' ? title : 'Detalle';
 
   return (
     <div
@@ -59,7 +66,8 @@ export function FloatingInfoPanel({
       aria-live="polite"
     >
       <section
-        aria-label={typeof title === 'string' ? title : undefined}
+        role="dialog"
+        aria-label={dialogLabel}
         className="pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90 animate-fade-in"
       >
         <div className="flex justify-center py-1.5 sm:hidden" aria-hidden>
@@ -84,6 +92,7 @@ export function FloatingInfoPanel({
               )}
             </div>
             <Button
+              ref={closeRef}
               type="button"
               variant="ghost"
               size="icon"

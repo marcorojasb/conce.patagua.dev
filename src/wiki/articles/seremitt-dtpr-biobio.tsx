@@ -5,14 +5,19 @@
 // fiscaliza. Equivalente metropolitano: DTPM (solo RM). 3CV certifica
 // vehículos a nivel nacional.
 //
-// Sucesión SEREMI verificada: Héctor Silva (2023-2024) → Patricio
-// Fierro Cifuentes (10-ene-2025 ↔ 28-nov-2025) → Hugo Cautivo (desde
-// 28-nov-2025; antes subrogante). Marcos legales: DFL 343/1953, Ley
-// 18.059, Ley 18.696 (art. 3° perímetros), Ley 20.378, Ley 19.880,
-// Ley 20.285.
+// Sucesión SEREMI: Héctor Silva (2023-2024) → Patricio Fierro
+// (10-ene-2025 ↔ 28-nov-2025) → Henry Campos Coa (desde ~27-mar-2026;
+// Subtrans + Diario Concepción). Cautivo: documentado como SEREMI MOP
+// en 2025-2026; el tramo Transportes nov-2025–mar-2026 queda con
+// PendingBanner (fuentes abiertas incompletas). Marcos: DFL 343,
+// Ley 18.059, 18.696, 20.378, 19.880, 20.285.
 
 import {
+  ArticleSummary,
+  CollapsibleSection,
+  FactStrip,
   KeyValueList,
+  NewsPulse,
   PendingBanner,
   Section,
   SourceLink,
@@ -26,27 +31,69 @@ export default function SeremittDtprBiobio() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
-        <strong>Verificado parcialmente con fuentes primarias y prensa
-        regional 2023-2026.</strong> La estructura institucional
-        (SEREMITT como instancia política, DTPR como dependencia
-        técnica de la Subsecretaría de Transportes), los marcos
-        legales que invoca (DFL 343, Ley 18.059, Ley 18.696, Ley
-        20.378), la sucesión de SEREMI (Héctor Silva durante
-        2023-2024; Patricio Fierro Cifuentes 10-ene-2025 ↔
-        28-nov-2025; Hugo Cautivo desde 28-nov-2025, antes
-        subrogante de Fierro) y la cartera regional 2024-2026
-        están citadas con fuente.{' '}
-        <strong>Pendientes</strong>: nombre del(la) director(a)
-        regional DTPR Biobío vigente, organigrama interno, dirección
-        física actualizada, dotación exacta, presupuesto anual
-        ejecutado. Marcadas con banner ámbar abajo.
+        <strong>Verificado parcialmente (snapshot 17-jul-2026).</strong>{' '}
+        Estructura SEREMITT/DTPR/DTPM, marcos legales y titular actual{' '}
+        <strong>Henry Campos Coa</strong> (Subtrans regional + Diario
+        Concepción 27-mar-2026). Sucesión Silva → Fierro documentada.{' '}
+        <strong>Pendientes</strong>: director(a) DTPR Biobío, organigrama,
+        sede exacta, dotación, presupuesto; tramo Cautivo en Transportes
+        (posible confusión con su cargo MOP).
       </VerifiedBanner>
+
+      <FactStrip
+        snapshot="2026-07-17"
+        items={[
+          { label: 'SEREMI', value: 'Henry Campos Coa' },
+          { label: 'Desde', value: '~27-mar-2026' },
+          { label: 'Brazo técnico', value: 'DTPR / DPR Biobío' },
+          { label: 'Portal', value: 'dprbiobio.dpr.gob.cl' },
+          { label: 'Cartera', value: 'PE · BusPay · interurbanos' },
+        ]}
+      />
+
+      <ArticleSummary
+        bullets={[
+          <>
+            <strong>SEREMITT</strong> = vocería y resoluciones políticas
+            regionales del MTT; <strong>DTPR</strong> = brazo técnico
+            (licitaciones, subsidios, fiscalización). No confundir con DTPM
+            (solo RM).
+          </>,
+          <>
+            Titular actual: <strong>Henry Campos Coa</strong> (exalcalde de
+            Talcahuano), según Subtrans Biobío y prensa regional (mar-2026).
+          </>,
+          <>
+            Toda ficha del wiki (PE GC, BusPay, 201, Florida, GTFS) pasa
+            por una o ambas instancias.
+          </>,
+          <>
+            Director(a) DTPR Biobío, sede y presupuesto regional siguen
+            pendientes de transparencia activa.
+          </>,
+        ]}
+      />
+
+      <NewsPulse
+        items={[
+          {
+            date: '27-mar-2026',
+            title: 'Henry Campos Coa asume como SEREMI de Transportes Biobío',
+            detail:
+              'Designación anunciada junto a otras SEREMI regionales; listado en el portal Subtrans de la SEREMITT Biobío.',
+            source: {
+              href: 'https://www.diarioconcepcion.cl/politica/2026/03/27/biobio-suma-nuevas-autoridades-henry-campos-y-daniel-manchileo-asumen-como-seremis.html',
+              label: 'Diario Concepción · 27-mar-2026',
+            },
+          },
+        ]}
+      />
 
       <Section title="Qué es y por qué importa">
         <p>
           La <strong>SEREMITT Biobío</strong> y la <strong>DTPR Biobío</strong>{' '}
           son las dos caras del MTT en la región. Toda decisión que aparece
-          en este wiki , el{' '}
+          en este wiki — el{' '}
           <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">PE Gran Concepción 2024</a>,
           la <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">licitación Santa Juana</a>,{' '}
           <a href="/wiki/buspay" className="underline underline-offset-2">BusPay 2026</a>,
@@ -55,7 +102,7 @@ export default function SeremittDtprBiobio() {
           los{' '}
           <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">Electrocorredores MOP</a>{' '}
           y el feed{' '}
-          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS Gran Concepción</a>, pasa por una o ambas instancias.
+          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS Gran Concepción</a> — pasa por una o ambas instancias.
         </p>
         <p>
           Distinción clave: <strong>la SEREMITT no licita ni paga
@@ -139,32 +186,33 @@ export default function SeremittDtprBiobio() {
         </p>
         <KeyValueList
           items={[
-            ['SEREMI titular', 'Hugo Cautivo (asumió el 28-nov-2025 en reemplazo de Patricio Fierro Cifuentes; sigue activo a marzo de 2026 según prensa regional). Antes de asumir como titular, ya había aparecido en actos públicos como "SEREMI (s)" durante ausencias de Fierro.'],
-            ['SEREMI anterior (inmediato)', 'Patricio Fierro Cifuentes (titular entre el 10-ene-2025 y el 28-nov-2025; nombrado por el Presidente Gabriel Boric a propuesta del Ministro de Transportes Juan Carlos Muñoz). Bajo su gestión se aplicaron el segundo ajuste polinómico ($580 adulto, feb-2025), la recepción de ofertas BusPay (sep-2025) y la apertura de ofertas de los electrocorredores MOP (nov-2025).'],
-            ['SEREMI anterior (Silva)', 'Héctor Silva (titular durante 2023-2024). Bajo su gestión arrancó el perímetro de exclusión 1-ene-2024 y se firmó el acuerdo gremial 22-nov-2023.'],
-            ['Sucesión documentada', 'Silva (2023-2024) → Fierro (10-ene-2025 ↔ 28-nov-2025) → Cautivo (desde 28-nov-2025). Cautivo había ejercido como subrogante de Fierro durante 2025.'],
+            ['SEREMI titular', 'Henry Campos Coa (exalcalde de Talcahuano). Asumió como SEREMI de Transportes y Telecomunicaciones del Biobío hacia el 27-mar-2026. Listado en el portal Subtrans de la SEREMITT Biobío (snapshot 17-jul-2026).'],
+            ['SEREMI anterior (Fierro)', 'Patricio Fierro Cifuentes (titular 10-ene-2025 ↔ al menos nov-2025; nombrado bajo gobierno Boric a propuesta del ministro Juan Carlos Muñoz). Bajo su gestión: segundo ajuste polinómico ($580 adulto, feb-2025), ofertas BusPay (sep-2025), ofertas electrocorredores MOP (nov-2025).'],
+            ['SEREMI anterior (Silva)', 'Héctor Silva (titular 2023-2024). Arranque del PE 1-ene-2024 y acuerdo gremial 22-nov-2023.'],
+            ['Sucesión (cotejada)', 'Silva (2023-2024) → Fierro (ene-2025) → Campos (mar-2026).'],
             ['Sede', 'Concepción. Dirección exacta pendiente de cotejo en transparencia activa.'],
-            ['Funciones políticas', 'Vocería ante prensa regional · firma de resoluciones regionales · coordinación con GORE Biobío, MOP y municipios · representación del MTT ante el Gobierno Regional y el Consejo Regional (CORE)'],
-            ['Reportabilidad', 'Reporta al(la) Ministro(a) de Transportes en Santiago. No depende del Gobernador Regional electo, aunque coordina con el GORE.'],
+            ['Funciones políticas', 'Vocería · resoluciones regionales · coordinación GORE / MOP / municipios · representación ante CORE'],
+            ['Reportabilidad', 'Reporta al Ministro(a) de Transportes en Santiago. No depende del Gobernador Regional electo.'],
           ]}
         />
-        <p className="text-[12px] text-muted-foreground">
-          El cargo es de exclusiva confianza presidencial. Concepción ha
-          tenido tres SEREMI en el periodo del wiki: Silva → Fierro →
-          Cautivo, con dos rotaciones dentro del mismo gobierno
-          (ene-2025 y nov-2025).
-        </p>
+        <PendingBanner>
+          <strong>Tramo nov-2025 – mar-2026.</strong> Versiones previas
+          de esta ficha citaban a Hugo Cautivo como SEREMI de Transportes
+          desde el 28-nov-2025. En 2025-2026 Cautivo aparece de forma
+          consistente como <strong>SEREMI de Obras Públicas (MOP)</strong>{' '}
+          en prensa regional; el tramo exacto en Transportes no tiene
+          aún URL primaria cerrada. No se borra el hilo Fierro→Campos;
+          se marca la laguna.
+        </PendingBanner>
         <Sources>
+          <SourceLink href="https://www.subtrans.gob.cl/secretarias/secretaria-regional-ministerial-del-biobio/">
+            Subtrans · SEREMITT Biobío (Henry Campos Coa)
+          </SourceLink>
+          <SourceLink href="https://www.diarioconcepcion.cl/politica/2026/03/27/biobio-suma-nuevas-autoridades-henry-campos-y-daniel-manchileo-asumen-como-seremis.html">
+            Diario Concepción · 27-mar-2026, Henry Campos asume SEREMI Transportes
+          </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/politica/2025/01/10/nombran-nuevo-seremi-de-transportes-y-telecomunicaciones-en-biobio.html">
             Diario Concepción · 10-ene-2025, Nombramiento de Patricio Fierro
-          </SourceLink>
-          {/* SOURCE-PENDING: snapshot manual de la URL */}
-          <SourceLink href="https://www.biobiochile.cl/">
-            BioBioChile · 28-nov-2025, Hugo Cautivo asume como SEREMI Biobío
-          </SourceLink>
-          {/* SOURCE-PENDING: snapshot manual de la URL */}
-          <SourceLink href="https://www.elconquistadorconcepcion.cl/">
-            El Conquistador · 02-mar-2026, Cautivo activo como SEREMI Biobío
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/">
             DPR Biobío · 3-ene-2024, Cita Héctor Silva como SEREMI 2024
@@ -442,7 +490,7 @@ export default function SeremittDtprBiobio() {
         </div>
       </Section>
 
-      <Section title="Cronología">
+      <CollapsibleSection title="Cronología">
         <Timeline
           items={[
             {
@@ -533,22 +581,18 @@ export default function SeremittDtprBiobio() {
               event: 'Apertura de ofertas técnicas del Electrocorredor Ruta 160: oferente único Electro-Cointer (Grupo Azvi).',
             },
             {
-              date: '28-nov-2025',
-              event: 'Hugo Cautivo asume como SEREMI titular de Transportes y Telecomunicaciones del Biobío, en reemplazo de Patricio Fierro Cifuentes. Cautivo ya aparecía en actos públicos como "SEREMI (s)", figura de subrogancia documentada en este wiki, durante ausencias de Fierro durante 2025.',
-              source: { href: 'https://www.biobiochile.cl/', label: 'BioBioChile · 28-nov-2025' },
-            },
-            {
               date: '28-ene-2026',
-              event: 'MTT adjudica BusPay al Consorcio Buspay. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas. Vocería política a cargo del SEREMI Hugo Cautivo (titular desde el 28-nov-2025); DTPR ejecuta.',
+              event: 'MTT adjudica BusPay al Consorcio Buspay. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas. Vocería MTT/SEREMITT regional; DTPR ejecuta.',
               source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml', label: 'BioBioChile · 28-ene-2026' },
             },
             {
-              date: 'Mar-2026',
-              event: 'Hugo Cautivo aparece en actos públicos como "SEREMI (s)" del Biobío, figura de subrogancia previamente ejercida durante ausencias de Fierro en 2025. Para esta fecha Cautivo ya es titular (desde 28-nov-2025); esta referencia se preserva como evidencia histórica de su rol subrogante previo a asumir el cargo.',
+              date: '27-mar-2026',
+              event: 'Henry Campos Coa (exalcalde de Talcahuano) asume como SEREMI de Transportes y Telecomunicaciones del Biobío.',
+              source: { href: 'https://www.diarioconcepcion.cl/politica/2026/03/27/biobio-suma-nuevas-autoridades-henry-campos-y-daniel-manchileo-asumen-como-seremis.html', label: 'Diario Concepción · 27-mar-2026' },
             },
           ]}
         />
-      </Section>
+      </CollapsibleSection>
 
       <Section title="Cómo contactar y consultar">
         <p>
@@ -672,38 +716,29 @@ export default function SeremittDtprBiobio() {
         </ul>
       </Section>
 
-      <Section title="Datos pendientes">
+      <CollapsibleSection title="Datos pendientes y contribución">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Nombre y antecedentes del(la) director(a) regional DTPR Biobío vigente en mayo 2026.</li>
-          <li>Organigrama interno de la SEREMITT y la DTPR Biobío (jefaturas de fiscalización, perímetros, subsidios, autorizaciones, OIRS).</li>
-          <li>Dotación exacta (número de funcionarios) de la SEREMITT y la DTPR Biobío.</li>
+          <li>Nombre y antecedentes del(la) director(a) regional DTPR Biobío vigente.</li>
+          <li>Organigrama interno de la SEREMITT y la DTPR Biobío.</li>
+          <li>Dotación exacta (número de funcionarios).</li>
           <li>Dirección física actualizada de la SEREMITT en Concepción.</li>
-          <li>Presupuesto regional ejecutado 2024-2025-2026 desagregado por programa (subsidios, fiscalización, gastos operativos).</li>
-          <li>Periodicidad y formato del ranking de cumplimiento del PE Gran Concepción 2024 (¿se publica? ¿con qué desagregación?).</li>
-          <li>Calendario de fiscalizaciones recientes y sanciones aplicadas (con resoluciones públicas si las hay).</li>
-          <li>Número y texto de los decretos MTT que adjudicaron el PE Gran Concepción 2024 y el PE Tomé 2016 (probable Resolución Afecta N° 29/2023 para el primero, texto íntegro no recuperado).</li>
+          <li>Presupuesto regional ejecutado 2024-2026 desagregado por programa.</li>
+          <li>Ranking de cumplimiento del PE Gran Concepción 2024 (¿se publica?).</li>
+          <li>Tramo exacto Fierro → Campos (¿hubo titular intermedio en Transportes?).</li>
+          <li>Número y texto de los decretos MTT del PE GC 2024 y PE Tomé 2016.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Vía de cierre principal:{' '}
-          <strong>solicitud de Ley 20.285</strong> al MTT y a la
-          DTPR Biobío, complementada con cotejo en{' '}
-          <code className="font-mono">transparencia.gob.cl</code>{' '}
-          (transparencia activa).
+          Vía de cierre: <strong>Ley 20.285</strong> +{' '}
+          <code className="font-mono">transparencia.gob.cl</code>.
         </p>
-      </Section>
-
-      <Section title="Para contribuir">
-        <p>
-          Si tienes el nombre del director regional DTPR Biobío, copia
-          del organigrama, fotos de la sede de Concepción, datos de
-          dotación o el ranking de cumplimiento, abre un pull request
-          en{' '}
+        <p className="text-[13px]">
+          Aportes: PR en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/seremitt-dtpr-biobio.tsx">
-            github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/seremitt-dtpr-biobio.tsx
+            github.com/marcorojasb/conce.patagua.dev
           </SourceLink>
           .
         </p>
-      </Section>
+      </CollapsibleSection>
     </div>
   );
 }

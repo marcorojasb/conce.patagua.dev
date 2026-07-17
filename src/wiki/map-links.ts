@@ -42,6 +42,9 @@
 
 const MAP_WIKI_LINKS = {
   byRouteCode: {
+    // Biotrén (OSM + EFE). Ambas líneas comparten el artículo operativo.
+    L1: 'biotren',
+    L2: 'biotren',
     // Servicios licitados con artículo dedicado. Los códigos "201" y
     // "401"/"411"/"421" se enchufan contra rutas nativas interurbanas
     // servidas desde `src/data/interurban-routes.generated.ts` (trazado
@@ -58,20 +61,30 @@ const MAP_WIKI_LINKS = {
     '421': 'concepcion-tome',
   } as Record<string, string>,
 
-  // Los corredores interurbanos sin trazado verificable conservan su lugar
-  // (cuando aparezcan Florida / Yumbel, se mapean acá). Hoy el mapa está
-  // vacío porque el único corredor previamente listado (201 Santa Juana)
-  // migró a ruta nativa del visor.
-  byCorridorId: {} as Record<string, string>,
+  // Corredores interurbanos sin shape GTFS (pins en interurban-corridors.ts).
+  // 201 y Tomé migraron a rutas nativas; Florida / Yumbel viven acá.
+  byCorridorId: {
+    'concepcion-florida': 'concepcion-florida',
+    'concepcion-yumbel': 'concepcion-yumbel',
+  } as Record<string, string>,
 
   byTerminalId: {
-    // Estación Intermodal Concepción es punto de salida de servicios
-    // interurbanos documentados (201 a Santa Juana, futuros). Linkeamos
-    // al índice general — el usuario navega desde ahí al recorrido
-    // específico.
+    // Estación Intermodal Concepción: cabecera de interurbanos documentados.
     'osm-way-135488014': 'recorridos-interurbanos',
+    // Terminales urbanos usados por Florida / Yumbel (y el índice general).
+    'osm-way-114474600': 'recorridos-interurbanos', // Camilo Henríquez
+    'osm-way-597586612': 'recorridos-interurbanos', // Collao
+    // Eje sur: Intermodal Coronel + operadores del corredor Coronel-Lota.
+    'osm-node-6718688807': 'concepcion-coronel-lota', // Intermodal Coronel
+    'osm-way-464462966': 'concepcion-coronel-lota', // Las Galaxias
+    'osm-way-423901976': 'concepcion-coronel-lota', // Jota Ewert
+    // Cabecera Concepción del PE Tomé.
+    'osm-way-425356582': 'concepcion-tome', // Terminal de líneas a Tomé
   } as Record<string, string>,
 } as const;
+
+/** Expuesto para tests y el validador de MapLinks (no mutar). */
+export const MAP_WIKI_LINK_INDEX = MAP_WIKI_LINKS;
 
 /** Devuelve el slug del artículo wiki para un código de ruta (ej. "201"). */
 export function findWikiSlugForRouteCode(code: string): string | null {

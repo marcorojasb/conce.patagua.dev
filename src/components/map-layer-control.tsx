@@ -21,7 +21,7 @@ import {
   Wind,
   X,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
@@ -182,6 +182,15 @@ export function MapLayerControl({
     showSchools,
     showInterurbanCorridors,
   ].filter(Boolean).length;
+
+  useEffect(() => {
+    if (!layersOpen) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onCloseLayers();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [layersOpen, onCloseLayers]);
 
   const layers = useMemo<MapLayerRow[]>(
     () => [
@@ -472,6 +481,7 @@ export function MapLayerControl({
           aria-live="polite"
         >
           <aside
+            role="dialog"
             aria-label="Capas del mapa"
             className="pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90 animate-fade-in"
           >

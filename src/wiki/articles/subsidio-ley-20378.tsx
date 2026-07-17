@@ -3,11 +3,11 @@
 // público regional fuera de Santiago. Publicada 5-sep-2009 como
 // "ley espejo" del subsidio implícito al Transantiago.
 //
-// Prórrogas: Ley 21.175 (2019), Ley 21.439 (2022) y prórroga
-// 2024-2025 (número pendiente cotejo BCN). DIPRES asigna por Ley
-// de Presupuestos anual; Subtrans distribuye; DTPR ejecuta a nivel
-// regional; Contraloría audita. Componentes Art. 2°/3°/4° y
-// conectividad/renovación de flota.
+// Prórrogas: atribuidas en fuentes secundarias a Ley 21.175 (2019) y
+// 21.439 (2022); número de la prórroga 2024-2025 y vigencia residual
+// al 2026 pendientes de cotejo BCN. NO confundir con Ley 21.659
+// (Seguridad Privada). DIPRES asigna por Ley de Presupuestos anual;
+// Subtrans distribuye; DTPR ejecuta regionalmente.
 
 import {
   KeyValueList,
@@ -137,23 +137,32 @@ export default function SubsidioLey20378() {
           legislativas periódicas.
         </p>
         <PendingBanner>
-          <strong>Cadena de prórrogas pendiente de cotejo BCN.</strong>{' '}
-          <strong>Ley 21.175</strong> (publicada 27-sep-2019) prorrogó
-          el régimen; <strong>Ley 21.439</strong> (2022) lo extendió
-          hasta 2024. Una <strong>tercera prórroga</strong> habría sido
-          aprobada en 2024-2025 (posiblemente Ley 21.659) extendiendo
-          hasta ~2030; número exacto pendiente. Al 16-may-2026 el
-          régimen sigue operativo y los pagos continúan.
+          <strong>Cadena de prórrogas pendiente de cotejo BCN
+          (snapshot 17-jul-2026).</strong>{' '}
+          Fuentes secundarias del wiki atribuyen prórrogas a las leyes{' '}
+          <strong>21.175</strong> (2019) y <strong>21.439</strong>{' '}
+          (2022); el número exacto de la prórroga 2024-2025 y su
+          vigencia residual al 2026 <strong>no está cotejado</strong>{' '}
+          en BCN Ley Chile en esta pasada. <strong>No es</strong> la
+          Ley 21.659 (esa es Seguridad Privada, BCN idNorma=1202067).
+          Al 17-jul-2026 el régimen de subsidio sigue operativo (pagos
+          y anuncios SEREMITT/DTPR continúan), lo que implica alguna
+          prórroga vigente, pero el número de ley debe cerrarse con
+          texto primario en{' '}
+          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
+            BCN · Ley 20.378 y sus modificaciones
+          </SourceLink>
+          .
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
-            BCN · Ley 20.378 (texto original 2009)
+            BCN · Ley 20.378 (texto consolidado / original 2009)
           </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/buscador?tipos_norma=L&q=21.175">
-            BCN · Buscador Ley 21.175 (prórroga 2019)
+          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1202067">
+            BCN · Ley 21.659 (Seguridad Privada — no es prórroga del subsidio)
           </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/buscador?tipos_norma=L&q=21.439">
-            BCN · Buscador Ley 21.439 (prórroga 2022)
+          <SourceLink href="https://www.subtrans.gob.cl/subsidio-nacional-al-transporte-publico/">
+            Subtrans · página institucional del Subsidio Nacional
           </SourceLink>
         </Sources>
       </Section>
@@ -479,7 +488,7 @@ export default function SubsidioLey20378() {
             },
             {
               date: '2024-2025',
-              event: 'Tercera prórroga del Subsidio Nacional al Transporte Público (Ley 21.659 o número similar, pendiente de cotejo definitivo en BCN). Extiende la vigencia del régimen aproximadamente hasta 2030.',
+              event: 'Tercera prórroga del Subsidio Nacional al Transporte Público (número de ley pendiente de cotejo definitivo en BCN; no es la Ley 21.659 de Seguridad Privada). Extiende la vigencia del régimen aproximadamente hasta 2030 según fuentes secundarias.',
             },
             {
               date: 'Feb-2025',

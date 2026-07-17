@@ -357,7 +357,7 @@ export default function ConcepcionCoronelLota() {
           ]}
         />
         <Sources>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026, Adjudicación BusPay (11 comunas)
           </SourceLink>
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
@@ -663,7 +663,7 @@ export default function ConcepcionCoronelLota() {
             </SourceLink>
           </li>
           <li>
-            <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+            <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
               Subtrans · 30-ene-2026, Adjudicación BusPay
             </SourceLink>
           </li>

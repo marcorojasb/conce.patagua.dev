@@ -42,7 +42,7 @@ Con esto alcanza para trabajar en el visor y en el wiki: ninguno de los dos requ
 npm run check
 ```
 
-Esto corre en orden: `typecheck` → `test` (Vitest) → `data:validate` (valida los `*.generated.ts`) → `build` → `bundle:budget` (chequea tamaño del bundle) → `smoke` (smoke test del dev server).
+Esto corre en orden: `typecheck` → `test` (Vitest) → `data:validate` (valida los `*.generated.ts`) → `maplinks:validate` (MapLinks del wiki + índice reverso) → `build` → `bundle:budget` (chequea tamaño del bundle) → `smoke` (smoke test del dev server).
 
 `npm run check:full` agrega además `smoke:services`, que usa Playwright para probar el visor en un browser real — más lento, útil antes de mergear cambios que tocan capas de datos o UI del mapa.
 
@@ -58,7 +58,9 @@ El wiki es la segunda mini-app del proyecto: un conjunto de artículos sobre el 
 - `src/wiki/articles.ts` — registro central: un array `ARTICLES` con metadata de cada artículo (`slug`, `title`, `summary`, `section`, `updated`, y el componente cargado con `lazy()`). Todo artículo nuevo se agrega acá manualmente, además de crear su archivo; no hay auto-descubrimiento de archivos.
 - `src/wiki/articles/_components.tsx` — componentes de layout compartidos por los artículos (`Section`, `KeyValueList`, y similares para tablas/cronologías), para que las fichas se vean consistentes sin repetir clases de Tailwind en cada una.
 - `src/wiki/wiki-app.tsx` — shell del wiki: header, panel lateral de navegación agrupado por `section` (`SECTION_LABELS`), y el área de contenido. Enrutamiento propio sin librería de routing: lee `window.location.pathname` con `useSyncExternalStore` + `popstate`, navega con `history.pushState`. Es completamente independiente del router (inexistente) del visor.
-- `src/wiki/map-link.tsx` / `map-links.ts` — componente `<MapLink>` para que un artículo enlace a una vista enfocada del visor (`/?focus=<kind>:<id>`, ej. `<MapLink route="10A">`). Es el único punto de acoplamiento entre wiki y visor, y es unidireccional (el wiki apunta al visor, no al revés) y sin validación en tiempo de build — si el id no existe, el visor abre la vista por defecto.
+- `src/wiki/map-link.tsx` / `map-links.ts` — puente bidireccional wiki ↔ visor:
+  - **Wiki → mapa:** componente `<MapLink>` que genera `/?focus=<kind>:<id>` (ej. `<MapLink route="L1">`). Si el id no existe, el visor hace fallback graceful (vista por defecto).
+  - **Mapa → wiki:** índice `MAP_WIKI_LINKS` en `map-links.ts` (por `route.code`, `corridorId`, `terminalId`). Las detail sheets del visor muestran "Ver en el wiki" vía `WikiLinkButton` cuando hay match.
 
 ### Cómo agregar o editar una página
 
@@ -69,7 +71,12 @@ El wiki es la segunda mini-app del proyecto: un conjunto de artículos sobre el 
 
 ### Wiki ↔ visor
 
-Ambas apps viven en el mismo build de Vite y el mismo despliegue de Vercel, pero no comparten componentes de UI, estado ni datos entre sí (el wiki no importa `src/App.tsx` ni datasets de `src/data/`, salvo el enlace de vuelta vía `MapLink`). La única conexión real es esa: un artículo puede linkear a una vista del mapa; el visor no linkea de vuelta a artículos específicos todavía.
+Ambas apps viven en el mismo build de Vite y el mismo despliegue de Vercel, pero no comparten componentes de UI ni estado entre sí (el wiki no importa `src/App.tsx`). El único acoplamiento es el puente de enlaces:
+
+1. Un artículo puede apuntar al mapa con `<MapLink>` (`/?focus=…`).
+2. Una entidad del mapa puede apuntar a su artículo con el índice de `map-links.ts` + `WikiLinkButton` (o el popup de corredores interurbanos).
+
+Para agregar un enlace mapa→wiki: crear o identificar el artículo, añadir la entrada en `MAP_WIKI_LINKS` (`byRouteCode` / `byCorridorId` / `byTerminalId`), y —si es un corredor sin GTFS— la entrada en `src/data/interurban-corridors.ts`.
 
 ## Scripts de sincronización de datos (`sync:*`)
 

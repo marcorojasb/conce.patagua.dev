@@ -484,7 +484,7 @@ export default function PerimetroExclusionTome() {
           este es un cambio importante: pasa de <strong>cobro 100% en
           efectivo</strong> al pago electrónico contactless por
           tarjeta bancaria, código QR y tarjeta dedicada (
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026
           </SourceLink>
           ). Ficha técnica completa en{' '}
@@ -518,7 +518,7 @@ export default function PerimetroExclusionTome() {
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
             BioBioChile · 28-ene-2026, Adjudicación al Consorcio Buspay
           </SourceLink>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026, Cobertura BusPay incluye PE Tomé
           </SourceLink>
           <SourceLink href="https://www.subtrans.gob.cl/biobio-consulta-online-definira-primer-diseno-de-tarjeta-de-pago-electronico/">
@@ -828,7 +828,7 @@ export default function PerimetroExclusionTome() {
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
             BioBioChile · 28-ene-2026, Adjudicación BusPay al Consorcio Buspay
           </SourceLink>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026, Cobertura BusPay incluye PE Tomé
           </SourceLink>
           <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8111">

@@ -23,7 +23,10 @@ const TERMINAL_EYEBROW = (
 export function TerminalDetailSheet({ open, terminal, onOpenChange, onFocus }: TerminalDetailSheetProps) {
   const panelChrome = useMemo(() => {
     if (!terminal) return null;
-    const osmUrl = `https://www.openstreetmap.org/node/${terminal.osmId}`;
+    // IDs del dataset son `osm-node-…` o `osm-way-…`; el deep-link OSM
+    // debe respetar el tipo del elemento, no asumir siempre node.
+    const osmElement = terminal.id.startsWith('osm-way-') ? 'way' : 'node';
+    const osmUrl = `https://www.openstreetmap.org/${osmElement}/${terminal.osmId}`;
     return {
       description: (
         <span className="font-mono text-xs">

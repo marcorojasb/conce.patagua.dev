@@ -77,7 +77,7 @@ export default function BusPay() {
             en bases a jul-2025) y la 201 Santa Juana, primer servicio
             rural de Chile con pago electrónico
             (
-            <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+            <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
               Subtrans · 30-ene-2026
             </SourceLink>
             ).
@@ -163,7 +163,7 @@ export default function BusPay() {
             {
               date: '30-ene-2026',
               event: <>MTT/Subtrans confirma adjudicación y <strong>visa de Contraloría</strong>. Resultado consulta: <strong>Campanil UdeC</strong>.</>,
-              source: { href: 'https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/', label: 'Subtrans · 30-ene-2026' },
+              source: { href: 'https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/', label: 'Subtrans · 30-ene-2026' },
             },
             {
               date: '27-feb-2026',
@@ -203,11 +203,14 @@ export default function BusPay() {
             ['Cierre de ofertas', '23 de septiembre de 2025, 6 oferentes recibidos'],
             ['Comisión evaluadora', 'DTPR (Diario Concepción · 23-sep-2025)'],
             ['Adjudicación', '28 de enero de 2026, Consorcio Buspay'],
-            ['Visa Contraloría', 'Enero-febrero 2026 (fecha exacta no publicada, Subtrans confirma el 30-ene-2026 que el contrato "queda en condiciones para su firma")'],
-            ['Inversión estatal', '~$750 millones anuales durante todo el período de la concesión'],
-            ['Cobertura', '11 comunas: 7 PE Gran Concepción + Tomé + Coronel + Lota + Santa Juana (rural)'],
-            ['Validadores', '1.800 unidades (la prensa también cita "~2.000 máquinas" según el TVU)'],
-            ['Tarifa', '$580 sin alteración, el sistema lo paga el Estado'],
+            ['Visa Contraloría', 'Confirmada por Subtrans el 30-ene-2026: adjudicación "ya fue visada por la Contraloría, quedando en condiciones para su firma"'],
+            ['Inversión estatal', '~$750 millones anuales (prensa regional); Subtrans no publica el monto en el comunicado de adjudicación'],
+            ['Cobertura', '11 comunas (Subtrans): Concepción, Penco, Chiguayante, Hualqui, Hualpén, San Pedro de la Paz, Talcahuano, Tomé, Lota, Coronel + Santa Juana rural'],
+            ['Validadores', '1.800 unidades (prensa); Subtrans no detalla el número en el comunicado'],
+            ['CAU / recarga', '5 Centros de Atención a Usuarios (Concepción, San Pedro, Talcahuano, Tomé, Lota) y ~500 puntos de carga (Subtrans 30-ene-2026)'],
+            ['Marcha blanca', 'Tercer trimestre 2026 (Subtrans): tarjeta de transporte, tarjetas bancarias y celular; TNE y tarifa AM'],
+            ['Tarjeta', 'Diseño oficial con Campanil UdeC (Subtrans 30-ene-2026)'],
+            ['Tarifa', '$580 sin alteración en el recaudo (régimen PE; el sistema lo opera el adjudicatario)'],
           ]}
         />
         <PendingBanner>
@@ -225,7 +228,7 @@ export default function BusPay() {
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
             BioBioChile · 28-ene-2026, Adjudicación al Consorcio Buspay
           </SourceLink>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026, Confirmación oficial y visa Contraloría
           </SourceLink>
         </Sources>
@@ -276,7 +279,7 @@ export default function BusPay() {
           2012-2013, PE formal en licitación, no vigente al cierre
           2025) y la licitación rural Santa Juana
           (
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026
           </SourceLink>
           ).
@@ -349,7 +352,7 @@ export default function BusPay() {
           Recaudo de múltiples medios sobre validadores embarcados. No
           es tarjeta única obligatoria, el usuario elige el medio
           (
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026
           </SourceLink>
           ).
@@ -691,13 +694,14 @@ export default function BusPay() {
           <li>Monto mínimo / máximo de recarga y saldo máximo acumulable.</li>
           <li>Reembolso al perder la tarjeta y bloqueo remoto.</li>
           <li>Texto íntegro del decreto MTT que aprobó la adjudicación.</li>
-          <li>Si la marcha blanca empieza en julio, agosto o septiembre 2026 (Q3 es un trimestre, la fecha exacta no está fijada).</li>
+          <li>Día exacto de inicio de marcha blanca dentro del Q3 2026 (Subtrans confirma el trimestre, no el mes).</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Vías de cierre: Ley de Transparencia 20.285 a la DTPR Biobío
-          y al MTT por el expediente íntegro; consulta directa al
-          Consorcio Buspay / Busmatick; revisión del padrón en
-          MercadoPublico.cl.
+          Cerrado en pasada 17-jul-2026 con Subtrans primaria: 11
+          comunas nombradas, visa Contraloría, 5 CAU, ~500 puntos de
+          carga, marcha blanca Q3 2026, diseño Campanil UdeC.
+          Vías de cierre restantes: Ley de Transparencia 20.285 a la
+          DTPR Biobío / MTT; expediente en MercadoPublico.cl.
         </p>
       </Section>
 
@@ -706,7 +710,7 @@ export default function BusPay() {
           <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
             BioBioChile · 28-ene-2026, Adjudicación al Consorcio Buspay
           </SourceLink>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026, Comunicado oficial MTT, visa Contraloría, 11 comunas
           </SourceLink>
           <SourceLink href="https://www.df.cl/regiones/biobio/empresas/nuevo-pago-electronico-en-transporte-publico-del-gran-concepcion-reducira">

@@ -82,7 +82,7 @@ export default function TaxisColectivosGranConcepcion() {
             de PE GC, PE Tomé, Coronel-Lota y Ruta 201, no menciona
             colectivos
             (
-            <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+            <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
               Subtrans · 30-ene-2026
             </SourceLink>
             ). Los colectivos seguirán cobrando en efectivo.
@@ -95,7 +95,7 @@ export default function TaxisColectivosGranConcepcion() {
           <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1024893">
             BCN Ley Chile · Ley 20.474 (padrón nacional cerrado 2011)
           </SourceLink>
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · adjudicación BusPay 28-ene-2026 (alcance buses, no colectivos)
           </SourceLink>
         </Sources>
@@ -448,7 +448,7 @@ export default function TaxisColectivosGranConcepcion() {
           precedente Bipay Temuco-Padre Las Casas también se limita a
           buses
           (
-          <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+          <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026
           </SourceLink>
           ).
@@ -587,7 +587,7 @@ export default function TaxisColectivosGranConcepcion() {
             {
               date: '28-ene-2026',
               event: 'MTT adjudica BusPay al Consorcio Buspay (operador técnico Busmatick). Alcance: 11 comunas, 4 regímenes regulatorios, todos en modo bus. Los taxis colectivos NO están incluidos en el alcance.',
-              source: { href: 'https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/', label: 'Subtrans · 30-ene-2026' },
+              source: { href: 'https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/', label: 'Subtrans · 30-ene-2026' },
             },
             {
               date: 'Q3 2026',
@@ -701,7 +701,7 @@ export default function TaxisColectivosGranConcepcion() {
         <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1024893">
           BCN Ley Chile · Ley 20.474 (padrón nacional cerrado, 2011)
         </SourceLink>
-        <SourceLink href="https://www.subtrans.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
+        <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
           Subtrans · adjudicación BusPay 28-ene-2026 (alcance: buses urbanos)
         </SourceLink>
         <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">

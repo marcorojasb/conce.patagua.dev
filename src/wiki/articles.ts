@@ -20,9 +20,9 @@ export const ARTICLES: ArticleMeta[] = [
     slug: 'seremitt-dtpr-biobio',
     title: 'SEREMITT Biobío y la DTPR',
     summary:
-      'Ficha institucional de la autoridad regional de transportes. SEREMITT Biobío (instancia política, encabezada desde 28-nov-2025 por el SEREMI Hugo Cautivo, en reemplazo de Patricio Fierro Cifuentes —titular entre 10-ene-2025 y 28-nov-2025, sucesor a su vez de Héctor Silva—) y DTPR Biobío (brazo técnico de la Subsecretaría de Transportes, opera dprbiobio.dpr.gob.cl). Diferencia con DTPM (Santiago) y 3CV. Marco legal: DFL 343, Leyes 18.059, 18.696, 20.378, 19.880, 20.285. Cartera regional 2024-2026: PE Gran Concepción, PE Tomé, PE Coronel-Lota, ELC0007 Santa Juana, BusPay, Electrocorredores MOP, subsidios Florida. Es el "marco institucional" detrás de cada artículo del wiki.',
+      'Ficha institucional de la autoridad regional de transportes. SEREMITT Biobío (instancia política; titular Henry Campos Coa desde ~27-mar-2026, tras Patricio Fierro y Héctor Silva) y DTPR Biobío (brazo técnico de Subtrans, dprbiobio.dpr.gob.cl). Diferencia con DTPM (Santiago) y 3CV. Marco legal: DFL 343, Leyes 18.059, 18.696, 20.378, 19.880, 20.285. Cartera: PE Gran Concepción, PE Tomé, BusPay, interurbanos, electrocorredores MOP.',
     section: 'estructural',
-    updated: '2026-05-16',
+    updated: '2026-07-17',
     Component: lazy(() => import('./articles/seremitt-dtpr-biobio')),
   },
   {
@@ -31,7 +31,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Régimen tarifario y operativo bajo el cual operan, desde el 1-ene-2024, todos los buses urbanos del Gran Concepción (7 comunas, 36 unidades de negocio, 35 empresas). Reemplaza la licitación 2002 caducada el 31-mar-2024. Tarifa $580 adulto (vigente 23-feb-2025), polinomio de ajuste, contrato hasta 31-dic-2028. BusPay adjudicado a Consorcio Buspay en ene-2026, marcha blanca Q3 2026. Columna vertebral conceptual del visor urbano.',
     section: 'estructural',
-    updated: '2026-05-16',
+    updated: '2026-07-17',
     Component: lazy(() => import('./articles/perimetro-exclusion-gran-concepcion-2024')),
   },
   {
@@ -49,7 +49,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Sistema de recaudo electrónico adjudicado al Consorcio Buspay (operador técnico Busmatick) el 28-ene-2026 por el MTT. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas (PE Gran Concepción + PE Tomé + PE Coronel-Lota + licitación 201 Santa Juana). Marcha blanca Q3 2026, régimen 100% electrónico proyectado fin de 2026. Tarifa $580 sin alteración, tarjeta Campanil UdeC elegida por consulta ciudadana. Cierra una deuda de casi 20 años desde el piloto Biobús 2016 fallido.',
     section: 'estructural',
-    updated: '2026-05-16',
+    updated: '2026-07-17',
     Component: lazy(() => import('./articles/buspay')),
   },
   {
@@ -67,7 +67,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Marco financiero que sostiene económicamente al transporte público chileno fuera de Santiago. Ley 20.378 (5-sep-2009) creada como "ley espejo" del subsidio implícito al Transantiago. Prorrogada en 2019 (Ley 21.175), 2022 (Ley 21.439) y nuevamente en 2024-2025. Componentes: subsidio nacional al transporte público, reembolso TNE, subsidios a zonas aisladas (art. 4°), conectividad marítima/aérea, renovación de flotas. En el Biobío financia el PE Gran Concepción 2024, PE Tomé, licitación ELC0007 Santa Juana, capas subsidiadas Florida (zona norte, Rahuil, Poñén-Roa, nocturno) y la TNE regional. Es el dinero detrás de cada perímetro, licitación y subsidio rural del wiki.',
     section: 'estructural',
-    updated: '2026-05-16',
+    updated: '2026-07-17',
     Component: lazy(() => import('./articles/subsidio-ley-20378')),
   },
   {
@@ -128,9 +128,9 @@ export const ARTICLES: ArticleMeta[] = [
     slug: 'biotren',
     title: 'Biotrén',
     summary:
-      'Servicio EFE Biobío en operación: tren urbano del Gran Concepción operado por EFE Trenes Metropolitanos S.A. (filial de EFE Sur). Línea 1 Hualqui ↔ Mercado de Talcahuano (12 estaciones) y Línea 2 Coronel ↔ Concepción (14 estaciones), trazado y estaciones digitalizados desde OSM. Tarifas por zonas Z1-Z10 vigentes desde 2-ene-2026 (rango $420-$850 adulto, alza promedio $60 por viaje). Frecuencias, material rodante Xtrapolis, electrificación 3 kV DC, descuentos TNE 67% / adulto mayor 50%. Único tren urbano de Chile fuera de Santiago en operación regular. No integra tarifariamente con BusPay 2026.',
+      'Servicio EFE Biobío en operación: tren urbano del Gran Concepción operado por EFE Trenes Metropolitanos S.A. (filial de EFE Sur). Línea 1 Hualqui ↔ Mercado de Talcahuano (12 estaciones) y Línea 2 Coronel ↔ Concepción (14 estaciones), trazado y estaciones digitalizados desde OSM. Tarifas por zonas Z1-Z10 vigentes desde 2-ene-2026 (rango $420-$850 adulto, alza promedio $60 por viaje). Nuevo puente Biobío en servicio 2025. No integra tarifariamente con BusPay 2026.',
     section: 'urbanos',
-    updated: '2026-05-16',
+    updated: '2026-07-17',
     Component: lazy(() => import('./articles/biotren')),
   },
   {

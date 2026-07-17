@@ -167,11 +167,41 @@ export default function SobreEsteWiki() {
             ],
             [
               'Largo objetivo',
-              'Entre 400 y 700 líneas por artículo. Sobre 900 líneas es señal de que la ficha debería partirse en dos artículos más enfocados (por ejemplo: una ficha institucional / jurídica y una operacional, con cross-links bidireccionales).',
+              'Capa superior legible en ~60 s (FactStrip + resumen + 2–4 secciones). Historia, pendientes y bibliografía en CollapsibleSection. El archivo puede superar 700 líneas si el exceso está colapsado y no es prosa duplicada. Sobre 900 líneas de cuerpo siempre-visible: partir en dos fichas.',
+            ],
+            [
+              'Plantilla en capas',
+              <>
+                Orden canónico:{' '}
+                <code className="font-mono">VerifiedBanner</code> →{' '}
+                <code className="font-mono">FactStrip</code> →{' '}
+                <code className="font-mono">ArticleSummary</code> →{' '}
+                <code className="font-mono">NewsPulse</code> (0–3 hitos) →
+                secciones operativas →{' '}
+                <code className="font-mono">CollapsibleSection</code> para
+                historia / pendientes / biblio. Componentes en{' '}
+                <code className="font-mono">_components.tsx</code>. Referencia:{' '}
+                <a href="/wiki/biotren" className="underline underline-offset-2">
+                  Biotrén
+                </a>
+                .
+              </>,
+            ],
+            [
+              'Radar X',
+              <>
+                X (Twitter) es <strong>radar de actualidad</strong>, no
+                fuente primaria. Allowlist y queries en{' '}
+                <code className="font-mono">docs/wiki-research-queries.md</code>
+                . Bitácoras en{' '}
+                <code className="font-mono">docs/research/</code>. Un post
+                solo entra al cuerpo si hay URL primaria o prensa nombrada
+                al lado. Alertas del día (semáforos, clima) no van al wiki.
+              </>,
             ],
             [
               'Histórico vs vigente',
-              'Las citas de prensa con fecha específica se conservan tal cual: son testimonio temporal. Solo los datos descritos como "actuales / vigentes / titular" deben mantenerse al día (tarifas, autoridades en cargo, calendario en curso).',
+              'Las citas de prensa con fecha específica se conservan tal cual: son testimonio temporal. Solo los datos descritos como "actuales / vigentes / titular" deben mantenerse al día (tarifas, autoridades en cargo, calendario en curso). FactStrip lleva fecha de snapshot del cotejo.',
             ],
           ]}
         />
