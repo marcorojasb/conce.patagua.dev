@@ -82,19 +82,20 @@ export function usePlannerState({ visibleRouteIds, routesVersion }: Options) {
         [plannerDestination.lat, plannerDestination.lng],
         { signal: ctrl.signal },
       );
-      if (!ctrl.signal.aborted) {
-        setPlannerMidpoint(result);
-        setPlannerMidpointLoading(false);
-      }
+      if (!ctrl.signal.aborted) setPlannerMidpoint(result);
     } catch (err) {
       if (!ctrl.signal.aborted) {
-        setPlannerMidpointLoading(false);
         setPlannerMidpointError(
           err instanceof Error
             ? `No se pudo calcular: ${err.message}`
             : 'No se pudo calcular el trazado',
         );
       }
+    } finally {
+      // El reset va en finally para que el spinner no quede pegado si algo
+      // lanza antes de tiempo, pero con guarda: si este request fue abortado
+      // por uno más nuevo, el loading vigente lo maneja ese otro.
+      if (!ctrl.signal.aborted) setPlannerMidpointLoading(false);
     }
   }, [plannerOrigin, plannerDestination]);
 

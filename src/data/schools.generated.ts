@@ -429,7 +429,7 @@ export const SCHOOLS: School[] = [
   {id:"osm-way-469790726",kind:"school",name:"Escuela Remigio Castro Agurto",operator:null,religion:null,lat:-37.0302988,lng:-73.1452587},
   {id:"osm-way-1182264266",kind:"school",name:"Escuela República Bolivariana de Venezuela",operator:null,religion:null,lat:-36.7177401,lng:-73.1249562},
   {id:"osm-relation-6861609",kind:"school",name:"Escuela República de Grecia",operator:null,religion:null,lat:-36.9559339,lng:-73.0161372},
-  {id:"osm-way-469817120",kind:"school",name:"Escuela Rep��blica de Francia E–654(Municipal)",operator:"Municipalidad",religion:null,lat:-37.0320299,lng:-73.1392587},
+  {id:"osm-way-469817120",kind:"school",name:"Escuela República de Francia E–654(Municipal)",operator:"Municipalidad",religion:null,lat:-37.0320299,lng:-73.1392587},
   {id:"osm-way-1471858780",kind:"school",name:"Escuela Rosa Yáñez Rodríguez",operator:null,religion:null,lat:-37.0232635,lng:-73.176026},
   {id:"osm-node-11429586690",kind:"school",name:"Escuela San Nicanor",operator:null,religion:null,lat:-37.069342,lng:-72.8475511},
   {id:"osm-way-1182303309",kind:"school",name:"Escuela Santa Cecilia",operator:null,religion:null,lat:-36.7224474,lng:-73.1192104},

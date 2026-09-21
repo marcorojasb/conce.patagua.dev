@@ -29,6 +29,17 @@ describe('static service schedules', () => {
     ]);
   });
 
+  it('does not hang when a pattern declares a non-positive headway', () => {
+    // Un headway <= 0 dejaría el `for` de expansión girando para siempre en el
+    // module load del builder, colgando la app entera.
+    for (const headwayMin of [0, -10]) {
+      expect(expandFrequencyWindow({ ...pattern, headwayMin })).toEqual([[480, 35]]);
+      expect(
+        buildStaticRouteSchedules([{ ...pattern, headwayMin }])['test-pattern'][0],
+      ).toEqual([[480, 35]]);
+    }
+  });
+
   it('maps weekday patterns to Monday through Friday only', () => {
     const schedules = buildStaticRouteSchedules([pattern]);
 

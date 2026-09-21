@@ -10,6 +10,7 @@ import type { AirQualityStation } from '@/types/transport';
 const ENDPOINT = 'https://sinca.mma.gob.cl/index.php/json/listadomapa2k19/';
 const BBOX = { minLat: -37.1, maxLat: -36.65, minLng: -73.25, maxLng: -72.8 };
 const REFRESH_MS = 10 * 60 * 1000;
+const REQUEST_TIMEOUT_MS = 15_000;
 
 interface SincaRow {
   c?: Array<{ v: number | string | null } | null>;
@@ -95,6 +96,10 @@ const INITIAL: AirQualityState = {
 let snapshot = INITIAL;
 let pollingId: number | null = null;
 let activeConsumers = 0;
+// Generación de request: cualquier respuesta cuya generación ya no sea la
+// vigente se descarta, así una respuesta vieja no pisa a una más nueva.
+let requestSeq = 0;
+let inFlight: AbortController | null = null;
 const listeners = new Set<() => void>();
 
 function setSnapshot(next: AirQualityState): void {
@@ -113,12 +118,27 @@ function getSnapshot(): AirQualityState {
   return snapshot;
 }
 
+// Aborta lo que esté en vuelo y sube la generación, de modo que la respuesta
+// pendiente —si alcanza a llegar— se ignore.
+function cancelInFlight(): void {
+  inFlight?.abort();
+  inFlight = null;
+  requestSeq += 1;
+}
+
 async function loadAirQuality(): Promise<void> {
+  cancelInFlight();
+  const ctrl = new AbortController();
+  inFlight = ctrl;
+  const seq = requestSeq;
+  const timeout = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+
   setSnapshot({ ...snapshot, loading: true, error: null });
   try {
-    const res = await fetch(ENDPOINT, { signal: AbortSignal.timeout(15_000) });
+    const res = await fetch(ENDPOINT, { signal: ctrl.signal });
     if (!res.ok) throw new Error(`SINCA ${res.status}`);
     const json = await res.json();
+    if (seq !== requestSeq) return;
     setSnapshot({
       stations: parseStations(json),
       loading: false,
@@ -126,8 +146,14 @@ async function loadAirQuality(): Promise<void> {
       lastFetched: Date.now(),
     });
   } catch (err) {
+    // Lo reemplazó un request más nuevo (o se canceló al apagar la capa): ese
+    // es el dueño del estado, no este.
+    if (seq !== requestSeq) return;
     const message = err instanceof Error ? err.message : String(err);
     setSnapshot({ ...snapshot, loading: false, error: message });
+  } finally {
+    clearTimeout(timeout);
+    if (inFlight === ctrl) inFlight = null;
   }
 }
 
@@ -141,6 +167,7 @@ function stopPolling(): void {
   if (pollingId == null) return;
   window.clearInterval(pollingId);
   pollingId = null;
+  cancelInFlight();
 }
 
 export function useAirQuality(active: boolean, retryKey = 0): AirQualityState {
