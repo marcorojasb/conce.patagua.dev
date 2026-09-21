@@ -14,7 +14,7 @@ import { FloatingToolsPanel, type AnalysisTab } from '@/components/floating-tool
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
 import type { SimulationRouteInput } from '@/realtime/simulated-vehicles';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardDescription, CardHeader } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
 import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
@@ -323,17 +323,15 @@ export default function App() {
   }, [closeDetailPanels, closeSidebarOnMobile]);
 
   const toggleLayers = useCallback(() => {
-    setLayersOpen((cur) => {
-      const next = !cur;
-      if (next) {
-        closeDetailPanels();
-        setSourcesOpen(false);
-        setActiveTool(null);
-        closeSidebarOnMobile();
-      }
-      return next;
-    });
-  }, [closeDetailPanels, closeSidebarOnMobile]);
+    const next = !layersOpen;
+    setLayersOpen(next);
+    if (next) {
+      closeDetailPanels();
+      setSourcesOpen(false);
+      setActiveTool(null);
+      closeSidebarOnMobile();
+    }
+  }, [layersOpen, closeDetailPanels, closeSidebarOnMobile]);
 
   useSyncUrlState({
     route: selectedRouteId,
@@ -717,10 +715,10 @@ export default function App() {
             <div className="pointer-events-none absolute left-2 top-2 z-10 animate-fade-in md:left-3 md:top-3">
               <Card className="pointer-events-auto max-w-[220px] border-border/80 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:max-w-[260px]">
                 <CardHeader className="space-y-1 p-3">
-                  <CardTitle className="flex items-center gap-1.5 text-xs uppercase tracking-wider text-muted-foreground">
+                  <h2 className="flex items-center gap-1.5 font-semibold leading-none text-xs uppercase tracking-wider text-muted-foreground">
                     <MapPin className="size-3" />
                     Concepción · Biobío
-                  </CardTitle>
+                  </h2>
                   <CardDescription className="text-[12px] leading-snug text-foreground">
                     Capas de transporte público y, próximamente, planificación urbana y
                     servicios para política pública del Gran Concepción.
@@ -730,7 +728,9 @@ export default function App() {
                     </span>
                     <span className="mt-2 grid grid-cols-3 gap-1.5">
                       <span className="rounded border bg-background/70 px-1.5 py-1">
-                        <span className="block font-mono text-[11px]">171</span>
+                        <span className="block font-mono text-[11px]">
+                          {ROUTES.length.toLocaleString('es-CL')}
+                        </span>
                         <span className="text-[10px] text-muted-foreground">recorridos</span>
                       </span>
                       <span className="rounded border bg-background/70 px-1.5 py-1">

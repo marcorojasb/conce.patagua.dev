@@ -6,7 +6,11 @@ const ASSETS_DIR = join(process.cwd(), 'dist', 'assets');
 const KB = 1024;
 
 const budgets: Array<{ pattern: RegExp; maxBytes: number; maxGzipBytes: number; label: string }> = [
-  { pattern: /^index-.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 90 * KB, label: 'main app' },
+  // `index` es el chunk de entrada: React 19 + ReactDOM + Radix (vía
+  // TooltipProvider) + main.tsx. Se lo lleva también el wiki, así que es costo
+  // fijo de cualquier ruta. El gzip subió de ~73 KB a ~94 KB al pasar de
+  // React 18 a 19; el límite se movió con esa base, no por código propio.
+  { pattern: /^index-.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 100 * KB, label: 'main app' },
   { pattern: /^App-.*\.js$/, maxBytes: 700 * KB, maxGzipBytes: 180 * KB, label: 'React app shell' },
   { pattern: /gtfs-bus-routes.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 120 * KB, label: 'GTFS routes' },
   { pattern: /gtfs-schedule.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 65 * KB, label: 'GTFS schedules' },

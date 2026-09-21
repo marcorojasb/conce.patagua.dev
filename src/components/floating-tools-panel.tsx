@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useEffectEvent, useMemo, type ReactNode } from 'react';
 import { Building2, Compass, Download, Gauge, ImageDown, X } from 'lucide-react';
 import { PlannerPanel } from '@/components/planner-panel';
 import { Button } from '@/components/ui/button';
@@ -118,14 +118,18 @@ export function FloatingToolsPanel({
     [routesVersion],
   );
 
+  // `onClose` llega como arrow inline desde App, así que cambia de identidad
+  // en cada render; useEffectEvent evita re-suscribir el listener de Escape.
+  const close = useEffectEvent(onClose);
+
   useEffect(() => {
     if (!tool) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') close();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose, tool]);
+  }, [tool]);
 
   if (!tool) return null;
   const meta = TOOL_META[tool];

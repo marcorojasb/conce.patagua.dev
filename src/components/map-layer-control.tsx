@@ -21,7 +21,7 @@ import {
   Wind,
   X,
 } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useEffectEvent, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
@@ -183,14 +183,18 @@ export function MapLayerControl({
     showInterurbanCorridors,
   ].filter(Boolean).length;
 
+  // `onCloseLayers` llega como arrow inline desde App, así que cambia de
+  // identidad en cada render; useEffectEvent evita re-suscribir en cada uno.
+  const closeLayers = useEffectEvent(onCloseLayers);
+
   useEffect(() => {
     if (!layersOpen) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onCloseLayers();
+      if (event.key === 'Escape') closeLayers();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [layersOpen, onCloseLayers]);
+  }, [layersOpen]);
 
   const layers = useMemo<MapLayerRow[]>(
     () => [

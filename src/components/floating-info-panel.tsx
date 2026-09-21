@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useEffectEvent, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -32,18 +32,22 @@ export function FloatingInfoPanel({
   scroll = true,
 }: FloatingInfoPanelProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
+  // Los paneles reciben `onClose` como arrow inline, así que cambia de
+  // identidad en cada render del padre. Con useEffectEvent el listener de
+  // Escape no depende de él y no se re-suscribe en cada render.
+  const close = useEffectEvent(onClose);
 
   useEffect(() => {
     if (!open) return undefined;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key === 'Escape') close();
     };
     window.addEventListener('keydown', onKeyDown);
     // Non-modal: no focus trap, but move keyboard focus into the panel so
     // screen-reader users land on a labeled dialog instead of the map.
     closeRef.current?.focus({ preventScroll: true });
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose, open]);
+  }, [open]);
 
   if (!open) return null;
 
