@@ -14,7 +14,7 @@ import {
   CommandList,
   CommandShortcut,
 } from '@/components/ui/command';
-import { ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS } from '@/data/routes';
+import { ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
 import { ARTICLES } from '@/wiki/articles';
 import type { Theme } from '@/types/transport';
 
@@ -48,21 +48,28 @@ export function Header({
   }, []);
 
   const q = query.trim().toLowerCase();
+  // `ROUTES` y `STOPS` se mutan in-place cuando llega el chunk lazy de micros,
+  // así que sin la versión en las deps el buscador queda indexando solo los
+  // recorridos y paraderos del primer paint.
+  const routesVersion = useRoutesVersion();
   const routeMatches = useMemo(
-    () =>
-      ROUTES.filter(
+    () => {
+      void routesVersion;
+      return ROUTES.filter(
         (r) =>
           !q ||
           r.name.toLowerCase().includes(q) ||
           r.code.toLowerCase().includes(q) ||
           ROUTE_TYPES[r.type].label.toLowerCase().includes(q),
-      ),
-    [q],
+      );
+    },
+    [q, routesVersion],
   );
   const stopMatches = useMemo(() => {
+    void routesVersion;
     if (!q) return STOPS.slice(0, 6);
     return STOPS.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 10);
-  }, [q]);
+  }, [q, routesVersion]);
   const wikiMatches = useMemo(
     () =>
       ARTICLES.filter(
@@ -98,9 +105,9 @@ export function Header({
         {/* min-w-0 + truncate keeps the title on a single line on narrow
             viewports even when the toolbar (search, github, theme) crowds it. */}
         <div className="min-w-0 leading-tight">
-          <div className="truncate font-mono text-sm font-semibold tracking-tight">
+          <h1 className="truncate font-mono text-sm font-semibold tracking-tight">
             conce.patagua.dev
-          </div>
+          </h1>
           <div className="hidden truncate text-[11px] text-muted-foreground md:block">
             Visor del Gran Concepción
           </div>

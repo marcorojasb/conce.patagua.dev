@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
-import { ROUTE_TYPES } from '@/data/routes';
-import { cn } from '@/lib/utils';
+import { ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
+import { cn, readableTextOn } from '@/lib/utils';
 import type { Route, RouteTypeId } from '@/types/transport';
 
 interface SidebarProps {
@@ -57,12 +57,22 @@ export function Sidebar({
   const [query, setQuery] = useState('');
   const [expandedOps, setExpandedOps] = useState<Set<string>>(new Set());
 
+  // `ROUTES` se muta in-place cuando aterriza el chunk lazy de micros (misma
+  // identidad de array a propósito), así que un useMemo que dependa de `routes`
+  // nunca se invalida y el sidebar se queda con el conteo y la lista del primer
+  // paint: solo Biotrén + interurbanos, con los 169 micros invisibles hasta que
+  // el usuario toca el buscador o un filtro. routesVersion es la señal real.
+  const routesVersion = useRoutesVersion();
+
   const visibleSet = useMemo(() => new Set(visibleRouteIds), [visibleRouteIds]);
-  const typeStats = useMemo(() => buildTypeStats(routes, visibleSet), [routes, visibleSet]);
-  const filteredFlat = useMemo(
-    () => filterRoutes(routes, query, typeFilters),
-    [query, routes, typeFilters],
-  );
+  const typeStats = useMemo(() => {
+    void routesVersion;
+    return buildTypeStats(routes, visibleSet);
+  }, [routes, visibleSet, routesVersion]);
+  const filteredFlat = useMemo(() => {
+    void routesVersion;
+    return filterRoutes(routes, query, typeFilters);
+  }, [query, routes, typeFilters, routesVersion]);
   const grouped = useMemo(() => groupRoutesByOperator(filteredFlat, visibleSet), [
     filteredFlat,
     visibleSet,
@@ -535,7 +545,7 @@ function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProp
       >
         <Badge
           className="shrink-0 border-transparent font-mono"
-          style={{ backgroundColor: route.color, color: '#fff' }}
+          style={{ backgroundColor: route.color, color: readableTextOn(route.color) }}
         >
           {route.code}
         </Badge>

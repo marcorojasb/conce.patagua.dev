@@ -5,11 +5,11 @@ import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { NextStopServicesBlock } from '@/components/next-stop-services';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WikiLinkButton } from '@/components/wiki-link';
-import { ROUTES_BY_ID, ROUTE_TYPES } from '@/data/routes';
+import { ROUTES_BY_ID, ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
 import { BIOTREN_WIKIDATA } from '@/data/wikidata.generated';
 import { isoDayOfWeek, useStopFrequency } from '@/hooks/use-stop-frequency';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
-import { cn } from '@/lib/utils';
+import { cn, readableTextOn } from '@/lib/utils';
 import type { StopWithRoutes } from '@/types/transport';
 
 interface StopDetailSheetProps {
@@ -20,7 +20,12 @@ interface StopDetailSheetProps {
 }
 
 export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: StopDetailSheetProps) {
+  // `ROUTES_BY_ID` se muta in-place al llegar el chunk de micros: sin la versión
+  // en las deps, un deep link abierto antes de esa carga se queda con la lista
+  // de recorridos incompleta.
+  const routesVersion = useRoutesVersion();
   const routes = useMemo(() => {
+    void routesVersion;
     if (!stop) return [];
     const linkedRoutes = [];
     for (const id of stop.routes) {
@@ -28,7 +33,7 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
       if (route) linkedRoutes.push(route);
     }
     return linkedRoutes;
-  }, [stop]);
+  }, [stop, routesVersion]);
 
   const activeCount = useMemo(
     () => routes.reduce((acc, r) => acc + (isRouteOperatingNow(r) ? 1 : 0), 0),
@@ -151,7 +156,7 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
             >
               <Badge
                 className="border-transparent font-mono"
-                style={{ background: r.color, color: '#fff' }}
+                style={{ background: r.color, color: readableTextOn(r.color) }}
               >
                 {r.code}
               </Badge>

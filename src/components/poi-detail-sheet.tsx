@@ -10,8 +10,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
-import { ROUTES, ROUTE_TYPES } from '@/data/routes';
+import { ROUTES, ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
 import { distanceMeters } from '@/lib/geo';
+import { readableTextOn } from '@/lib/utils';
 import type { Poi, PoiCategory, Route } from '@/types/transport';
 
 const CATEGORY_LABEL: Record<PoiCategory, string> = {
@@ -62,7 +63,13 @@ export function PoiDetailSheet({
   onFocus,
   onSelectRoute,
 }: PoiDetailSheetProps) {
-  const nearby = useMemo(() => (poi ? nearbyRoutes(poi) : []), [poi]);
+  // `ROUTES` se muta in-place al llegar el chunk de micros: sin la versión en
+  // las deps, la lista de recorridos cercanos se queda con lo del primer paint.
+  const routesVersion = useRoutesVersion();
+  const nearby = useMemo(() => {
+    void routesVersion;
+    return poi ? nearbyRoutes(poi) : [];
+  }, [poi, routesVersion]);
   const panelChrome = useMemo(() => {
     if (!poi) return null;
     const CategoryIcon = CATEGORY_ICON[poi.category];
@@ -137,7 +144,7 @@ export function PoiDetailSheet({
                 >
                   <Badge
                     className="border-transparent font-mono"
-                    style={{ background: route.color, color: '#fff' }}
+                    style={{ background: route.color, color: readableTextOn(route.color) }}
                   >
                     {route.code}
                   </Badge>

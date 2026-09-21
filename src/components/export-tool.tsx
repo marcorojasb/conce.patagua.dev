@@ -12,7 +12,9 @@ import type { CoverageCell } from '@/types/transport';
 interface ExportRow {
   key: ExportLayer;
   label: string;
-  detail: string;
+  // Lazy cuando el texto depende de `ROUTES`, que se muta in-place al llegar
+  // el chunk de micros: evaluado al importar el módulo quedaría en 6 líneas.
+  detail: string | (() => string);
   defaultChecked: boolean;
   size?: () => number;
 }
@@ -27,7 +29,7 @@ const EXPORT_ROWS: ExportRow[] = [
   {
     key: 'routes-all',
     label: 'Todos los recorridos',
-    detail: `${ROUTES.length} líneas, ignora filtros del visor`,
+    detail: () => `${ROUTES.length} líneas, ignora filtros del visor`,
     defaultChecked: false,
   },
   {
@@ -126,7 +128,7 @@ export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: strin
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium">{row.label}</div>
                     <div className="text-[11px] text-muted-foreground">
-                      {row.detail}
+                      {typeof row.detail === 'function' ? row.detail() : row.detail}
                     </div>
                   </div>
                   <Switch

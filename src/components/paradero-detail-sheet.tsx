@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { NextStopServicesBlock } from '@/components/next-stop-services';
-import { ROUTES_BY_ID, ROUTE_TYPES, STOPS } from '@/data/routes';
+import { ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
+import { readableTextOn } from '@/lib/utils';
 import type { Paradero } from '@/types/transport';
 
 interface ParaderoDetailSheetProps {
@@ -31,12 +32,20 @@ export function ParaderoDetailSheet({
   onUseAsOrigin,
   onUseAsDestination,
 }: ParaderoDetailSheetProps) {
+  // `STOPS` y `ROUTES_BY_ID` se mutan in-place al llegar el chunk de micros: sin
+  // la versión en las deps, un deep link abierto antes de esa carga se queda
+  // con la lista de recorridos incompleta.
+  const routesVersion = useRoutesVersion();
   const stop = useMemo(
-    () => (paradero ? STOPS.find((s) => s.id === paradero.id) : undefined),
-    [paradero],
+    () => {
+      void routesVersion;
+      return paradero ? STOPS.find((s) => s.id === paradero.id) : undefined;
+    },
+    [paradero, routesVersion],
   );
 
   const routes = useMemo(() => {
+    void routesVersion;
     if (!stop) return [];
     const linkedRoutes = [];
     for (const id of stop.routes) {
@@ -44,7 +53,7 @@ export function ParaderoDetailSheet({
       if (route) linkedRoutes.push(route);
     }
     return linkedRoutes;
-  }, [stop]);
+  }, [stop, routesVersion]);
 
   const panelChrome = useMemo(() => {
     if (!paradero) return null;
@@ -112,7 +121,7 @@ export function ParaderoDetailSheet({
               >
                 <Badge
                   className="border-transparent font-mono"
-                  style={{ background: route.color, color: '#fff' }}
+                  style={{ background: route.color, color: readableTextOn(route.color) }}
                 >
                   {route.code}
                 </Badge>
