@@ -153,6 +153,11 @@
 }
 .leaflet-control-attribution a {
   color: hsl(var(--foreground)) !important;
+  /* Leaflet trae su propio `text-decoration: none` y su hoja carga después de
+     esta, así que hace falta !important (como en las reglas de arriba). Sus
+     enlaces viven dentro de un bloque de texto: sin subrayado se distinguen
+     solo por color, que es lo que prohíbe WCAG 1.4.1. */
+  text-decoration: underline !important;
 }
 /* Long-form license disclaimer is hidden in narrow viewports — full credit
    lives in the Data Sources sheet so license requirements are still met. */

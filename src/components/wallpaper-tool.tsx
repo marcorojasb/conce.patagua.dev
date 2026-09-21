@@ -241,11 +241,10 @@ export default function WallpaperTool({
     setPreviewBusy(true);
     try {
       const blob = await buildBlob(true);
-      const nextUrl = URL.createObjectURL(blob);
-      setPreviewUrl((old) => {
-        if (old) URL.revokeObjectURL(old);
-        return nextUrl;
-      });
+      // El revoke de la URL anterior lo hace el useEffect de limpieza, que es
+      // el único dueño de esa responsabilidad (un updater de estado tiene que
+      // ser puro).
+      setPreviewUrl(URL.createObjectURL(blob));
     } catch (err) {
       console.error(err);
       setProgress(err instanceof Error ? err.message : 'Error al generar preview.');
@@ -554,7 +553,7 @@ export default function WallpaperTool({
       )}
 
       <div className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
-        El PNG incluye atribución obligatoria embebida (OSM · CARTO · GTFS Gran
+        El PNG incluye atribución obligatoria embebida (OSM · Esri · GTFS Gran
         Concepción CC BY 4.0). Si lo publicas, mantén esa franja visible.
       </div>
     </div>

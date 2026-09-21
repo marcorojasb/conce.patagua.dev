@@ -2,7 +2,7 @@
 // segunda fuente estructural (hermana de `gtfs-gran-concepcion.tsx`).
 // OSM cubre lo que el GTFS no: Biotrén, interurbanos sin GTFS (201,
 // 401/411/421, Yumbel, Florida), terminales, paraderos interurbanos, ciclovías,
-// áreas verdes, escuelas, POIs y el basemap de CARTO.
+// áreas verdes, escuelas, POIs y el basemap de Esri.
 //
 // Verificación contra Overpass (overpass-api.de, 2026-05-16):
 //   - Biotrén L1: route_master relation 6857223 (ref=L1, Q5985914).
@@ -61,7 +61,7 @@ export default function OpenstreetmapFuenteVisor() {
           <em>todo lo demás</em>: Biotrén, interurbanos sin GTFS (201,
           401/411/421, Florida, Yumbel), terminales, paraderos interurbanos,
           ciclovías, plazas, escuelas, hospitales y la trama vial que
-          entrega CARTO como basemap.
+          entrega Esri como basemap.
         </p>
         <p>
           La división es deliberada: GTFS llega estructurado (horarios,
@@ -180,8 +180,8 @@ export default function OpenstreetmapFuenteVisor() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Basemap</td>
-                <td className="px-3 py-2 text-[12px]">Tiles CARTO Positron / Dark Matter, derivados de OSM.</td>
-                <td className="px-3 py-2 text-[12px]">Atribución <code className="font-mono">© OSM · © CARTO</code> al pie.</td>
+                <td className="px-3 py-2 text-[12px]">Tiles Esri Gray Canvas (Light / Dark), derivados de OSM.</td>
+                <td className="px-3 py-2 text-[12px]">Atribución <code className="font-mono">© OSM · © Esri</code> al pie.</td>
                 <td className="px-3 py-2 text-[12px]">Runtime en Leaflet (<code className="font-mono">conce-map.tsx</code>), sin <code>.generated.ts</code>.</td>
               </tr>
             </tbody>
@@ -285,8 +285,8 @@ export default function OpenstreetmapFuenteVisor() {
             </li>
             <li>
               <strong>Render Leaflet</strong> (<code className="font-mono">conce-map.tsx</code>)
-              sobre TileLayer CARTO. Atribución del control:{' '}
-              <code className="font-mono">© OSM · © CARTO · GTFS Gran Concepción CC BY 4.0</code>.
+              sobre TileLayer Esri Gray Canvas. Atribución del control:{' '}
+              <code className="font-mono">© OSM · © Esri · GTFS Gran Concepción CC BY 4.0</code>.
             </li>
           </ol>
         </div>
@@ -315,7 +315,7 @@ export default function OpenstreetmapFuenteVisor() {
             <strong>Atribución.</strong> "© colaboradores de OpenStreetMap"
             visible. El visor cumple en{' '}
             <code className="font-mono">conce-map.tsx</code>:{' '}
-            <code className="font-mono">© OSM · © CARTO</code> al pie del
+            <code className="font-mono">© OSM · © Esri</code> al pie del
             mapa.
           </li>
           <li>
@@ -332,15 +332,15 @@ export default function OpenstreetmapFuenteVisor() {
         </ul>
         <p className="text-[12px] text-muted-foreground">
           <code className="font-mono">data-sources-sheet.tsx</code> declara
-          "Open Database License (ODbL)" como licencia OSM. CARTO agrega
-          atribución propia (basemaps Positron / Dark Matter bajo términos
-          de servicio CARTO).
+          "Open Database License (ODbL)" como licencia OSM. Esri agrega
+          atribución propia (basemaps Gray Canvas bajo términos de servicio
+          Esri; reemplazaron a los de CARTO, que desde 2026 exigen API key).
         </p>
         <Sources>
           <SourceLink href="https://opendatacommons.org/licenses/odbl/1-0/">Open Data Commons · ODbL 1.0</SourceLink>
           <SourceLink href="https://www.openstreetmap.org/copyright">openstreetmap.org/copyright</SourceLink>
           <SourceLink href="https://wiki.osmfoundation.org/wiki/Licence">OSMF · License (CC BY-SA → ODbL, 12-sep-2012)</SourceLink>
-          <SourceLink href="https://carto.com/attributions">CARTO · atribución basemaps</SourceLink>
+          <SourceLink href="https://www.esri.com/en-us/legal/terms/full-master-agreement">Esri · términos de servicio de basemaps</SourceLink>
         </Sources>
       </Section>
 

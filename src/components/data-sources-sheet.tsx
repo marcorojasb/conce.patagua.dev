@@ -1,11 +1,9 @@
+import { useMemo } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
-import { ROUTES } from '@/data/routes';
+import { ROUTES, useRoutesVersion } from '@/data/routes';
 import { GTFS_CONCEPCION_SOURCE, GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { TERMINALS } from '@/data/terminals.generated';
-
-const microCount = ROUTES.filter((r) => r.type === 'micro').length;
-const biotrenCount = ROUTES.filter((r) => r.type === 'biotren').length;
 
 interface Source {
   title: string;
@@ -15,47 +13,55 @@ interface Source {
   count?: string;
 }
 
-const SOURCES: Source[] = [
-  {
-    title: 'GTFS estático Gran Concepción',
-    detail:
-      'Recorridos de micros, paraderos, shapes y calendario programado de los 169 servicios urbanos. Publicado por la Subsecretaría de Transportes de Chile. La app consume un artefacto estático generado a partir del feed; las shapes pasan por una simplificación Douglas–Peucker (~16 m), el resto se sirve tal cual.',
-    count: `${microCount} recorridos · ${GTFS_STOPS.length} paraderos · fuente ${GTFS_CONCEPCION_SOURCE.source}`,
-    link: {
-      href: 'https://busmaps.com/en/chile/Subsecretaria-de-Transporte/gran-concepcion',
-      label: 'busmaps.com (mirror)',
+// Los conteos se calculan al renderizar, no al importar: `ROUTES` se muta
+// in-place cuando aterriza el chunk lazy de micros, así que un const de módulo
+// quedaría congelado con los 6 recorridos del primer paint.
+function buildSources(): Source[] {
+  const microCount = ROUTES.filter((r) => r.type === 'micro').length;
+  const biotrenCount = ROUTES.filter((r) => r.type === 'biotren').length;
+
+  return [
+    {
+      title: 'GTFS estático Gran Concepción',
+      detail:
+        'Recorridos de micros, paraderos, shapes y calendario programado de los 169 servicios urbanos. Publicado por la Subsecretaría de Transportes de Chile. La app consume un artefacto estático generado a partir del feed; las shapes pasan por una simplificación Douglas–Peucker (~16 m), el resto se sirve tal cual.',
+      count: `${microCount} recorridos · ${GTFS_STOPS.length} paraderos · fuente ${GTFS_CONCEPCION_SOURCE.source}`,
+      link: {
+        href: 'https://busmaps.com/en/chile/Subsecretaria-de-Transporte/gran-concepcion',
+        label: 'busmaps.com (mirror)',
+      },
+      license: { name: 'CC BY 4.0 · Subsecretaría de Transportes (Chile)', href: 'https://creativecommons.org/licenses/by/4.0/' },
     },
-    license: { name: 'CC BY 4.0 · Subsecretaría de Transportes (Chile)', href: 'https://creativecommons.org/licenses/by/4.0/' },
-  },
-  {
-    title: 'Servicios en curso (simulación según horario)',
-    detail:
-      'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus o tren según horarios públicos: GTFS urbano oficial, Biotrén por frecuencia publicada y 201/401/411/421 por ventanas/frecuencias DTPR, operador, Moovit/Red Regional y comunidad. No es GPS real: atrasos, cancelaciones y desvíos no se ven.',
-    count: 'Calculado en cliente cada 1 s desde GTFS + patrones horarios documentados',
-    license: 'Capa derivada · GTFS CC BY 4.0 + fuentes públicas citadas en wiki',
-  },
-  {
-    title: 'OpenStreetMap · Overpass API',
-    detail:
-      'Estaciones y trazado del Biotrén (railway=station + railway=rail + operator=EFE), terminales (amenity=bus_station) y puntos de interés urbanos.',
-    count: `${biotrenCount} líneas Biotrén · ${TERMINALS.length} terminales`,
-    link: { href: 'https://www.openstreetmap.org/about', label: 'openstreetmap.org' },
-    license: 'Open Database License (ODbL)',
-  },
-  {
-    title: 'EFE Trenes de Chile · Biotrén',
-    detail:
-      'Orden y nombres oficiales de las 26 estaciones del Biotrén L1 (Hualqui ↔ Mercado Talcahuano) y L2 (Coronel ↔ Concepción), más horarios de operación.',
-    link: { href: 'https://www.efe.cl/nuestros-servicios/biotren/', label: 'efe.cl/biotren' },
-  },
-  {
-    title: 'CARTO · basemaps light/dark',
-    detail:
-      'Tiles del mapa base, en versiones clara y oscura. Cambia automáticamente con el tema de la app.',
-    link: { href: 'https://carto.com/attributions', label: 'carto.com' },
-    license: 'OpenStreetMap contributors © CARTO',
-  },
-];
+    {
+      title: 'Servicios en curso (simulación según horario)',
+      detail:
+        'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus o tren según horarios públicos: GTFS urbano oficial, Biotrén por frecuencia publicada y 201/401/411/421 por ventanas/frecuencias DTPR, operador, Moovit/Red Regional y comunidad. No es GPS real: atrasos, cancelaciones y desvíos no se ven.',
+      count: 'Calculado en cliente cada 1 s desde GTFS + patrones horarios documentados',
+      license: 'Capa derivada · GTFS CC BY 4.0 + fuentes públicas citadas en wiki',
+    },
+    {
+      title: 'OpenStreetMap · Overpass API',
+      detail:
+        'Estaciones y trazado del Biotrén (railway=station + railway=rail + operator=EFE), terminales (amenity=bus_station) y puntos de interés urbanos.',
+      count: `${biotrenCount} líneas Biotrén · ${TERMINALS.length} terminales`,
+      link: { href: 'https://www.openstreetmap.org/about', label: 'openstreetmap.org' },
+      license: 'Open Database License (ODbL)',
+    },
+    {
+      title: 'EFE Trenes de Chile · Biotrén',
+      detail:
+        'Orden y nombres oficiales de las 26 estaciones del Biotrén L1 (Hualqui ↔ Mercado Talcahuano) y L2 (Coronel ↔ Concepción), más horarios de operación.',
+      link: { href: 'https://www.efe.cl/nuestros-servicios/biotren/', label: 'efe.cl/biotren' },
+    },
+    {
+      title: 'Esri · Gray Canvas basemaps',
+      detail:
+        'Tiles del mapa base, en versiones clara (Light Gray Canvas) y oscura (Dark Gray Canvas). Cambia automáticamente con el tema de la app. Se usa en lugar de CARTO porque sus basemaps gratuitos exigen API key desde 2026.',
+      link: { href: 'https://www.esri.com/en-us/arcgis/products/arcgis-online/overview', label: 'esri.com' },
+      license: 'OpenStreetMap contributors © Esri · HERE, Garmin',
+    },
+  ];
+}
 
 const PENDING: Source[] = [
   {
@@ -83,6 +89,12 @@ interface DataSourcesSheetProps {
 }
 
 export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) {
+  const routesVersion = useRoutesVersion();
+  const sources = useMemo(() => {
+    void routesVersion;
+    return buildSources();
+  }, [routesVersion]);
+
   return (
     <FloatingInfoPanel
       open={open}
@@ -91,7 +103,7 @@ export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) 
       widthClassName="sm:w-[440px]"
       description="Todo lo que ves en este visor viene de fuentes abiertas. conce.patagua.dev es un proyecto open source."
     >
-      <SourceList title="En uso ahora" sources={SOURCES} />
+      <SourceList title="En uso ahora" sources={sources} />
       <SourceList title="Pendientes (esperando publicación oficial)" sources={PENDING} />
 
       <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">

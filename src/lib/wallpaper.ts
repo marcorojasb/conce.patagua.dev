@@ -2,17 +2,25 @@
 // or desktop wallpaper. We don't reuse the visor's live Leaflet map (the
 // viewport is wrong, the chrome would leak in, and DOM-to-image of a tiled
 // map is messy). Instead we render fresh: project the world to mercator at a
-// zoom level that fits the requested bbox, fetch CARTO tiles directly, paint
-// them onto an offscreen canvas, then stroke route polylines on top.
+// zoom level that fits the requested bbox, fetch Esri Gray Canvas tiles
+// directly, paint them onto an offscreen canvas, then stroke route polylines
+// on top.
 //
 // Outcome: deterministic, retina-sharp, no UI leakage, no extra deps.
 
 const TILE_SIZE = 256;
-const TILE_SUBDOMAINS = ['a', 'b', 'c'];
+// Esri sirve tiles reales hasta z16; más allá devuelve un placeholder, así que
+// nunca pedimos por encima de ese nivel y sobreescalamos lo que haga falta.
+const TILE_MAX_NATIVE_ZOOM = 16;
 
 export type WallpaperTheme = 'light' | 'dark';
 export type WallpaperStyle = 'clean' | 'technical' | 'editorial' | 'night';
 export type WallpaperRouteMode = 'visible' | 'all' | 'biotren' | 'interurban';
+
+function tileUrl(theme: WallpaperTheme, z: number, x: number, y: number): string {
+  const layer = theme === 'dark' ? 'World_Dark_Gray_Base' : 'World_Light_Gray_Base';
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/${layer}/MapServer/tile/${z}/${y}/${x}`;
+}
 
 export interface WallpaperRoute {
   path: Array<[number, number]>; // [lat, lng] vertices
@@ -305,27 +313,33 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
   ctx.fillStyle = renderTheme === 'dark' ? '#0b0b0d' : '#FFFFFF';
   ctx.fillRect(0, 0, width, height);
 
-  // Compute visible tile range and fetch in parallel.
-  const tileMinX = Math.floor(originX / TILE_SIZE);
-  const tileMinY = Math.floor(originY / TILE_SIZE);
-  const tileMaxX = Math.floor((originX + width) / TILE_SIZE);
-  const tileMaxY = Math.floor((originY + height) / TILE_SIZE);
-  const tileStyle = renderTheme === 'dark' ? 'dark_all' : 'light_all';
+  // Pedimos los tiles un nivel más profundo que el zoom de composición para
+  // que se dibujen reducidos (2x de detalle real), y nunca por encima de z16,
+  // que es donde Esri corta. `tilePx` es cuánto ocupa un tile en la grilla del
+  // zoom de composición: 128 con supersampling, 256 sin él, más si sobreescalamos.
+  const tileZoom = Math.min(zoom + 1, TILE_MAX_NATIVE_ZOOM);
+  const tilePx = TILE_SIZE * Math.pow(2, zoom - tileZoom);
+  const tilesPerSide = Math.pow(2, tileZoom);
+
+  const tileMinX = Math.floor(originX / tilePx);
+  const tileMinY = Math.floor(originY / tilePx);
+  const tileMaxX = Math.floor((originX + width) / tilePx);
+  const tileMaxY = Math.floor((originY + height) / tilePx);
 
   const tilePromises: Promise<{ img: HTMLImageElement | null; tx: number; ty: number }>[] = [];
   for (let tx = tileMinX; tx <= tileMaxX; tx++) {
     for (let ty = tileMinY; ty <= tileMaxY; ty++) {
-      if (ty < 0 || ty >= Math.pow(2, zoom)) continue;
-      const wrapped = ((tx % Math.pow(2, zoom)) + Math.pow(2, zoom)) % Math.pow(2, zoom);
-      const sub = TILE_SUBDOMAINS[(tx + ty + zoom) % TILE_SUBDOMAINS.length];
-      const url = `https://${sub}.basemaps.cartocdn.com/${tileStyle}/${zoom}/${wrapped}/${ty}@2x.png`;
-      tilePromises.push(loadTile(url).then((img) => ({ img, tx, ty })));
+      if (ty < 0 || ty >= tilesPerSide) continue;
+      const wrapped = ((tx % tilesPerSide) + tilesPerSide) % tilesPerSide;
+      tilePromises.push(
+        loadTile(tileUrl(renderTheme, tileZoom, wrapped, ty)).then((img) => ({ img, tx, ty })),
+      );
     }
   }
   const tiles = await Promise.all(tilePromises);
   for (const { img, tx, ty } of tiles) {
     if (!img) continue;
-    ctx.drawImage(img, tx * TILE_SIZE - originX, ty * TILE_SIZE - originY, TILE_SIZE, TILE_SIZE);
+    ctx.drawImage(img, tx * tilePx - originX, ty * tilePx - originY, tilePx, tilePx);
   }
 
   ctx.fillStyle = styleMeta.overlay;
@@ -530,7 +544,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
 
   // Branding strip bottom-left: optional content title (curated view name
   // or "vista actual · N recorridos"), then "conce.patagua.dev" small, then
-  // the OSM/CARTO/GTFS attribution as fine print.
+  // the OSM/Esri/GTFS attribution as fine print.
   const padX = Math.round(width * 0.035);
   const padY = Math.round(height * 0.035);
   const minDim = Math.min(width, height);
@@ -568,7 +582,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
   let cursor = height - padY;
   ctx.fillStyle = renderTheme === 'dark' ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)';
   ctx.font = `400 ${attrSize}px Inter, system-ui, sans-serif`;
-  ctx.fillText('OSM contributors © CARTO · GTFS Gran Concepción CC BY 4.0', padX, cursor);
+  ctx.fillText('OSM contributors © Esri · GTFS Gran Concepción CC BY 4.0', padX, cursor);
   cursor -= attrSize + 4;
 
   ctx.fillStyle = renderTheme === 'dark' ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.78)';

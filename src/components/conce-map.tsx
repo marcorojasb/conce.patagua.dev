@@ -93,10 +93,22 @@ interface ConceMapLayerVisibility {
   interurbanCorridors: boolean;
 }
 
+// Esri Gray Canvas. CARTO pasó sus basemaps a un modelo con API key en 2026:
+// los tiles de `basemaps.cartocdn.com` siguen respondiendo 200 pero devuelven
+// una imagen con marca de agua "API KEY REQUIRED", así que el mapa base quedaba
+// inservible. Esri sirve la misma estética gris minimalista sin credenciales.
+// La URL lleva {z}/{y}/{x} (y antes que x), al revés que el resto de los
+// proveedores XYZ; leaflet la expande igual.
 const TILE_URL = {
-  light: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  light:
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+  dark: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
 };
+
+// Esri corta los tiles reales en z16: más allá responde un placeholder, así que
+// Leaflet tiene que sobreescalar el z16 en vez de pedir z17+.
+const TILE_MAX_NATIVE_ZOOM = 16;
+const TILE_MAX_ZOOM = 19;
 
 // Attribution is split into two pieces: the abbreviated form always renders;
 // the long form (with "Subsecretaría de Transportes (Chile)" disclaimer) is
@@ -104,7 +116,7 @@ const TILE_URL = {
 // map's bottom edge on phones. License obligations are still met because
 // the Data Sources sheet carries the full credit.
 const ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://carto.com/attributions">CARTO</a> · GTFS Gran Concepción <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><span class="attr-long"> Subsecretaría de Transportes (Chile)</span>';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://www.esri.com/">Esri</a>, HERE, Garmin · GTFS Gran Concepción <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><span class="attr-long"> Subsecretaría de Transportes (Chile)</span>';
 
 const BUILDING_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/></svg>';
@@ -276,6 +288,15 @@ function BoundsTracker({
       fire(map.getBounds());
     },
   });
+
+  // Reporta el viewport inicial. Sin esto, en una carga limpia no hay ningún
+  // moveend (nadie movió el mapa todavía) y features que dependen del bbox
+  // —como el modo "vista actual" del exportador de wallpaper— quedan sin
+  // datos hasta que el usuario arrastre el mapa.
+  useEffect(() => {
+    fire(map.getBounds());
+  }, [fire, map]);
+
   return null;
 }
 
@@ -396,10 +417,6 @@ export function ConceMap({
   const paraderoRenderer = useMemo(() => L.canvas({ padding: 0.2 }), []);
   const showParaderosAtCurrentZoom = layerVisibility.paraderos && zoom >= 14;
   const shouldDimForSelectedRoute = !!selectedRouteId;
-  const onMapReady = useCallback(() => {
-    const map = mapRef.current;
-    if (map && onBoundsChange) onBoundsChange(boundsToTuple(map.getBounds()));
-  }, [onBoundsChange]);
 
   return (
     <MapContainer
@@ -412,9 +429,14 @@ export function ConceMap({
       attributionControl
       preferCanvas
       className="absolute inset-0"
-      whenReady={onMapReady}
     >
-      <TileLayer key={theme} url={TILE_URL[theme]} attribution={ATTRIBUTION} maxZoom={19} />
+      <TileLayer
+        key={theme}
+        url={TILE_URL[theme]}
+        attribution={ATTRIBUTION}
+        maxNativeZoom={TILE_MAX_NATIVE_ZOOM}
+        maxZoom={TILE_MAX_ZOOM}
+      />
       <ZoomControl position="bottomright" />
       <ZoomWatcher onZoom={setZoom} />
 
