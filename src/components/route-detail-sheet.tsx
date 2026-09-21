@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ROUTE_TYPES } from '@/data/routes';
 import { WikiLinkButton } from '@/components/wiki-link';
+import { readableTextOn } from '@/lib/utils';
 import type { Route } from '@/types/transport';
 
 interface RouteDetailSheetProps {
@@ -58,7 +59,7 @@ export function RouteDetailSheet({
           </span>
           <Badge
             className="border-transparent font-mono"
-            style={{ background: route.color, color: '#fff' }}
+            style={{ background: route.color, color: readableTextOn(route.color) }}
           >
             {route.code}
           </Badge>

@@ -30,10 +30,15 @@ async function launchBrowser(): Promise<Browser> {
   }
 }
 
+// `innerText` devuelve el texto ya transformado por CSS, y varios títulos del
+// visor llevan `uppercase` (p. ej. "Próximos servicios" se renderiza
+// "PRÓXIMOS SERVICIOS"). Sin la `i` el patrón nunca calza contra el texto
+// pintado, aunque el string esté en el DOM.
 async function waitForBody(page: Page, pattern: RegExp, label: string): Promise<void> {
+  const flags = pattern.flags.includes('i') ? pattern.flags : `${pattern.flags}i`;
   await page.waitForFunction(
-    ({ source, flags }) => new RegExp(source, flags).test(document.body.innerText),
-    { source: pattern.source, flags: pattern.flags },
+    ({ source, flags: f }) => new RegExp(source, f).test(document.body.innerText),
+    { source: pattern.source, flags },
     { timeout: 15_000 },
   ).catch(() => {
     throw new Error(`Expected body text for ${label}: ${pattern}`);

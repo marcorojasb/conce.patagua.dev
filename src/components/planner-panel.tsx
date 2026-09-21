@@ -2,7 +2,7 @@ import { Footprints, LocateFixed, MapPin, Route, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ROUTE_TYPES } from '@/data/routes';
-import { cn } from '@/lib/utils';
+import { cn, readableTextOn } from '@/lib/utils';
 import type { PlannerMatch } from '@/lib/planner';
 import {
   formatDistanceMeters,
@@ -117,7 +117,7 @@ export function PlannerPanel({
               >
                 <Badge
                   className="border-transparent font-mono text-[10px]"
-                  style={{ background: m.route.color, color: '#fff' }}
+                  style={{ background: m.route.color, color: readableTextOn(m.route.color) }}
                 >
                   {m.route.code}
                 </Badge>

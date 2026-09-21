@@ -8,6 +8,7 @@ import {
   getNextStopServices,
   type StopServiceSnapshot,
 } from '@/lib/stop-services';
+import { readableTextOn } from '@/lib/utils';
 import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import type { Route } from '@/types/transport';
 
@@ -152,6 +153,7 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
         {services.map((service) => {
           const route = routeById.get(service.routeId);
           const label = route?.code ?? service.routeId.replace('gtfs-route-', '');
+          const badgeColor = route?.color ?? '#0ea5e9';
           return (
             <div
               key={`${service.routeId}-${service.headsign}-${service.scheduledMin}-${service.source}`}
@@ -159,7 +161,7 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
             >
               <Badge
                 className="border-transparent font-mono"
-                style={{ background: route?.color ?? '#0ea5e9', color: '#fff' }}
+                style={{ background: badgeColor, color: readableTextOn(badgeColor) }}
               >
                 {label}
               </Badge>

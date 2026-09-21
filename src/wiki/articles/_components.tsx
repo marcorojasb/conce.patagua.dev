@@ -50,15 +50,15 @@ export function SourceLink({ href, children }: { href: string; children: ReactNo
   );
 }
 
+// Nota al pie de sección, no un landmark de página: un artículo encadena hasta
+// 12 <Sources> y como <aside> producía 12 landmarks "Fuentes citadas" iguales,
+// que en el listado de landmarks de un lector de pantalla no aportan nada.
 export function Sources({ children }: { children: ReactNode }) {
   return (
-    <aside
-      aria-label="Fuentes citadas"
-      className="mt-2 rounded-sm border border-muted-foreground/20 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground"
-    >
+    <div className="mt-2 rounded-sm border border-muted-foreground/20 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
       <span className="font-medium uppercase tracking-wider">Fuentes</span>
       <div className="mt-1 flex flex-col gap-0.5">{children}</div>
-    </aside>
+    </div>
   );
 }
 
@@ -107,14 +107,13 @@ export function VerifiedBanner({ children }: { children: ReactNode }) {
   );
 }
 
+// Igual que Sources: aviso dentro del flujo de la sección. Marcarlo como
+// landmark repetía el mismo nombre accesible varias veces por artículo.
 export function PendingBanner({ children }: { children: ReactNode }) {
   return (
-    <aside
-      aria-label="Bloque pendiente de verificación"
-      className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-[12px] text-amber-900 dark:text-amber-200"
-    >
+    <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-[12px] text-amber-900 dark:text-amber-200">
       {children}
-    </aside>
+    </div>
   );
 }
 
@@ -135,7 +134,9 @@ export function FactStrip({
   snapshot?: string;
 }) {
   return (
-    <div className="space-y-1.5" aria-label="Hechos vigentes">
+    // role="group" para que el aria-label sea válido: un <div> pelado no tiene
+    // rol y aria-label está prohibido ahí.
+    <div className="space-y-1.5" role="group" aria-label="Hechos vigentes">
       <div className="flex flex-wrap gap-1.5">
         {items.map((item) => (
           <div
