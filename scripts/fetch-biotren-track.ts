@@ -27,7 +27,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../src/data/biotren-track.generated.ts');
 
 const BBOX = '-37.10,-73.25,-36.65,-72.80';
-const CORRIDOR_HALF_WIDTH_M = 600;
+// La banda se mide desde la recta estación→estación y filtra ramales
+// industriales que comparten el operator EFE Sur. 600 m alcanza para los
+// tramos rectos, pero las curvas reales quedan fuera: el cruce del Biobío se
+// desvía ~1 km de la recta y hasta 2,6 km en Coronel. Con una sola pasada de
+// 600 m esos tramos caían a línea recta (el "salto" sobre el puente), así que
+// se prueba de menor a mayor hasta encontrar camino.
+const CORRIDOR_HALF_WIDTHS_M = [600, 1500, 3000];
 const SIMPLIFY_TOLERANCE = 5e-5; // ~5 m
 
 interface WayEl {
@@ -84,29 +90,50 @@ function pushEdge(adj: Map<number, AdjEntry[]>, from: number, to: number, w: num
   adj.set(from, list);
 }
 
-function nearestNodeId(coords: Map<number, LatLng>, target: Stop): number | null {
-  let best: { id: number; d: number } | null = null;
-  for (const [id, c] of coords) {
-    const d = distanceMeters(c, [target.lat, target.lng]);
-    if (!best || d < best.d) best = { id, d };
-  }
-  return best?.id ?? null;
-}
-
 function corridorMask(
   coords: Map<number, LatLng>,
   a: Stop,
   b: Stop,
+  halfWidthM: number,
 ): Set<number> {
   const aLL: LatLng = [a.lat, a.lng];
   const bLL: LatLng = [b.lat, b.lng];
   const allowed = new Set<number>();
   for (const [id, c] of coords) {
-    if (pointToSegmentMeters(c, aLL, bLL) <= CORRIDOR_HALF_WIDTH_M) {
+    if (pointToSegmentMeters(c, aLL, bLL) <= halfWidthM) {
       allowed.add(id);
     }
   }
   return allowed;
+}
+
+// Dentro del corredor, busca el nodo de entrada y el de salida más cercanos a
+// cada estación.
+function nearestPairInCorridor(
+  coords: Map<number, LatLng>,
+  allowed: Set<number>,
+  a: Stop,
+  b: Stop,
+): { startId: number; endId: number } | null {
+  let startId: number | null = null;
+  let endId: number | null = null;
+  let bestStartD = Infinity;
+  let bestEndD = Infinity;
+  for (const id of allowed) {
+    const c = coords.get(id)!;
+    const da = distanceMeters(c, [a.lat, a.lng]);
+    if (da < bestStartD) {
+      bestStartD = da;
+      startId = id;
+    }
+    const db = distanceMeters(c, [b.lat, b.lng]);
+    if (db < bestEndD) {
+      bestEndD = db;
+      endId = id;
+    }
+  }
+  if (startId == null || endId == null) return null;
+  return { startId, endId };
 }
 
 function buildLine(
@@ -121,31 +148,17 @@ function buildLine(
   for (let i = 1; i < stops.length; i++) {
     const a = stops[i - 1];
     const b = stops[i];
-    const allowed = corridorMask(coords, a, b);
-    // Inside the corridor, find graph entry / exit nodes nearest to each stop.
-    let startId: number | null = null;
-    let endId: number | null = null;
-    let bestStartD = Infinity;
-    let bestEndD = Infinity;
-    for (const id of allowed) {
-      const c = coords.get(id)!;
-      const da = distanceMeters(c, [a.lat, a.lng]);
-      if (da < bestStartD) {
-        bestStartD = da;
-        startId = id;
-      }
-      const db = distanceMeters(c, [b.lat, b.lng]);
-      if (db < bestEndD) {
-        bestEndD = db;
-        endId = id;
+    let nodeIds: number[] = [];
+    for (const halfWidth of CORRIDOR_HALF_WIDTHS_M) {
+      const allowed = corridorMask(coords, a, b, halfWidth);
+      const pair = nearestPairInCorridor(coords, allowed, a, b);
+      if (!pair) continue;
+      const candidate = dijkstra(adj, pair.startId, pair.endId, allowed);
+      if (candidate.length >= 2) {
+        nodeIds = candidate;
+        break;
       }
     }
-    if (startId == null || endId == null) {
-      fallbacks += 1;
-      out.push([b.lat, b.lng]);
-      continue;
-    }
-    const nodeIds = dijkstra(adj, startId, endId, allowed);
     if (nodeIds.length < 2) {
       fallbacks += 1;
       out.push([b.lat, b.lng]);
@@ -209,7 +222,6 @@ async function main() {
   if (coords.size > 0 && adj.size === 0) {
     throw new Error('Graph has no edges; rail data likely malformed.');
   }
-
   mkdirSync(dirname(OUT_PATH), { recursive: true });
   writeFileSync(OUT_PATH, render(l1, l2));
   console.log(`Wrote ${OUT_PATH}`);
