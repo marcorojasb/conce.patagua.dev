@@ -22,7 +22,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Ficha institucional de la autoridad regional de transportes. SEREMITT Biobío (instancia política; titular Henry Campos Coa desde ~27-mar-2026, tras Patricio Fierro y Héctor Silva) y DTPR Biobío (brazo técnico de Subtrans, dprbiobio.dpr.gob.cl). Diferencia con DTPM (Santiago) y 3CV. Marco legal: DFL 343, Leyes 18.059, 18.696, 20.378, 19.880, 20.285. Cartera: PE Gran Concepción, PE Tomé, BusPay, interurbanos, electrocorredores MOP.',
     section: 'estructural',
-    updated: '2026-07-17',
+    updated: '2026-09-22',
     Component: lazy(() => import('./articles/seremitt-dtpr-biobio')),
   },
   {
@@ -31,7 +31,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Régimen tarifario y operativo bajo el cual operan, desde el 1-ene-2024, todos los buses urbanos del Gran Concepción (7 comunas, 36 unidades de negocio, 35 empresas). Reemplaza la licitación 2002 caducada el 31-mar-2024. Tarifa $580 adulto (vigente 23-feb-2025), polinomio de ajuste, contrato hasta 31-dic-2028. BusPay adjudicado a Consorcio Buspay en ene-2026, marcha blanca Q3 2026. Columna vertebral conceptual del visor urbano.',
     section: 'estructural',
-    updated: '2026-07-17',
+    updated: '2026-09-22',
     Component: lazy(() => import('./articles/perimetro-exclusion-gran-concepcion-2024')),
   },
   {
@@ -49,7 +49,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Sistema de recaudo electrónico adjudicado al Consorcio Buspay (operador técnico Busmatick) el 28-ene-2026 por el MTT. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas (PE Gran Concepción + PE Tomé + PE Coronel-Lota + licitación 201 Santa Juana). Marcha blanca Q3 2026, régimen 100% electrónico proyectado fin de 2026. Tarifa $580 sin alteración, tarjeta Campanil UdeC elegida por consulta ciudadana. Cierra una deuda de casi 20 años desde el piloto Biobús 2016 fallido.',
     section: 'estructural',
-    updated: '2026-07-17',
+    updated: '2026-09-22',
     Component: lazy(() => import('./articles/buspay')),
   },
   {
@@ -58,7 +58,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Tres concesiones MOP de corredores exclusivos para buses urbanos sobre las troncales del Gran Concepción (Ruta 160 San Pedro-Coronel, Ruta 150 Concepción-Penco y Autopista Concepción-Talcahuano Tramo II). Llamados todavía rotulados "Electro-Cointer" / "Electro-Cointer II" en los expedientes MOP, pero el MTT/MOP ya no usan "electrocorredor" como nombre oficial — el SEREMI Fierro lo aclaró en nov-2025 al precisar que la flota no será 100% eléctrica. ~USD 250 millones, 23+ km, plazo 25 años (300 meses). Oferente único en los dos llamados (Cointer Concesiones S.L. / Grupo Azvi). CGR visó bases 13-nov-2024; ofertas recibidas nov-dic 2025; adjudicación 1S 2026; obras 2029-2030; puesta en servicio 2031-2032. Tensión política con extensiones del Biotrén a Penco, Lota y Carriel Sur.',
     section: 'estructural',
-    updated: '2026-05-16',
+    updated: '2026-09-22',
     Component: lazy(() => import('./articles/corredores-transporte-publico-mop-biobio')),
   },
   {
@@ -139,7 +139,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Extensiones y proyectos futuros del Biotrén en distintas etapas de estudio y debate: extensión norte a Penco (L1, más debatida), continuación a Tomé, extensión sur a Lota (L2, traza del ramal del carbón) y eventual ramal al Aeropuerto Carriel Sur. Ninguna con RS MIDESO ni licitación abierta al cierre 2025-2026. Documenta la tensión política con el electrocorredor MOP Ruta 150 (USD 172M, oferta única 10-dic-2025) — la disputa de política pública más jugosa del corredor norte.',
     section: 'urbanos',
-    updated: '2026-05-16',
+    updated: '2026-09-22',
     Component: lazy(() => import('./articles/biotren-extensiones-proyectos')),
   },
   {

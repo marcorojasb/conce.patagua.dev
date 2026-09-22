@@ -5,6 +5,7 @@
 // 20-mar, 250-350 mil peregrinos por jornada).
 
 import {
+  DataTable,
   KeyValueList,
   OperatorTable,
   PendingBanner,
@@ -510,13 +511,19 @@ export default function ConcepcionYumbel() {
             Ver corredor Yumbel en el mapa →
           </MapLink>
           {' · '}
-          <MapLink terminal="osm-way-114474600">
-            Terminal Camilo Henríquez en el mapa →
-          </MapLink>
-          {' · '}
           <MapLink terminal="osm-way-597586612">
             Terminal Collao en el mapa →
           </MapLink>
+        </p>
+        <p className="text-[12px] text-muted-foreground">
+          El <strong>Terminal Camilo Henríquez</strong>, cabecera histórica
+          del corredor, ya no aparece en la capa de terminales: OSM lo marcó
+          como recinto en obra el 31-may-2026 y el visor solo lista terminales
+          operativos (
+          <SourceLink href="https://www.openstreetmap.org/way/114474600">
+            OSM way 114474600
+          </SourceLink>
+          ).
         </p>
         <KeyValueList
           items={[
@@ -678,17 +685,7 @@ export default function ConcepcionYumbel() {
           interurbanos del valle central-cordillera del wiki. Cada uno
           representa un modelo regulatorio distinto:
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Corredor</th>
-                <th className="px-3 py-2 font-medium">Eje vial</th>
-                <th className="px-3 py-2 font-medium">Régimen</th>
-                <th className="px-3 py-2 font-medium">Estado wiki</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Corredor', 'Eje vial', 'Régimen', 'Estado wiki']}>
               <tr>
                 <td className="px-3 py-2 font-medium">
                   <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
@@ -727,9 +724,7 @@ export default function ConcepcionYumbel() {
                 <td className="px-3 py-2"><strong>Privado puro</strong> (sin licitación específica)</td>
                 <td className="px-3 py-2">No en visor (sin GTFS)</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           Ver también el{' '}
           <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">

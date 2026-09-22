@@ -72,7 +72,8 @@ const MAP_WIKI_LINKS = {
     // Estación Intermodal Concepción: cabecera de interurbanos documentados.
     'osm-way-135488014': 'recorridos-interurbanos',
     // Terminales urbanos usados por Florida / Yumbel (y el índice general).
-    'osm-way-114474600': 'recorridos-interurbanos', // Camilo Henríquez
+    // Camilo Henríquez (way 114474600) salió del dataset: OSM lo marcó como
+    // recinto en obra el 31-may-2026, así que ya no es terminal operativo.
     'osm-way-597586612': 'recorridos-interurbanos', // Collao
     // Eje sur: Intermodal Coronel + operadores del corredor Coronel-Lota.
     'osm-node-6718688807': 'concepcion-coronel-lota', // Intermodal Coronel

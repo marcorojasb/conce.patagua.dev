@@ -6,7 +6,9 @@
 // (Cointer Concesiones S.L., Grupo Azvi, España).
 
 import {
+  DataTable,
   KeyValueList,
+  NewsPulse,
   PendingBanner,
   Section,
   SourceLink,
@@ -47,6 +49,31 @@ export default function CorredoresTransportePublicoMOPBiobio() {
         Patricio Fierro aclaró en nov-2025 que no se exige flota 100%
         eléctrica.
       </p>
+
+      <NewsPulse
+        items={[
+          {
+            date: '5-ago-2026',
+            title: 'El Gobierno da marcha atrás y confirma los corredores como obra pública',
+            detail:
+              'Tras el rechazo transversal a la suspensión, el gobernador Sergio Giacaman confirmó —tras reunirse con el ministro del Interior, Claudio Alvarado— que los corredores de las rutas 160 y 150 se ejecutarán, pero no como concesiones.',
+            source: {
+              href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/08/05/gobernador-anuncia-que-corredores-del-gran-concepcion-si-se-realizaran-pero-no-como-concesiones.shtml',
+              label: 'BioBioChile · 5-ago-2026',
+            },
+          },
+          {
+            date: '20-ago-2026',
+            title: 'Sigue en el aire el retiro de la toma de razón de la concesión a AZVI',
+            detail:
+              'La Dirección General de Concesiones del MOP confirmó que aún no se materializa el retiro de la toma de razón de la concesión adjudicada a AZVI. Parlamentarios y alcaldes de Lota, San Pedro y Penco piden claridad sobre los plazos.',
+            source: {
+              href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/08/20/corredores-de-ruta-160-y-camino-a-penco-siguen-en-incertidumbre-mop-aun-no-retira-concesion.shtml',
+              label: 'BioBioChile · 20-ago-2026',
+            },
+          },
+        ]}
+      />
 
       <Section title="Qué son y por qué importan">
         <p>
@@ -299,16 +326,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
           (Autopista Tramo II). Ninguna tiene RS MIDESO ni licitación
           abierta; las tres están "en estudio" en EFE Sur.
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">Extensión Biotrén</th>
-                <th className="px-3 py-2 font-medium">Electrocorredor MOP</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top text-[12px]">
+        <DataTable columns={['Dimensión', 'Extensión Biotrén', 'Electrocorredor MOP']} bodyClassName="divide-y align-top text-[12px]">
               <tr>
                 <td className="px-3 py-2 font-medium">Modo</td>
                 <td className="px-3 py-2">Tren eléctrico sobre riel (3 kV DC)</td>
@@ -339,9 +357,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
                 <td className="px-3 py-2">No comprometido</td>
                 <td className="px-3 py-2">Obras 2029-2030, servicio 2031-2032</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           Bus y tren no son sustitutos perfectos pero compiten por el
           mismo presupuesto regional. Si los electrocorredores absorben

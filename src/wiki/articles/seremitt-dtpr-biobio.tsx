@@ -15,6 +15,7 @@
 import {
   ArticleSummary,
   CollapsibleSection,
+  DataTable,
   FactStrip,
   KeyValueList,
   NewsPulse,
@@ -118,17 +119,7 @@ export default function SeremittDtprBiobio() {
           regional usa como sinónimos pero que tienen funciones
           separadas. Importante no confundirlas:
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Sigla</th>
-                <th className="px-3 py-2 font-medium">Nombre</th>
-                <th className="px-3 py-2 font-medium">Naturaleza</th>
-                <th className="px-3 py-2 font-medium">Jurisdicción</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Sigla', 'Nombre', 'Naturaleza', 'Jurisdicción']}>
               <tr>
                 <td className="px-3 py-2 font-medium">SEREMITT</td>
                 <td className="px-3 py-2">Secretaría Regional Ministerial de Transportes y Telecomunicaciones</td>
@@ -153,9 +144,7 @@ export default function SeremittDtprBiobio() {
                 <td className="px-3 py-2">Servicio dependiente del MTT a nivel nacional. Certifica buses, vehículos pesados y normas de emisión.</td>
                 <td className="px-3 py-2">Nacional con sedes regionales. La SEREMITT y la DTPR articulan con el 3CV los procedimientos de inspección y certificación de flota.</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           Cuando una nota dice "el SEREMI anunció", habla de la
           instancia política (SEREMITT); cuando un decreto dice "DTPR
@@ -187,6 +176,7 @@ export default function SeremittDtprBiobio() {
         <KeyValueList
           items={[
             ['SEREMI titular', 'Henry Campos Coa (exalcalde de Talcahuano). Asumió como SEREMI de Transportes y Telecomunicaciones del Biobío hacia el 27-mar-2026. Listado en el portal Subtrans de la SEREMITT Biobío (snapshot 17-jul-2026).'],
+            ['Ministro de Transportes (actual)', 'Louis de Grange Concha: ministro de Transportes y Telecomunicaciones desde el 11-mar-2026 y biministro de Obras Públicas y Transportes y Telecomunicaciones desde el 19-may-2026, bajo el gobierno de José Antonio Kast (directorio oficial MOP/MTT).'],
             ['SEREMI anterior (Fierro)', 'Patricio Fierro Cifuentes (titular 10-ene-2025 ↔ al menos nov-2025; nombrado bajo gobierno Boric a propuesta del ministro Juan Carlos Muñoz). Bajo su gestión: segundo ajuste polinómico ($580 adulto, feb-2025), ofertas BusPay (sep-2025), ofertas electrocorredores MOP (nov-2025).'],
             ['SEREMI anterior (Silva)', 'Héctor Silva (titular 2023-2024). Arranque del PE 1-ene-2024 y acuerdo gremial 22-nov-2023.'],
             ['Sucesión (cotejada)', 'Silva (2023-2024) → Fierro (ene-2025) → Campos (mar-2026).'],
@@ -346,16 +336,7 @@ export default function SeremittDtprBiobio() {
           SEREMITT y DTPR Biobío no son autónomas: ejecutan la política
           del MTT central. División del trabajo:
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Decisión</th>
-                <th className="px-3 py-2 font-medium">Quién firma</th>
-                <th className="px-3 py-2 font-medium">Quién ejecuta</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Decisión', 'Quién firma', 'Quién ejecuta']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Decreto de perímetro de exclusión</td>
                 <td className="px-3 py-2">Ministro(a) de Transportes / Subsecretario(a)</td>
@@ -386,9 +367,7 @@ export default function SeremittDtprBiobio() {
                 <td className="px-3 py-2">Subsecretario(a) / Tesorería General de la República</td>
                 <td className="px-3 py-2">DTPR Biobío liquida</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           Por eso la adjudicación BusPay (28-ene-2026) menciona a MTT,
           Subtrans, DTPR Biobío y SEREMITT: cada actor cumple un rol en

@@ -9,7 +9,9 @@
 // Conecta del Biotrén y conducta del sistema ante validador caído.
 
 import {
+  DataTable,
   KeyValueList,
+  NewsPulse,
   PendingBanner,
   Section,
   SourceLink,
@@ -27,7 +29,7 @@ export default function BusPay() {
         regional 2024-2026.</strong> Adjudicación (28-ene-2026), operador
         técnico Busmatick, visa Contraloría, 1.800 validadores, 11
         comunas, ~$750 millones/año, 5 CAU, ~500 puntos de recarga,
-        marcha blanca Q3 2026, diseño Campanil UdeC y antecedente del
+        marcha blanca 1-nov-2026, diseño Campanil UdeC y antecedente del
         piloto Biobús 2016 fallido están citados.{' '}
         <strong>Pendientes</strong>: razón social y composición societaria
         del Consorcio Buspay, identidad completa de las 6 oferentes
@@ -37,6 +39,31 @@ export default function BusPay() {
         caído. Toda cifra dura está citada inline; lo no verificable
         está marcado con banner ámbar abajo.
       </VerifiedBanner>
+
+      <NewsPulse
+        items={[
+          {
+            date: 'jul–ago 2026',
+            title: '29.000 tarjetas gratuitas antes de la marcha blanca',
+            detail:
+              'El seremi Henry Campos confirmó la entrega gratuita de 29.000 tarjetas desde agosto, como paso previo a la operación del sistema en las 11 comunas.',
+            source: {
+              href: 'https://www.diarioconcepcion.cl/ciudad/2026/07/22/entrega-tarjetas-gratuitas-pago-micros-gran-concepcion.html',
+              label: 'Diario Concepción · 22-jul-2026',
+            },
+          },
+          {
+            date: '1-nov-2026',
+            title: 'Marcha blanca del pago electrónico',
+            detail:
+              'El cronograma confirmado en julio fija el inicio de la marcha blanca para el 1 de noviembre, con retiro progresivo del efectivo en la locomoción colectiva.',
+            source: {
+              href: 'https://www.canal9.cl/episodios/2026/07/21/comenzara-entrega-gratuita-de-29-mil-tarjetas-para-pago-electronico-de-micros-en-el-gran-concepcion',
+              label: 'Canal 9 · 21-jul-2026',
+            },
+          },
+        ]}
+      />
 
       <Section title="Qué es y por qué importa">
         <p>
@@ -284,16 +311,7 @@ export default function BusPay() {
           </SourceLink>
           ).
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Comuna</th>
-                <th className="px-3 py-2 font-medium">Régimen</th>
-                <th className="px-3 py-2 font-medium">Servicios afectados</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Comuna', 'Régimen', 'Servicios afectados']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Concepción</td>
                 <td className="px-3 py-2">PE Gran Concepción 2024</td>
@@ -334,9 +352,7 @@ export default function BusPay() {
                 <td className="px-3 py-2">Licitación DTPR ELC0007 · Ley 20.378 art. 4°</td>
                 <td className="px-3 py-2 text-muted-foreground">201 y 201 AU (Soc. Transporte Pasajeros Santa Juana SpA) · <strong>primer servicio rural con pago electrónico en Chile</strong> · ver <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">artículo</a></td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           <strong>NO en BusPay:</strong>{' '}
           <a href="/wiki/biotren" className="underline underline-offset-2">Biotrén</a>{' '}
@@ -400,17 +416,7 @@ export default function BusPay() {
           </SourceLink>
           ).
         </p>
-        <div className="overflow-hidden rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Categoría</th>
-                <th className="px-3 py-2 font-medium">Tarifa Perímetro 2025-2026</th>
-                <th className="px-3 py-2 font-medium">Tarifa con BusPay</th>
-                <th className="px-3 py-2 font-medium">Notas</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        <DataTable columns={['Categoría', 'Tarifa Perímetro 2025-2026', 'Tarifa con BusPay', 'Notas']} bodyClassName="divide-y">
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto</td>
                 <td className="px-3 py-2 font-mono">$580</td>
@@ -429,9 +435,7 @@ export default function BusPay() {
                 <td className="px-3 py-2 font-mono">$290</td>
                 <td className="px-3 py-2 text-muted-foreground">50% del adulto · tarjeta especial requerida.</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           La tarifa del Perímetro sigue bajo polinomio (diésel +
           neumático + bus + mano de obra). Servicios fuera del PE
@@ -485,18 +489,7 @@ export default function BusPay() {
       </Section>
 
       <Section title="Comparación con BIP! Santiago y RED Movilidad">
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Aspecto</th>
-                <th className="px-3 py-2 font-medium">BusPay · Concepción 2026</th>
-                <th className="px-3 py-2 font-medium">Bip! Santiago</th>
-                <th className="px-3 py-2 font-medium">Bipay · Temuco 2025</th>
-                <th className="px-3 py-2 font-medium">Antofagasta Conectado 2026</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Aspecto', 'BusPay · Concepción 2026', 'Bip! Santiago', 'Bipay · Temuco 2025', 'Antofagasta Conectado 2026']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Partida</td>
                 <td className="px-3 py-2">2026 (marcha blanca Q3)</td>
@@ -532,9 +525,7 @@ export default function BusPay() {
                 <td className="px-3 py-2">1,6% (3.000+ pax fiscalizados oct-2025)</td>
                 <td className="px-3 py-2">Sin dato público</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px]">
           Temuco es el referente más cercano: 4 millones de validaciones
           en el primer mes y 1,6% de evasión declarada

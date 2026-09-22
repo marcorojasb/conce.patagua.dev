@@ -29,7 +29,6 @@ describe('MAP_WIKI_LINKS reverse index', () => {
 
   it('maps key terminals to articles', () => {
     expect(findWikiSlugForTerminal('osm-way-135488014')).toBe('recorridos-interurbanos');
-    expect(findWikiSlugForTerminal('osm-way-114474600')).toBe('recorridos-interurbanos');
     expect(findWikiSlugForTerminal('osm-way-597586612')).toBe('recorridos-interurbanos');
     expect(findWikiSlugForTerminal('osm-node-6718688807')).toBe('concepcion-coronel-lota');
     expect(findWikiSlugForTerminal('osm-way-425356582')).toBe('concepcion-tome');

@@ -15,6 +15,8 @@
 // va bajo banner ámbar de "debate público, no obra adjudicada".
 
 import {
+  DataTable,
+  NewsPulse,
   PendingBanner,
   Section,
   SourceLink,
@@ -50,6 +52,31 @@ export default function BiotrenExtensionesProyectos() {
         estaciones). Esta ficha cubre las <strong>extensiones y
         proyectos</strong> en distintas etapas de estudio y debate.
       </div>
+
+      <NewsPulse
+        items={[
+          {
+            date: '5-ago-2026',
+            title: 'Los corredores del Gran Concepción se ejecutarán, pero no como concesiones',
+            detail:
+              'Tras el rechazo transversal a la paralización de los corredores (Rutas 160 y 150), el gobernador Sergio Giacaman confirmó que las obras siguen, sin concesión. Los alcaldes de Lota y Penco (Jaime Vásquez y Rodrigo Vera) leen la señal como alerta para la continuidad de la extensión del Biotrén.',
+            source: {
+              href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/08/05/alcaldes-de-lota-y-penco-expresan-preocupacion-por-continuidad-de-proyecto-de-extension-del-biotren.shtml',
+              label: 'BioBioChile · 5-ago-2026',
+            },
+          },
+          {
+            date: '5-ago-2026',
+            title: 'Penco: carta Gantt con inicio de obra en 2029 y entrega en 2031',
+            detail:
+              'El alcalde Rodrigo Vera citó la carta Gantt presentada el año anterior para la llegada del Biotrén a Lirquén y pidió sostenerla a nivel central. El cronograma sigue siendo proyectado, no contractual.',
+            source: {
+              href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/08/05/alcaldes-de-lota-y-penco-expresan-preocupacion-por-continuidad-de-proyecto-de-extension-del-biotren.shtml',
+              label: 'BioBioChile · 5-ago-2026',
+            },
+          },
+        ]}
+      />
 
       <Section title="Qué cubre esta ficha">
         <p>
@@ -259,16 +286,7 @@ export default function BiotrenExtensionesProyectos() {
           </a>
           ; aquí los resumimos en clave Biotrén.
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">Extensión Biotrén Penco</th>
-                <th className="px-3 py-2 font-medium">Electrocorredor MOP Ruta 150</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top text-[12px]">
+        <DataTable columns={['Dimensión', 'Extensión Biotrén Penco', 'Electrocorredor MOP Ruta 150']} bodyClassName="divide-y align-top text-[12px]">
               <tr>
                 <td className="px-3 py-2 font-medium">Modo</td>
                 <td className="px-3 py-2">Tren eléctrico sobre riel (3 kV DC)</td>
@@ -304,9 +322,7 @@ export default function BiotrenExtensionesProyectos() {
                 <td className="px-3 py-2">Alcalde Penco (2022): el corredor puede "frenar" la llegada del tren</td>
                 <td className="px-3 py-2">Municipalidad Tomé (2025) pide extender el beneficio hasta Tomé</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           La lectura editorial: el electrocorredor <em>desplaza
           políticamente</em> a la extensión Biotrén, no son

@@ -149,13 +149,19 @@ export default function ConcepcionFlorida() {
             Ver corredor Florida en el mapa →
           </MapLink>
           {' · '}
-          <MapLink terminal="osm-way-114474600">
-            Terminal Camilo Henríquez en el mapa →
-          </MapLink>
-          {' · '}
           <MapLink terminal="osm-way-597586612">
             Terminal Collao en el mapa →
           </MapLink>
+        </p>
+        <p className="text-[12px] text-muted-foreground">
+          El <strong>Terminal Camilo Henríquez</strong>, cabecera histórica
+          del corredor, ya no aparece en la capa de terminales: OSM lo marcó
+          como recinto en obra el 31-may-2026 y el visor solo lista terminales
+          operativos (
+          <SourceLink href="https://www.openstreetmap.org/way/114474600">
+            OSM way 114474600
+          </SourceLink>
+          ).
         </p>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/07/27/transportes-no-puede-obligar-a-buses-a-florida-para-que-aumenten-su-frecuencia.html">

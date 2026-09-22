@@ -15,7 +15,7 @@
 // - Acuerdo gremios 22-nov-2023 (Luis Quiroz, Alianza Gremial)
 // - Caso línea 56 Base Naval fuera del perímetro (deudas laborales)
 // - BusPay adjudicado al consorcio Buspay (28-ene-2026), $580 inalterable,
-//   1.800 validadores en 11 comunas, marcha blanca Q3 2026
+//   1.800 validadores en 11 comunas, marcha blanca 1-nov-2026
 //
 // Cosas pendientes y marcadas con PendingBanner:
 // - Lista exacta de los 36 UN con su empresa adjudicada (Wikipedia ES
@@ -27,7 +27,9 @@
 // - Tarifa estudiante TNE 2026 actualizada post-feb-2025
 
 import {
+  DataTable,
   KeyValueList,
+  NewsPulse,
   OperatorTable,
   PendingBanner,
   Section,
@@ -54,6 +56,31 @@ export default function PerimetroExclusionGranConcepcion2024() {
         del decreto MTT que adjudicó el perímetro 2024, polinomio de
         ajuste tarifario en su forma matemática.
       </VerifiedBanner>
+
+      <NewsPulse
+        items={[
+          {
+            date: '26-mar-2026',
+            title: 'El Gobierno confirma que la tarifa del transporte regulado se mantiene',
+            detail:
+              'El entonces ministro de Transportes, Louis de Grange, aseguró que el pasaje del transporte regulado del Gran Concepción no sube, a diferencia de los recorridos rurales de la región, que sí registraron alzas.',
+            source: {
+              href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/03/26/gobierno-asegura-que-se-mantendra-tarifa-del-transporte-regulado-del-gran-concepcion.shtml',
+              label: 'BioBioChile · 26-mar-2026',
+            },
+          },
+          {
+            date: '1-nov-2026',
+            title: 'Marcha blanca del pago electrónico (BusPay)',
+            detail:
+              'El perímetro entra en su etapa de recaudo digital: 29.000 tarjetas gratuitas repartidas desde agosto y marcha blanca del sistema desde el 1 de noviembre.',
+            source: {
+              href: 'https://www.canal9.cl/episodios/2026/07/21/comenzara-entrega-gratuita-de-29-mil-tarjetas-para-pago-electronico-de-micros-en-el-gran-concepcion',
+              label: 'Canal 9 · 21-jul-2026',
+            },
+          },
+        ]}
+      />
 
       <Section title="Qué es y por qué importa">
         <p>
@@ -108,17 +135,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           de exclusión</strong> y <strong>una licitación pública</strong>.
           Importante para no confundirlos:
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Régimen</th>
-                <th className="px-3 py-2 font-medium">Comunas</th>
-                <th className="px-3 py-2 font-medium">Operadores</th>
-                <th className="px-3 py-2 font-medium">Vigencia</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Régimen', 'Comunas', 'Operadores', 'Vigencia']}>
               <tr>
                 <td className="px-3 py-2 font-medium">PE Gran Concepción (este artículo)</td>
                 <td className="px-3 py-2">Concepción, Talcahuano, Hualpén, San Pedro de la Paz, Chiguayante, Penco, Hualqui (7)</td>
@@ -143,9 +160,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
                 <td className="px-3 py-2">Soc. Transporte Pasajeros Santa Juana SpA</td>
                 <td className="px-3 py-2">Operativo 15-jul-2024, primera licitación pública del Biobío en 10+ años</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           ¿Por qué Santa Juana NO entró al PE Gran Concepción y sí al
           régimen de licitación pública? Porque el corredor Santa Juana
@@ -484,17 +499,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
           todas las líneas</strong> (a diferencia de servicios
           interurbanos donde varía por kilómetro). Tres categorías:
         </p>
-        <div className="overflow-hidden rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Categoría</th>
-                <th className="px-3 py-2 font-medium">Vigente desde 9-dic-2024</th>
-                <th className="px-3 py-2 font-medium">Vigente desde 23-feb-2025</th>
-                <th className="px-3 py-2 font-medium">Notas</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        <DataTable columns={['Categoría', 'Vigente desde 9-dic-2024', 'Vigente desde 23-feb-2025', 'Notas']} bodyClassName="divide-y">
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto</td>
                 <td className="px-3 py-2 font-mono">$560</td>
@@ -513,9 +518,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
                 <td className="px-3 py-2 font-mono">$290</td>
                 <td className="px-3 py-2 text-muted-foreground">50% del adulto · acreditación con cédula</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px]">
           <strong>Polinomio de ajuste:</strong> heredado del régimen
           2002, la tarifa se reajusta por una fórmula que pondera el{' '}
