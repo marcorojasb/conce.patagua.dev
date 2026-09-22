@@ -4,7 +4,15 @@
 // Servicio inaugurado el 15-jul-2024 bajo la licitación DTPR ELC0007,
 // primera del Biobío en más de 10 años.
 
-import { KeyValueList, Section, SourceLink, Sources, Timeline, VerifiedBanner } from './_components';
+import {
+  DataTable,
+  KeyValueList,
+  Section,
+  SourceLink,
+  Sources,
+  Timeline,
+  VerifiedBanner,
+} from './_components';
 import { MapLink } from '@/wiki/map-link';
 
 // react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
@@ -223,16 +231,7 @@ export default function Ruta201SantaJuana() {
       </Section>
 
       <Section title="Tarifas">
-        <div className="overflow-hidden rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Categoría</th>
-                <th className="px-3 py-2 font-medium">Tarifa</th>
-                <th className="px-3 py-2 font-medium">Notas</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        <DataTable columns={['Categoría', 'Tarifa', 'Notas']} bodyClassName="divide-y">
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto</td>
                 <td className="px-3 py-2 font-mono">$1.000</td>
@@ -261,9 +260,7 @@ export default function Ruta201SantaJuana() {
                 <td className="px-3 py-2 font-mono">Gratis</td>
                 <td className="px-3 py-2 text-muted-foreground">Acompañados</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           El contrato incluye un <strong>mecanismo de ajuste tarifario</strong>{' '}
           que impide alzas injustificadas. Pago actual: <strong>efectivo</strong>{' '}

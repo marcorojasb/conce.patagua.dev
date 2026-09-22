@@ -14,6 +14,7 @@
 // Cualquier dato regulatorio aquí debe ser cross-link a esa ficha.
 
 import {
+  DataTable,
   KeyValueList,
   PendingBanner,
   Section,
@@ -288,16 +289,7 @@ export default function ConcepcionTome() {
           </a>
           .
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Código</th>
-                <th className="px-3 py-2 font-medium">Origen, destino</th>
-                <th className="px-3 py-2 font-medium">Estado / observaciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Código', 'Origen, destino', 'Estado / observaciones']}>
               <tr>
                 <td className="px-3 py-2 font-mono font-medium">401</td>
                 <td className="px-3 py-2">Concepción (T. Manuel Rodríguez) ↔ Tomé Alto</td>
@@ -326,9 +318,7 @@ export default function ConcepcionTome() {
                   punta. Termina en Av. Estadio (no llega a Tomé Alto).
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <Sources>
           <SourceLink href="https://es.wikipedia.org/wiki/Transporte_p%C3%BAblico_en_el_Gran_Concepci%C3%B3n">
             Wikipedia · Códigos 401 / 411 / 421 y trazado
@@ -704,17 +694,7 @@ export default function ConcepcionTome() {
       </Section>
 
       <Section title="Comparación con los otros corredores del wiki">
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">Conce ↔ Tomé</th>
-                <th className="px-3 py-2 font-medium">201 Santa Juana</th>
-                <th className="px-3 py-2 font-medium">Conce ↔ Florida</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Dimensión', 'Conce ↔ Tomé', '201 Santa Juana', 'Conce ↔ Florida']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Instrumento</td>
                 <td className="px-3 py-2">Perímetro de exclusión propio (dec. jul-2016, op. 2022)</td>
@@ -763,9 +743,7 @@ export default function ConcepcionTome() {
                 <td className="px-3 py-2">SÍ en Juan Pablo II</td>
                 <td className="px-3 py-2">NO directa</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           La hipótesis editorial: Tomé fue el <em>primer</em> ensayo
           regional del modelo "perímetro de exclusión + operador único

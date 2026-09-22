@@ -267,6 +267,37 @@ export function CollapsibleSection({
   );
 }
 
+// Tabla de datos del wiki. El wrapper con scroll, la cabecera estilizada y el
+// tbody estaban copiados en cada tabla de cada artículo (10 copias en 9
+// archivos): acá viven una sola vez. Las filas van como children porque las
+// celdas llevan JSX propio (links, <code>, notas).
+export function DataTable({
+  columns,
+  children,
+  bodyClassName = 'divide-y align-top',
+}: {
+  columns: string[];
+  children: ReactNode;
+  bodyClassName?: string;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-md border">
+      <table className="w-full text-[13px]">
+        <thead>
+          <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
+            {columns.map((label) => (
+              <th key={label} className="px-3 py-2 font-medium">
+                {label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className={bodyClassName}>{children}</tbody>
+      </table>
+    </div>
+  );
+}
+
 // Tabla comparativa de operadores en un corredor. La paleta y los bordes
 // siguen el patrón de la tabla tarifaria del 201.
 
@@ -280,36 +311,26 @@ export interface OperatorRow {
 
 export function OperatorTable({ rows }: { rows: OperatorRow[] }) {
   return (
-    <div className="overflow-x-auto rounded-md border">
-      <table className="w-full text-[13px]">
-        <thead>
-          <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-            <th className="px-3 py-2 font-medium">Operador</th>
-            <th className="px-3 py-2 font-medium">Rutas observadas</th>
-            <th className="px-3 py-2 font-medium">Terminal Concepción</th>
-            <th className="px-3 py-2 font-medium">Notas y fuente</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y align-top">
-          {rows.map((row) => (
-            <tr key={`${row.name}-${row.routes}-${row.terminal}`}>
-              <td className="px-3 py-2 font-medium">{row.name}</td>
-              <td className="px-3 py-2 text-muted-foreground">{row.routes}</td>
-              <td className="px-3 py-2 text-muted-foreground">{row.terminal}</td>
-              <td className="px-3 py-2 text-[12px] text-muted-foreground">
-                {row.notes}
-                {row.source && (
-                  <>
-                    {' '}
-                    <SourceLink href={row.source.href}>({row.source.label})</SourceLink>
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      columns={['Operador', 'Rutas observadas', 'Terminal Concepción', 'Notas y fuente']}
+    >
+      {rows.map((row) => (
+        <tr key={`${row.name}-${row.routes}-${row.terminal}`}>
+          <td className="px-3 py-2 font-medium">{row.name}</td>
+          <td className="px-3 py-2 text-muted-foreground">{row.routes}</td>
+          <td className="px-3 py-2 text-muted-foreground">{row.terminal}</td>
+          <td className="px-3 py-2 text-[12px] text-muted-foreground">
+            {row.notes}
+            {row.source && (
+              <>
+                {' '}
+                <SourceLink href={row.source.href}>({row.source.label})</SourceLink>
+              </>
+            )}
+          </td>
+        </tr>
+      ))}
+    </DataTable>
   );
 }
 

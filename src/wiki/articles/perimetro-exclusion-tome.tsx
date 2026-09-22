@@ -29,6 +29,7 @@
 // - Sanciones DTPR documentadas
 
 import {
+  DataTable,
   KeyValueList,
   PendingBanner,
   Section,
@@ -296,17 +297,7 @@ export default function PerimetroExclusionTome() {
           política (la "rebaja Gómez-Lobo"); los reajustes posteriores
           han seguido la fórmula.
         </p>
-        <div className="overflow-hidden rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Categoría</th>
-                <th className="px-3 py-2 font-medium">Tarifa de partida (10-mar-2022)</th>
-                <th className="px-3 py-2 font-medium">Vigente desde 23-feb-2025</th>
-                <th className="px-3 py-2 font-medium">Notas</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
+        <DataTable columns={['Categoría', 'Tarifa de partida (10-mar-2022)', 'Vigente desde 23-feb-2025', 'Notas']} bodyClassName="divide-y">
               <tr>
                 <td className="px-3 py-2 font-medium">Adulto Concepción ↔ Tomé</td>
                 <td className="px-3 py-2 font-mono">$750</td>
@@ -341,9 +332,7 @@ export default function PerimetroExclusionTome() {
                   Beneficio descuento estándar (~50% del adulto).
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px]">
           <strong>Polinomio de ajuste:</strong> el perímetro hereda la
           estructura tarifaria polinómica del régimen general MTT en
@@ -385,16 +374,7 @@ export default function PerimetroExclusionTome() {
           difieren fuerte en escala, en régimen de competencia y en
           fecha de ejecución.
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">PE Tomé (este artículo)</th>
-                <th className="px-3 py-2 font-medium">PE Gran Concepción 2024</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Dimensión', 'PE Tomé (este artículo)', 'PE Gran Concepción 2024']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Decreto creación</td>
                 <td className="px-3 py-2">Julio 2016 (Andrés Gómez-Lobo)</td>
@@ -455,9 +435,7 @@ export default function PerimetroExclusionTome() {
                 <td className="px-3 py-2">Art. 3° Ley 18.696</td>
                 <td className="px-3 py-2">Art. 3° Ley 18.696</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           <strong>Conclusión:</strong> son perímetros distintos con el
           mismo paraguas legal. La diferencia operacional dominante es

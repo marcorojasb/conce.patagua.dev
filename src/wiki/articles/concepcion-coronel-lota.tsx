@@ -8,6 +8,7 @@
 // Coexiste con Biotrén L2 (sin llegar a Lota) y el electrocorredor MOP.
 
 import {
+  DataTable,
   KeyValueList,
   OperatorTable,
   PendingBanner,
@@ -181,17 +182,7 @@ export default function ConcepcionCoronelLota() {
         <h3 className="mt-3 text-[13px] font-medium">
           Comparación con los otros regímenes metropolitanos
         </h3>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">PE Gran Concepción</th>
-                <th className="px-3 py-2 font-medium">PE Tomé</th>
-                <th className="px-3 py-2 font-medium">Coronel-Lota</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Dimensión', 'PE Gran Concepción', 'PE Tomé', 'Coronel-Lota']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Instrumento</td>
                 <td className="px-3 py-2">Decreto MTT, Ley 18.696 art. 3°</td>
@@ -228,9 +219,7 @@ export default function ConcepcionCoronelLota() {
                 <td className="px-3 py-2">71 buses declarados</td>
                 <td className="px-3 py-2"><strong>80 buses nuevos</strong> (bases en CGR jul-2025)</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">
             Diario Concepción · 15-jul-2025, Bases PE Coronel-Lota en Contraloría

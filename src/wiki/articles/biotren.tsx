@@ -6,6 +6,7 @@
 import {
   ArticleSummary,
   CollapsibleSection,
+  DataTable,
   FactStrip,
   KeyValueList,
   NewsPulse,
@@ -254,16 +255,7 @@ export default function Biotren() {
           $40-$70). EFE Sur cita "alza acumulada por inflación no aplicada
           en pandemia" como fundamento.
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Zona</th>
-                <th className="px-3 py-2 font-medium">Estaciones incluidas (extracto)</th>
-                <th className="px-3 py-2 font-medium">Tarifa adulto</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top text-[12px]">
+        <DataTable columns={['Zona', 'Estaciones incluidas (extracto)', 'Tarifa adulto']} bodyClassName="divide-y align-top text-[12px]">
               <tr>
                 <td className="px-3 py-2 font-mono">Z1</td>
                 <td className="px-3 py-2">Hualqui (terminal sur L1)</td>
@@ -314,9 +306,7 @@ export default function Biotren() {
                 <td className="px-3 py-2">Coronel (terminal sur L2)</td>
                 <td className="px-3 py-2 font-mono">$850</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px]">
           <strong>Descuentos:</strong> TNE <strong>67%</strong> (media y
           superior, básica liberada). Adultos mayores <strong>50%</strong>{' '}
@@ -369,18 +359,7 @@ export default function Biotren() {
           Códigos EFE (<code>HQ</code>, <code>CC</code>, <code>TH</code>)
           provienen de efetrenes.cl.
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Línea</th>
-                <th className="px-3 py-2 font-medium">Estación</th>
-                <th className="px-3 py-2 font-medium">Código EFE</th>
-                <th className="px-3 py-2 font-medium">OSM id</th>
-                <th className="px-3 py-2 font-medium">Ver en visor</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top text-[12px]">
+        <DataTable columns={['Línea', 'Estación', 'Código EFE', 'OSM id', 'Ver en visor']} bodyClassName="divide-y align-top text-[12px]">
               <tr>
                 <td className="px-3 py-2 font-mono">L1</td>
                 <td className="px-3 py-2">Hualqui (terminal sur)</td>
@@ -556,9 +535,7 @@ export default function Biotren() {
                 <td className="px-3 py-2 font-mono">osm-315019820</td>
                 <td className="px-3 py-2"><MapLink stop="osm-315019820">→</MapLink></td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           <strong>Concepción</strong> es la única estación común a ambas
           líneas (transbordo cross-platform).{' '}

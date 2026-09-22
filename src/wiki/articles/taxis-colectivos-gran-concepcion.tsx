@@ -6,6 +6,7 @@
 // del GTFS Gran Concepción.
 
 import {
+  DataTable,
   KeyValueList,
   PendingBanner,
   Section,
@@ -368,16 +369,7 @@ export default function TaxisColectivosGranConcepcion() {
           recorrido fijo), bus urbano y taxi colectivo son productos
           distintos en seis dimensiones:
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">Bus urbano (Perímetro 2024)</th>
-                <th className="px-3 py-2 font-medium">Taxi colectivo</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top text-[12px]">
+        <DataTable columns={['Dimensión', 'Bus urbano (Perímetro 2024)', 'Taxi colectivo']} bodyClassName="divide-y align-top text-[12px]">
               <tr>
                 <td className="px-3 py-2 font-medium">Capacidad por vehículo</td>
                 <td className="px-3 py-2">30-70 pasajeros (12 m / 18 m)</td>
@@ -418,9 +410,7 @@ export default function TaxisColectivosGranConcepcion() {
                 <td className="px-3 py-2">GTFS Gran Concepción los publica → aparecen en el visor</td>
                 <td className="px-3 py-2">NO están en el GTFS → NO aparecen en el visor</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           La asimetría regulatoria explica por qué el visor de{' '}
           <code>conce.patagua.dev</code> hoy muestra buses urbanos y

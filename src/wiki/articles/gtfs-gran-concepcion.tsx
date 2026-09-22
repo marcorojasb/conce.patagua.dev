@@ -38,6 +38,7 @@
 //     de candidatos del backend operacional?
 
 import {
+  DataTable,
   KeyValueList,
   PendingBanner,
   Section,
@@ -111,16 +112,7 @@ export default function GtfsGranConcepcion() {
           aparecen en el ZIP y por lo tanto no aparecen en el visor sin
           integración manual.
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Servicio</th>
-                <th className="px-3 py-2 font-medium">¿En el feed?</th>
-                <th className="px-3 py-2 font-medium">Cómo lo muestra el visor</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Servicio', '¿En el feed?', 'Cómo lo muestra el visor']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Buses urbanos Gran Concepción (PE 2024)</td>
                 <td className="px-3 py-2"><strong>Sí</strong></td>
@@ -189,9 +181,7 @@ export default function GtfsGranConcepcion() {
                   <a href="/wiki/biotren" className="underline underline-offset-2">Biotrén</a>.
                 </td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           Hipótesis editorial: el alcance del feed sigue al régimen
           regulatorio del Perímetro de Exclusión, no a la unidad
@@ -484,18 +474,7 @@ export default function GtfsGranConcepcion() {
       </Section>
 
       <Section title="Comparación con otros feeds chilenos">
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Ciudad / red</th>
-                <th className="px-3 py-2 font-medium">Publicador</th>
-                <th className="px-3 py-2 font-medium">Cadencia conocida</th>
-                <th className="px-3 py-2 font-medium">GTFS-RT</th>
-                <th className="px-3 py-2 font-medium">Estado verif.</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Ciudad / red', 'Publicador', 'Cadencia conocida', 'GTFS-RT', 'Estado verif.']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Santiago · RED Metropolitana de Movilidad</td>
                 <td className="px-3 py-2 text-[12px]">DTPM (dtpm.cl)</td>
@@ -534,9 +513,7 @@ export default function GtfsGranConcepcion() {
                 <td className="px-3 py-2 text-[12px]">Pendiente</td>
                 <td className="px-3 py-2 text-[12px]">Ámbar</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           La verificación primaria de los feeds comparados (Valparaíso,
           Antofagasta, Temuco) requeriría abrir cada ficha en

@@ -10,6 +10,7 @@
 // Subtrans distribuye; DTPR ejecuta regionalmente.
 
 import {
+  DataTable,
   KeyValueList,
   PendingBanner,
   Section,
@@ -293,16 +294,7 @@ export default function SubsidioLey20378() {
           presupuesto nacional hasta la caja de un operador
           regional involucra cuatro niveles institucionales:
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Etapa</th>
-                <th className="px-3 py-2 font-medium">Quién</th>
-                <th className="px-3 py-2 font-medium">Qué hace</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Etapa', 'Quién', 'Qué hace']}>
               <tr>
                 <td className="px-3 py-2 font-medium">1. Asignación</td>
                 <td className="px-3 py-2">DIPRES + Congreso</td>
@@ -323,9 +315,7 @@ export default function SubsidioLey20378() {
                 <td className="px-3 py-2">Contraloría General de la República</td>
                 <td className="px-3 py-2">Visa las resoluciones afectas que afectan recursos sustanciales. Audita ex post el uso del subsidio en regiones y en operadores específicos.</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p>
           El <strong>polinomio de ajuste</strong> indexa los pagos a
           costos (UF, diésel/electricidad, salarios). Es la razón por
@@ -403,16 +393,7 @@ export default function SubsidioLey20378() {
       </Section>
 
       <Section title="Comparación con el subsidio implícito de Santiago">
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">RM (RED)</th>
-                <th className="px-3 py-2 font-medium">Regiones (Ley 20.378)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Dimensión', 'RM (RED)', 'Regiones (Ley 20.378)']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Marco legal</td>
                 <td className="px-3 py-2">Leyes específicas RED + subsidio implícito + Ley 20.378 (espejo).</td>
@@ -438,9 +419,7 @@ export default function SubsidioLey20378() {
                 <td className="px-3 py-2">Superior al regional.</td>
                 <td className="px-3 py-2">Brecha persistente pese a "ley espejo".</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           La promesa de equidad se cumple en parte: las regiones reciben
           recursos que no recibían antes de 2009, pero la brecha

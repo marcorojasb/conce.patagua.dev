@@ -18,6 +18,7 @@
 // a las relations es trabajo futuro real.
 
 import {
+  DataTable,
   KeyValueList,
   PendingBanner,
   Section,
@@ -84,17 +85,7 @@ export default function OpenstreetmapFuenteVisor() {
           el bundle importa estáticamente. IDs de relation verificados al
           2026-05-16.
         </p>
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dataset</th>
-                <th className="px-3 py-2 font-medium">Filtro OSM</th>
-                <th className="px-3 py-2 font-medium">Referencia</th>
-                <th className="px-3 py-2 font-medium">Script · salida</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Dataset', 'Filtro OSM', 'Referencia', 'Script · salida']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Biotrén L1 (12 estaciones Hualqui ↔ Talcahuano)</td>
                 <td className="px-3 py-2 text-[12px]"><code className="font-mono">node[railway~"^(station|halt)$"][operator~"EFE",i]</code> en bbox metropolitano</td>
@@ -184,9 +175,7 @@ export default function OpenstreetmapFuenteVisor() {
                 <td className="px-3 py-2 text-[12px]">Atribución <code className="font-mono">© OSM · © Esri</code> al pie.</td>
                 <td className="px-3 py-2 text-[12px]">Runtime en Leaflet (<code className="font-mono">conce-map.tsx</code>), sin <code>.generated.ts</code>.</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           Las estaciones Biotrén enlazan Wikidata vía OSM{' '}
           <code className="font-mono">wikidata=Q…</code> (Coronel Q5788800,
@@ -371,16 +360,7 @@ export default function OpenstreetmapFuenteVisor() {
       </Section>
 
       <Section title="Comparación con GTFS Gran Concepción">
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b bg-muted/40 text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Dimensión</th>
-                <th className="px-3 py-2 font-medium">OpenStreetMap</th>
-                <th className="px-3 py-2 font-medium">GTFS Gran Concepción</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y align-top">
+        <DataTable columns={['Dimensión', 'OpenStreetMap', 'GTFS Gran Concepción']}>
               <tr>
                 <td className="px-3 py-2 font-medium">Modelo</td>
                 <td className="px-3 py-2 text-[12px]">node/way/relation + tags <code>key=value</code></td>
@@ -426,9 +406,7 @@ export default function OpenstreetmapFuenteVisor() {
                 <td className="px-3 py-2 text-[12px]">Biotrén, interurbanos, terminales, paraderos OSM, ciclovías, plazas, escuelas, POIs, basemap</td>
                 <td className="px-3 py-2 text-[12px]">Buses urbanos PE 2024: trazado, paraderos, horarios</td>
               </tr>
-            </tbody>
-          </table>
-        </div>
+            </DataTable>
         <p className="text-[12px] text-muted-foreground">
           Complementarias por diseño: OSM aporta geografía + tags; GTFS
           aporta estructura de servicio y horario. GTFS no cubre Biotrén
