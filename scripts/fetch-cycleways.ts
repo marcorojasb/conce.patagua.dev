@@ -8,7 +8,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { overpass } from './lib/overpass.ts';
+import { assertOverpassElements, overpass } from './lib/overpass.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../src/data/cycleways.generated.ts');
@@ -138,6 +138,7 @@ async function main() {
   console.log('Fetching cycling infrastructure from Overpass…');
   const data = await queryOverpass();
   console.log(`  → ${data.elements.length} raw ways`);
+  assertOverpassElements(data.elements, 'ciclovías');
   const items = buildResolved(data.elements);
   const km = items.reduce((acc, it) => acc + pathKm(it.path), 0);
   console.log(`  → ${items.length} tramos · ${km.toFixed(1)} km`);

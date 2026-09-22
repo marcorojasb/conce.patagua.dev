@@ -7,7 +7,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { overpass } from './lib/overpass.ts';
+import { assertOverpassElements, overpass } from './lib/overpass.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../src/data/greenspace.generated.ts');
@@ -234,6 +234,7 @@ async function main() {
   console.log('Fetching green spaces from Overpass…');
   const data = await queryOverpass();
   console.log(`  → ${data.elements.length} raw elements`);
+  assertOverpassElements(data.elements, 'áreas verdes');
   const items = buildResolved(data.elements);
   const totalKm2 = items.reduce((acc, it) => acc + it.areaM2 / 1_000_000, 0);
   console.log(`  → ${items.length} polígonos · ${totalKm2.toFixed(1)} km²`);

@@ -29,7 +29,9 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Sync all OSM-backed datasets
-        run: npm run sync:all
+        # Solo los datasets que dependen de APIs públicas (Overpass/Wikidata).
+        # Los `sync:gtfs-*` necesitan sqlite3 + GTFS_DB_PATH y corren en local.
+        run: npm run sync:osm
 
       - name: Detect changes
         id: diff
@@ -52,14 +54,21 @@ jobs:
           delete-branch: true
           title: 'data: refresh OSM-backed datasets'
           body: |
-            Automated nightly sync from OpenStreetMap (Overpass API).
+            Automated nightly sync from OpenStreetMap (Overpass API) and Wikidata.
 
             Refreshed:
             - `src/data/biotren.generated.ts` (railway=station, operator=EFE)
             - `src/data/biotren-track.generated.ts` (railway=rail, Dijkstra)
             - `src/data/terminals.generated.ts` (amenity=bus_station)
-            - `src/data/paraderos.generated.ts` (highway=bus_stop)
-            - `src/data/bus-routes.generated.ts` (route=bus relations + paradero match)
+            - `src/data/pois.generated.ts` (hospital, university, college, mall)
+            - `src/data/wikidata.generated.ts` (SPARQL: Q-ids e imágenes)
+            - `src/data/cycleways.generated.ts` (infra ciclista)
+            - `src/data/greenspace.generated.ts` (parques, plazas, reservas)
+            - `src/data/schools.generated.ts` (establecimientos educacionales)
+            - `src/data/interurban-routes.generated.ts` (corredores 201/401/411/421)
+
+            Los datasets GTFS (`gtfs-*.generated.ts`) NO se tocan aquí: requieren
+            sqlite3 + `GTFS_DB_PATH` y se sincronizan en local con `npm run sync:gtfs`.
 
             Review the diff: if it looks reasonable, merge and Vercel will redeploy.
           labels: |

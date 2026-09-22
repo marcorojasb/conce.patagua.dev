@@ -11,7 +11,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { overpass } from './lib/overpass.ts';
+import { assertOverpassElements, overpass } from './lib/overpass.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../src/data/biotren.generated.ts');
@@ -148,7 +148,7 @@ function renderFile(l1: Resolved[], l2: Resolved[]): string {
 // Station order is from EFE Trenes (efe.cl/biotren/servicio-y-trazado).
 // Re-generate: \`npm run sync:biotren\`. Do not edit by hand.
 
-import type { LatLngTuple, Stop } from '@/types/transport';
+import type { Stop } from '@/types/transport';
 `;
 
   const stopsLiteral = (stops: Resolved[]): string =>
@@ -181,6 +181,7 @@ async function main() {
   console.log('Fetching Biotrén stations from Overpass…');
   const data = await queryOverpass();
   console.log(`  → ${data.elements.length} EFE-operated rail nodes in bbox`);
+  assertOverpassElements(data.elements, 'estaciones Biotrén');
 
   const index = buildIndex(data.elements);
   console.log(`  → ${index.size} named stations indexed`);

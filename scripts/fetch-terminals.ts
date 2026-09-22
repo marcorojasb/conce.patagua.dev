@@ -6,7 +6,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { overpass } from './lib/overpass.ts';
+import { assertOverpassElements, overpass } from './lib/overpass.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../src/data/terminals.generated.ts');
@@ -101,6 +101,7 @@ async function main() {
   console.log('Fetching transit terminals from Overpass…');
   const data = await queryOverpass();
   console.log(`  → ${data.elements.length} raw elements`);
+  assertOverpassElements(data.elements, 'terminales');
   const terminals = resolve_(data.elements);
   console.log(`  → ${terminals.length} named terminals after de-dup`);
 

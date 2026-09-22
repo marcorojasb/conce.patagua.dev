@@ -31,7 +31,9 @@
     "sync:greenspace": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-greenspace.ts",
     "sync:schools": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-schools.ts",
     "sync:interurban-routes": "node --experimental-strip-types --no-warnings --dns-result-order=ipv4first scripts/fetch-interurban-routes.ts",
-    "sync:all": "npm run sync:biotren && npm run sync:terminals && npm run sync:biotren-track && npm run sync:gtfs-concepcion && npm run sync:gtfs-schedule && npm run sync:stop-frequency && npm run sync:stop-services && npm run sync:pois && npm run sync:wikidata && npm run sync:cycleways && npm run sync:greenspace && npm run sync:schools && npm run sync:interurban-routes",
+    "sync:osm": "npm run sync:biotren && npm run sync:terminals && npm run sync:biotren-track && npm run sync:pois && npm run sync:wikidata && npm run sync:cycleways && npm run sync:greenspace && npm run sync:schools && npm run sync:interurban-routes",
+    "sync:gtfs": "npm run sync:gtfs-concepcion && npm run sync:gtfs-schedule && npm run sync:stop-frequency && npm run sync:stop-services && npm run sync:coverage",
+    "sync:all": "npm run sync:osm && npm run sync:gtfs",
     "doctor": "react-doctor"
   },
   "dependencies": {

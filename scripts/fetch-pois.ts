@@ -6,7 +6,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { overpass } from './lib/overpass.ts';
+import { assertOverpassElements, overpass } from './lib/overpass.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = resolve(__dirname, '../src/data/pois.generated.ts');
@@ -114,6 +114,7 @@ async function main() {
   console.log('Fetching POIs from Overpass…');
   const data = await queryOverpass();
   console.log(`  → ${data.elements.length} raw elements`);
+  assertOverpassElements(data.elements, 'POIs');
   const pois = buildResolved(data.elements);
   console.log(`  → ${pois.length} POIs after de-dup`);
   mkdirSync(dirname(OUT_PATH), { recursive: true });
