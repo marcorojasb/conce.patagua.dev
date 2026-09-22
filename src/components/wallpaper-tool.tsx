@@ -48,7 +48,7 @@ interface LayerToggleState {
   centros: boolean;
 }
 
-// react-doctor-disable-next-line react-doctor/no-giant-component, react-doctor/prefer-useReducer -- Export controls are independent form fields; keeping preview, sizing, and download flow together avoids hidden coupling.
+// react-doctor-disable-next-line react-doctor/no-giant-component, react-doctor/prefer-useReducer, react-doctor/no-high-complexity-react-function -- Export controls are independent form fields; keeping preview, sizing, and download flow together avoids hidden coupling.
 export default function WallpaperTool({
   visibleRouteIds,
   mapBounds,
@@ -244,6 +244,7 @@ export default function WallpaperTool({
       // El revoke de la URL anterior lo hace el useEffect de limpieza, que es
       // el único dueño de esa responsabilidad (un updater de estado tiene que
       // ser puro).
+      // react-doctor-disable-next-line react-doctor/no-create-object-url-without-revoke -- El revoke vive en el cleanup del efecto que observa previewUrl (líneas 98-102); el detector no rastrea ese efecto.
       setPreviewUrl(URL.createObjectURL(blob));
     } catch (err) {
       console.error(err);

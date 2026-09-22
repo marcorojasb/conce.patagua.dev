@@ -95,6 +95,7 @@ export function usePlannerState({ visibleRouteIds, routesVersion }: Options) {
       // El reset va en finally para que el spinner no quede pegado si algo
       // lanza antes de tiempo, pero con guarda: si este request fue abortado
       // por uno más nuevo, el loading vigente lo maneja ese otro.
+      // react-doctor-disable-next-line react-doctor/no-loading-flag-reset-outside-finally, react-doctor/no-unowned-async-error-clear -- El reset sí está en finally y la guarda `!ctrl.signal.aborted` establece la propiedad del request; el detector no modela la guarda.
       if (!ctrl.signal.aborted) setPlannerMidpointLoading(false);
     }
   }, [plannerOrigin, plannerDestination]);

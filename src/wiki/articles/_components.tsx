@@ -172,6 +172,7 @@ export function ArticleSummary({
       <h2 className="text-base font-semibold tracking-tight">{title}</h2>
       <ul className="ml-5 list-disc space-y-1 text-[13px] leading-snug">
         {bullets.map((b, i) => (
+          // react-doctor-disable-next-line react-doctor/no-array-index-as-key -- Lista corta y estática por artículo: los bullets son ReactNode sin id y el orden nunca cambia ni se filtra.
           <li key={i}>{b}</li>
         ))}
       </ul>

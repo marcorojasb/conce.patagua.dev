@@ -117,7 +117,7 @@ function initialFlyToToken(): FlyToToken | null {
   return null;
 }
 
-// react-doctor-disable-next-line react-doctor/no-giant-component, react-doctor/prefer-useReducer -- App is the route/map shell; coupled state was consolidated, remaining state slices are independent UI controls.
+// react-doctor-disable-next-line react-doctor/no-giant-component, react-doctor/prefer-useReducer, react-doctor/no-high-complexity-react-function -- App is the route/map shell; coupled state was consolidated, remaining state slices are independent UI controls.
 export default function App() {
   // Subscribes to the micros-loaded event so the sidebar/search/etc.
   // re-render the moment the bus-routes lazy chunk lands.

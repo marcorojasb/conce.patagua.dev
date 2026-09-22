@@ -69,6 +69,11 @@ export function FloatingInfoPanel({
       )}
       aria-live="polite"
     >
+      {/* Panel no modal y flotante sobre el mapa: ya gestiona foco inicial,
+          Escape, aria-label y aria-live. `<dialog>` no-modal exige show()/close()
+          imperativos y trae layout propio (centrado, ::backdrop) que pelea con
+          el posicionamiento absoluto y las animaciones. */}
+      {/* react-doctor-disable-next-line react-doctor/prefer-html-dialog -- Migrar a <dialog> no es un reemplazo equivalente para paneles no modales ya accesibles. */}
       <section
         role="dialog"
         aria-label={dialogLabel}

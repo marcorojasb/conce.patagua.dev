@@ -173,6 +173,7 @@ function stopPolling(): void {
 export function useAirQuality(active: boolean, retryKey = 0): AirQualityState {
   const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
+  // react-doctor-disable-next-line react-doctor/no-fetch-in-effect -- El fetch vive en el store externo (startPolling → loadAirQuality) con AbortController, timeout y polling cada 10 min; el proyecto no usa librería de data fetching.
   useEffect(() => {
     if (!active) return;
     activeConsumers += 1;

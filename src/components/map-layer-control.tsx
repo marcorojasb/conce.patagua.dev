@@ -484,6 +484,7 @@ export function MapLayerControl({
           )}
           aria-live="polite"
         >
+          {/* react-doctor-disable-next-line react-doctor/prefer-html-dialog -- Panel no modal y flotante sobre el mapa: ya gestiona foco, Escape y aria; <dialog> no-modal exige show()/close() y su layout propio pelea con el posicionamiento absoluto. */}
           <aside
             role="dialog"
             aria-label="Capas del mapa"

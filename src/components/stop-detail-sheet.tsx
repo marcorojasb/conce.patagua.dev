@@ -19,6 +19,7 @@ interface StopDetailSheetProps {
   onSelectRoute: (id: string) => void;
 }
 
+// react-doctor-disable-next-line react-doctor/no-high-complexity-react-function -- El sheet encadena condicionales de datos (rutas, frecuencia, Biotrén) sobre un solo stop; extraerlos a un hook no reduce las ramas, solo las mueve.
 export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: StopDetailSheetProps) {
   // `ROUTES_BY_ID` se muta in-place al llegar el chunk de micros: sin la versión
   // en las deps, un deep link abierto antes de esa carga se queda con la lista

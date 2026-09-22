@@ -149,7 +149,11 @@ export function FloatingToolsPanel({
       )}
       aria-live="polite"
     >
+      {/* Panel no modal y flotante sobre el mapa: ya gestiona foco, Escape y
+          aria; `<dialog>` no-modal exige show()/close() y su layout propio
+          pelea con el posicionamiento absoluto y las animaciones. */}
       <aside
+        // react-doctor-disable-next-line react-doctor/prefer-html-dialog -- Migrar a <dialog> no es un reemplazo equivalente para paneles no modales ya accesibles.
         role="dialog"
         aria-label={meta.label}
         // Grid layout instead of flex so the ScrollArea row has a definite
