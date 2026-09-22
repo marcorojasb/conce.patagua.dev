@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   MapContainer,
   Marker,
@@ -9,7 +9,7 @@ import {
   useMapEvents,
   ZoomControl,
 } from 'react-leaflet';
-import L, { type Map as LeafletMap } from 'leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CONCE_CENTER } from '@/data/routes';
 import type {
@@ -245,16 +245,28 @@ const SOURCE_KIND_LABEL: Record<SimulatedVehicle['sourceKind'], string> = {
   estimated: 'estimado',
 };
 
-function InvalidateOnResize({ trigger }: { trigger: unknown }) {
+// El contenedor del mapa cambia de ancho cuando se abre o cierra el sidebar
+// (animado, 200 ms) y cuando cambia el viewport. Leaflet cachea el tamaño y,
+// sin un invalidateSize explícito, sigue dibujando tiles para el tamaño viejo:
+// el mapa queda corrido y sobra una franja sin pintar al costado. El
+// ResizeObserver cubre cualquier cambio de tamaño —incluida la animación— sin
+// depender de timers que adivinan cuándo terminó la transición.
+function MapAutoResize() {
   const map = useMap();
   useEffect(() => {
-    const id = window.setInterval(() => map.invalidateSize(), 320);
-    const stop = window.setTimeout(() => window.clearInterval(id), 1000);
+    let frame = 0;
+    const observer = new ResizeObserver(() => {
+      // Un invalidateSize por frame alcanza para seguir la animación del
+      // sidebar sin encadenar decenas de llamadas.
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => map.invalidateSize());
+    });
+    observer.observe(map.getContainer());
     return () => {
-      window.clearInterval(id);
-      window.clearTimeout(stop);
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
     };
-  }, [trigger, map]);
+  }, [map]);
   return null;
 }
 
@@ -282,6 +294,7 @@ function BoundsTracker({
   const fire = useCallback((b: L.LatLngBounds) => onChange(boundsToTuple(b)), [onChange]);
   const map = useMapEvents({
     moveend() {
+      // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent -- El padre no puede suscribirse a los eventos de Leaflet (no tiene la instancia); el hijo es el único dueño de esa suscripción.
       fire(map.getBounds());
     },
     zoomend() {
@@ -294,6 +307,7 @@ function BoundsTracker({
   // —como el modo "vista actual" del exportador de wallpaper— quedan sin
   // datos hasta que el usuario arrastre el mapa.
   useEffect(() => {
+    // react-doctor-disable-next-line react-doctor/no-pass-data-to-parent -- El padre no puede suscribirse a los eventos de Leaflet (no tiene la instancia); el hijo es el único dueño de esa suscripción.
     fire(map.getBounds());
   }, [fire, map]);
 
@@ -382,13 +396,7 @@ export function ConceMap({
   plannerMidpoint,
   onSelectInterurbanCorridor,
 }: ConceMapProps) {
-  const mapRef = useRef<LeafletMap | null>(null);
   const [zoom, setZoom] = useState(13);
-
-  useEffect(() => {
-    const id = window.setTimeout(() => mapRef.current?.invalidateSize(), 50);
-    return () => window.clearTimeout(id);
-  }, []);
 
   const visibleRoutes = useMemo(() => {
     const visibleIds = new Set(visibleRouteIds);
@@ -420,9 +428,6 @@ export function ConceMap({
 
   return (
     <MapContainer
-      ref={(instance) => {
-        mapRef.current = instance;
-      }}
       center={[CONCE_CENTER.lat, CONCE_CENTER.lng]}
       zoom={13}
       zoomControl={false}
@@ -676,7 +681,7 @@ export function ConceMap({
 
       <MapClickCapture enabled={pickerMode !== null} onPick={onPickPoint} />
       <FlyToOnToken token={flyToToken} />
-      <InvalidateOnResize trigger={visibleRoutes.length} />
+      <MapAutoResize />
       {onBoundsChange && <BoundsTracker onChange={onBoundsChange} />}
     </MapContainer>
   );
