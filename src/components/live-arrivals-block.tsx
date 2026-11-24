@@ -1,21 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { AlertTriangle, Radio, WifiOff } from 'lucide-react';
 import { RouteBadge } from '@/components/route-badge';
 import { Notice } from '@/components/ui/notice';
 import { SectionLabel } from '@/components/ui/section-label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ROUTES, useRoutesVersion } from '@/data/routes';
+import { useClock } from '@/hooks/use-clock';
 import type { LiveArrivalsSnapshot } from '@/hooks/use-live-arrivals';
 import {
   DIRECTION_LABEL,
+  LIVE_CLOCK_TICK_MS,
   STALE_AFTER_MS,
   formatAge,
   indexLiveServices,
   liveServiceLabel,
   liveView,
   minutesUntil,
+  onlyUntrackedLines,
   servicesWithoutGps,
-  visorServiceName,
   type LiveArrival,
   type LiveDirection,
   type LiveServiceMatch,
@@ -29,17 +31,7 @@ interface Props {
   routes: Route[];
 }
 
-const CLOCK_TICK_MS = 5_000;
 const NEUTRAL_COLOR = '#334155';
-
-function useClock(): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), CLOCK_TICK_MS);
-    return () => window.clearInterval(id);
-  }, []);
-  return now;
-}
 
 function formatDistance(meters: number): string {
   return meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1).replace('.', ',')} km`;
@@ -53,8 +45,30 @@ function towards(match: LiveServiceMatch | undefined, direction: LiveDirection |
 }
 
 export function LiveArrivalsBlock({ live, routes }: Props) {
-  const now = useClock();
-  const view = liveView(live.state, now, live.loading);
+  // Paradero solo con líneas que la fuente no sigue (Coronel–Lota): App no
+  // la consulta y aquí solo se avisa.
+  if (onlyUntrackedLines(routes)) {
+    return (
+      <section aria-label="Llegadas en vivo" data-live-state="untracked">
+        <SectionLabel icon={<Radio className="text-emerald-600 dark:text-emerald-400" />}>
+          Llegadas en vivo · GPS
+        </SectionLabel>
+        <Notice>
+          La fuente en vivo no sigue las líneas de este paradero (
+          {routes.filter((r) => (r.directions ?? []).length > 0).map((r) => r.code).join(', ')});
+          guíate por el horario.
+        </Notice>
+      </section>
+    );
+  }
+  return <TrackedLiveArrivals live={live} />;
+}
+
+function TrackedLiveArrivals({ live }: { live: LiveArrivalsSnapshot }) {
+  const now = useClock(LIVE_CLOCK_TICK_MS);
+  // Sin paradero en consulta todavía (App espera a conocer sus recorridos): se
+  // muestra como cargando, nunca como "sin micros".
+  const view = liveView(live.state, now, live.loading || live.stopCode == null);
   // La fuente puede anunciar líneas que el GTFS de 2025 no hace pasar por
   // este paradero: el calce se busca en toda la red, no solo en `routes`.
   const routesVersion = useRoutesVersion();
@@ -62,11 +76,6 @@ export function LiveArrivalsBlock({ live, routes }: Props) {
     void routesVersion;
     return indexLiveServices(ROUTES);
   }, [routesVersion]);
-  // Paradero solo con líneas que la fuente no sigue (Coronel–Lota).
-  const untracked = routes.filter((r) => (r.directions ?? []).length > 0);
-  const allUntracked =
-    untracked.length > 0 &&
-    untracked.every((r) => (r.directions ?? []).every((d) => visorServiceName(r.code, d) == null));
   const ageIsOld = view.ageMs != null && view.ageMs > STALE_AFTER_MS;
   // Las alertas "Servicio X no está enviando información en tiempo real" ya
   // quedan como nota "sin datos en vivo" en su línea: no se repiten.
@@ -132,14 +141,7 @@ export function LiveArrivalsBlock({ live, routes }: Props) {
           <Notice>Ninguna micro con GPS en camino ahora.</Notice>
         )}
 
-        {view.kind === 'empty' && allUntracked && (
-          <Notice>
-            La fuente en vivo no sigue las líneas de este paradero (
-            {untracked.map((r) => r.code).join(', ')}); guíate por el horario.
-          </Notice>
-        )}
-
-        {view.kind === 'empty' && !allUntracked && (
+        {view.kind === 'empty' && (
           <Notice>
             Sin micros en camino según el GPS. La fuente solo informa las que llegan en los
             próximos ~30 min.
@@ -216,21 +218,30 @@ function ArrivalRow({
     match?.direction.destination && arrival.direction ? DIRECTION_LABEL[arrival.direction] : null,
     arrival.distanceM != null ? `a ${formatDistance(arrival.distanceM)} en línea recta` : null,
     arrival.plate ? `patente ${arrival.plate}` : null,
-    arrival.realtime ? null : 'estimado, sin GPS',
   ].filter(Boolean);
   return (
-    <li className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border bg-card p-2">
+    <li
+      className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border bg-card p-2"
+      data-realtime={arrival.realtime ? 'gps' : 'estimate'}
+    >
       <RouteBadge code={liveServiceLabel(arrival.route, match)} color={match?.route.color ?? NEUTRAL_COLOR} />
       <div className="min-w-0">
         <div className="truncate text-sm font-medium">{towards(match, arrival.direction)}</div>
-        <div className="truncate text-[11px] text-muted-foreground">
+        {/* Sin GPS va primero y nunca se corta: es lo que distingue la fila. */}
+        {!arrival.realtime && (
+          <span className="mt-0.5 inline-block rounded bg-muted px-1.5 py-px text-[10px] font-medium text-foreground">
+            estimado, sin GPS
+          </span>
+        )}
+        {/* Puede ocupar dos líneas: la patente no se pierde en pantallas angostas. */}
+        <div className="text-[11px] leading-snug text-muted-foreground">
           {details.length > 0 ? details.join(' · ') : 'sin distancia informada'}
         </div>
       </div>
       <div
         className={cn(
           'text-right font-mono text-sm font-semibold',
-          !stale && 'text-emerald-700 dark:text-emerald-400',
+          arrival.realtime && !stale ? 'text-emerald-700 dark:text-emerald-400' : 'text-muted-foreground',
         )}
       >
         {minutes === 0 ? 'llegando' : `${minutes} min`}

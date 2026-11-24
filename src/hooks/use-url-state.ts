@@ -8,6 +8,8 @@ import { useEffect, useRef } from 'react';
 
 export interface UrlState {
   route: string | null;
+  /** Sentido del recorrido (`direction_id`): sin él, "10N" se compartiría como 10A. */
+  dir: 0 | 1 | null;
   stop: string | null;
   terminal: string | null;
   poi: string | null;
@@ -67,6 +69,7 @@ export function readUrlState(): UrlState {
   if (typeof window === 'undefined') {
     return {
       route: null,
+      dir: null,
       stop: null,
       terminal: null,
       poi: null,
@@ -79,6 +82,7 @@ export function readUrlState(): UrlState {
   const p = new URLSearchParams(window.location.search);
   return {
     route: p.get('route'),
+    dir: p.get('dir') === '0' ? 0 : p.get('dir') === '1' ? 1 : null,
     stop: p.get('stop'),
     terminal: p.get('terminal'),
     poi: p.get('poi'),
@@ -100,6 +104,7 @@ export function useSyncUrlState(state: UrlState): void {
     const p = new URLSearchParams();
     // react-doctor-disable-next-line react-doctor/no-event-handler -- URL query sync is an external browser-history side effect, not a React event handler.
     if (state.route) p.set('route', state.route);
+    if (state.route && state.dir != null) p.set('dir', String(state.dir));
     if (state.stop) p.set('stop', state.stop);
     if (state.terminal) p.set('terminal', state.terminal);
     if (state.poi) p.set('poi', state.poi);
@@ -112,6 +117,7 @@ export function useSyncUrlState(state: UrlState): void {
     window.history.replaceState(null, '', next);
   }, [
     state.route,
+    state.dir,
     state.stop,
     state.terminal,
     state.poi,

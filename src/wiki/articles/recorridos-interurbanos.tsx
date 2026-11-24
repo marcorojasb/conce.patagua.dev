@@ -106,7 +106,8 @@ export default function RecorridosInterurbanos() {
       <Section title="Qué está en el visor y qué no">
         <p>
           La DTPR publica estos interurbanos en el mismo GTFS que la red
-          urbana, así que entran al visor sin trabajo manual: trazado de
+          urbana, así que entran al visor con la misma sincronización
+          (una actualización que se revisa y aprueba): trazado de
           cada sentido, paraderos y horario programado por día. El feed no
           los distingue de los urbanos; el visor los rotula «Interurbano
           Santa Juana», «Interurbano Tomé» e «Interurbano Lota».

@@ -31,6 +31,17 @@ const returnOnlyStop = GTFS_BUS_ROUTES.flatMap((r) => {
 })[0];
 if (!returnOnlyStop) throw new Error('No GTFS stop served only by a return direction');
 
+// Paradero que solo recorren la 302/304 (Lota), que la fuente en vivo no
+// sigue: el visor no debe consultarla.
+const refsByStop = new Map<string, Set<string>>();
+for (const r of GTFS_BUS_ROUTES) {
+  for (const id of new Set((r.directions ?? []).flatMap((d) => d.stopIds))) {
+    refsByStop.set(id, (refsByStop.get(id) ?? new Set()).add(r.ref));
+  }
+}
+const lotaOnlyStop = [...refsByStop].find(([, refs]) => [...refs].every((ref) => ref === '302' || ref === '304'))?.[0];
+if (!lotaOnlyStop) throw new Error('No GTFS stop served only by 302/304');
+
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -77,7 +88,14 @@ const child = spawn(
   ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'],
   // Grupo de procesos propio: `npm run dev` lanza vite como nieto, y matar
   // solo a npm deja vite vivo con las tuberías abiertas (el smoke no termina).
-  { stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' },
+  // TRANSAPP_PHONE_ID vacío pisa el del entorno y el de un .env.local: la
+  // intermediaria queda sin configurar y nunca consulta la fuente real, aunque
+  // una consulta se escape de page.route.
+  {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: process.platform !== 'win32',
+    env: { ...process.env, TRANSAPP_PHONE_ID: '' },
+  },
 );
 
 let serverOutput = '';
@@ -95,16 +113,18 @@ try {
   browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: 1440, height: 980 } });
   // Las llegadas en vivo salen de respuestas de ejemplo: el smoke nunca
-  // consulta la fuente real (ni la intermediaria la tiene configurada aquí).
+  // consulta la fuente real (y el dev server corre sin TRANSAPP_PHONE_ID).
   const fixedNowMs = new Date('2026-05-18T08:30:00-04:00').valueOf();
   const liveFixtures = stopInfoFixtures(fixedNowMs / 1000);
-  await page.route('**/api/stop-arrivals**', (route) =>
-    route.fulfill({
+  const liveRequests: string[] = [];
+  await page.route('**/api/stop-arrivals**', (route) => {
+    liveRequests.push(new URL(route.request().url()).searchParams.get('stop') ?? '');
+    return route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ fetchedAt: fixedNowMs, data: liveFixtures.withBuses }),
-    }),
-  );
+    });
+  });
   await page.addInitScript(() => {
     const fixedNow = new Date('2026-05-18T08:30:00-04:00').valueOf();
     const RealDate = Date;
@@ -134,6 +154,11 @@ try {
   await page.getByRole('button', { name: 'Buscar recorridos y paraderos' }).click();
   // GTFS oficial DTPR: route_id 833 = "02AD" (variantes 02A/02D); el paradero
   // 37477 (O'Higgins esq. Salas) lo recorren la 62H y decenas de líneas más.
+  // Sin tildes y sin que cmdk vuelva a filtrar: "Lirquén" encuentra recorridos.
+  await page.getByPlaceholder('Buscar recorridos, paraderos…').fill('Lirquén');
+  await page.locator('[cmdk-group-heading]', { hasText: 'Recorridos' }).waitFor({ timeout: 5_000 }).catch(() => {
+    throw new Error('Expected the command palette to list routes for "Lirquén"');
+  });
   await page.getByPlaceholder('Buscar recorridos, paraderos…').fill('02AD');
   await page.getByText('02AD', { exact: true }).first().click();
   await waitForBody(page, /02A/, 'route search selection');
@@ -149,6 +174,17 @@ try {
   await waitForBody(page, /10AN/, 'focus by direction variant 10A');
   await page.waitForURL(/[?&]route=gtfs-route-835\b/, { timeout: 10_000 }).catch(() => {
     throw new Error(`Expected ?focus=route:10A to select gtfs-route-835, URL is ${page.url()}`);
+  });
+
+  // El sentido pedido queda en la URL: recargarla abre 10N, no 10A.
+  await page.goto(`${BASE_URL}/?focus=route:10N`, { waitUntil: 'load' });
+  await page.waitForURL(/[?&]route=gtfs-route-835&dir=1\b/, { timeout: 10_000 }).catch(() => {
+    throw new Error(`Expected ?focus=route:10N to keep dir=1 in the URL, URL is ${page.url()}`);
+  });
+  await page.reload({ waitUntil: 'load' });
+  await page.getByRole('tab', { name: 'Recorrido' }).click();
+  await page.getByRole('button', { name: /10N/, pressed: true }).first().waitFor({ timeout: 10_000 }).catch(() => {
+    throw new Error('Expected the reloaded ?route=…&dir=1 to open the 10N direction');
   });
 
   await page.goto(`${BASE_URL}/?stop=${returnOnlyStop.stopId}`, { waitUntil: 'load' });
@@ -177,10 +213,27 @@ try {
   // Fixture: la 62H (sentido 0 de 62HM) llega en 40 s, a 211 m, patente de mentira PRUE20.
   await waitForBody(page, /Llegadas en vivo[\s\S]*62H[\s\S]*hacia [\s\S]*patente PRUE20[\s\S]*1 min/, 'live arrivals block');
   await waitForBody(page, /fuente no oficial/, 'live arrivals source disclaimer');
+  await waitForBody(page, /estimado, sin GPS/, 'non-GPS prediction label');
+  // Al mapa van solo las 3 con GPS y posición: ni la estimada (PRUE21) ni la sin señal (0,0).
+  await page.waitForFunction(() => document.querySelectorAll('.live-vehicle-marker').length === 3, null, { timeout: 5_000 }).catch(async () => {
+    throw new Error(`Expected 3 live GPS markers, got ${await page.locator('.live-vehicle-marker').count()}`);
+  });
+  // El paradero abierto se marca aunque ninguno de sus recorridos esté visible.
+  if ((await page.locator('.stop-marker.is-active').count()) !== 1) {
+    throw new Error('Expected the open stop to be drawn as the active stop marker.');
+  }
   await page.getByRole('dialog').filter({ hasText: /Ruta 160|Próximas pasadas/ }).first().waitFor({ timeout: 5_000 });
   const modalDetailCount = await page.locator('[role="dialog"][aria-modal="true"]').count();
   if (modalDetailCount > 0) {
     throw new Error('Expected detail panels to be non-modal.');
+  }
+  await page.goto(`${BASE_URL}/?stop=${lotaOnlyStop}`, { waitUntil: 'load' });
+  await page.locator('[data-live-state="untracked"]').waitFor({ timeout: 10_000 }).catch(() => {
+    throw new Error(`Expected ${lotaOnlyStop} (302/304 only) to say the live source does not follow its lines`);
+  });
+  const lotaCode = `P${lotaOnlyStop.replace(/^gtfs-stop-/, '')}`;
+  if (liveRequests.includes(lotaCode)) {
+    throw new Error(`Expected no live query for ${lotaCode}, served only by 302/304.`);
   }
   await page
     .getByRole('complementary', { name: 'Recorridos' })
@@ -354,6 +407,40 @@ try {
   if (errors.length > 0) {
     throw new Error(`Console errors:\n${errors.join('\n')}`);
   }
+
+  // Los marcadores GPS siguen las reglas del bloque entre consultas: con la
+  // fuente caída, pasados 10 min desaparecen y el bloque dice "caída", nunca
+  // "sin micros". Reloj de Playwright en vez del Date fijo de la otra página.
+  const clockPage = await browser.newPage({ viewport: { width: 1440, height: 980 } });
+  let liveUp = true;
+  await clockPage.route('**/api/stop-arrivals**', (route) =>
+    route.fulfill(
+      liveUp
+        ? {
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ fetchedAt: fixedNowMs, data: liveFixtures.withBuses }),
+          }
+        : { status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'upstream' }) },
+    ),
+  );
+  await clockPage.clock.install({ time: fixedNowMs });
+  await clockPage.goto(`${BASE_URL}/?stop=gtfs-stop-37477`, { waitUntil: 'load' });
+  await clockPage.locator('[data-live-state="live"]').waitFor({ timeout: 15_000 });
+  await clockPage.waitForFunction(() => document.querySelectorAll('.live-vehicle-marker').length === 3, null, {
+    timeout: 5_000,
+  });
+  liveUp = false;
+  await clockPage.clock.fastForward('11:00');
+  await clockPage.locator('[data-live-state="down"]').waitFor({ timeout: 15_000 }).catch(async () => {
+    const state = await clockPage.locator('[data-live-state]').getAttribute('data-live-state');
+    throw new Error(`Expected the live block to be "down" 11 min after a failure, got "${state}"`);
+  });
+  const expiredMarkers = await clockPage.locator('.live-vehicle-marker').count();
+  if (expiredMarkers !== 0) {
+    throw new Error(`Expected no live GPS markers after the data expired, got ${expiredMarkers}`);
+  }
+  await clockPage.close();
 
   console.log(
     `Browser smoke OK: ${count.toLocaleString('es-CL')} visible-scope services, ${allScopeCount.toLocaleString('es-CL')} all-network services, map/wiki/focus/variant/direction/mobile checks.`,

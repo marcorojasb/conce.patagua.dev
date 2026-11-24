@@ -2,6 +2,9 @@
 // comprobados el 24-nov-2026) y valores inventados: patentes, viajes y
 // equipos GPS de mentira. Las usan las pruebas y el smoke con navegador (que
 // intercepta /api/stop-arrivals): ningún test consulta la fuente real.
+//
+// `withBuses` trae 3 micros con GPS y posición (las que van al mapa), una
+// estimada sin GPS (`realtime: false`) y una con GPS sin señal (0,0).
 
 function prediction(
   nowSeconds: number,
@@ -15,6 +18,7 @@ function prediction(
     lng: number;
     plate: string;
     trip: string;
+    realtime?: boolean;
   },
 ) {
   return {
@@ -24,7 +28,7 @@ function prediction(
     direction: fields.direction,
     epochTime: nowSeconds + fields.inSeconds,
     timeLabel: fields.timeLabel,
-    realtime: true,
+    realtime: fields.realtime ?? true,
     resourceId: -1,
     distanceLabel: `${(fields.distance / 1000).toFixed(2)}Km`,
     distance: fields.distance,
@@ -75,6 +79,29 @@ export function stopInfoFixtures(nowSeconds: number) {
           lng: -73.0611,
           plate: 'PRUE30',
           trip: '30Q_I_L_1250',
+        }),
+        prediction(nowSeconds, {
+          route: '62H',
+          direction: 'I',
+          inSeconds: 6 * 60,
+          timeLabel: '5 a 7 min',
+          distance: 2300,
+          lat: -36.8301,
+          lng: -73.0602,
+          plate: 'PRUE21',
+          trip: '62H_I_L_1340',
+          realtime: false,
+        }),
+        prediction(nowSeconds, {
+          route: '30Q',
+          direction: 'I',
+          inSeconds: 25 * 60,
+          timeLabel: '+ de 21 min',
+          distance: 9100,
+          lat: 0,
+          lng: 0,
+          plate: 'PRUE40',
+          trip: '30Q_I_L_1235',
         }),
       ],
     },

@@ -8,6 +8,10 @@
 //   la instancia, más consultas en vuelo compartidas.
 // - Tope de MAX_UPSTREAM_PER_MINUTE consultas a la fuente por instancia; pasado
 //   el tope se sirve lo último guardado del paradero o 429.
+// - Solo códigos con la forma de los paraderos del GTFS de DTPR ("P" + stop_id
+//   de 3 a 8 dígitos o "PV…", y los "PF…" renombrados por la fuente), en
+//   mayúsculas: variantes del mismo código no gastan otra consulta ni otra
+//   entrada de caché. Lo guardado se descarta a los 10 min.
 //
 // Solo se valida que la respuesta sea JSON con una lista `predictions` y se
 // reenvían predictions/routeInfo/alerts tal cual: la interpretación vive en
@@ -19,7 +23,7 @@ const CACHE_TTL_MS = 25_000;
 const LAST_GOOD_MAX_AGE_MS = 10 * 60_000;
 const UPSTREAM_TIMEOUT_MS = 8_000;
 const MAX_UPSTREAM_PER_MINUTE = 30;
-const STOP_CODE = /^[A-Za-z0-9-]{1,20}$/;
+const STOP_CODE = /^(?:P(?:PV)?\d{3,8}|PF-?\d{5})$/;
 
 export type StopArrivalsError = 'bad_request' | 'unconfigured' | 'rate_limited' | 'upstream';
 
@@ -59,6 +63,12 @@ function readable(raw: unknown): UpstreamBody | null {
   return { predictions: body.predictions, routeInfo: body.routeInfo, alerts: body.alerts };
 }
 
+function pruneCache(now: number): void {
+  for (const [code, entry] of cache) {
+    if (now - entry.fetchedAt >= LAST_GOOD_MAX_AGE_MS) cache.delete(code);
+  }
+}
+
 function underLimit(now: number): boolean {
   upstreamCalls = upstreamCalls.filter((t) => now - t < 60_000);
   return upstreamCalls.length < MAX_UPSTREAM_PER_MINUTE;
@@ -80,13 +90,14 @@ async function fetchUpstream(phoneId: string, stopCode: string): Promise<CachedE
 }
 
 export async function GET(request: Request): Promise<Response> {
-  const stopCode = new URL(request.url).searchParams.get('stop') ?? '';
+  const stopCode = (new URL(request.url).searchParams.get('stop') ?? '').toUpperCase();
   if (!STOP_CODE.test(stopCode)) return fail('bad_request', 400, 3600);
 
   const phoneId = process.env.TRANSAPP_PHONE_ID?.trim();
   if (!phoneId) return fail('unconfigured', 503, 60);
 
   const now = Date.now();
+  pruneCache(now);
   const cached = cache.get(stopCode);
   if (cached && now - cached.fetchedAt < CACHE_TTL_MS) {
     return json(cached, 200, Math.ceil((CACHE_TTL_MS - (now - cached.fetchedAt)) / 1000));

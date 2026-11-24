@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
 import {
   MapContainer,
   Marker,
@@ -32,11 +32,18 @@ import { ParaderosLayer } from '@/components/paraderos-layer';
 import { SchoolsLayer } from '@/components/schools-layer';
 import { SimulatedVehiclesLayer } from '@/components/simulated-vehicles-layer';
 import type { LayerStatusControls } from '@/hooks/use-layer-status';
+import { useClock } from '@/hooks/use-clock';
+import type { LiveArrivalsSnapshot } from '@/hooks/use-live-arrivals';
 import {
   DIRECTION_LABEL,
+  LIVE_CLOCK_TICK_MS,
   formatAge,
+  gpsArrivals,
+  liveServiceLabel,
+  liveView,
   minutesUntil,
   type LiveArrival,
+  type LiveServiceMatch,
 } from '@/realtime/live-arrivals';
 
 interface ConceMapProps {
@@ -66,8 +73,12 @@ interface ConceMapProps {
   routeColorById: Map<string, string>;
   routeLabelById: Map<string, string>;
   onSelectSimulatedVehicle: (id: string) => void;
-  /** Micros con GPS real que vienen al paradero abierto (fuente Transapp). */
-  liveVehicles: LiveVehicleMarker[];
+  /** Llegadas en vivo del paradero abierto (fuente Transapp): sus micros con GPS van al mapa. */
+  live: LiveArrivalsSnapshot;
+  /** Índice nombre de la fuente → recorrido y sentido del visor. */
+  liveServices: Map<string, LiveServiceMatch>;
+  /** Hay un panel abierto (ficha, capas, herramienta): tapa parte del mapa al centrar. */
+  panelOpen: boolean;
   coverageThreshold: 'all' | 'underserved';
   coverageRetryKey: number;
   coverageLoadStatus: LayerStatusControls;
@@ -82,22 +93,9 @@ interface ConceMapProps {
   onBoundsChange?: (bounds: [[number, number], [number, number]]) => void;
   // Walking midpoint result drawn on top of the route layer (path + M marker).
   plannerMidpoint?: RoutingResult | null;
-  // Interurban corridors, overlay opcional con servicios licitados que
-  // no están en el GTFS urbano (Santa Juana, Florida, etc.). Click → popup
-  // con link al artículo del wiki.
+  // Corredores interurbanos sin GTFS (Florida, Yumbel), overlay opcional.
+  // Click → popup con link al artículo del wiki.
   onSelectInterurbanCorridor?: (corridorId: string) => void;
-}
-
-export interface LiveVehicleMarker {
-  arrival: LiveArrival & { position: { lat: number; lng: number } };
-  color: string;
-  /** Código para mostrar ("20A", "401"); sin calce, el nombre de la fuente. */
-  label?: string;
-  /** Destino del sentido según el letrero oficial, si calza con el visor. */
-  destination?: string;
-  /** Momento de la consulta que trajo la posición. */
-  fetchedAt: number;
-  now: number;
 }
 
 interface ConceMapLayerVisibility {
@@ -157,8 +155,32 @@ const POI_COLOR: Record<PoiCategory, string> = {
   mall: '#EA580C', // orange-600
 };
 
-function FlyToOnToken({ token }: { token: FlyToToken | null }) {
+// Lo que tapa un panel abierto (FloatingInfoPanel), en px del contenedor del
+// mapa: bajo `sm` la hoja inferior de 58dvh (a 8 px del borde); desde `sm` la
+// columna de 420 px a 64 px del borde derecho. Al centrar se descuenta, para
+// que el paradero o el recorrido pedido quede en la parte visible y no debajo
+// de la ficha que lo describe. Nunca más del 70% del mapa.
+const PANEL_MEDIA = '(min-width: 640px)';
+const PANEL_WIDTH_PX = 420;
+const PANEL_RIGHT_PX = 64;
+const PANEL_GAP_PX = 12;
+const SHEET_HEIGHT_RATIO = 0.58;
+const SHEET_BOTTOM_PX = 8;
+
+function coveredByPanel(map: L.Map): { right: number; bottom: number } {
+  const rect = map.getContainer().getBoundingClientRect();
+  if (window.matchMedia(PANEL_MEDIA).matches) {
+    const panelLeft = window.innerWidth - PANEL_RIGHT_PX - PANEL_WIDTH_PX - PANEL_GAP_PX;
+    return { right: Math.min(Math.max(0, rect.right - panelLeft), rect.width * 0.7), bottom: 0 };
+  }
+  const sheetTop = window.innerHeight * (1 - SHEET_HEIGHT_RATIO) - SHEET_BOTTOM_PX;
+  return { right: 0, bottom: Math.min(Math.max(0, rect.bottom - sheetTop), rect.height * 0.7) };
+}
+
+function FlyToOnToken({ token, panelOpen }: { token: FlyToToken | null; panelOpen: boolean }) {
   const map = useMap();
+  // Se lee al volar, no es motivo para volver a volar.
+  const isPanelOpen = useEffectEvent(() => panelOpen);
   useEffect(() => {
     if (!token) return;
     let cancelled = false;
@@ -178,16 +200,26 @@ function FlyToOnToken({ token }: { token: FlyToToken | null }) {
         requestAnimationFrame(tryFly);
         return;
       }
+      const covered = isPanelOpen() ? coveredByPanel(map) : { right: 0, bottom: 0 };
       if (token.target.kind === 'bounds') {
         const bounds = L.latLngBounds(token.target.path);
+        const padding = {
+          paddingTopLeft: L.point(60, 60),
+          paddingBottomRight: L.point(60 + covered.right, 60 + covered.bottom),
+        };
         if (reduceMotion) {
-          map.fitBounds(bounds, { padding: [60, 60], animate: false });
+          map.fitBounds(bounds, { ...padding, animate: false });
         } else {
-          map.flyToBounds(bounds, { padding: [60, 60], duration: 0.7 });
+          map.flyToBounds(bounds, { ...padding, duration: 0.7 });
         }
       } else {
-        const center: [number, number] = [token.target.lat, token.target.lng];
         const zoom = token.target.zoom ?? map.getZoom();
+        // El centro se corre la mitad de lo tapado: el punto queda al medio
+        // de la parte visible.
+        const center = map.unproject(
+          map.project([token.target.lat, token.target.lng], zoom).add([covered.right / 2, covered.bottom / 2]),
+          zoom,
+        );
         if (reduceMotion) {
           map.setView(center, zoom, { animate: false });
         } else {
@@ -240,15 +272,105 @@ function midpointIcon(): L.DivIcon {
 }
 
 // Micro con GPS real: cuadrada y con anillo, para que nunca se confunda con
-// las estimadas (redondas, borde punteado).
-function liveVehicleIcon(color: string, route: string): L.DivIcon {
+// las estimadas (redondas, borde punteado). Con el dato viejo (más de 2 min)
+// pierde el pulso y se atenúa, como la edad destacada del bloque de llegadas.
+function liveVehicleIcon(color: string, route: string, stale: boolean): L.DivIcon {
   const label = route.replace(/[^0-9A-Za-z-]/g, '').slice(0, 6);
   return L.divIcon({
     className: 'live-vehicle-wrap',
-    html: `<div class="live-vehicle-marker" style="--vehicle-bg:${color}" data-live-route="${label}"><span>${label}</span></div>`,
+    html: `<div class="live-vehicle-marker${stale ? ' is-stale' : ''}" style="--vehicle-bg:${color}" data-live-route="${label}"><span>${label}</span></div>`,
     iconSize: [34, 22],
     iconAnchor: [17, 11],
   });
+}
+
+function formatDistance(meters: number): string {
+  return meters < 1000 ? `${Math.round(meters)} m` : `${(meters / 1000).toFixed(1).replace('.', ',')} km`;
+}
+
+function LiveVehicleMarker({
+  arrival,
+  match,
+  now,
+  fetchedAt,
+  stale,
+}: {
+  arrival: LiveArrival & { position: { lat: number; lng: number } };
+  match: LiveServiceMatch | undefined;
+  now: number;
+  fetchedAt: number;
+  stale: boolean;
+}) {
+  const code = liveServiceLabel(arrival.route, match);
+  const color = match?.route.color ?? '#334155';
+  const icon = useMemo(() => liveVehicleIcon(color, code, stale), [color, code, stale]);
+  const destination = match?.direction.destination;
+  const minutes = minutesUntil(arrival, now);
+  return (
+    // bubblingMouseEvents: el clic sigue al mapa (el planificador puede fijar un punto encima).
+    <Marker
+      position={[arrival.position.lat, arrival.position.lng]}
+      icon={icon}
+      keyboard={false}
+      zIndexOffset={1000}
+      bubblingMouseEvents
+    >
+      <LeafletTooltip direction="top" offset={[0, -12]} opacity={0.95} className="!text-[11px]">
+        <span className="font-medium">
+          {code}
+          {destination
+            ? ` hacia ${destination}`
+            : arrival.direction
+              ? ` ${DIRECTION_LABEL[arrival.direction]}`
+              : ''}
+        </span>
+        <br />
+        <span className="font-semibold">GPS en vivo</span> · posición {formatAge(now - fetchedAt)}
+        {stale && ' (dato viejo)'}
+        <br />
+        {minutes === 0 ? 'Llegando al paradero' : `Llega en ${minutes} min`}
+        {arrival.distanceM != null && ` · a ${formatDistance(arrival.distanceM)} en línea recta`}
+        {arrival.plate && (
+          <>
+            <br />
+            Patente {arrival.plate}
+          </>
+        )}
+        <br />
+        Transapp/DTPR · fuente no oficial
+      </LeafletTooltip>
+    </Marker>
+  );
+}
+
+// Micros con GPS del paradero abierto. Con su propio reloj vencen, envejecen
+// y descuentan minutos igual que el bloque de llegadas (mismas reglas de
+// liveView), sin re-renderizar el resto del mapa en cada tic.
+function LiveVehicleMarkers({
+  live,
+  services,
+}: {
+  live: LiveArrivalsSnapshot;
+  services: Map<string, LiveServiceMatch>;
+}) {
+  const snapshot = live.state.snapshot;
+  const now = useClock(LIVE_CLOCK_TICK_MS, snapshot != null);
+  if (!snapshot) return null;
+  const view = liveView(live.state, now, live.loading);
+  return (
+    <>
+      {gpsArrivals(view).map((arrival) => (
+        <LiveVehicleMarker
+          key={`live-${arrival.tripId ?? arrival.plate ?? `${arrival.route}-${arrival.arrivalAt}`}`}
+          arrival={arrival}
+          match={services.get(arrival.route)}
+          now={now}
+          fetchedAt={snapshot.fetchedAt}
+          stale={view.kind === 'stale'}
+        />
+      ))}
+    </>
+  );
 }
 
 // El contenedor del mapa cambia de ancho cuando se abre o cierra el sidebar
@@ -388,7 +510,9 @@ export function ConceMap({
   routeColorById,
   routeLabelById,
   onSelectSimulatedVehicle,
-  liveVehicles,
+  live,
+  liveServices,
+  panelOpen,
   coverageThreshold,
   coverageRetryKey,
   coverageLoadStatus,
@@ -426,6 +550,43 @@ export function ConceMap({
     }
     return list;
   }, [selectedRoute, visibleRoutes]);
+
+  // El paradero abierto siempre se marca, aunque ninguno de sus recorridos
+  // esté visible (lo normal al llegar por el buscador, un enlace o la capa de
+  // paraderos): sin él, "a 211 m" de una micro en vivo no tiene referencia.
+  const focusedStopId = selectedStopId ?? selectedParaderoId;
+  const focusedStop = useMemo(() => {
+    if (!focusedStopId || drawnStops.some(({ stop }) => stop.id === focusedStopId)) return null;
+    const route = routes.find((r) => r.stops.some((s) => s.id === focusedStopId));
+    const stop =
+      route?.stops.find((s) => s.id === focusedStopId) ?? paraderos.find((p) => p.id === focusedStopId);
+    if (!stop) return null;
+    return { id: stop.id, name: stop.name ?? 'Paradero', lat: stop.lat, lng: stop.lng, color: route?.color ?? '#334155' };
+  }, [focusedStopId, drawnStops, routes, paraderos]);
+
+  // Eligiendo origen o destino del planificador, un clic sobre un marcador fija
+  // el punto ahí en vez de abrir su ficha: los marcadores no dejan pasar el clic
+  // al mapa. Las líneas, los paraderos de la capa, el paradero abierto y las
+  // micros en vivo sí lo dejan pasar, y MapClickCapture lo toma; su ficha no se
+  // abre.
+  const picking = pickerMode !== null;
+  const markerClick = (select: () => void) => (e: L.LeafletMouseEvent) => {
+    if (picking) onPickPoint({ lat: e.latlng.lat, lng: e.latlng.lng });
+    else select();
+  };
+  const onParaderoClick = useCallback(
+    (id: string) => {
+      if (!picking) onSelectParadero(id);
+    },
+    [picking, onSelectParadero],
+  );
+  const onSimulatedVehicleClick = useCallback(
+    (routeId: string, latlng: { lat: number; lng: number }) => {
+      if (picking) onPickPoint(latlng);
+      else onSelectSimulatedVehicle(routeId);
+    },
+    [picking, onPickPoint, onSelectSimulatedVehicle],
+  );
 
   // Shared canvas renderer keeps 1.7k paradero markers performant.
   const paraderoRenderer = useMemo(() => L.canvas({ padding: 0.2 }), []);
@@ -483,10 +644,10 @@ export function ConceMap({
       <ParaderosLayer
         enabled={showParaderosAtCurrentZoom}
         paraderos={paraderos}
-        selectedId={selectedParaderoId}
+        selectedId={selectedParaderoId ?? selectedStopId}
         shouldDim={shouldDimForSelectedRoute}
         canvasRenderer={paraderoRenderer}
-        onSelect={onSelectParadero}
+        onSelect={onParaderoClick}
       />
 
       <InterurbanCorridorsLayer
@@ -519,7 +680,11 @@ export function ConceMap({
                 lineCap: 'round',
                 lineJoin: 'round',
               }}
-              eventHandlers={{ click: () => onSelectRoute(r.id) }}
+              eventHandlers={{
+                click: () => {
+                  if (!picking) onSelectRoute(r.id);
+                },
+              }}
             />
           </Fragment>
         );
@@ -529,8 +694,8 @@ export function ConceMap({
         <Marker
           key={stop.id}
           position={[stop.lat, stop.lng]}
-          icon={stopIcon(color, selectedStopId === stop.id)}
-          eventHandlers={{ click: () => onSelectStop(stop.id) }}
+          icon={stopIcon(color, focusedStopId === stop.id)}
+          eventHandlers={{ click: markerClick(() => onSelectStop(stop.id)) }}
           keyboard={false}
         >
           <LeafletTooltip direction="top" offset={[0, -6]} opacity={0.95}>
@@ -538,6 +703,20 @@ export function ConceMap({
           </LeafletTooltip>
         </Marker>
       ))}
+      {focusedStop && (
+        <Marker
+          key={`focused-${focusedStop.id}`}
+          position={[focusedStop.lat, focusedStop.lng]}
+          icon={stopIcon(focusedStop.color, true)}
+          keyboard={false}
+          zIndexOffset={500}
+          bubblingMouseEvents
+        >
+          <LeafletTooltip direction="top" offset={[0, -6]} opacity={0.95}>
+            {focusedStop.name}
+          </LeafletTooltip>
+        </Marker>
+      )}
 
       {layerVisibility.terminals &&
         terminals.map((t) => (
@@ -545,7 +724,7 @@ export function ConceMap({
             key={t.id}
             position={[t.lat, t.lng]}
             icon={terminalIcon(selectedTerminalId === t.id)}
-            eventHandlers={{ click: () => onSelectTerminal(t.id) }}
+            eventHandlers={{ click: markerClick(() => onSelectTerminal(t.id)) }}
             keyboard={false}
           >
             <LeafletTooltip direction="top" offset={[0, -10]} opacity={0.95}>
@@ -560,7 +739,7 @@ export function ConceMap({
             key={p.id}
             position={[p.lat, p.lng]}
             icon={poiIcon(p.category, selectedPoiId === p.id)}
-            eventHandlers={{ click: () => onSelectPoi(p.id) }}
+            eventHandlers={{ click: markerClick(() => onSelectPoi(p.id)) }}
             keyboard={false}
           >
             <LeafletTooltip direction="top" offset={[0, -10]} opacity={0.95}>
@@ -646,50 +825,13 @@ export function ConceMap({
       <SimulatedVehiclesLayer
         routeColorById={routeColorById}
         routeLabelById={routeLabelById}
-        onSelect={onSelectSimulatedVehicle}
+        onSelect={onSimulatedVehicleClick}
       />
 
-      {liveVehicles.map(({ arrival, color, label, destination, fetchedAt, now }) => {
-        const minutes = minutesUntil(arrival, now);
-        const code = label ?? arrival.route;
-        return (
-          <Marker
-            key={`live-${arrival.tripId ?? arrival.plate ?? `${arrival.route}-${arrival.arrivalAt}`}`}
-            position={[arrival.position.lat, arrival.position.lng]}
-            icon={liveVehicleIcon(color, code)}
-            keyboard={false}
-            zIndexOffset={1000}
-          >
-            <LeafletTooltip direction="top" offset={[0, -12]} opacity={0.95} className="!text-[11px]">
-              <span className="font-medium">
-                {code}
-                {destination
-                  ? ` hacia ${destination}`
-                  : arrival.direction
-                    ? ` ${DIRECTION_LABEL[arrival.direction]}`
-                    : ''}
-              </span>
-              <br />
-              <span className="font-semibold">GPS en vivo</span> · posición {formatAge(now - fetchedAt)}
-              <br />
-              {minutes === 0 ? 'Llegando al paradero' : `Llega en ${minutes} min`}
-              {arrival.distanceM != null &&
-                ` · a ${arrival.distanceM < 1000 ? `${Math.round(arrival.distanceM)} m` : `${(arrival.distanceM / 1000).toFixed(1).replace('.', ',')} km`} en línea recta`}
-              {arrival.plate && (
-                <>
-                  <br />
-                  Patente {arrival.plate}
-                </>
-              )}
-              <br />
-              Transapp/DTPR · fuente no oficial
-            </LeafletTooltip>
-          </Marker>
-        );
-      })}
+      <LiveVehicleMarkers live={live} services={liveServices} />
 
       <MapClickCapture enabled={pickerMode !== null} onPick={onPickPoint} />
-      <FlyToOnToken token={flyToToken} />
+      <FlyToOnToken token={flyToToken} panelOpen={panelOpen} />
       <MapAutoResize />
       {onBoundsChange && <BoundsTracker onChange={onBoundsChange} />}
     </MapContainer>

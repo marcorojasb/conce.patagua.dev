@@ -212,7 +212,9 @@ function WikiHome({ onSelect }: { onSelect: (slug: string | null) => void }) {
         <p className="mt-2 text-base text-muted-foreground">
           Conocimiento contribuido sobre el transporte público, la planificación
           urbana y los servicios del Gran Concepción. Empezamos por lo que el
-          GTFS oficial deja afuera, los recorridos interurbanos licitados, y crecemos hacia ser el centro de verdad regional.
+          GTFS oficial deja afuera (los corredores privados a Florida y Yumbel,
+          el resto de los troncales Coronel–Lota, los colectivos y el Biotrén)
+          y crecemos hacia ser el centro de verdad regional.
         </p>
       </header>
 

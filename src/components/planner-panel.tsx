@@ -103,8 +103,8 @@ export function PlannerPanel({
           </div>
           {!matchesAvailable && matches.length === 0 && (
             <div className="rounded-md border bg-muted/40 p-2 text-[11px] text-muted-foreground">
-              No hay micros activadas. Habilita la capa Micro en Tipo (botón
-              "Activar todos") y vuelve a colocar los pines.
+              No hay recorridos en el mapa. Actívalos con el ojo de la lista
+              lateral («Mostrar en el mapa») y vuelve a colocar los pines.
             </div>
           )}
           <div className="space-y-1">

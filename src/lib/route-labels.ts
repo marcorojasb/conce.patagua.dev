@@ -26,7 +26,8 @@ export function routeCodeKey(code: string): string {
   return code.toUpperCase().replace(/[\s-]+/g, '').replace(/^0+(?=\d)/, '');
 }
 
-const fold = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+/** Texto para comparar sin tildes ni mayúsculas: "Lirquén" → "lirquen". */
+export const fold = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
 /**
  * Búsqueda de recorridos por número —el código o la variante que muestra la

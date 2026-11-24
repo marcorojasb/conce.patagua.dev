@@ -35,7 +35,13 @@ const child = spawn(
   ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'],
   // Grupo de procesos propio: `npm run dev` lanza vite como nieto, y matar
   // solo a npm deja vite vivo con las tuberías abiertas (el smoke no termina).
-  { stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' },
+  // Sin TRANSAPP_PHONE_ID (pisa el del entorno y el de .env.local): el dev
+  // server nunca puede consultar la fuente en vivo real.
+  {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    detached: process.platform !== 'win32',
+    env: { ...process.env, TRANSAPP_PHONE_ID: '' },
+  },
 );
 
 let output = '';

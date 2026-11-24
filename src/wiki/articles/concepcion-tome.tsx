@@ -719,7 +719,7 @@ export default function ConcepcionTome() {
             {
               date: '24-nov-2026',
               event: 'El visor toma 401, 401Y, 411 y 421 del GTFS oficial de la DTPR (programa del 28-feb-2025) y deja los trazados OSM digitalizados a mano.',
-              source: { href: '""" + GTFS_PAGE + """', label: 'dtpr.gob.cl · GTFS' },
+              source: { href: 'https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/', label: 'dtpr.gob.cl · GTFS' },
             },
           ]}
         />

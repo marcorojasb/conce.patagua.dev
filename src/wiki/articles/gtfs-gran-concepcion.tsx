@@ -78,8 +78,9 @@ export default function GtfsGranConcepcion() {
         bullets={[
           <>
             Es el GTFS oficial que la <strong>DTPR</strong> publica para el
-            Gran Concepción en dtpr.gob.cl. El visor lo descarga y lo
-            procesa cada noche, sin pasos manuales.
+            Gran Concepción en dtpr.gob.cl. Un proceso nocturno lo
+            descarga y procesa; si cambió, abre una solicitud de cambios
+            que se publica en el visor cuando alguien la revisa y aprueba.
           </>,
           <>
             La versión publicada es el programa del{' '}
@@ -149,7 +150,9 @@ export default function GtfsGranConcepcion() {
           programado por día de la semana y frecuencia por paradero.
         </p>
         <p>
-          Lo que está en el feed entra al visor sin trabajo manual. Lo que{' '}
+          Lo que está en el feed entra al visor sin transcribir nada a
+          mano: basta aprobar la actualización que propone el proceso
+          diario. Lo que{' '}
           <em>no</em> está (Biotrén, Florida, Yumbel, colectivos) se
           documenta aparte en este wiki o llega por otra fuente citada.
         </p>
@@ -177,8 +180,9 @@ export default function GtfsGranConcepcion() {
         <p className="text-[12px] text-muted-foreground">
           Consecuencia práctica: cambios de recorrido, frecuencia o código
           posteriores a febrero de 2025 no aparecen en el visor hasta que
-          la DTPR publique una versión nueva. La sincronización diaria la
-          tomará sola cuando cambie el archivo.
+          la DTPR publique una versión nueva. Cuando cambie el archivo, la
+          sincronización diaria abrirá una solicitud de cambios con los
+          datos nuevos, que llegan al visor al aprobarla.
         </p>
         <Sources>
           <SourceLink href={DTPR_GTFS_PAGE}>dtpr.gob.cl · Gran Concepción · GTFS</SourceLink>
@@ -448,9 +452,11 @@ export default function GtfsGranConcepcion() {
           </li>
           <li>
             <strong>La red de 2026 ya es otra en algunos servicios.</strong>{' '}
-            La fuente en vivo sigue 11 servicios que esta versión no trae
-            (02H, 02L, 20F, 20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B, 80V); el
-            visor no los muestra como recorrido.
+            La fuente en vivo sigue 11 servicios que no calzan con esta
+            versión (02H, 02L, 20F, 20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B,
+            80V). El visor no muestra diez de ellos como recorrido; la 02L
+            solo aparece como la variante 02L-Y (2 viajes en día hábil),
+            que la fuente no nombra así.
           </li>
           <li>
             <strong>Sin tiempo real oficial.</strong> El feed es estático.
@@ -483,7 +489,7 @@ export default function GtfsGranConcepcion() {
             ['Qué trae', 'Por cada micro: línea, sentido, minutos, posición GPS, patente y distancia al paradero en línea recta (no por la ruta). Una línea sin GPS llega como «sin datos en vivo · pasa cada N».'],
             ['Paraderos', 'El código de la fuente es «P» más el stop_id oficial: calzan 2.202 de los 2.239 paraderos del GTFS, 6 más tienen otro nombre y 31 no existen en la fuente.'],
             ['Líneas', 'La fuente nombra cada sentido por separado («20A», «401I»). 183 de los 188 sentidos oficiales tienen su par. La 302 y la 304 (Lota) no se siguen en vivo.'],
-            ['Servicios que el GTFS no trae', '02H, 02L, 20F, 20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B y 80V: los corre la red de 2026, no están en el programa del 28-feb-2025.'],
+            ['Servicios sin par en el GTFS', '02H, 02L, 20F, 20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B y 80V: los corre la red de 2026 y no están con ese nombre en el programa del 28-feb-2025. La 02L solo figura como la variante 02L-Y (2 viajes en día hábil).'],
             ['Ubicación de paraderos', 'Las coordenadas de la fuente coinciden con las oficiales: mediana 3 m y 97% a menos de 20 m. Es un respaldo independiente de la ubicación de los paraderos del GTFS.'],
             ['Comprobado', 'Respuestas reales del 24-nov-2026 en paraderos de Concepción, Tomé, San Pedro de la Paz, Talcahuano y Coronel.'],
           ]}
