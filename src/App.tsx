@@ -74,6 +74,8 @@ type SelectedDetail = Exclude<SheetKind, null>;
 interface SelectedDetailState {
   kind: SelectedDetail;
   id: string;
+  /** Sentido pedido cuando el recorrido llegó por la variante de un letrero ("10A"). */
+  directionId?: 0 | 1;
 }
 
 // Recorrido pedido por la URL: `?route=` (id, o también código/variante) o
@@ -84,7 +86,8 @@ const INITIAL_ROUTE_REF =
   (!INITIAL_URL.stop && !INITIAL_URL.terminal && !INITIAL_URL.poi && INITIAL_FOCUS?.kind === 'route'
     ? INITIAL_FOCUS.id
     : null);
-const INITIAL_ROUTE = INITIAL_ROUTE_REF ? findRoute(INITIAL_ROUTE_REF)?.route ?? null : null;
+const INITIAL_ROUTE_MATCH = INITIAL_ROUTE_REF ? findRoute(INITIAL_ROUTE_REF) : null;
+const INITIAL_ROUTE = INITIAL_ROUTE_MATCH?.route ?? null;
 let pendingRouteRef = INITIAL_ROUTE_REF && !INITIAL_ROUTE ? INITIAL_ROUTE_REF : null;
 // Visibles por defecto que ya existen al montar (Biotrén); los interurbanos
 // oficiales llegan con el chunk GTFS y se suman a lo visible en ese momento.
@@ -93,7 +96,11 @@ const INITIAL_FOCUS_CORRIDOR =
   INITIAL_FOCUS?.kind === 'corridor' ? CORRIDOR_BY_ID.get(INITIAL_FOCUS.id) ?? null : null;
 
 function initialSelectedDetail(): SelectedDetailState | null {
-  if (INITIAL_ROUTE_REF) return INITIAL_ROUTE ? { kind: 'route', id: INITIAL_ROUTE.id } : null;
+  if (INITIAL_ROUTE_REF) {
+    return INITIAL_ROUTE_MATCH
+      ? { kind: 'route', id: INITIAL_ROUTE_MATCH.route.id, directionId: INITIAL_ROUTE_MATCH.directionId }
+      : null;
+  }
   if (INITIAL_URL.stop) return { kind: 'stop', id: INITIAL_URL.stop };
   if (INITIAL_URL.terminal) return { kind: 'terminal', id: INITIAL_URL.terminal };
   if (INITIAL_URL.poi) return { kind: 'poi', id: INITIAL_URL.poi };
@@ -315,17 +322,17 @@ export default function App() {
   // un deep link a un recorrido que aún no estaba cargado se aplica (una vez).
   useEffect(() => {
     if (routesVersion === 0) return;
-    const pending = pendingRouteRef ? findRoute(pendingRouteRef)?.route ?? null : null;
+    const pending = pendingRouteRef ? findRoute(pendingRouteRef) : null;
     pendingRouteRef = null;
     const add = DEFAULT_VISIBLE_ROUTE_IDS.filter((id) => !EAGER_DEFAULT_ROUTE_IDS.has(id));
-    if (pending) add.push(pending.id);
+    if (pending) add.push(pending.route.id);
     setVisibleRouteIds((cur) => {
       const missing = add.filter((id) => !cur.includes(id));
       return missing.length > 0 ? [...cur, ...missing] : cur;
     });
     if (pending) {
-      setSelectedDetail({ kind: 'route', id: pending.id });
-      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: pending.path } });
+      setSelectedDetail({ kind: 'route', id: pending.route.id, directionId: pending.directionId });
+      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: pending.route.path } });
     }
   }, [routesVersion]);
 
@@ -794,6 +801,7 @@ export default function App() {
           <RouteDetailSheet
             open={sheetKind === 'route'}
             route={selectedRoute}
+            directionId={selectedDetail?.directionId}
             onOpenChange={(o) => (!o ? closeSheet() : undefined)}
             onFocusRoute={onFocusRoute}
             onDeselectRoute={closeSheet}
