@@ -156,12 +156,30 @@ export interface BusRoute {
   /** Ordered paradero ids matched or loaded for this route at build time. */
   stopIds: string[];
   /**
+   * Sentidos del recorrido según el GTFS oficial (direction_id). `path` y
+   * `stopIds` de la ruta repiten el primero (el 0 cuando existe).
+   */
+  directions?: BusRouteDirection[];
+  /**
    * Marca rutas cuyo trazado fue digitalizado manualmente desde una
    * descripción oficial — no es un shape GTFS ni una relación route=bus
    * verificada. La UI usa esto para añadir una nota explícita
    * "Trazado aproximado, no oficial" en la sheet de detalle.
    */
   digitized?: boolean;
+}
+
+/** Un sentido de un recorrido GTFS. */
+export interface BusRouteDirection {
+  /** direction_id del GTFS (en el feed DTPR, 0 = shape "-IB" y 1 = "-OB"). */
+  directionId: 0 | 1;
+  /** trip_headsign más frecuente del sentido, con espacios normalizados. */
+  headsign: string;
+  /** Código que muestra la micro en ese sentido (ej. "10P"), sacado del headsign. */
+  variant?: string;
+  path: LatLngTuple[];
+  /** Paraderos del patrón de paradas más frecuente del sentido. */
+  stopIds: string[];
 }
 
 export type PoiCategory = 'hospital' | 'university' | 'college' | 'mall';
