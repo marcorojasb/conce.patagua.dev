@@ -5,6 +5,7 @@
 // current moment assuming on-time service. Real-world delays, cancellations,
 // and detours are invisible here. The UI must communicate that honestly.
 
+import { chileClock } from '@/lib/chile-time';
 import type {
   LatLngTuple,
   RouteSchedule,
@@ -24,16 +25,6 @@ export interface SimulationRouteInput {
   sourceLabel?: string;
   sourceUrl?: string;
   note?: string;
-}
-
-/**
- * Returns the JS weekday index normalized so Monday=0..Sunday=6 — matches
- * the layout of RouteSchedule buckets.
- */
-export function isoDayOfWeek(date: Date): number {
-  // JS getDay(): 0=Sunday..6=Saturday. We want 0=Monday..6=Sunday.
-  const js = date.getDay();
-  return js === 0 ? 6 : js - 1;
 }
 
 /**
@@ -111,8 +102,7 @@ export function computeActiveVehicles(
   routes: SimulationRouteInput[],
   schedules: Record<string, RouteSchedule>,
 ): SimulatedVehicle[] {
-  const day = isoDayOfWeek(now);
-  const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+  const { day, minutes: nowMin } = chileClock(now);
 
   const out: SimulatedVehicle[] = [];
 

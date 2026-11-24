@@ -8,6 +8,7 @@ import {
   getNextStopServices,
   type StopServiceSnapshot,
 } from '@/lib/stop-services';
+import { chileClock } from '@/lib/chile-time';
 import { readableTextOn } from '@/lib/utils';
 import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import type { Route } from '@/types/transport';
@@ -145,7 +146,7 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
           Próximos servicios
         </div>
         <span className="font-mono text-[11px] text-muted-foreground">
-          {formatServiceClock(state.snapshot.generatedAt.getHours() * 60 + state.snapshot.generatedAt.getMinutes())}
+          {formatServiceClock(chileClock(state.snapshot.generatedAt).minutes)}
         </span>
       </div>
 

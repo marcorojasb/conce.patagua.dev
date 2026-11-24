@@ -3,6 +3,7 @@
 // frequency; subsequent reads are synchronous against the cached map.
 
 import { useEffect, useReducer } from 'react';
+import { chileClock } from '@/lib/chile-time';
 
 let freqPromise: Promise<Record<string, number[]>> | null = null;
 function load(): Promise<Record<string, number[]>> {
@@ -48,11 +49,10 @@ function frequencyReducer(state: FrequencyState, action: FrequencyAction): Frequ
 }
 
 /**
- * 0=Monday..6=Sunday (matches RouteSchedule + STOP_FREQUENCY).
+ * 0=Monday..6=Sunday in Chile time (matches RouteSchedule + STOP_FREQUENCY).
  */
 export function isoDayOfWeek(date: Date): number {
-  const js = date.getDay();
-  return js === 0 ? 6 : js - 1;
+  return chileClock(date).day;
 }
 
 const ZERO_PAD = new Array(168).fill(0);

@@ -4,6 +4,7 @@
 // frequencyByDay map has per-day keys. OSM bus routes have no hours at all,
 // so we fall back to a conservative default window.
 
+import { chileClock } from '@/lib/chile-time';
 import type { Route } from '@/types/transport';
 
 const DEFAULT_BUS_START_MIN = 6 * 60; // 06:00
@@ -29,7 +30,7 @@ export function isRouteOperatingAt(route: Route, date: Date): boolean {
   const parsed = parseHoursString(route.hours);
   const startMin = parsed?.start ?? DEFAULT_BUS_START_MIN;
   const endMin = parsed?.end ?? DEFAULT_BUS_END_MIN;
-  const nowMin = date.getHours() * 60 + date.getMinutes();
+  const nowMin = Math.floor(chileClock(date).minutes);
   if (startMin <= endMin) {
     return nowMin >= startMin && nowMin <= endMin;
   }
