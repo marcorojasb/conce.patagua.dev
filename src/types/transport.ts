@@ -73,8 +73,8 @@ export interface Route {
   frequencyByDay: Record<string, string>;
   /**
    * Paraderos que atiende el recorrido en cualquier sentido: primero los del
-   * sentido 0 en orden, luego los que solo toca el otro. El orden por sentido
-   * está en `directions[].stops`.
+   * primer sentido en orden, luego los que solo toca el otro. El orden por
+   * sentido está en `directions[].stops`.
    */
   stops: Stop[];
   /** Trazado completo para dibujar: ida seguida del regreso cuando hay dos sentidos. */

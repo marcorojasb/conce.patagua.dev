@@ -1,6 +1,9 @@
 import {
   AlertTriangle,
+  ArrowLeftRight,
+  ArrowRight,
   BarChart3,
+  ChevronRight,
   Clock,
   CreditCard,
   ExternalLink,
@@ -21,29 +24,23 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { SectionLabel } from '@/components/ui/section-label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { GTFS_CONCEPCION_SOURCE } from '@/data/gtfs-stops.generated';
 import { ROUTE_TYPES } from '@/data/routes';
-import {
-  STATIC_SERVICE_PATTERNS,
-  type StaticServiceDirection,
-  type StaticServicePattern,
-} from '@/data/static-service-patterns';
-import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
+import { STATIC_SERVICE_PATTERNS, type StaticServicePattern } from '@/data/static-service-patterns';
 import { WikiLinkButton } from '@/components/wiki-link';
 import { chileClock } from '@/lib/chile-time';
+import { isRouteOperatingAt } from '@/lib/operating-hours';
 import {
   departuresByHour,
+  isEvenlySpaced,
   summarizeDay,
   summarizeToday,
-  summarizeWindowsDay,
-  summarizeWindowsToday,
-  type DayServiceSummary,
   type NextDeparture,
-  type RouteTodaySummary,
 } from '@/lib/route-schedule-summary';
 import { formatServiceClock } from '@/lib/stop-services';
 import { isInterurban } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
-import type { Route, RouteSchedule } from '@/types/transport';
+import type { LatLngTuple, Route, RouteSchedule, Stop } from '@/types/transport';
 
 interface RouteDetailSheetProps {
   open: boolean;
@@ -55,29 +52,19 @@ interface RouteDetailSheetProps {
 }
 
 // Mismo import() que la capa de servicios en curso (activa al iniciar): el
-// chunk de horarios (~700 KB) suele estar ya en caché al abrir la ficha y no
-// pesa en la carga inicial.
+// chunk de horarios suele estar ya en caché al abrir la ficha y no pesa en la
+// carga inicial. Las micros se leen por sentido ("gtfs-route-835#0") y
+// Biotrén por patrón EFE (un id por sentido y tipo de día).
 let schedulesPromise: Promise<Record<string, RouteSchedule>> | null = null;
 function loadSchedules(): Promise<Record<string, RouteSchedule>> {
   schedulesPromise ??= Promise.all([
     import('@/data/gtfs-schedule.generated'),
     import('@/realtime/static-service-schedules'),
   ]).then(([gtfs, staticSchedules]) => ({
-    ...gtfs.ROUTE_SCHEDULES,
+    ...gtfs.ROUTE_DIRECTION_SCHEDULES,
     ...staticSchedules.STATIC_ROUTE_SCHEDULES,
   }));
   return schedulesPromise;
-}
-
-// Respaldo para los recorridos GTFS que el extractor de horarios dejó sin
-// viajes: sus ventanas de paso por paradero. Es el mismo chunk (~330 KB gz)
-// que usa la ficha de paradero, así que solo se pide para esos recorridos.
-let stopWindowsPromise: Promise<Record<string, StopServiceWindow[]>> | null = null;
-function loadStopWindows(): Promise<Record<string, StopServiceWindow[]>> {
-  stopWindowsPromise ??= import('@/data/gtfs-stop-services.generated').then(
-    (mod) => mod.STOP_SERVICE_WINDOWS,
-  );
-  return stopWindowsPromise;
 }
 
 const PATTERNS_BY_ROUTE = new Map<string, StaticServicePattern[]>();
@@ -87,66 +74,80 @@ for (const pattern of STATIC_SERVICE_PATTERNS) {
   PATTERNS_BY_ROUTE.set(pattern.routeId, list);
 }
 
-interface ScheduleDirection {
-  label: string;
-  schedules: RouteSchedule[];
+/** Un sentido tal como lo muestra la ficha. */
+interface DirectionView {
+  /** Clave de su horario: "gtfs-route-835#0" en micros, "forward"/"reverse" en patrones estáticos. */
+  key: string;
+  /** Código del letrero en ese sentido ("10A"). */
+  variant?: string;
+  destination: string;
+  /** Solo patrones estáticos (Biotrén): estación de salida. */
+  origin?: string;
+  stops: Stop[];
+  km: number;
 }
 
-type RouteScheduleData =
-  | {
-      kind: 'trips';
-      /** Todos los sentidos juntos (para contar salidas). */
-      all: RouteSchedule[];
-      /** Solo en patrones estáticos: el GTFS no separa sentidos en este dataset. */
-      directions: ScheduleDirection[];
-      /** Reconstruido desde una frecuencia publicada, no viajes programados uno a uno. */
-      estimated: boolean;
-    }
-  | {
-      /** Sin viajes uno a uno: ventana de paso por el primer paradero. */
-      kind: 'windows';
-      windows: StopServiceWindow[];
-      originName: string;
-    };
-
-function todaySummary(data: RouteScheduleData, now: Date): RouteTodaySummary {
-  return data.kind === 'trips'
-    ? summarizeToday(data.all, now)
-    : summarizeWindowsToday(data.windows, now);
+function routeDirections(route: Route): DirectionView[] {
+  if (route.directions && route.directions.length > 0) {
+    return route.directions.map((d) => ({
+      key: `${route.id}#${d.directionId}`,
+      variant: d.variant,
+      destination: d.destination ?? d.headsign,
+      stops: d.stops,
+      km: pathKilometers(d.path),
+    }));
+  }
+  // Biotrén no tiene sentidos en el modelo: salen de sus patrones EFE, que
+  // recorren `route.stops` en orden (forward) o al revés (reverse).
+  const patterns = PATTERNS_BY_ROUTE.get(route.id) ?? [];
+  const km = pathKilometers(route.path);
+  const views: DirectionView[] = [];
+  for (const direction of ['forward', 'reverse'] as const) {
+    const pattern = patterns.find((p) => p.direction === direction);
+    if (!pattern) continue;
+    const [origin, destination] = pattern.directionLabel.split('→').map((part) => part.trim());
+    views.push({
+      key: direction,
+      origin: destination ? origin : undefined,
+      destination: destination || pattern.directionLabel,
+      stops: direction === 'forward' ? route.stops : [...route.stops].reverse(),
+      km,
+    });
+  }
+  return views;
 }
 
-function daySummary(data: RouteScheduleData, day: number): DayServiceSummary {
-  return data.kind === 'trips' ? summarizeDay(data.all, day) : summarizeWindowsDay(data.windows, day);
+interface RouteScheduleData {
+  /** Un horario por sentido (en Biotrén, por sentido y tipo de día). */
+  all: RouteSchedule[];
+  /** Horarios de cada sentido, por `DirectionView.key`. */
+  byDirection: Map<string, RouteSchedule[]>;
+  /** Reconstruido desde una frecuencia anunciada, no salidas publicadas una a una. */
+  estimated: boolean;
 }
 
 function scheduleForRoute(
-  routeId: string,
+  route: Route,
   index: Record<string, RouteSchedule>,
 ): RouteScheduleData | null {
-  const patterns = PATTERNS_BY_ROUTE.get(routeId);
+  const byDirection = new Map<string, RouteSchedule[]>();
+  const add = (key: string, schedule: RouteSchedule | undefined) => {
+    if (schedule) byDirection.set(key, [...(byDirection.get(key) ?? []), schedule]);
+  };
+  const patterns = PATTERNS_BY_ROUTE.get(route.id);
   if (patterns) {
-    const byDirection = new Map<StaticServiceDirection, ScheduleDirection>();
-    for (const pattern of patterns) {
-      const schedule = index[pattern.id];
-      if (!schedule) continue;
-      const direction = byDirection.get(pattern.direction) ?? {
-        label: pattern.directionLabel,
-        schedules: [],
-      };
-      direction.schedules.push(schedule);
-      byDirection.set(pattern.direction, direction);
+    for (const pattern of patterns) add(pattern.direction, index[pattern.id]);
+  } else {
+    for (const directionId of [0, 1]) {
+      add(`${route.id}#${directionId}`, index[`${route.id}#${directionId}`]);
     }
-    const directions = [...byDirection.values()];
-    if (directions.length === 0) return null;
-    return {
-      kind: 'trips',
-      all: directions.flatMap((d) => d.schedules),
-      directions,
-      estimated: true,
-    };
   }
-  const schedule = index[routeId];
-  return schedule ? { kind: 'trips', all: [schedule], directions: [], estimated: false } : null;
+  if (byDirection.size === 0) return null;
+  return {
+    all: [...byDirection.values()].flat(),
+    byDirection,
+    estimated: patterns?.some((p) => !p.trips) ?? false,
+  };
 }
 
 type ScheduleState =
@@ -156,18 +157,11 @@ type ScheduleState =
 
 function useRouteSchedule(route: Route | null, active: boolean): ScheduleState {
   const [index, setIndex] = useState<Record<string, RouteSchedule> | null>(null);
-  const [stopWindows, setStopWindows] = useState<Record<string, StopServiceWindow[]> | null>(
-    null,
-  );
   const [failed, setFailed] = useState(false);
-  const routeId = active ? route?.id : undefined;
-  const origin = route?.stops[0];
-  const needsWindows = Boolean(
-    index && origin && routeId?.startsWith('gtfs-route-') && !index[routeId],
-  );
+  const wanted = active && route !== null;
 
   useEffect(() => {
-    if (!routeId || index || failed) return undefined;
+    if (!wanted || index || failed) return undefined;
     let cancelled = false;
     loadSchedules()
       .then((loaded) => {
@@ -180,39 +174,13 @@ function useRouteSchedule(route: Route | null, active: boolean): ScheduleState {
     return () => {
       cancelled = true;
     };
-  }, [routeId, index, failed]);
-
-  useEffect(() => {
-    if (!needsWindows || stopWindows || failed) return undefined;
-    let cancelled = false;
-    loadStopWindows()
-      .then((loaded) => {
-        if (!cancelled) setStopWindows(loaded);
-      })
-      .catch(() => {
-        stopWindowsPromise = null;
-        if (!cancelled) setFailed(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [needsWindows, stopWindows, failed]);
+  }, [wanted, index, failed]);
 
   return useMemo<ScheduleState>(() => {
     if (failed) return { status: 'error', retry: () => setFailed(false) };
-    if (!routeId || !index) return { status: 'loading' };
-    const own = scheduleForRoute(routeId, index);
-    if (own || !needsWindows || !origin) return { status: 'ready', data: own };
-    if (!stopWindows) return { status: 'loading' };
-    const windows = (stopWindows[origin.id] ?? []).filter((w) => w[0] === routeId);
-    const hasService = [0, 1, 2, 3, 4, 5, 6].some(
-      (day) => summarizeWindowsDay(windows, day).departures > 0,
-    );
-    return {
-      status: 'ready',
-      data: hasService ? { kind: 'windows', windows, originName: origin.name } : null,
-    };
-  }, [failed, index, needsWindows, origin, routeId, stopWindows]);
+    if (!route || !index) return { status: 'loading' };
+    return { status: 'ready', data: scheduleForRoute(route, index) };
+  }, [failed, index, route]);
 }
 
 /** Hora actual que avanza sola mientras la ficha está abierta. */
@@ -271,7 +239,7 @@ function formatKm(km: number): string {
   return `${km.toLocaleString('es-CL', { maximumFractionDigits: 1 })} km`;
 }
 
-function pathKilometers(path: Array<[number, number]>): number {
+function pathKilometers(path: LatLngTuple[]): number {
   let km = 0;
   for (let i = 1; i < path.length; i++) {
     const [a, b] = [path[i - 1], path[i]];
@@ -288,6 +256,18 @@ function pathKilometers(path: Array<[number, number]>): number {
   return km;
 }
 
+/** "2025-12-31" → "31-12-2025". */
+function formatIsoDate(iso: string): string {
+  const [y, m, d] = iso.split('-');
+  return `${d}-${m}-${y}`;
+}
+
+// DTPR versiona como "Gran Concepción20250228": la fecha del programa va al final.
+const FEED_PROGRAM_DATE = (() => {
+  const match = /(\d{4})(\d{2})(\d{2})\s*$/.exec(GTFS_CONCEPCION_SOURCE.feedVersion);
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : null;
+})();
+
 export function RouteDetailSheet({
   open,
   route,
@@ -298,7 +278,17 @@ export function RouteDetailSheet({
 }: RouteDetailSheetProps) {
   const schedule = useRouteSchedule(route, open);
   const now = useNow(open);
-  const lengthKm = useMemo(() => (route ? pathKilometers(route.path) : 0), [route]);
+  const directions = useMemo(() => (route ? routeDirections(route) : []), [route]);
+  const routeKm = useMemo(() => (route ? pathKilometers(route.path) : 0), [route]);
+  const [tab, setTab] = useState('info');
+  // El sentido elegido vale para el recorrido en que se eligió.
+  const [pickedDirection, setPickedDirection] = useState<{ routeId: string; key: string } | null>(
+    null,
+  );
+  const directionKey =
+    pickedDirection && pickedDirection.routeId === route?.id
+      ? pickedDirection.key
+      : directions[0]?.key;
 
   const panelChrome = useMemo(() => {
     if (!route) return null;
@@ -309,12 +299,12 @@ export function RouteDetailSheet({
           <RouteBadge code={route.code} color={route.color} />
           <TypeIcon />
           <span>{ROUTE_TYPES[route.type].label}</span>
-          {route.network === 'Interurbano Biobío' && (
+          {isInterurban(route) && (
             <Badge
               variant="outline"
               className="border-teal-600/40 bg-teal-500/10 text-[10px] font-normal text-teal-900 dark:text-teal-200"
             >
-              Interurbano · licitado DTPR
+              {route.network}
             </Badge>
           )}
         </div>
@@ -353,6 +343,12 @@ export function RouteDetailSheet({
 
   if (!route || !panelChrome) return null;
 
+  const pickDirection = (key: string) => setPickedDirection({ routeId: route.id, key });
+  const showDirection = (key: string) => {
+    pickDirection(key);
+    setTab('recorrido');
+  };
+
   return (
     <FloatingInfoPanel
       open={open}
@@ -363,7 +359,7 @@ export function RouteDetailSheet({
       eyebrow={panelChrome.eyebrow}
       actions={panelChrome.actions}
     >
-      <Tabs defaultValue="info" className="flex h-full min-h-0 flex-col px-5 pb-5 pt-4">
+      <Tabs value={tab} onValueChange={setTab} className="flex h-full min-h-0 flex-col px-5 pb-5 pt-4">
         <TabsList className="self-start">
           <TabsTrigger value="info">
             <Info className="size-3" />
@@ -381,19 +377,33 @@ export function RouteDetailSheet({
 
         <TabsContent value="info" className="min-h-0 flex-1">
           <ScrollArea className="h-full pr-2 scroll-fade-y">
-            <InfoTab route={route} schedule={schedule} now={now} lengthKm={lengthKm} />
+            <InfoTab
+              route={route}
+              directions={directions}
+              schedule={schedule}
+              now={now}
+              routeKm={routeKm}
+              onShowDirection={showDirection}
+            />
           </ScrollArea>
         </TabsContent>
 
         <TabsContent value="recorrido" className="min-h-0 flex-1">
           <ScrollArea className="h-full pr-2 scroll-fade-y">
-            <StopsTab route={route} lengthKm={lengthKm} onSelectStop={onSelectStop} />
+            <StopsTab
+              route={route}
+              directions={directions}
+              directionKey={directionKey}
+              onPickDirection={pickDirection}
+              routeKm={routeKm}
+              onSelectStop={onSelectStop}
+            />
           </ScrollArea>
         </TabsContent>
 
         <TabsContent value="horarios" className="min-h-0 flex-1">
           <ScrollArea className="h-full pr-2 scroll-fade-y">
-            <ScheduleTab route={route} schedule={schedule} now={now} />
+            <ScheduleTab route={route} directions={directions} schedule={schedule} now={now} />
           </ScrollArea>
         </TabsContent>
       </Tabs>
@@ -433,16 +443,39 @@ function stopsNoun(route: Route, count: number): string {
   return count === 1 ? 'paradero' : 'paraderos';
 }
 
-function InfoTab({
+/** Letrero de un sentido: código de la variante (o de la ruta) y destino. */
+function DirectionSign({
   route,
-  schedule,
-  now,
-  lengthKm,
+  direction,
+  className,
 }: {
   route: Route;
+  direction: DirectionView;
+  className?: string;
+}) {
+  return (
+    <span className={cn('flex min-w-0 items-center gap-1.5', className)}>
+      <RouteBadge code={direction.variant ?? route.code} color={route.color} />
+      <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" aria-label="hacia" />
+      <span className="truncate">{direction.destination}</span>
+    </span>
+  );
+}
+
+function InfoTab({
+  route,
+  directions,
+  schedule,
+  now,
+  routeKm,
+  onShowDirection,
+}: {
+  route: Route;
+  directions: DirectionView[];
   schedule: ScheduleState;
   now: Date;
-  lengthKm: number;
+  routeKm: number;
+  onShowDirection: (key: string) => void;
 }) {
   const today = chileClock(now).day;
   const routeCard =
@@ -450,11 +483,16 @@ function InfoTab({
       <StatCard
         label="Recorrido"
         value={`${route.stops.length} ${stopsNoun(route, route.stops.length)}`}
-        detail={formatKm(lengthKm)}
+        detail={
+          (route.directions?.length ?? 0) > 1
+            ? 'sumando ambos sentidos'
+            : formatKm(directions[0]?.km ?? routeKm)
+        }
       />
     ) : (
-      <StatCard label="Recorrido" value={formatKm(lengthKm)} detail="sin paraderos cargados" />
+      <StatCard label="Recorrido" value={formatKm(routeKm)} detail="sin paraderos cargados" />
     );
+  const data = schedule.status === 'ready' ? schedule.data : null;
 
   return (
     <div className="space-y-4">
@@ -474,8 +512,8 @@ function InfoTab({
             <ScheduleError retry={schedule.retry} />
             <div className="grid grid-cols-2 gap-2">{routeCard}</div>
           </div>
-        ) : schedule.data ? (
-          <TodayCards data={schedule.data} now={now} routeCard={routeCard} />
+        ) : data ? (
+          <TodayCards route={route} data={data} now={now} routeCard={routeCard} />
         ) : (
           <div className="space-y-2">
             <Notice icon={<Info />}>
@@ -486,6 +524,54 @@ function InfoTab({
           </div>
         )}
       </section>
+
+      {directions.length > 0 && (
+        <section aria-label="Sentidos">
+          <SectionLabel icon={<ArrowLeftRight />}>
+            {directions.length === 1 ? 'Sentido' : 'Sentidos'}
+          </SectionLabel>
+          <ul className="space-y-1.5">
+            {directions.map((direction) => {
+              const daySchedules = data?.byDirection.get(direction.key);
+              const day = daySchedules ? summarizeDay(daySchedules, today) : null;
+              const range = day ? formatRange(day.first, day.last) : null;
+              const details = [
+                direction.origin ? `desde ${direction.origin}` : null,
+                `${direction.stops.length} ${stopsNoun(route, direction.stops.length)}`,
+                formatKm(direction.km),
+                data ? (range ? `hoy ${range}` : 'hoy sin salidas') : null,
+              ].filter(Boolean);
+              return (
+                <li key={direction.key}>
+                  <button
+                    type="button"
+                    onClick={() => onShowDirection(direction.key)}
+                    title="Ver sus paraderos en orden"
+                    className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <DirectionSign
+                        route={route}
+                        direction={direction}
+                        className="text-sm font-medium"
+                      />
+                      <div className="mt-0.5 truncate text-[11px] text-muted-foreground tabular-nums">
+                        {details.join(' · ')}
+                      </div>
+                    </div>
+                    <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {route.directions?.length === 1 && (
+            <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
+              El GTFS oficial publica un solo sentido para este recorrido.
+            </p>
+          )}
+        </section>
+      )}
 
       <section>
         <SectionLabel icon={<Wallet />}>Tarifa</SectionLabel>
@@ -531,34 +617,33 @@ function ScheduleError({ retry }: { retry: () => void }) {
 }
 
 function TodayCards({
+  route,
   data,
   now,
   routeCard,
 }: {
+  route: Route;
   data: RouteScheduleData;
   now: Date;
   routeCard: ReactNode;
 }) {
-  const summary = todaySummary(data, now);
+  const summary = summarizeToday(data.all, now);
+  // Misma regla que el punto "operando ahora" de la barra lateral y la ficha
+  // de paradero; sin tramos calculados se usa el viaje en curso del horario.
+  const operatingNow = route.serviceSpans ? isRouteOperatingAt(route, now) : summary.operatingNow;
   const range = formatRange(summary.first, summary.last);
-  const directions = data.kind === 'trips' ? data.directions.length : 1;
-  const estimated = data.kind === 'trips' && data.estimated;
+  const bothWays = data.byDirection.size > 1;
   const next = summary.nextDeparture ? formatNext(summary.nextDeparture, summary.day) : null;
 
   let nowValue: string;
   let nowDetail: string;
-  if (summary.operatingNow && summary.nextDeparture && summary.nextDeparture.dayOffset > 0) {
+  if (operatingNow && summary.nextDeparture && summary.nextDeparture.dayOffset > 0) {
     nowValue = 'Últimos viajes';
     nowDetail = next ? `próxima salida ${next}` : 'sin más salidas';
-  } else if (summary.operatingNow) {
+  } else if (operatingNow) {
     nowValue = summary.headwayNow ? `cada ~${formatHeadway(summary.headwayNow)}` : 'En servicio';
-    // Con ventanas de paso no se conoce cada salida, pero sí hasta cuándo hay.
-    nowDetail = next
-      ? `próxima ${next}`
-      : summary.last !== null
-        ? `hasta las ${formatServiceClock(summary.last)}`
-        : 'sin más salidas';
-    if (summary.headwayNow && directions > 1) nowDetail = `por sentido · ${nowDetail}`;
+    nowDetail = next ? `próxima ${next}` : 'sin más salidas';
+    if (summary.headwayNow && bothWays) nowDetail = `por sentido · ${nowDetail}`;
   } else {
     nowValue = 'Sin servicio';
     nowDetail = next ? `próxima ${next}` : 'sin salidas programadas';
@@ -575,9 +660,9 @@ function TodayCards({
         label="Salidas"
         value={summary.departures}
         detail={
-          directions > 1
-            ? `${estimated ? 'estimadas' : 'programadas'} · ambos sentidos`
-            : estimated
+          bothWays
+            ? `${data.estimated ? 'estimadas' : 'programadas'} · ambos sentidos`
+            : data.estimated
               ? 'estimadas hoy'
               : 'programadas hoy'
         }
@@ -591,7 +676,7 @@ function TodayCards({
             aria-hidden
             className={cn(
               'size-1.5 rounded-full',
-              summary.operatingNow ? 'bg-emerald-500' : 'bg-muted-foreground/40',
+              operatingNow ? 'bg-emerald-500' : 'bg-muted-foreground/40',
             )}
           />
         }
@@ -601,51 +686,16 @@ function TodayCards({
   );
 }
 
+const linkClass =
+  'inline-flex items-center gap-0.5 underline underline-offset-2 hover:text-foreground';
+
 function SourceNote({ route, schedule }: { route: Route; schedule: ScheduleState }) {
-  const patterns = PATTERNS_BY_ROUTE.get(route.id) ?? [];
-
-  if (patterns.length > 0) {
-    const notes = [...new Set(patterns.map((p) => p.note))];
-    const sources = new Map<string, string>();
-    for (const p of patterns) if (!sources.has(p.sourceUrl)) sources.set(p.sourceUrl, p.sourceLabel);
-    return (
-      <Notice icon={<Info />}>
-        <p>Horario estimado, no es el itinerario oficial. {notes.join(' ')}</p>
-        <p className="mt-1">
-          Fuente:{' '}
-          {[...sources].map(([url, label], i) => (
-            <span key={url}>
-              {i > 0 && ' · '}
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-0.5 underline underline-offset-2 hover:text-foreground"
-              >
-                {label}
-                <ExternalLink className="size-3" />
-              </a>
-            </span>
-          ))}
-          {route.type === 'biotren' && '. Estaciones y vía: OpenStreetMap.'}
-        </p>
-      </Notice>
-    );
-  }
-
+  const patterns = PATTERNS_BY_ROUTE.get(route.id);
+  if (patterns) return <PatternSourceNote route={route} patterns={patterns} />;
   if (route.id.startsWith('gtfs-route-')) {
-    const kind = schedule.status === 'ready' ? schedule.data?.kind : undefined;
-    return (
-      <Notice icon={<Info />}>
-        {kind === 'trips'
-          ? 'Recorrido, paraderos y horario programado del GTFS estático Gran Concepción (Subsecretaría de Transportes). Cada salida es un viaje planificado desde su cabecera; no son llegadas en vivo.'
-          : kind === 'windows'
-            ? 'Recorrido, paraderos y horario programado del GTFS estático Gran Concepción (Subsecretaría de Transportes), resumido en su primer paradero porque el feed trae horas incompletas en algunos viajes. No son llegadas en vivo.'
-            : 'Recorrido y paraderos del GTFS estático Gran Concepción (Subsecretaría de Transportes).'}
-      </Notice>
-    );
+    const hasSchedule = schedule.status === 'ready' && schedule.data !== null;
+    return <GtfsSourceNote hasSchedule={hasSchedule} />;
   }
-
   return (
     <Notice icon={<Info />}>
       Trazado y paraderos desde datos abiertos (OpenStreetMap y descripción oficial del
@@ -654,12 +704,86 @@ function SourceNote({ route, schedule }: { route: Route; schedule: ScheduleState
   );
 }
 
+function GtfsSourceNote({ hasSchedule }: { hasSchedule: boolean }) {
+  const feed = GTFS_CONCEPCION_SOURCE;
+  const expired = Date.parse(`${feed.feedEndDate}T23:59:59-03:00`) < Date.now();
+  return (
+    <Notice icon={<Info />}>
+      <p>
+        {hasSchedule ? 'Recorrido, paraderos y horario programado' : 'Recorrido y paraderos'} del
+        GTFS oficial de la DTPR
+        {FEED_PROGRAM_DATE ? `, programa del ${FEED_PROGRAM_DATE}` : ''} (versión «
+        {feed.feedVersion}»).
+      </p>
+      <p className="mt-1">
+        {expired
+          ? `Su calendario declarado (${formatIsoDate(feed.feedStartDate)} a ${formatIsoDate(feed.feedEndDate)}) ya venció, pero es la última programación publicada: puede no reflejar cambios posteriores.`
+          : `Calendario declarado vigente hasta el ${formatIsoDate(feed.feedEndDate)}.`}
+        {hasSchedule &&
+          ' Cada salida es un viaje planificado desde su cabecera; no son llegadas en vivo.'}
+      </p>
+      <p className="mt-1">
+        Fuente:{' '}
+        <a href={feed.url} target="_blank" rel="noopener noreferrer" className={linkClass}>
+          DTPR · granconcepcion.zip
+          <ExternalLink className="size-3" />
+        </a>
+      </p>
+    </Notice>
+  );
+}
+
+function PatternSourceNote({
+  route,
+  patterns,
+}: {
+  route: Route;
+  patterns: StaticServicePattern[];
+}) {
+  const official = patterns.every((p) => p.confidence === 'official' && p.trips);
+  const notes = [...new Set(patterns.map((p) => p.note))];
+  const sources = new Map<string, string>();
+  for (const p of patterns) if (!sources.has(p.sourceUrl)) sources.set(p.sourceUrl, p.sourceLabel);
+  const operator = route.type === 'biotren' ? 'EFE' : 'el operador';
+
+  return (
+    <Notice icon={<Info />}>
+      <p>
+        {official
+          ? `Itinerario oficial de ${operator}, salida por salida. Cuenta solo los viajes de cabecera a cabecera.`
+          : 'Horario estimado desde una frecuencia publicada; no es el itinerario oficial.'}
+        {route.type === 'biotren' && ' Estaciones y vía: OpenStreetMap.'}
+      </p>
+      <details className="mt-1">
+        <summary className="cursor-pointer rounded-sm hover:text-foreground focus-ring">
+          Fuentes y notas del itinerario
+        </summary>
+        <ul className="mt-1 list-disc space-y-0.5 pl-4">
+          {[...sources].map(([url, label]) => (
+            <li key={url}>
+              <a href={url} target="_blank" rel="noopener noreferrer" className={linkClass}>
+                {label}
+                <ExternalLink className="size-3" />
+              </a>
+            </li>
+          ))}
+          {notes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
+      </details>
+    </Notice>
+  );
+}
+
 function ScheduleTab({
   route,
+  directions,
   schedule,
   now,
 }: {
   route: Route;
+  directions: DirectionView[];
   schedule: ScheduleState;
   now: Date;
 }) {
@@ -684,20 +808,23 @@ function ScheduleTab({
   if (schedule.status === 'error') return <ScheduleError retry={schedule.retry} />;
   if (!schedule.data) {
     return (
-      <Notice icon={<Info />}>
-        No hay horario abierto para este recorrido: los datos que usa el visor no
-        incluyen sus viajes programados ni una frecuencia publicada. Cuando exista una
-        fuente oficial, aquí aparecerán las salidas por hora.
-      </Notice>
+      <div className="space-y-4">
+        <Notice icon={<Info />}>
+          No hay horario abierto para este recorrido: los datos que usa el visor no
+          incluyen sus viajes programados ni una frecuencia publicada.
+        </Notice>
+        <SourceNote route={route} schedule={schedule} />
+      </div>
     );
   }
 
   const data = schedule.data;
   const day = representativeDay(group, clock.day);
   const isToday = day === clock.day;
-  const summary = daySummary(data, day);
+  const summary = summarizeDay(data.all, day);
   const currentHour = isToday ? Math.floor(clock.minutes / 60) : null;
   const dayLabel = isToday ? `hoy, ${DAY_NAMES[day]}` : DAY_NAMES[day];
+  const scheduledDirections = directions.filter((d) => data.byDirection.has(d.key));
 
   return (
     <div className="space-y-4">
@@ -731,9 +858,7 @@ function ScheduleTab({
       </div>
 
       {summary.departures === 0 ? (
-        <Notice icon={<Info />}>
-          Sin salidas el {DAY_NAMES[day]}.
-        </Notice>
+        <Notice icon={<Info />}>Sin salidas el {DAY_NAMES[day]}.</Notice>
       ) : (
         <>
           <div className="grid grid-cols-4 gap-2">
@@ -746,53 +871,53 @@ function ScheduleTab({
             />
           </div>
 
-          {data.kind === 'trips' ? (
-            <section>
-              <SectionLabel icon={<BarChart3 />} aside={dayLabel}>
-                Salidas por hora
+          {scheduledDirections.length > 1 && (
+            <section aria-label="Por sentido">
+              <SectionLabel icon={<ArrowLeftRight />} aside={dayLabel}>
+                Por sentido
               </SectionLabel>
-              <HourlyChart
-                hourly={departuresByHour(data.all, day)}
-                currentHour={currentHour}
-                dayName={DAY_NAMES[day]}
-              />
+              <ul className="divide-y rounded-md border bg-card">
+                {scheduledDirections.map((direction) => {
+                  const s = summarizeDay(data.byDirection.get(direction.key) ?? [], day);
+                  const range = formatRange(s.first, s.last);
+                  return (
+                    <li key={direction.key} className="px-3 py-2">
+                      <DirectionSign
+                        route={route}
+                        direction={direction}
+                        className="text-sm font-medium leading-tight"
+                      />
+                      <div className="mt-1 text-[11px] text-muted-foreground tabular-nums">
+                        {range
+                          ? [
+                              direction.origin ? `sale de ${direction.origin}` : null,
+                              range,
+                              `${s.departures} ${s.departures === 1 ? 'salida' : 'salidas'}`,
+                              s.medianHeadway ? `cada ~${formatHeadway(s.medianHeadway)}` : null,
+                            ]
+                              .filter(Boolean)
+                              .join(' · ')
+                          : 'sin servicio este día'}
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             </section>
-          ) : (
-            <Notice icon={<Info />}>
-              Sin desglose por hora para este recorrido: las cifras son las pasadas
-              programadas por su primer paradero,{' '}
-              <span className="font-medium text-foreground">{data.originName}</span>.
-            </Notice>
           )}
-        </>
-      )}
 
-      {data.kind === 'trips' && data.directions.length > 1 && (
-        <section>
-          <SectionLabel icon={<RouteIcon />}>Por sentido</SectionLabel>
-          <ul className="divide-y rounded-md border bg-card">
-            {data.directions.map((direction) => {
-              const s = summarizeDay(direction.schedules, day);
-              const range = formatRange(s.first, s.last);
-              return (
-                <li key={direction.label} className="px-3 py-2">
-                  <div className="text-sm font-medium leading-tight">{direction.label}</div>
-                  <div className="mt-0.5 text-[11px] text-muted-foreground tabular-nums">
-                    {range
-                      ? [
-                          range,
-                          `${s.departures} salidas`,
-                          s.medianHeadway ? `cada ~${formatHeadway(s.medianHeadway)}` : null,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')
-                      : 'sin servicio este día'}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+          <section>
+            <SectionLabel icon={<BarChart3 />} aside={dayLabel}>
+              {scheduledDirections.length > 1 ? 'Salidas por hora · ambos sentidos' : 'Salidas por hora'}
+            </SectionLabel>
+            <HourlyChart
+              hourly={departuresByHour(data.all, day)}
+              currentHour={currentHour}
+              dayName={DAY_NAMES[day]}
+              evenlySpaced={data.estimated || isEvenlySpaced(data.all, day)}
+            />
+          </section>
+        </>
       )}
 
       <SourceNote route={route} schedule={schedule} />
@@ -810,22 +935,48 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 }
 
 const AXIS_HOURS = [0, 3, 6, 9, 12, 15, 18, 21];
+/** Con más horas empatadas en el máximo, nombrarlas no ayuda a leer el gráfico. */
+const MAX_PEAK_HOURS_LISTED = 3;
 
 function HourlyChart({
   hourly,
   currentHour,
   dayName,
+  evenlySpaced,
 }: {
   hourly: number[];
   currentHour: number | null;
   dayName: string;
+  /** Salidas a intervalo fijo: la hora "con más salidas" sería un efecto del corte por hora. */
+  evenlySpaced: boolean;
 }) {
   const max = Math.max(...hourly, 1);
-  const peak = hourly.indexOf(max);
-  // Con frecuencia pareja (patrones estimados) no hay una "hora con más salidas".
-  const even = hourly.every((count) => count === 0 || count === max);
+  const total = hourly.reduce((a, b) => a + b, 0);
+  const peaks = hourly.flatMap((count, hour) => (count === max ? [hour] : []));
   const hh = (h: number) => `${String(h).padStart(2, '0')}:00`;
   const plural = (n: number) => `${n} ${n === 1 ? 'salida' : 'salidas'}`;
+  const showPeak = !evenlySpaced && total > 2;
+
+  let peakText: ReactNode = null;
+  if (evenlySpaced && total > 2) {
+    peakText = 'Salidas a intervalo parejo: no hay una hora con más salidas.';
+  } else if (showPeak && peaks.length <= MAX_PEAK_HOURS_LISTED) {
+    const hours = peaks.map(hh);
+    const list = hours.length > 1 ? `${hours.slice(0, -1).join(', ')} y ${hours[hours.length - 1]}` : hours[0];
+    peakText = (
+      <>
+        {peaks.length > 1 ? 'Horas con más salidas: ' : 'Hora con más salidas: '}
+        <span className="font-medium text-foreground">{list}</span> ({plural(max)}
+        {peaks.length > 1 ? ' c/u' : ''})
+      </>
+    );
+  } else if (showPeak) {
+    peakText = `Hasta ${plural(max)} por hora, en ${peaks.length} horas del día.`;
+  }
+  const nowText =
+    currentHour !== null && !(showPeak && peaks.length === 1 && peaks[0] === currentHour)
+      ? `ahora (${hh(currentHour)}): ${plural(hourly[currentHour])}`
+      : null;
 
   return (
     <div className="rounded-md border bg-card p-3">
@@ -870,35 +1021,35 @@ function HourlyChart({
           </span>
         ))}
       </div>
-      <p className="mt-2 text-[11px] text-muted-foreground">
-        {even ? (
-          <>Ritmo parejo: {plural(max)} por hora.</>
-        ) : (
-          <>
-            Hora con más salidas:{' '}
-            <span className="font-medium text-foreground">{hh(peak)}</span> ({plural(max)})
-          </>
-        )}
-        {currentHour !== null && (even || currentHour !== peak) && (
-          <>
-            {' · '}ahora ({hh(currentHour)}): {plural(hourly[currentHour])}
-          </>
-        )}
-      </p>
+      {(peakText || nowText) && (
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          {peakText}
+          {peakText && nowText && ' · '}
+          {nowText}
+        </p>
+      )}
     </div>
   );
 }
 
 function StopsTab({
   route,
-  lengthKm,
+  directions,
+  directionKey,
+  onPickDirection,
+  routeKm,
   onSelectStop,
 }: {
   route: Route;
-  lengthKm: number;
+  directions: DirectionView[];
+  directionKey: string | undefined;
+  onPickDirection: (key: string) => void;
+  routeKm: number;
   onSelectStop: (id: string) => void;
 }) {
-  const stops = route.stops;
+  const direction = directions.find((d) => d.key === directionKey) ?? directions[0];
+  const stops = direction?.stops ?? route.stops;
+  const km = direction?.km ?? routeKm;
   const last = stops.length - 1;
 
   return (
@@ -913,21 +1064,44 @@ function StopsTab({
         </Notice>
       )}
 
+      {directions.length > 1 && (
+        <div role="group" aria-label="Sentido" className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
+          {directions.map((d) => (
+            <button
+              key={d.key}
+              type="button"
+              aria-pressed={d.key === direction?.key}
+              onClick={() => onPickDirection(d.key)}
+              className={cn(
+                'min-w-0 rounded-md px-2 py-1 text-xs font-medium transition-colors focus-ring',
+                d.key === direction?.key
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground/80',
+              )}
+            >
+              <DirectionSign route={route} direction={d} />
+            </button>
+          ))}
+        </div>
+      )}
+
       {stops.length === 0 ? (
         <Notice icon={<Info />}>
           Este recorrido viene de OpenStreetMap sin lista de paraderos. Largo total:{' '}
-          <span className="font-semibold text-foreground">{formatKm(lengthKm)}</span>.
+          <span className="font-semibold text-foreground">{formatKm(km)}</span>.
           Activa la capa de paraderos para ver los puntos cercanos.
         </Notice>
       ) : (
         <section>
-          <SectionLabel
-            icon={<MapPin />}
-            aside={`${stops.length} · ${formatKm(lengthKm)}`}
-          >
-            {route.type === 'biotren' ? 'Estaciones en orden' : 'Paraderos en orden'}
+          <SectionLabel icon={<MapPin />} aside={`${stops.length} · ${formatKm(km)}`}>
+            {direction
+              ? `${route.type === 'biotren' ? 'Estaciones' : 'Paraderos'} hacia ${direction.destination}`
+              : route.type === 'biotren'
+                ? 'Estaciones en orden'
+                : 'Paraderos en orden'}
           </SectionLabel>
           <p className="mb-2 text-[11px] text-muted-foreground">
+            {route.directions?.length === 1 && 'El GTFS oficial publica un solo sentido. '}
             Toca {route.type === 'biotren' ? 'una estación' : 'un paradero'} para verlo
             en el mapa.
           </p>

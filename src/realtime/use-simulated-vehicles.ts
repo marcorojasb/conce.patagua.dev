@@ -9,11 +9,13 @@
 // - quien solo necesita el conteo usa `useSimulationStatus`, que cambia
 //   únicamente cuando entra o sale un viaje.
 //
-// El chunk de horarios (~cientos de KB) se carga recién la primera vez que la
-// capa se enciende.
+// El chunk de horarios GTFS (~cientos de KB, por sentido) se carga recién la
+// primera vez que la capa se enciende; los de Biotrén (EFE) son chicos y ya
+// vienen con el bundle principal.
 
 import { useEffect, useSyncExternalStore } from 'react';
 import { computeActiveVehicles, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
+import { STATIC_ROUTE_SCHEDULES } from '@/realtime/static-service-schedules';
 import type { RouteSchedule, SimulatedVehicle } from '@/types/transport';
 
 const TICK_MS = 1000;
@@ -34,13 +36,11 @@ let schedulePromise: Promise<Record<string, RouteSchedule>> | null = null;
 const vehicleListeners = new Set<(vehicles: SimulatedVehicle[]) => void>();
 const statusListeners = new Set<() => void>();
 
-function loadSchedule(): Promise<Record<string, RouteSchedule>> {
-  schedulePromise ??= Promise.all([
-    import('@/data/gtfs-schedule.generated'),
-    import('@/realtime/static-service-schedules'),
-  ]).then(([gtfs, staticSchedules]) => ({
-    ...gtfs.ROUTE_SCHEDULES,
-    ...staticSchedules.STATIC_ROUTE_SCHEDULES,
+/** Horarios por clave de simulación (`<routeId>#<directionId>` o id de patrón). */
+export function loadSimulationSchedules(): Promise<Record<string, RouteSchedule>> {
+  schedulePromise ??= import('@/data/gtfs-schedule.generated').then((gtfs) => ({
+    ...gtfs.ROUTE_DIRECTION_SCHEDULES,
+    ...STATIC_ROUTE_SCHEDULES,
   }));
   return schedulePromise;
 }
@@ -115,7 +115,7 @@ export function useSimulationControl({ enabled, routes, retryKey = 0 }: Options)
     };
 
     if (!schedules) setStatus({ ...status, loading: true, error: null });
-    loadSchedule()
+    loadSimulationSchedules()
       .then((loaded) => {
         if (cancelled) return;
         schedules = loaded;
