@@ -536,3 +536,5 @@ export function liveServiceLabel(service: string, match: LiveServiceMatch | unde
   }
   return suffixDirection(service) ? service.slice(0, -1) : service;
 }
+
+export const DIRECTION_LABEL: Record<LiveDirection, string> = { I: 'ida', R: 'regreso' };
