@@ -1,0 +1,3 @@
+# Vercel convierte cada archivo de api/ en una función: las pruebas colocadas
+# junto al handler no deben subirse.
+api/**/*.test.ts
