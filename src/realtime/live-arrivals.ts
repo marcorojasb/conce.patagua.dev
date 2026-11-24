@@ -490,19 +490,25 @@ const NOT_IN_LIVE_SOURCE = new Set(['302', '304']);
 
 /**
  * Nombre en la fuente para un sentido de un recorrido del visor, o null si la
- * fuente no lo sigue. directionId 0 es "I" y 1 es "R" en la fuente.
+ * fuente no lo sigue. Sigue el orden de las letras del código, que es el que
+ * usa la fuente y el que calza con las secuencias de paradas: en "23BS" la B
+ * es el sentido 0 ("I") y la S el 1 ("R"). No se usa la variante del letrero
+ * del GTFS porque en 02AD, 02KP y 23BS viene cruzada entre sentidos.
  */
 export function visorServiceName(
   code: string,
-  direction: Pick<RouteDirection, 'directionId' | 'variant'>,
+  direction: Pick<RouteDirection, 'directionId'>,
 ): string | null {
   const base = code.toUpperCase().replace(/[\s-]+/g, '');
+  const first = direction.directionId === 0;
   if (NOT_IN_LIVE_SOURCE.has(base)) return null;
-  if (SUFFIXED_SERVICE.test(base)) return base + (direction.directionId === 0 ? 'I' : 'R');
+  if (SUFFIXED_SERVICE.test(base)) return base + (first ? 'I' : 'R');
   if (/^\d{3}Y$/.test(base)) return base;
-  const variant = direction.variant?.toUpperCase().replace(/\s+/g, '');
-  if (!variant) return null;
-  return /-Y$/i.test(code.trim()) ? `${variant}Y` : variant;
+  // "02C-Y", "80J-Y": una sola variante con la Y pegada.
+  if (/^\d{2}[A-Z]-Y$/i.test(code.trim().replace(/\s+/g, ''))) return base;
+  const pair = /^(\d{2})([A-Z])([A-Z])$/.exec(base);
+  if (pair) return pair[1] + (first ? pair[2] : pair[3]);
+  return /^\d{2}[A-Z]$/.test(base) ? base : null;
 }
 
 export interface LiveServiceMatch {
@@ -522,14 +528,11 @@ export function indexLiveServices(routes: readonly Route[]): Map<string, LiveSer
   return index;
 }
 
-/** Código para mostrar: la variante del letrero ("20A") o el código de la línea ("401", "201-AU"). */
+/** Código para mostrar: el nombre de la fuente ("20A", "23B") o el de la línea ("401", "201-AU", "02C-Y"). */
 export function liveServiceLabel(service: string, match: LiveServiceMatch | undefined): string {
-  if (match) {
-    const suffixed = SUFFIXED_SERVICE.test(match.route.code.toUpperCase().replace(/[\s-]+/g, ''));
-    if (suffixed || /-Y$/i.test(match.route.code)) return match.route.code;
-    return match.direction.variant ?? match.route.code;
+  const lineCode = SUFFIXED_SERVICE.test(service.slice(0, -1)) || (/Y$/.test(service) && /-Y$/i.test(match?.route.code ?? ''));
+  if (match && lineCode) {
+    return match.route.code;
   }
   return suffixDirection(service) ? service.slice(0, -1) : service;
 }
-
-export const DIRECTION_LABEL: Record<LiveDirection, string> = { I: 'ida', R: 'regreso' };

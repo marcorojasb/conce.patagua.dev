@@ -63,7 +63,7 @@ describe('matchesRouteQuery', () => {
   const route201AU = {
     code: '201-AU',
     name: '201-AU - Santa Juana - 201-AU - Concepción',
-    operator: 'Operador no registrado (GTFS)',
+    operator: 'Operador no informado en el GTFS',
     directions: [],
   };
 

@@ -85,6 +85,8 @@ export function SimulatedVehiclesLayer({ routeColorById, routeLabelById, onSelec
           entry.marker.setLatLng([vehicle.lat, vehicle.lng]);
           const el = entry.marker.getElement()?.firstElementChild as HTMLElement | null | undefined;
           el?.style.setProperty('--vehicle-rotation', `${vehicle.bearing.toFixed(1)}deg`);
+          // El tooltip abierto (a lo más uno) se rearma para que avance el %.
+          if (entry.marker.isTooltipOpen()) entry.marker.getTooltip()?.update();
           continue;
         }
         const color = colorsRef.current.get(vehicle.routeId) ?? '#0ea5e9';
@@ -104,22 +106,23 @@ export function SimulatedVehiclesLayer({ routeColorById, routeLabelById, onSelec
       }
       for (const [id, entry] of markers) {
         if (seen.has(id)) continue;
-        // Sin unbindTooltip, off() quita también el handler con que Leaflet
-        // cierra el tooltip al remover el marcador y queda flotando huérfano.
+        // Primero se remueve: así corren los handlers 'remove' de Leaflet
+        // (cerrar el tooltip, soltar los listeners de zoom del mapa). Un
+        // off() antes los borraba y el marcador quedaba retenido.
+        group.removeLayer(entry.marker);
         entry.marker.unbindTooltip();
         entry.marker.off();
-        group.removeLayer(entry.marker);
         markers.delete(id);
       }
     });
 
     return () => {
       unsubscribe();
+      group.remove();
       for (const entry of markers.values()) {
         entry.marker.unbindTooltip();
         entry.marker.off();
       }
-      group.remove();
     };
   }, [map]);
 

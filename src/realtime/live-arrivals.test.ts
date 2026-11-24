@@ -260,7 +260,9 @@ describe('calce con el visor', () => {
 
   it('nombre de la fuente para cada sentido del visor', () => {
     expect(visorServiceName('20VA', dir(1, '20A'))).toBe('20A');
-    expect(visorServiceName('23BS', dir(0, '23S'))).toBe('23S');
+    // En 23BS el letrero del GTFS dice 23S en el sentido 0: manda el orden del código.
+    expect(visorServiceName('23BS', dir(0, '23S'))).toBe('23B');
+    expect(visorServiceName('80J-Y', dir(0, '80J'))).toBe('80JY');
     expect(visorServiceName('201-AU', dir(1))).toBe('201AUR');
     expect(visorServiceName('B02', dir(0))).toBe('B02I');
     expect(visorServiceName('401Y', dir(0))).toBe('401Y');

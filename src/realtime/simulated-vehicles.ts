@@ -1,4 +1,5 @@
-// Projects vehicle positions from the GTFS scheduled-trip dataset.
+// Projects vehicle positions from scheduled trips: GTFS oficial DTPR (one
+// schedule per direction) and the official EFE itineraries for Biotrén.
 //
 // "Simulated" because the data source is the static schedule, not real GPS:
 // a bus shown at point X is where its scheduled trip *should* be at the

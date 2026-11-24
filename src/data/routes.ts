@@ -165,7 +165,7 @@ function busRouteToRoute(b: BusRoute): Route {
     name: b.name,
     type: 'micro',
     color: b.colour ?? operatorColor(b.operator, b.id),
-    operator: b.operator ?? 'Operador no registrado (GTFS)',
+    operator: b.operator ?? 'Operador no informado en el GTFS',
     headway: 'Programado GTFS',
     hours: 'Según calendario GTFS',
     frequencyByDay: {},
