@@ -490,7 +490,7 @@ const source = {
   stops: paraderos.length,
   skippedRoutes,
   note:
-    `GTFS oficial publicado por ${publisher ?? 'la DTPR'}` +
+    `GTFS oficial (${publisher ?? 'DTPR'})` +
     `${versionDate ? `, versión del ${versionDate}` : feedVersion ? `, versión ${feedVersion}` : ''}. ` +
     `Calendario declarado del ${feedStartDate ?? '?'} al ${feedEndDate ?? '?'}` +
     (expired
