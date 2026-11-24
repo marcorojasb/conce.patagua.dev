@@ -369,6 +369,16 @@
   border: 2px solid #059669;
   animation: live-vehicle-pulse 1.8s ease-out infinite;
 }
+/* Dato de más de 2 min: sin pulso y atenuada, con anillo ámbar como la edad
+   destacada del bloque de llegadas. */
+.live-vehicle-marker.is-stale {
+  opacity: 0.6;
+}
+.live-vehicle-marker.is-stale::after {
+  border-color: #d97706;
+  animation: none;
+  opacity: 0.8;
+}
 @keyframes live-vehicle-pulse {
   from {
     opacity: 0.9;

@@ -8,8 +8,7 @@ import { LazyBoundary } from '@/components/lazy-boundary';
 import type { AnalysisTab } from '@/components/floating-tools-panel';
 import { useSimulationControl, useSimulationStatus } from '@/realtime/use-simulated-vehicles';
 import { useLiveArrivals } from '@/hooks/use-live-arrivals';
-import { indexLiveServices, liveServiceLabel, liveStopCode, liveView } from '@/realtime/live-arrivals';
-import type { LiveVehicleMarker } from '@/components/conce-map';
+import { indexLiveServices, liveStopCode, onlyUntrackedLines } from '@/realtime/live-arrivals';
 import { buildSimulationRoutes, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
 import { WelcomeCard } from '@/components/welcome-card';
 import {
@@ -98,7 +97,11 @@ const INITIAL_FOCUS_CORRIDOR =
 function initialSelectedDetail(): SelectedDetailState | null {
   if (INITIAL_ROUTE_REF) {
     return INITIAL_ROUTE_MATCH
-      ? { kind: 'route', id: INITIAL_ROUTE_MATCH.route.id, directionId: INITIAL_ROUTE_MATCH.directionId }
+      ? {
+          kind: 'route',
+          id: INITIAL_ROUTE_MATCH.route.id,
+          directionId: INITIAL_ROUTE_MATCH.directionId ?? INITIAL_URL.dir ?? undefined,
+        }
       : null;
   }
   if (INITIAL_URL.stop) return { kind: 'stop', id: INITIAL_URL.stop };
@@ -189,11 +192,6 @@ export default function App() {
   const selectedPoiId = selectedDetail?.kind === 'poi' ? selectedDetail.id : null;
   const sheetKind = selectedDetail?.kind ?? null;
 
-  // Llegadas reales solo para el paradero abierto (ficha de paradero GTFS o
-  // parada de un recorrido): una consulta por vez, nunca para toda la red.
-  const liveStopId = sheetKind === 'paradero' || sheetKind === 'stop' ? selectedDetail?.id ?? null : null;
-  const liveArrivals = useLiveArrivals(liveStopId ? liveStopCode(liveStopId) : null);
-
   // Deep-links de terminal/poi (URL durable o ?focus=) encienden la capa
   // para que el pin sea visible al aterrizar desde el wiki.
   const [showTerminals, setShowTerminals] = useState(
@@ -278,24 +276,6 @@ export default function App() {
     void routesVersion;
     return indexLiveServices(ROUTES);
   }, [routesVersion]);
-  const liveVehicles = useMemo<LiveVehicleMarker[]>(() => {
-    const snapshot = liveArrivals.state.snapshot;
-    if (!snapshot) return [];
-    const now = Date.now();
-    return liveView(liveArrivals.state, now, false).arrivals.flatMap((arrival) => {
-      if (!arrival.position || !arrival.realtime) return [];
-      const match = liveServices.get(arrival.route);
-      return [{
-        arrival: { ...arrival, position: arrival.position },
-        color: match?.route.color ?? '#334155',
-        label: liveServiceLabel(arrival.route, match),
-        destination: match?.direction.destination,
-        fetchedAt: snapshot.fetchedAt,
-        now,
-      }];
-    });
-  }, [liveArrivals, liveServices]);
-
 
 
   const [showCoverage, setShowCoverage] = useState(false);
@@ -336,7 +316,11 @@ export default function App() {
       return missing.length > 0 ? [...cur, ...missing] : cur;
     });
     if (pending) {
-      setSelectedDetail({ kind: 'route', id: pending.route.id, directionId: pending.directionId });
+      setSelectedDetail({
+        kind: 'route',
+        id: pending.route.id,
+        directionId: pending.directionId ?? INITIAL_URL.dir ?? undefined,
+      });
       setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: pending.route.path } });
     }
   }, [routesVersion]);
@@ -380,6 +364,7 @@ export default function App() {
 
   useSyncUrlState({
     route: selectedRouteId,
+    dir: selectedDetail?.kind === 'route' ? selectedDetail.directionId ?? null : null,
     stop: selectedStopId,
     terminal: selectedTerminalId,
     poi: selectedPoiId,
@@ -421,6 +406,20 @@ export default function App() {
       routes: [],
     };
   }, [selectedParaderoId, routesVersion]);
+  // Llegadas reales solo para el paradero abierto (ficha de paradero GTFS o
+  // parada de un recorrido): una consulta por vez, nunca para toda la red. Se
+  // espera a conocer sus recorridos (chunk GTFS): un paradero con solo líneas
+  // que la fuente no sigue (302/304) no se consulta, así no gasta el tope de
+  // la intermediaria, y la ficha lo avisa.
+  const liveStop = sheetKind === 'stop' ? selectedStop : sheetKind === 'paradero' ? selectedParaderoStop : null;
+  const liveStopRoutes = useMemo(() => {
+    void routesVersion;
+    return (liveStop?.routes ?? []).flatMap((id) => ROUTES_BY_ID.get(id) ?? []);
+  }, [liveStop, routesVersion]);
+  const liveArrivals = useLiveArrivals(
+    liveStop && routesVersion > 0 && !onlyUntrackedLines(liveStopRoutes) ? liveStopCode(liveStop.id) : null,
+  );
+
   const selectedTerminal = useMemo(
     () => TERMINALS.find((t) => t.id === selectedTerminalId) ?? null,
     [selectedTerminalId],
@@ -491,6 +490,12 @@ export default function App() {
     },
     [clearSelection, closeSidebarOnMobile, selectedRouteId, sheetKind],
   );
+
+  // El sentido elegido en la ficha va a la URL (`&dir=`), para que recargar o
+  // compartir abra el mismo.
+  const onPickRouteDirection = useCallback((directionId: 0 | 1) => {
+    setSelectedDetail((cur) => (cur?.kind === 'route' ? { ...cur, directionId } : cur));
+  }, []);
 
   // Clicking a simulated vehicle pops the underlying route's detail sheet, // saves us building a parallel "vehicle sheet" UI when the natural thing
   // to know is which route the projected bus belongs to.
@@ -670,7 +675,9 @@ export default function App() {
             routeColorById={routeColorById}
             routeLabelById={routeLabelById}
             onSelectSimulatedVehicle={onSelectSimulatedVehicle}
-            liveVehicles={liveVehicles}
+            live={liveArrivals}
+            liveServices={liveServices}
+            panelOpen={!!sheetKind || sourcesOpen || !!activeTool || layersOpen}
             coverageThreshold={coverageThreshold}
             coverageRetryKey={coverageRetryKey}
             coverageLoadStatus={coverageLayer.controls}
@@ -807,6 +814,7 @@ export default function App() {
             open={sheetKind === 'route'}
             route={selectedRoute}
             directionId={selectedDetail?.directionId}
+            onPickDirection={onPickRouteDirection}
             onOpenChange={(o) => (!o ? closeSheet() : undefined)}
             onFocusRoute={onFocusRoute}
             onDeselectRoute={closeSheet}

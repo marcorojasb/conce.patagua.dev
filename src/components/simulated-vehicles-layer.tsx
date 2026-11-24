@@ -15,7 +15,8 @@ import type { SimulatedVehicle } from '@/types/transport';
 interface Props {
   routeColorById: Map<string, string>;
   routeLabelById: Map<string, string>;
-  onSelect: (routeId: string) => void;
+  /** Recibe también dónde se hizo clic: con el planificador eligiendo un punto, ese es el punto. */
+  onSelect: (routeId: string, latlng: { lat: number; lng: number }) => void;
 }
 
 const SOURCE_KIND_LABEL: Record<SimulatedVehicle['sourceKind'], string> = {
@@ -100,7 +101,9 @@ export function SimulatedVehiclesLayer({ routeColorById, routeLabelById, onSelec
           () => tooltipHtml(created.vehicle, labelsRef.current.get(created.vehicle.routeId) ?? created.vehicle.routeId),
           { direction: 'top', offset: [0, -16], opacity: 0.95, className: '!text-[11px]' },
         );
-        marker.on('click', () => onSelectRef.current(created.vehicle.routeId));
+        marker.on('click', (e: L.LeafletMouseEvent) =>
+          onSelectRef.current(created.vehicle.routeId, { lat: e.latlng.lat, lng: e.latlng.lng }),
+        );
         marker.addTo(group);
         markers.set(vehicle.id, created);
       }

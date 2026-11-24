@@ -99,6 +99,41 @@ export function FloatingInfoPanel({
     sheetRef.current?.style.removeProperty('transition');
   };
 
+  const moveDrag = (pointerId: number, clientY: number, captureTarget: Element | null) => {
+    const drag = dragRef.current;
+    const sheet = sheetRef.current;
+    if (!drag || drag.pointerId !== pointerId || !sheet) return;
+    const dy = clientY - drag.startY;
+    if (!drag.dragging) {
+      if (Math.abs(dy) < DRAG_START_PX) return;
+      drag.dragging = true;
+      // La captura recién al confirmar el arrastre: capturar en pointerdown
+      // redirigiría el clic de la "×" o de las acciones al contenedor.
+      captureTarget?.setPointerCapture(pointerId);
+    }
+    // La hoja sigue al dedo sin transición; al soltar vuelve a la clase.
+    const maxHeight = window.innerHeight - 64;
+    sheet.style.transition = 'none';
+    sheet.style.height = `${Math.min(maxHeight, Math.max(DRAG_MIN_HEIGHT_PX, drag.startHeight - dy))}px`;
+  };
+
+  const endDrag = (pointerId: number, clientY: number) => {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== pointerId) return;
+    dragRef.current = null;
+    if (!drag.dragging) return;
+    resetSheetStyle();
+    const dy = clientY - drag.startY;
+    // Solo se descarta el clic si el arrastre cambió algo; un arrastre corto
+    // que vuelve a su alto deja pasar el toque.
+    suppressClickRef.current = Math.abs(dy) >= DRAG_SNAP_PX;
+    if (dy <= -DRAG_SNAP_PX) setExpanded(true);
+    else if (dy >= DRAG_SNAP_PX) {
+      if (expanded) setExpanded(false);
+      else onClose();
+    }
+  };
+
   const onDragStart = (event: ReactPointerEvent<HTMLDivElement>) => {
     suppressClickRef.current = false;
     if (!event.isPrimary || event.button !== 0 || !sheetRef.current) return;
@@ -110,41 +145,32 @@ export function FloatingInfoPanel({
       startHeight: sheetRef.current.getBoundingClientRect().height,
       dragging: false,
     };
+    // El dedo queda capturado solo por el elemento que tocó; el mouse no: al
+    // subir desde la manija (24 px, en el borde) sale de la zona antes del
+    // umbral y sus movimientos irían al mapa. Se sigue desde window hasta soltar.
+    if (event.pointerType === 'mouse') {
+      const onMove = (e: PointerEvent) => moveDrag(e.pointerId, e.clientY, null);
+      const onUp = (e: PointerEvent) => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
+        if (e.type === 'pointercancel') onDragCancel();
+        else endDrag(e.pointerId, e.clientY);
+      };
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    }
   };
 
   const onDragMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    const sheet = sheetRef.current;
-    if (!drag || drag.pointerId !== event.pointerId || !sheet) return;
-    const dy = event.clientY - drag.startY;
-    if (!drag.dragging) {
-      if (Math.abs(dy) < DRAG_START_PX) return;
-      drag.dragging = true;
-      // La captura recién al confirmar el arrastre: capturar en pointerdown
-      // redirigiría el clic de la "×" o de las acciones al contenedor.
-      event.currentTarget.setPointerCapture(event.pointerId);
-    }
-    // La hoja sigue al dedo sin transición; al soltar vuelve a la clase.
-    const maxHeight = window.innerHeight - 64;
-    sheet.style.transition = 'none';
-    sheet.style.height = `${Math.min(maxHeight, Math.max(DRAG_MIN_HEIGHT_PX, drag.startHeight - dy))}px`;
+    if (event.pointerType === 'mouse') return;
+    moveDrag(event.pointerId, event.clientY, event.currentTarget);
   };
 
   const onDragEnd = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current;
-    if (!drag || drag.pointerId !== event.pointerId) return;
-    dragRef.current = null;
-    if (!drag.dragging) return;
-    resetSheetStyle();
-    const dy = event.clientY - drag.startY;
-    // Solo se descarta el clic si el arrastre cambió algo; un arrastre corto
-    // que vuelve a su alto deja pasar el toque.
-    suppressClickRef.current = Math.abs(dy) >= DRAG_SNAP_PX;
-    if (dy <= -DRAG_SNAP_PX) setExpanded(true);
-    else if (dy >= DRAG_SNAP_PX) {
-      if (expanded) setExpanded(false);
-      else onClose();
-    }
+    if (event.pointerType === 'mouse') return;
+    endDrag(event.pointerId, event.clientY);
   };
 
   const onDragCancel = () => {

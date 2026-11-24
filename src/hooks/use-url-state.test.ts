@@ -35,6 +35,15 @@ describe('URL state', () => {
     });
   });
 
+  it('reads the route direction only when it is 0 or 1', () => {
+    stubWindow('?route=gtfs-route-835&dir=1');
+    expect(readUrlState()).toMatchObject({ route: 'gtfs-route-835', dir: 1 });
+    stubWindow('?route=gtfs-route-835&dir=0');
+    expect(readUrlState().dir).toBe(0);
+    stubWindow('?route=gtfs-route-835&dir=2');
+    expect(readUrlState().dir).toBeNull();
+  });
+
   it('reads and clears focus params without dropping other params', () => {
     const history = stubWindow('?focus=route:10A&route=gtfs-route-835');
 

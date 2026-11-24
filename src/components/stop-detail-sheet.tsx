@@ -31,6 +31,7 @@ import { chileClock } from '@/lib/chile-time';
 import { routeShortName } from '@/lib/route-labels';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
 import { endsAt } from '@/lib/stop-services';
+import { liveStopCode } from '@/realtime/live-arrivals';
 import { cn } from '@/lib/utils';
 import type { Route, RouteDirection, StopWithRoutes } from '@/types/transport';
 
@@ -148,7 +149,8 @@ export function StopDetailSheet({
     >
       <AccessibilityBadges stop={stop} />
 
-      {live.stopCode && <LiveArrivalsBlock live={live} routes={routes} />}
+      {/* Todo paradero GTFS tiene bloque: si sus líneas no se siguen en vivo, App no consulta y el bloque lo dice. */}
+      {liveStopCode(stop.id) && <LiveArrivalsBlock live={live} routes={routes} />}
 
       {hasRoutes ? (
         <>

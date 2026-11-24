@@ -53,7 +53,9 @@ const EXPORT_ROWS: ExportRow[] = [
   {
     key: 'cobertura',
     label: 'Cobertura territorial',
-    detail: '7.649 polígonos · ~10 MB sin gzip',
+    // Sin conteo fijo: la grilla se regenera con los paraderos del GTFS
+    // (8.943 celdas con el feed 2025, ~2,4 MB exportadas).
+    detail: 'Celdas de ~330 m a menos de 3 km de un paradero · ~2,4 MB sin gzip',
     defaultChecked: false,
   },
 ];

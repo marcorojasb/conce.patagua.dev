@@ -47,6 +47,8 @@ interface RouteDetailSheetProps {
   route: Route | null;
   /** Sentido pedido (p. ej. la variante "10A" de la URL); sin él, el primero. */
   directionId?: 0 | 1;
+  /** Sentido elegido en la ficha (solo micros con `direction_id`). */
+  onPickDirection?: (directionId: 0 | 1) => void;
   onOpenChange: (open: boolean) => void;
   onFocusRoute: () => void;
   onDeselectRoute: () => void;
@@ -279,6 +281,7 @@ export function RouteDetailSheet({
   open,
   route,
   directionId,
+  onPickDirection,
   onOpenChange,
   onFocusRoute,
   onDeselectRoute,
@@ -352,7 +355,11 @@ export function RouteDetailSheet({
 
   if (!route || !panelChrome) return null;
 
-  const pickDirection = (key: string) => setPickedDirection({ routeId: route.id, key });
+  const pickDirection = (key: string) => {
+    setPickedDirection({ routeId: route.id, key });
+    const id = /#([01])$/.exec(key)?.[1];
+    if (id) onPickDirection?.(id === '1' ? 1 : 0);
+  };
   const showDirection = (key: string) => {
     pickDirection(key);
     setTab('recorrido');
@@ -440,8 +447,9 @@ function StatCard({
       <div className="mt-1 truncate text-base font-semibold leading-tight tabular-nums">
         {value}
       </div>
+      {/* Hasta dos líneas: en pantallas angostas "próxima HH:MM" no se corta. */}
       {detail && (
-        <div className="mt-0.5 truncate text-[11px] text-muted-foreground">{detail}</div>
+        <div className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground">{detail}</div>
       )}
     </div>
   );
@@ -494,7 +502,7 @@ function InfoTab({
         value={`${route.stops.length} ${stopsNoun(route, route.stops.length)}`}
         detail={
           (route.directions?.length ?? 0) > 1
-            ? 'sumando ambos sentidos'
+            ? 'distintos, en ambos sentidos'
             : formatKm(directions[0]?.km ?? routeKm)
         }
       />
@@ -582,33 +590,94 @@ function InfoTab({
         </section>
       )}
 
-      <section>
-        <SectionLabel icon={<Wallet />}>Tarifa</SectionLabel>
-        <div className="rounded-md border bg-card p-3">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <div className="flex items-baseline gap-1.5 text-sm font-medium">
-              {route.type === 'biotren' ? '$680 – $2.400' : isInterurban(route) ? 'Según tramo' : '$580'}
-              <span className="text-[11px] font-normal text-muted-foreground">
-                {route.type === 'biotren' ? 'CLP por tramo' : isInterurban(route) ? 'interurbano' : 'CLP adulto'}
-              </span>
-            </div>
-            <Badge variant="outline" className="gap-1 font-normal">
-              <CreditCard className="size-3" />
-              Pago electrónico próximamente
-            </Badge>
-          </div>
-          <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
-            {route.type === 'biotren'
-              ? 'Boletería EFE: el valor depende del tramo origen-destino. Aún no hay tarjeta integrada con las micros.'
-              : isInterurban(route)
-                ? 'Los servicios interurbanos cobran según el tramo y tienen su propia tarifa regulada; no aplica la tarifa urbana. Revisa el artículo del recorrido en la wiki.'
-                : 'Valor referencial en efectivo en buses urbanos del Gran Concepción. DTPR anunció pago electrónico integrado para 2026; reglas y descuentos aún no publicados.'}
-          </p>
-        </div>
-      </section>
+      <FareCard route={route} />
 
       <SourceNote route={route} schedule={schedule} />
     </div>
+  );
+}
+
+interface Fare {
+  value: string;
+  unit: string;
+  /** Medio de pago, cuando se sabe cuál es. */
+  payment: string | null;
+  note: string;
+}
+
+// Tarifa adulto vigente de cada red, la misma que citan sus artículos del
+// wiki (biotren, ruta-201-santa-juana, concepcion-tome,
+// concepcion-coronel-lota y el perímetro de exclusión urbano).
+function routeFare(route: Route): Fare {
+  if (route.type === 'biotren') {
+    return {
+      value: '$420 – $850',
+      unit: 'CLP adulto, por zona',
+      payment: 'Tarjeta Conecta',
+      note: 'Zonas Z1–Z10 vigentes desde el 2-ene-2026: el valor depende del tramo origen-destino. Se paga con la tarjeta Conecta en los validadores de estación, sin integración tarifaria con las micros.',
+    };
+  }
+  if (route.network === 'Interurbano Santa Juana') {
+    return {
+      value: '$1.000',
+      unit: 'CLP adulto',
+      payment: 'Pago electrónico próximamente',
+      note: 'Tarifa del servicio licitado Santa Juana ↔ Concepción (DTPR ELC0007); no aplica la tarifa urbana. Estudiantes $330; adultos mayores y personas con discapacidad, gratis.',
+    };
+  }
+  if (route.network === 'Interurbano Tomé') {
+    return {
+      value: '$780 – $830',
+      unit: 'CLP adulto',
+      payment: 'Pago electrónico próximamente',
+      note: '$780 hasta Tomé y $830 hasta Dichato desde el reajuste del 23-feb-2025 (perímetro de exclusión de Tomé); no aplica la tarifa urbana.',
+    };
+  }
+  if (route.network === 'Interurbano Lota') {
+    return {
+      value: 'Sin tarifa única',
+      unit: 'interurbano',
+      payment: null,
+      note: 'No hay una tarifa única publicada para Lota ↔ Concepción: varía por operador y tramo. Revisa el artículo del corredor en el wiki.',
+    };
+  }
+  if (isInterurban(route)) {
+    return {
+      value: 'Tarifa propia',
+      unit: 'interurbano',
+      payment: null,
+      note: 'No aplica la tarifa urbana. Revisa el artículo del recorrido en el wiki.',
+    };
+  }
+  return {
+    value: '$580',
+    unit: 'CLP adulto',
+    payment: 'Pago electrónico próximamente',
+    note: 'Tarifa urbana del Gran Concepción vigente desde el 23-feb-2025, en efectivo. DTPR anunció pago electrónico integrado para 2026; reglas y descuentos aún no publicados.',
+  };
+}
+
+function FareCard({ route }: { route: Route }) {
+  const fare = routeFare(route);
+  return (
+    <section>
+      <SectionLabel icon={<Wallet />}>Tarifa</SectionLabel>
+      <div className="rounded-md border bg-card p-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div className="flex items-baseline gap-1.5 text-sm font-medium">
+            {fare.value}
+            <span className="text-[11px] font-normal text-muted-foreground">{fare.unit}</span>
+          </div>
+          {fare.payment && (
+            <Badge variant="outline" className="gap-1 font-normal">
+              <CreditCard className="size-3" />
+              {fare.payment}
+            </Badge>
+          )}
+        </div>
+        <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">{fare.note}</p>
+      </div>
+    </section>
   );
 }
 

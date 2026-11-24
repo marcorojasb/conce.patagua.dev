@@ -6,7 +6,9 @@
 // Forma comprobada con respuestas reales (24-nov-2026, 6 paraderos de 6
 // comunas): cada predicción trae `route` y `direction` ("I"/"R"), `epochTime`
 // (s), `timeLabel`, `distance` (metros en línea recta, no por la ruta),
-// `latitude`/`longitude` del bus, `licensePlate` y `tripId`.
+// `latitude`/`longitude` del bus, `licensePlate`, `tripId` y `realtime`
+// (`true` si la predicción sale del GPS). Solo `realtime: true` cuenta como
+// GPS: un valor ausente o de otro tipo ("false", 0, null) no.
 //
 // Reglas heredadas de la integración que ya funciona en otro proyecto:
 // - Si la respuesta no se entiende o `predictions` no es una lista, es una
@@ -36,7 +38,7 @@ export interface LiveArrival {
   plate: string | null;
   tripId: string | null;
   position: { lat: number; lng: number } | null;
-  /** `false` si la fuente marca la predicción como no basada en GPS. */
+  /** `true` solo si la fuente marca la predicción con `realtime: true` (GPS). */
   realtime: boolean;
 }
 
@@ -92,6 +94,8 @@ interface RawStopInfo {
 export const PASSED_TOLERANCE_MS = 2 * 60_000;
 export const SNAPSHOT_MAX_AGE_MS = 10 * 60_000;
 export const STALE_AFTER_MS = 2 * 60_000;
+/** Cada cuánto se recalculan minutos, edad y vencimiento entre consultas. */
+export const LIVE_CLOCK_TICK_MS = 5_000;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -165,7 +169,7 @@ function parsePrediction(raw: unknown, fetchedAt: number): LiveArrival | null {
     plate: readPlate(p.licensePlate),
     tripId: nonEmptyString(p.tripId),
     position: readPosition(p),
-    realtime: p.realtime !== false,
+    realtime: p.realtime === true,
   };
 }
 
@@ -426,32 +430,50 @@ export interface LiveView {
 export function liveView(state: LiveArrivalsState, now: number, loading: boolean): LiveView {
   const snapshot = state.snapshot;
   const usable = snapshot != null && snapshotAge(snapshot, now) <= SNAPSHOT_MAX_AGE_MS;
-  const base = {
-    notes: state.notes,
-    alerts: usable ? snapshot.alerts : [],
-    ageMs: usable ? snapshotAge(snapshot, now) : null,
-    lastFailure: state.lastFailure,
-  };
+  const failed: LiveViewKind | null = state.lastFailure
+    ? state.lastFailure === 'unconfigured'
+      ? 'unconfigured'
+      : 'down'
+    : null;
+  const none = { arrivals: [], notes: [], alerts: [], ageMs: null, lastFailure: state.lastFailure };
 
   if (usable) {
+    const base = {
+      notes: state.notes,
+      alerts: snapshot.alerts,
+      ageMs: snapshotAge(snapshot, now),
+      lastFailure: state.lastFailure,
+    };
     const arrivals = upcomingArrivals(snapshot, now);
     if (arrivals.length > 0) {
-      const kind = snapshotAge(snapshot, now) > STALE_AFTER_MS ? 'stale' : 'live';
+      const kind = base.ageMs > STALE_AFTER_MS ? 'stale' : 'live';
       return { ...base, kind, arrivals };
     }
+    // Las micros del último dato ya pasaron y la consulta siguiente falló: no
+    // se sabe si vienen otras, así que no se dice "sin micros".
+    if (failed && snapshot.arrivals.length > 0) return { ...none, kind: failed };
+    if (state.notes.some((n) => n.text.includes('sin datos en vivo'))) {
+      return { ...base, kind: 'no-live-data', arrivals: [] };
+    }
+    return { ...base, kind: 'empty', arrivals: [] };
   }
-  if (state.lastFailure && !usable) {
-    return {
-      ...base,
-      kind: state.lastFailure === 'unconfigured' ? 'unconfigured' : 'down',
-      arrivals: [],
-    };
-  }
-  if (!snapshot) return { ...base, kind: loading ? 'loading' : 'empty', arrivals: [] };
-  if (state.notes.some((n) => n.text.includes('sin datos en vivo'))) {
-    return { ...base, kind: 'no-live-data', arrivals: [] };
-  }
-  return { ...base, kind: 'empty', arrivals: [] };
+  if (failed) return { ...none, kind: failed };
+  // Sin dato vigente: el último venció (pestaña oculta, equipo suspendido) o
+  // todavía no llega. No es "sin micros": se espera la próxima consulta.
+  if (snapshot || loading) return { ...none, kind: 'loading' };
+  return { ...none, kind: 'empty' };
+}
+
+/**
+ * Micros que se dibujan en el mapa: solo las que la fuente da con GPS y
+ * posición, y solo mientras el bloque de llegadas las muestra (en vivo o con
+ * el dato viejo destacado). Fuera de eso no hay marcador.
+ */
+export function gpsArrivals(view: LiveView): Array<LiveArrival & { position: { lat: number; lng: number } }> {
+  if (view.kind !== 'live' && view.kind !== 'stale') return [];
+  return view.arrivals.flatMap((arrival) =>
+    arrival.realtime && arrival.position ? [{ ...arrival, position: arrival.position }] : [],
+  );
 }
 
 // ── Calce con los datos del visor ───────────────────────────────────────────
@@ -509,6 +531,18 @@ export function visorServiceName(
   const pair = /^(\d{2})([A-Z])([A-Z])$/.exec(base);
   if (pair) return pair[1] + (first ? pair[2] : pair[3]);
   return /^\d{2}[A-Z]$/.test(base) ? base : null;
+}
+
+/**
+ * Paradero cuyas líneas (todas las que tienen sentidos) la fuente en vivo no
+ * sigue, como los de la 302/304: no se consulta la fuente y la ficha lo dice.
+ */
+export function onlyUntrackedLines(routes: readonly Pick<Route, 'code' | 'directions'>[]): boolean {
+  const withDirections = routes.filter((r) => (r.directions ?? []).length > 0);
+  return (
+    withDirections.length > 0 &&
+    withDirections.every((r) => (r.directions ?? []).every((d) => visorServiceName(r.code, d) == null))
+  );
 }
 
 export interface LiveServiceMatch {

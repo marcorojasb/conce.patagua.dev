@@ -4,6 +4,7 @@ import {
   applyFailure,
   applySnapshot,
   formatAge,
+  gpsArrivals,
   htmlToText,
   liveView,
   minutesFromLabel,
@@ -14,6 +15,7 @@ import {
   liveServiceLabel,
   liveServiceName,
   liveStopCode,
+  onlyUntrackedLines,
   serviceNotes,
   visorServiceName,
   type StopInfoSnapshot,
@@ -35,7 +37,7 @@ function snapshotOf(raw: unknown, fetchedAt = NOW): StopInfoSnapshot {
 describe('parseStopInfo', () => {
   it('lee predicciones, routeInfo y alertas, ordenadas por llegada', () => {
     const snap = snapshotOf(fixtures.withBuses);
-    expect(snap.arrivals.map((a) => a.route)).toEqual(['62H', '30Q', '30Q']);
+    expect(snap.arrivals.map((a) => a.route)).toEqual(['62H', '30Q', '62H', '30Q', '30Q']);
     expect(snap.arrivals[0]).toMatchObject({
       direction: 'I',
       distanceM: 210.7,
@@ -50,7 +52,7 @@ describe('parseStopInfo', () => {
   });
 
   it('no inventa posición ni patente con datos fuera de rango', () => {
-    const base = { route: '10A', direction: 'I', epochTime: NOW_S + 60 };
+    const base = { route: '10A', direction: 'I', epochTime: NOW_S + 60, realtime: true };
     const snap = snapshotOf({
       predictions: [
         { ...base, latitude: 0, longitude: 0, licensePlate: '???' },
@@ -63,6 +65,17 @@ describe('parseStopInfo', () => {
       [null, 'ABCD12', true],
       [{ lat: -36.82, lng: -73.05 }, 'AB1234', false],
     ]);
+  });
+
+  it('solo `realtime: true` cuenta como GPS', () => {
+    const snap = snapshotOf({
+      predictions: ['false', 0, null, undefined, 'true', 1, true].map((realtime, i) => ({
+        route: '10A',
+        epochTime: NOW_S + 60 + i,
+        ...(realtime === undefined ? {} : { realtime }),
+      })),
+    });
+    expect(snap.arrivals.map((a) => a.realtime)).toEqual([false, false, false, false, false, false, true]);
   });
 
   it('trata como falla lo que no se entiende, no como "sin micros"', () => {
@@ -195,7 +208,7 @@ describe('estados', () => {
     const state = applySnapshot(INITIAL_LIVE_STATE, snapshotOf(fixtures.withBuses));
     const view = liveView(state, NOW + 5_000, false);
     expect(view.kind).toBe('live');
-    expect(view.arrivals).toHaveLength(3);
+    expect(view.arrivals).toHaveLength(5);
   });
 
   it('una vacía de golpe no reemplaza a la anterior con micros por llegar', () => {
@@ -231,6 +244,38 @@ describe('estados', () => {
     expect(liveView(INITIAL_LIVE_STATE, NOW, true).kind).toBe('loading');
   });
 
+  it('dato vencido sin falla: se espera la consulta, no se dice "sin micros"', () => {
+    const state = applySnapshot(INITIAL_LIVE_STATE, snapshotOf(fixtures.withBuses));
+    // Pestaña oculta o equipo suspendido 11 min: las micros ni siquiera pasaron.
+    for (const loading of [false, true]) {
+      expect(liveView(state, NOW + 11 * 60_000, loading)).toMatchObject({ kind: 'loading', arrivals: [], ageMs: null });
+    }
+  });
+
+  it('micros ya pasadas y la consulta siguiente falló: fuente caída, no "sin micros"', () => {
+    let state = applySnapshot(
+      INITIAL_LIVE_STATE,
+      snapshotOf({ predictions: [{ route: 'A', epochTime: NOW_S + 30, realtime: true }] }),
+    );
+    state = applyFailure(state, 'unavailable');
+    expect(liveView(state, NOW + 4 * 60_000, false)).toMatchObject({ kind: 'down', ageMs: null });
+    // Si la fuente había dicho que no venía ninguna, eso sigue valiendo mientras no venza.
+    const empty = applyFailure(applySnapshot(INITIAL_LIVE_STATE, snapshotOf(fixtures.empty)), 'unavailable');
+    expect(liveView(empty, NOW + 60_000, false)).toMatchObject({ kind: 'empty', lastFailure: 'unavailable' });
+  });
+
+  it('las notas "sin datos en vivo" vencen con su dato', () => {
+    const state = applySnapshot(INITIAL_LIVE_STATE, snapshotOf(fixtures.noLiveData));
+    expect(liveView(state, NOW + 60_000, false).kind).toBe('no-live-data');
+    const expired = liveView(state, NOW + 11 * 60_000, false);
+    expect(expired.kind).toBe('loading');
+    expect(expired.notes).toEqual([]);
+    expect(liveView(applyFailure(state, 'unavailable'), NOW + 11 * 60_000, false)).toMatchObject({
+      kind: 'down',
+      notes: [],
+    });
+  });
+
   it('ritmo: 30 s, tras una falla 60 s, tras varias 5 min', () => {
     expect(nextPollDelay(0)).toBe(30_000);
     expect(nextPollDelay(1)).toBe(60_000);
@@ -245,11 +290,34 @@ describe('estados', () => {
   });
 });
 
+describe('micros en el mapa', () => {
+  it('solo las con GPS y posición, y solo mientras el bloque las muestra', () => {
+    const state = applySnapshot(INITIAL_LIVE_STATE, snapshotOf(fixtures.withBuses));
+    const plates = (now: number, s = state) => gpsArrivals(liveView(s, now, false)).map((a) => a.plate);
+    // Sin la estimada (PRUE21, realtime:false) ni la sin señal (PRUE40, 0,0).
+    expect(plates(NOW)).toEqual(['PRUE20', 'PRUE10', 'PRUE30']);
+    // La 62H llegaba en 40 s: a los 3 min ya no se dibuja; el resto, con el dato viejo.
+    expect(liveView(state, NOW + 3 * 60_000, false).kind).toBe('stale');
+    expect(plates(NOW + 3 * 60_000)).toEqual(['PRUE10', 'PRUE30']);
+    // Vencido el dato (10 min) no queda ninguna, haya fallado o no la consulta.
+    expect(plates(NOW + 11 * 60_000)).toEqual([]);
+    expect(plates(NOW + 11 * 60_000, applyFailure(state, 'unavailable'))).toEqual([]);
+  });
+});
+
 describe('calce con el visor', () => {
   const dir = (directionId: 0 | 1, variant?: string, destination?: string): RouteDirection =>
     ({ directionId, variant, destination, headsign: '', path: [], stops: [] }) as RouteDirection;
   const route = (code: string, directions: RouteDirection[]): Route =>
     ({ id: `r-${code}`, code, color: '#123456', directions }) as unknown as Route;
+
+  it('paradero con solo líneas que la fuente no sigue', () => {
+    expect(onlyUntrackedLines([route('302', [dir(0), dir(1)]), route('304', [dir(0), dir(1)])])).toBe(true);
+    expect(onlyUntrackedLines([route('302', [dir(0), dir(1)]), route('62HM', [dir(0, '62H'), dir(1, '62M')])])).toBe(false);
+    // Sin recorridos conocidos (o solo Biotrén, sin sentidos) no se sabe: se consulta.
+    expect(onlyUntrackedLines([])).toBe(false);
+    expect(onlyUntrackedLines([route('L1', [])])).toBe(false);
+  });
 
   it('stopCode de la fuente = "P" + stop_id del GTFS', () => {
     expect(liveStopCode('gtfs-stop-37520')).toBe('P37520');

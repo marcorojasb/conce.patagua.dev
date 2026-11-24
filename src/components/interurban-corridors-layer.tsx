@@ -1,6 +1,6 @@
 // Corredores interurbanos, overlay opcional que dibuja un pin grande
-// por cada servicio licitado documentado en el wiki que NO está en el
-// feed GTFS urbano (Santa Juana, Florida, Yumbel, Tomé rural, etc.).
+// por cada corredor documentado en el wiki que NO está en el GTFS oficial
+// (hoy Florida y Yumbel, operados por privados sin licitación DTPR).
 //
 // Cada pin abre un tooltip persistente con título, operador/estado y un
 // link "Ver en el wiki →". Si el corredor tiene también un terminal

@@ -526,7 +526,8 @@ export default function ConcepcionCoronelLota() {
             (operador único, todos sus servicios en el GTFS), aquí la
             fragmentación operacional deja fuera la mayor parte del
             corredor. Cuando se adjudique el PE formal y la DTPR publique
-            su programa, el visor lo tomará en la sincronización diaria.
+            su programa, la sincronización diaria propondrá sumarlo al
+            visor en una solicitud de cambios.
           </p>
         </div>
         <Sources>

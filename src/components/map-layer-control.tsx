@@ -469,16 +469,15 @@ export function MapLayerControl({
         onRetry: onRetrySchools,
       },
       // Toggle de corredores interurbanos, solo aparece si hay corredores
-      // sin trazado verificable en el dataset. Hoy la 201 vive como ruta
-      // nativa, así que el toggle se esconde hasta que se agregue otro
-      // corredor (Florida / Yumbel / Tomé rural) a interurban-corridors.ts.
+      // sin GTFS en el dataset (hoy Florida y Yumbel, ambos privados; la 201
+      // y los de Tomé vienen como recorridos del GTFS oficial).
       ...(INTERURBAN_CORRIDORS.length > 0
         ? [
             {
               id: 'interurban',
               label: 'Corredores interurbanos',
               detail: showInterurbanCorridors
-                ? 'Servicios licitados fuera del GTFS urbano · enlace al wiki'
+                ? 'Corredores privados sin GTFS (Florida, Yumbel) · enlace al wiki'
                 : 'Pines a comunas rurales/satélite',
               icon: BookOpen,
               checked: showInterurbanCorridors,

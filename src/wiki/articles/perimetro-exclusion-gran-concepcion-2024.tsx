@@ -797,10 +797,11 @@ export default function PerimetroExclusionGranConcepcion2024() {
               El GTFS oficial vigente es el programa del 28-feb-2025, con
               calendario vencido el 31-dic-2025 y sin versión posterior al
               24-nov-2026. La red que sigue en vivo la app de Transapp ya
-              tiene 11 servicios que ese feed no trae (02H, 02L, 20F, 20N,
-              30H, 30Z, 50SY, 70FY, 70HY, 80B, 80V). El visor depende del
-              feed, así que esos servicios no aparecen como recorrido
-              hasta que la DTPR publique otra versión.
+              tiene 11 servicios que no calzan con ese feed (02H, 02L, 20F,
+              20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B, 80V). El visor depende
+              del feed, así que diez de ellos no aparecen como recorrido
+              (la 02L solo como la variante 02L-Y, con 2 viajes en día
+              hábil) hasta que la DTPR publique otra versión.
             </p>
           </div>
         </div>

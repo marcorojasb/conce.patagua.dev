@@ -1,6 +1,6 @@
 // Biotrén, tren urbano operacional del Gran Concepción.
 // L1 Hualqui ↔ Mercado de Talcahuano, L2 Coronel ↔ Concepción,
-// 26 estaciones (OSM), tarifas Z1-Z10 vigentes desde 2-ene-2026, horarios
+// 25 estaciones (OSM; Concepción la comparten L1 y L2), tarifas Z1-Z10 vigentes desde 2-ene-2026, horarios
 // de los itinerarios oficiales de EFE vigentes desde 15-jul-2026 (transcritos
 // tren por tren en src/data/static-service-patterns.ts).
 // Extensiones futuras → `biotren-extensiones-proyectos`.
@@ -39,7 +39,7 @@ export default function Biotren() {
         snapshot="2026-11-24"
         items={[
           { label: 'Líneas', value: 'L1 · L2' },
-          { label: 'Estaciones', value: '26 (OSM)' },
+          { label: 'Estaciones', value: '25 (OSM)' },
           { label: 'Tarifa adulto', value: '$420–$850 (Z1–Z10)' },
           { label: 'Operador', value: 'EFE Trenes Metropolitanos' },
           { label: 'Trenes lun–vie', value: 'L1 37 · L2 104 (itinerario EFE)' },
@@ -397,7 +397,7 @@ export default function Biotren() {
 
       <Section title="Estaciones">
         <p>
-          26 estaciones (12 en L1, 14 en L2) tomadas de OSM
+          25 estaciones (12 en L1 y 14 en L2, con Concepción compartida) tomadas de OSM
           (<code>railway=station</code> o <code>halt</code> con{' '}
           <code>operator~EFE</code>) en{' '}
           <code className="font-mono">src/data/biotren.generated.ts</code>.

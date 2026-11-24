@@ -17,7 +17,13 @@ export function MapLegend({ routes, selectedRouteId, onSelectRoute }: Props) {
   const [open, setOpen] = useState(
     () => typeof window === 'undefined' || window.matchMedia('(min-width: 768px)').matches,
   );
-  const shown = routes.slice(0, MAX_ROWS);
+  // El recorrido seleccionado siempre tiene fila: elegir uno lo agrega al
+  // final de los visibles, justo donde la lista se corta.
+  const selectedIndex = routes.findIndex((r) => r.id === selectedRouteId);
+  const shown =
+    selectedIndex >= MAX_ROWS
+      ? [...routes.slice(0, MAX_ROWS - 1), routes[selectedIndex]]
+      : routes.slice(0, MAX_ROWS);
   const hidden = routes.length - shown.length;
 
   return (

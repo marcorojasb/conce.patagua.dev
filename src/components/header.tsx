@@ -15,7 +15,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import { ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
-import { matchesRouteQuery, routeShortName } from '@/lib/route-labels';
+import { fold, matchesRouteQuery, routeShortName } from '@/lib/route-labels';
 import { ARTICLES } from '@/wiki/articles';
 import type { Theme } from '@/types/transport';
 
@@ -53,7 +53,9 @@ export function Header({
     return () => window.removeEventListener('keydown', onKey);
   }, [commandOpen, onCommandOpenChange]);
 
-  const q = query.trim().toLowerCase();
+  // Todo se compara sin tildes ("Lirquén" = "lirquen") y la lista ya filtrada
+  // es la que se muestra: cmdk no vuelve a filtrar (shouldFilter={false}).
+  const q = fold(query.trim());
   // `ROUTES` y `STOPS` se mutan in-place cuando llega el chunk lazy de micros,
   // así que sin la versión en las deps el buscador queda indexando solo los
   // recorridos y paraderos del primer paint.
@@ -62,7 +64,7 @@ export function Header({
     () => {
       void routesVersion;
       return ROUTES.filter(
-        (r) => matchesRouteQuery(r, q) || ROUTE_TYPES[r.type].label.toLowerCase().includes(q),
+        (r) => matchesRouteQuery(r, q) || fold(ROUTE_TYPES[r.type].label).includes(q),
       );
     },
     [q, routesVersion],
@@ -70,16 +72,16 @@ export function Header({
   const stopMatches = useMemo(() => {
     void routesVersion;
     if (!q) return STOPS.slice(0, 6);
-    return STOPS.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 10);
+    return STOPS.filter((s) => fold(s.name).includes(q)).slice(0, 10);
   }, [q, routesVersion]);
   const wikiMatches = useMemo(
     () =>
       ARTICLES.filter(
         (a) =>
           !q ||
-          a.title.toLowerCase().includes(q) ||
-          a.summary.toLowerCase().includes(q) ||
-          a.slug.toLowerCase().includes(q),
+          fold(a.title).includes(q) ||
+          fold(a.summary).includes(q) ||
+          fold(a.slug).includes(q),
       ),
     [q],
   );
@@ -174,7 +176,7 @@ export function Header({
         </Button>
       </Tooltip>
 
-      <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
+      <CommandDialog open={commandOpen} onOpenChange={setCommandOpen} shouldFilter={false}>
         <CommandInput
           value={query}
           onValueChange={setQuery}
@@ -190,13 +192,10 @@ export function Header({
             <CommandGroup heading="Recorridos">
               {routeMatches.map((r) => {
                 const Icon = ROUTE_TYPES[r.type].Icon;
-                // cmdk vuelve a filtrar por `value`: lleva también las
-                // variantes de cada sentido para que "10A" encuentre 10AN.
-                const variants = (r.directions ?? []).map((d) => d.variant ?? '').join(' ');
                 return (
                   <CommandItem
                     key={r.id}
-                    value={`${r.code} ${variants} ${r.name}`}
+                    value={r.id}
                     onSelect={() => {
                       setCommandOpen(false);
                       setQuery('');
@@ -222,7 +221,7 @@ export function Header({
               {stopMatches.map((s) => (
                 <CommandItem
                   key={s.id}
-                  value={s.name}
+                  value={s.id}
                   onSelect={() => {
                     setCommandOpen(false);
                     setQuery('');
@@ -248,7 +247,7 @@ export function Header({
               {wikiMatches.map((a) => (
                 <CommandItem
                   key={a.slug}
-                  value={`${a.title} ${a.slug}`}
+                  value={`wiki-${a.slug}`}
                   onSelect={() => {
                     setCommandOpen(false);
                     setQuery('');

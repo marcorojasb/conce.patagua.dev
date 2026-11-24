@@ -559,7 +559,7 @@ export default function OpenstreetmapFuenteVisor() {
             { date: 'Q2-Q4 2024', event: 'Pipeline OSM → .generated.ts → Leaflet en línea (scripts fetch-biotren, fetch-terminals, fetch-pois, etc.).' },
             { date: '2025', event: 'fetch-interurban-routes.ts digitaliza 201, 401, 411, 421 desde waypoints OSM + corridor-Dijkstra.' },
             { date: '24-nov-2026', event: '201, 401, 411 y 421 pasan a salir del GTFS oficial DTPR; el visor deja de usar los trazados OSM digitalizados.' },
-            { date: '14-may-2026', event: 'Última corrida sync:biotren conocida. 26 estaciones L1+L2 verificadas con Q-ids.' },
+            { date: '14-may-2026', event: 'Última corrida sync:biotren conocida. 25 estaciones L1+L2 (Concepción compartida) verificadas con Q-ids.' },
             { date: '16-may-2026', event: 'Verificación Overpass de las relations Biotrén y publicación de la ficha.' },
           ]}
         />
