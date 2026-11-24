@@ -124,7 +124,11 @@ try {
   if (modalDetailCount > 0) {
     throw new Error('Expected detail panels to be non-modal.');
   }
-  await page.getByText(/Biotrén L1/).first().click();
+  await page
+    .getByRole('complementary', { name: 'Recorridos' })
+    .getByRole('button', { name: /^L1 / })
+    .first()
+    .click();
   await waitForBody(page, /Hualqui|Mercado/, 'sidebar click while detail panel is open');
   await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
   await page.getByRole('dialog', { name: 'Capas del mapa' }).waitFor({ timeout: 5_000 });
