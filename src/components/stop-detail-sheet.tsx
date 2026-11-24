@@ -257,11 +257,7 @@ function RoutesSection({
         {routes.map((r) => {
           const Icon = ROUTE_TYPES[r.type].Icon;
           const active = isRouteOperatingNow(r);
-          const details = [
-            ROUTE_TYPES[r.type].short,
-            r.operator,
-            /^\d/.test(r.headway) ? `cada ${r.headway}` : null,
-          ]
+          const details = [r.operator, /^\d/.test(r.headway) ? `cada ${r.headway}` : null]
             .filter(Boolean)
             .join(' · ');
           return (
@@ -275,7 +271,7 @@ function RoutesSection({
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{routeShortName(r)}</div>
                   <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Icon className="size-[11px] shrink-0" />
+                    <Icon className="size-[11px] shrink-0" aria-label={ROUTE_TYPES[r.type].short} />
                     <span className="truncate">{details}</span>
                   </div>
                 </div>
@@ -378,12 +374,12 @@ function FrequencyBlock({
       <div className="mb-3 grid grid-cols-3 gap-2">
         <Stat label={`${hh(hourNow)}–${hh((hourNow + 1) % 24)} h`} value={stats.now} suffix="pasadas" />
         <Stat label="Hoy" value={stats.totalToday} suffix="pasadas" />
-        <Stat label="Hora punta" value={stats.peakHour.count} suffix={`a las ${hh(stats.peakHour.hour)}`} />
+        <Stat label="Hora punta" value={stats.peakHour.count} suffix={`a las ${hh(stats.peakHour.hour)} h`} />
       </div>
       <HourlyBars hourly={stats.todaySlice} max={max} currentHour={hourNow} />
       <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-        Pasadas por hora según el horario publicado (GTFS Gran Concepción); la barra oscura es la
-        hora actual.
+        Pasadas por hora según el horario publicado (GTFS Gran Concepción); la barra resaltada es
+        la hora actual.
       </p>
     </section>
   );

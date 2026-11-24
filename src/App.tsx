@@ -1,16 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { ConceMap } from '@/components/conce-map';
 import { MapLegend } from '@/components/map-legend';
 import { Header } from '@/components/header';
 import { MapLayerControl } from '@/components/map-layer-control';
-import { ParaderoDetailSheet } from '@/components/paradero-detail-sheet';
-import { RouteDetailSheet } from '@/components/route-detail-sheet';
 import { Sidebar } from '@/components/sidebar';
-import { StopDetailSheet } from '@/components/stop-detail-sheet';
-import { TerminalDetailSheet } from '@/components/terminal-detail-sheet';
-import { PoiDetailSheet } from '@/components/poi-detail-sheet';
-import { DataSourcesSheet } from '@/components/data-sources-sheet';
-import { FloatingToolsPanel, type AnalysisTab } from '@/components/floating-tools-panel';
+import type { AnalysisTab } from '@/components/floating-tools-panel';
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { useSimulationControl, useSimulationStatus } from '@/realtime/use-simulated-vehicles';
 import { useLiveArrivals } from '@/hooks/use-live-arrivals';
@@ -36,6 +30,31 @@ import { isRouteOperatingNow } from '@/lib/operating-hours';
 import { cn } from '@/lib/utils';
 import { CORRIDOR_BY_ID } from '@/data/interurban-corridors';
 import type { FlyToToken, Route, SheetKind } from '@/types/transport';
+
+// Fichas y herramientas se cargan recién al abrirse: no hacen falta para el
+// primer dibujo del mapa y sacarlas del chunk principal lo mantiene dentro del
+// presupuesto (scripts/check-bundle-budget.ts).
+const RouteDetailSheet = lazy(() =>
+  import('@/components/route-detail-sheet').then((m) => ({ default: m.RouteDetailSheet })),
+);
+const StopDetailSheet = lazy(() =>
+  import('@/components/stop-detail-sheet').then((m) => ({ default: m.StopDetailSheet })),
+);
+const ParaderoDetailSheet = lazy(() =>
+  import('@/components/paradero-detail-sheet').then((m) => ({ default: m.ParaderoDetailSheet })),
+);
+const TerminalDetailSheet = lazy(() =>
+  import('@/components/terminal-detail-sheet').then((m) => ({ default: m.TerminalDetailSheet })),
+);
+const PoiDetailSheet = lazy(() =>
+  import('@/components/poi-detail-sheet').then((m) => ({ default: m.PoiDetailSheet })),
+);
+const DataSourcesSheet = lazy(() =>
+  import('@/components/data-sources-sheet').then((m) => ({ default: m.DataSourcesSheet })),
+);
+const FloatingToolsPanel = lazy(() =>
+  import('@/components/floating-tools-panel').then((m) => ({ default: m.FloatingToolsPanel })),
+);
 
 const INITIAL_URL = readUrlState();
 // `?focus=<kind>:<id>` puede venir desde el wiki (`<MapLink>`). Lo leemos
@@ -726,80 +745,96 @@ export default function App() {
             />
           </div>
 
-          <FloatingToolsPanel
-            tool={activeTool}
-            onClose={() => setActiveTool(null)}
-            plannerOrigin={plannerOrigin}
-            plannerDestination={plannerDestination}
-            pickerMode={pickerMode}
-            plannerMatches={plannerMatches}
-            matchesAvailable={visibleRouteIds.length > 0}
-            onPickOrigin={() => setPickerMode('origin')}
-            onPickDestination={() => setPickerMode('destination')}
-            onClearPlanner={onClearPlanner}
-            onSelectRoute={onSelectRoute}
-            onShowOperatorRoutes={onShowOperatorRoutes}
-            visibleRouteIds={visibleRouteIds}
-            mapBounds={mapBounds}
-            theme={theme}
-            simulationScope={simulationScope}
-            activeMapLayers={{
-              paraderos: showParaderos,
-              terminales: showTerminals,
-              pois: showPois,
-              coverage: showCoverage,
-              cycleways: showCycleways,
-              greenspace: showGreenspace,
-              schools: showSchools,
-              simulated: showSimulatedVehicles,
-            }}
-            plannerMidpoint={plannerMidpoint}
-            plannerMidpointLoading={plannerMidpointLoading}
-            plannerMidpointError={plannerMidpointError}
-            onComputeMidpoint={onComputeMidpoint}
-            onClearMidpoint={clearMidpointState}
-          />
+          {activeTool && (
+            <Suspense fallback={null}>
+              <FloatingToolsPanel
+                tool={activeTool}
+                onClose={() => setActiveTool(null)}
+                plannerOrigin={plannerOrigin}
+                plannerDestination={plannerDestination}
+                pickerMode={pickerMode}
+                plannerMatches={plannerMatches}
+                matchesAvailable={visibleRouteIds.length > 0}
+                onPickOrigin={() => setPickerMode('origin')}
+                onPickDestination={() => setPickerMode('destination')}
+                onClearPlanner={onClearPlanner}
+                onSelectRoute={onSelectRoute}
+                onShowOperatorRoutes={onShowOperatorRoutes}
+                visibleRouteIds={visibleRouteIds}
+                mapBounds={mapBounds}
+                theme={theme}
+                simulationScope={simulationScope}
+                activeMapLayers={{
+                  paraderos: showParaderos,
+                  terminales: showTerminals,
+                  pois: showPois,
+                  coverage: showCoverage,
+                  cycleways: showCycleways,
+                  greenspace: showGreenspace,
+                  schools: showSchools,
+                  simulated: showSimulatedVehicles,
+                }}
+                plannerMidpoint={plannerMidpoint}
+                plannerMidpointLoading={plannerMidpointLoading}
+                plannerMidpointError={plannerMidpointError}
+                onComputeMidpoint={onComputeMidpoint}
+                onClearMidpoint={clearMidpointState}
+              />
+            </Suspense>
+          )}
         </main>
       </div>
 
-      <RouteDetailSheet
-        open={sheetKind === 'route'}
-        route={selectedRoute}
-        onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-        onFocusRoute={onFocusRoute}
-        onDeselectRoute={closeSheet}
-        onSelectStop={onSelectStop}
-      />
-      <StopDetailSheet
-        open={sheetKind === 'stop'}
-        stop={selectedStop}
-        live={liveArrivals}
-        onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-        onSelectRoute={onSelectRoute}
-      />
-      <ParaderoDetailSheet
-        open={sheetKind === 'paradero'}
-        paradero={selectedParadero}
-        live={liveArrivals}
-        onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-        onSelectRoute={onSelectRoute}
-        onUseAsOrigin={onUsePointAsOrigin}
-        onUseAsDestination={onUsePointAsDestination}
-      />
-      <TerminalDetailSheet
-        open={sheetKind === 'terminal'}
-        terminal={selectedTerminal}
-        onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-        onFocus={onFocusTerminal}
-      />
-      <PoiDetailSheet
-        open={sheetKind === 'poi'}
-        poi={selectedPoi}
-        onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-        onFocus={onFocusPoi}
-        onSelectRoute={onSelectRoute}
-      />
-      <DataSourcesSheet open={sourcesOpen} onOpenChange={setSourcesOpen} />
+      <Suspense fallback={null}>
+        {sheetKind === 'route' && (
+          <RouteDetailSheet
+            open={sheetKind === 'route'}
+            route={selectedRoute}
+            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
+            onFocusRoute={onFocusRoute}
+            onDeselectRoute={closeSheet}
+            onSelectStop={onSelectStop}
+          />
+        )}
+        {sheetKind === 'stop' && (
+          <StopDetailSheet
+            open={sheetKind === 'stop'}
+            stop={selectedStop}
+            live={liveArrivals}
+            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
+            onSelectRoute={onSelectRoute}
+          />
+        )}
+        {sheetKind === 'paradero' && (
+          <ParaderoDetailSheet
+            open={sheetKind === 'paradero'}
+            paradero={selectedParadero}
+            live={liveArrivals}
+            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
+            onSelectRoute={onSelectRoute}
+            onUseAsOrigin={onUsePointAsOrigin}
+            onUseAsDestination={onUsePointAsDestination}
+          />
+        )}
+        {sheetKind === 'terminal' && (
+          <TerminalDetailSheet
+            open={sheetKind === 'terminal'}
+            terminal={selectedTerminal}
+            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
+            onFocus={onFocusTerminal}
+          />
+        )}
+        {sheetKind === 'poi' && (
+          <PoiDetailSheet
+            open={sheetKind === 'poi'}
+            poi={selectedPoi}
+            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
+            onFocus={onFocusPoi}
+            onSelectRoute={onSelectRoute}
+          />
+        )}
+        {sourcesOpen && <DataSourcesSheet open onOpenChange={setSourcesOpen} />}
+      </Suspense>
     </div>
   );
 }

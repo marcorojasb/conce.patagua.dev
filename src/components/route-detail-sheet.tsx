@@ -252,9 +252,13 @@ export function RouteDetailSheet({
             <XCircle className="size-3.5" />
             Deseleccionar
           </Button>
+          <WikiLinkButton kind="route" code={route.code} />
           <Button
-            size="sm"
-            variant="outline"
+            size="icon"
+            variant="ghost"
+            className="size-8 text-muted-foreground hover:text-foreground"
+            aria-label="Reportar un problema con este recorrido"
+            title="Reportar un problema con este recorrido"
             onClick={() =>
               window.open(
                 'https://github.com/marcorojasb/conce.patagua.dev/issues',
@@ -263,10 +267,8 @@ export function RouteDetailSheet({
               )
             }
           >
-            <Github className="size-3.5" />
-            Reportar
+            <Github className="size-4" />
           </Button>
-          <WikiLinkButton kind="route" code={route.code} />
         </div>
       ),
     };

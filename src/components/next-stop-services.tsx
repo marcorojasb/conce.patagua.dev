@@ -49,6 +49,15 @@ function reducer(state: State, action: Action): State {
 
 const FALLBACK_COLOR = '#0ea5e9';
 
+/** "ahora", "en 12 min", "en 1 h 05 min", o "mañana" si pasa después de medianoche y falta más de una hora. */
+function formatWait(minutesUntil: number, scheduledMin: number): string {
+  if (minutesUntil === 0) return 'ahora';
+  if (minutesUntil < 60) return `en ${minutesUntil} min`;
+  if (scheduledMin >= 1440) return 'mañana';
+  const minutes = minutesUntil % 60;
+  return `en ${Math.floor(minutesUntil / 60)} h${minutes ? ` ${String(minutes).padStart(2, '0')} min` : ''}`;
+}
+
 export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
   const routesVersion = useRoutesVersion();
   const [state, dispatch] = useReducer(reducer, initialState);
@@ -162,7 +171,7 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
                     {formatServiceClock(service.scheduledMin)}
                   </div>
                   <div className="text-[11px] text-muted-foreground">
-                    {service.minutesUntil === 0 ? 'ahora' : `en ${service.minutesUntil} min`}
+                    {formatWait(service.minutesUntil, service.scheduledMin)}
                   </div>
                 </div>
               </li>
