@@ -83,6 +83,45 @@ describe('api/stop-arrivals', () => {
     expect(new Headers(init?.headers).get('user-agent')).toBe('visor-transporte/1.0');
   });
 
+  it('reenvía solo los campos que lee el visor, con valores simples', async () => {
+    const prediction = {
+      route: '24F',
+      direction: 'R',
+      epochTime: 1764000000,
+      timeLabel: '3 min',
+      distance: '850',
+      realtime: true,
+      latitude: -36.8298,
+      longitude: -73.055,
+      licensePlate: 'PRUE10',
+      tripId: null,
+    };
+    fetchMock.mockResolvedValueOnce(
+      upstreamReply({
+        predictions: [
+          { ...prediction, machineId: '00000000-0000-0000-0000-000000000000', resourceId: -1, eventNumber: 0 },
+          { route: { machineId: '00000000-0000-0000-0000-000000000000' }, timeLabel: ['x'], realtime: true },
+          { machineId: '00000000-0000-0000-0000-000000000000' },
+          'texto suelto',
+        ],
+        routeInfo: [{ servicio: '24F', msg: 'pasa cada 10 min', icono: 'x' }, null],
+        alerts: [{ message: '<b>Aviso</b>', id: 7, link: 'https://example.test' }],
+        events: [{ x: 1 }],
+      }),
+    );
+    const GET = await loadHandler();
+    const res = await GET(request('P37520'));
+    const text = await res.text();
+    for (const leaked of ['machineId', 'resourceId', 'eventNumber', '00000000-0000', 'icono', 'example.test', 'events']) {
+      expect(text).not.toContain(leaked);
+    }
+    expect((JSON.parse(text) as { data: unknown }).data).toEqual({
+      predictions: [prediction, { realtime: true }],
+      routeInfo: [{ servicio: '24F', msg: 'pasa cada 10 min' }],
+      alerts: [{ message: '<b>Aviso</b>' }],
+    });
+  });
+
   it('guarda 25 s por paradero y comparte la consulta en vuelo', async () => {
     fetchMock.mockImplementation(async () => upstreamReply({ predictions: [] }));
     const GET = await loadHandler();

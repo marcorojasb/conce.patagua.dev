@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { clearFocusParam, readFocusParam, readUrlState } from '@/hooks/use-url-state';
+import { clearFocusParam, readFocusParam, readUrlState, urlSearchFor, type UrlState } from '@/hooks/use-url-state';
 
 function stubWindow(search: string) {
   const history = {
@@ -61,5 +61,32 @@ describe('URL state', () => {
     expect(readFocusParam()).toEqual({ kind: 'route', id: '201-AU' });
     stubWindow('?focus=route:201%20AU');
     expect(readFocusParam()).toEqual({ kind: 'route', id: '201 AU' });
+  });
+
+  it('reads the vehicles mode only as micros=gps', () => {
+    stubWindow('?micros=gps&route=gtfs-route-833');
+    expect(readUrlState().micros).toBe('gps');
+    stubWindow('?micros=horario');
+    expect(readUrlState().micros).toBeNull();
+    stubWindow('');
+    expect(readUrlState().micros).toBeNull();
+  });
+
+  it('writes micros=gps only in GPS mode and keeps the rest of the state', () => {
+    const base: UrlState = {
+      route: 'gtfs-route-835',
+      dir: 1,
+      stop: null,
+      terminal: null,
+      poi: null,
+      paraderos: true,
+      activos: false,
+      pois: false,
+      aire: false,
+      micros: null,
+    };
+    expect(urlSearchFor(base)).toBe('?route=gtfs-route-835&dir=1&paraderos=1');
+    expect(urlSearchFor({ ...base, micros: 'gps' })).toBe('?route=gtfs-route-835&dir=1&paraderos=1&micros=gps');
+    expect(urlSearchFor({ ...base, route: null, dir: 1, paraderos: false })).toBe('');
   });
 });

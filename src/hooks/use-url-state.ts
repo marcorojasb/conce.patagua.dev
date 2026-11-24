@@ -17,6 +17,8 @@ export interface UrlState {
   activos: boolean;
   pois: boolean;
   aire: boolean;
+  /** Micros en el mapa: "gps" con el modo GPS en vivo; sin parámetro es el horario. */
+  micros: 'gps' | null;
 }
 
 /**
@@ -77,6 +79,7 @@ export function readUrlState(): UrlState {
       activos: false,
       pois: false,
       aire: false,
+      micros: null,
     };
   }
   const p = new URLSearchParams(window.location.search);
@@ -90,7 +93,25 @@ export function readUrlState(): UrlState {
     activos: p.get('activos') === '1',
     pois: p.get('pois') === '1',
     aire: p.get('aire') === '1',
+    micros: p.get('micros') === 'gps' ? 'gps' : null,
   };
+}
+
+/** Query string ("?route=…&micros=gps", o "" sin nada que guardar) para el estado dado. */
+export function urlSearchFor(state: UrlState): string {
+  const p = new URLSearchParams();
+  if (state.route) p.set('route', state.route);
+  if (state.route && state.dir != null) p.set('dir', String(state.dir));
+  if (state.stop) p.set('stop', state.stop);
+  if (state.terminal) p.set('terminal', state.terminal);
+  if (state.poi) p.set('poi', state.poi);
+  if (state.paraderos) p.set('paraderos', '1');
+  if (state.activos) p.set('activos', '1');
+  if (state.pois) p.set('pois', '1');
+  if (state.aire) p.set('aire', '1');
+  if (state.micros === 'gps') p.set('micros', 'gps');
+  const qs = p.toString();
+  return qs ? `?${qs}` : '';
 }
 
 export function useSyncUrlState(state: UrlState): void {
@@ -101,19 +122,8 @@ export function useSyncUrlState(state: UrlState): void {
       hasMountedRef.current = true;
       return;
     }
-    const p = new URLSearchParams();
     // react-doctor-disable-next-line react-doctor/no-event-handler -- URL query sync is an external browser-history side effect, not a React event handler.
-    if (state.route) p.set('route', state.route);
-    if (state.route && state.dir != null) p.set('dir', String(state.dir));
-    if (state.stop) p.set('stop', state.stop);
-    if (state.terminal) p.set('terminal', state.terminal);
-    if (state.poi) p.set('poi', state.poi);
-    if (state.paraderos) p.set('paraderos', '1');
-    if (state.activos) p.set('activos', '1');
-    if (state.pois) p.set('pois', '1');
-    if (state.aire) p.set('aire', '1');
-    const qs = p.toString();
-    const next = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    const next = `${window.location.pathname}${urlSearchFor(state)}`;
     window.history.replaceState(null, '', next);
   }, [
     state.route,
@@ -125,5 +135,6 @@ export function useSyncUrlState(state: UrlState): void {
     state.activos,
     state.pois,
     state.aire,
+    state.micros,
   ]);
 }

@@ -2,35 +2,47 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
-// En Vercel, api/stop-arrivals.ts corre como función. En `npm run dev` se monta
-// el mismo handler como middleware, así el visor local funciona igual; lee
-// TRANSAPP_PHONE_ID del entorno o de un .env.local (nunca commiteado).
-function stopArrivalsApi(env: Record<string, string>): Plugin {
+// En Vercel, api/stop-arrivals.ts y api/route-vehicles.ts corren como
+// funciones. En `npm run dev` se montan los mismos handlers como middleware,
+// así el visor local funciona igual; leen TRANSAPP_PHONE_ID del entorno o de un
+// .env.local (nunca commiteado).
+const API_HANDLERS = ['stop-arrivals', 'route-vehicles'];
+
+function liveApi(env: Record<string, string>): Plugin {
   return {
-    name: 'stop-arrivals-api',
+    name: 'live-api',
     configureServer(server) {
       // Asignar `undefined` a process.env lo convierte en el texto "undefined".
       if (!process.env.TRANSAPP_PHONE_ID && env.TRANSAPP_PHONE_ID) {
         process.env.TRANSAPP_PHONE_ID = env.TRANSAPP_PHONE_ID;
       }
-      server.middlewares.use('/api/stop-arrivals', async (req, res) => {
-        try {
-          const mod = await server.ssrLoadModule('/api/stop-arrivals.ts');
-          const response: Response = await mod.GET(new Request(`http://localhost${req.originalUrl}`));
-          res.statusCode = response.status;
-          response.headers.forEach((value, key) => res.setHeader(key, value));
-          res.end(await response.text());
-        } catch (err) {
-          res.statusCode = 500;
-          res.end(String(err));
-        }
-      });
+      for (const name of API_HANDLERS) {
+        server.middlewares.use(`/api/${name}`, async (req, res) => {
+          // Como en Vercel, que solo expone el GET que exporta cada handler.
+          if (req.method !== 'GET') {
+            res.statusCode = 405;
+            res.setHeader('allow', 'GET');
+            res.end();
+            return;
+          }
+          try {
+            const mod = await server.ssrLoadModule(`/api/${name}.ts`);
+            const response: Response = await mod.GET(new Request(`http://localhost${req.originalUrl}`));
+            res.statusCode = response.status;
+            response.headers.forEach((value, key) => res.setHeader(key, value));
+            res.end(await response.text());
+          } catch (err) {
+            res.statusCode = 500;
+            res.end(String(err));
+          }
+        });
+      }
     },
   };
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), stopArrivalsApi(loadEnv(mode, process.cwd(), ''))],
+  plugins: [react(), liveApi(loadEnv(mode, process.cwd(), ''))],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

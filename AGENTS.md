@@ -18,7 +18,7 @@ src/
   realtime/            llegadas en vivo (live-arrivals.ts) y simulación de Servicios en curso
   types/               tipos compartidos
   wiki/                segunda app, montada en /wiki (wiki-app.tsx + articles/)
-api/                   funciones de Vercel (stop-arrivals.ts: intermediaria de llegadas en vivo)
+api/                   funciones de Vercel: stop-arrivals.ts (llegadas al paradero) y route-vehicles.ts (micros con GPS por línea); _transapp.ts es lo común (con "_" no se publica como función)
 scripts/               generación de datasets (sync:*) + validación/smoke (data:validate, smoke, bundle:budget)
 ```
 
@@ -31,6 +31,8 @@ scripts/               generación de datasets (sync:*) + validación/smoke (dat
 - **Biotrén**: itinerarios oficiales de EFE (desde 2026-07-15) transcritos tren por tren en `src/data/static-service-patterns.ts`; estaciones y vía desde OSM.
 - **Florida y Yumbel**: sin GTFS, solo pins en `src/data/interurban-corridors.ts`.
 - **Llegadas en vivo**: fuente NO oficial de la app Transapp (`phone.dtpr.transapp.cl`), vía `api/stop-arrivals.ts` (caché 25 s por paradero, tope 30 consultas/min). El identificador de cliente sale de `TRANSAPP_PHONE_ID` (Vercel). **Nunca escribir su valor (ni ningún UUID o identificador de la fuente) en el repo, la wiki, tests, commits ni logs.**
+- **Micros con GPS por línea**: misma fuente, vía `api/route-vehicles.ts` (`GET /api/route-vehicles?services=24F:R,401I:I`, 1–16 pares `<SERVICIO>:<I|R>` con el nombre de `visorServiceName`). La fuente solo responde por servicio y sentido, no hay consulta de toda la red. Caché 20 s por par, consultas en vuelo compartidas, tope 60 consultas/min por instancia (aparte del de paraderos), último dato del par hasta 2 min si hay tope o falla. Una lista vacía es "sin GPS ahora", nunca se rellena con estimaciones. Contrato completo en README ("Micros con GPS por línea").
+- **Qué sale de las intermediarias**: solo los campos que lee el visor (whitelist en cada handler); nunca el identificador del equipo GPS (`machineId`) ni otros campos crudos. Pruebas, smoke y dev server de agentes se corren con `env -u TRANSAPP_PHONE_ID` y con la fuente interceptada o simulada: nunca contra la fuente real.
 - **Servicios en curso**: estimación según horario programado, nunca GPS; la UI debe rotularla como estimación.
 
 ## Convenciones observadas en el código existente
@@ -61,6 +63,6 @@ No editar directamente los `*.generated.ts` en `src/data/` — si un dataset nec
 
 ## Notas pendientes / no verificado
 
-- Las llegadas en vivo necesitan `TRANSAPP_PHONE_ID` en las variables de entorno (Vercel, o `.env.local` para `npm run dev`). Sin ella `/api/stop-arrivals` responde 503 y la ficha dice que no están activadas. La fuente no es oficial ni documentada: puede cambiar o cortarse sin aviso.
+- Las llegadas en vivo necesitan `TRANSAPP_PHONE_ID` en las variables de entorno (Vercel, o `.env.local` para `npm run dev`). Sin ella `/api/stop-arrivals` y `/api/route-vehicles` responden 503 y el visor dice que no están activadas. La fuente no es oficial ni documentada: puede cambiar o cortarse sin aviso.
 - El calendario del GTFS oficial venció el 2025-12-31 y no hay versión posterior: cambios de la red en 2026 (por ejemplo 11 servicios que la fuente en vivo ya sigue: 02H 02L 20F 20N 30H 30Z 50SY 70FY 70HY 80B 80V; la 02L solo como la variante 02L-Y del GTFS) no están en el visor hasta que la DTPR publique otra.
 - `interurban-routes.generated.ts` (trazados OSM de 201/401/411/421) ya no se importa ni se regenera en `sync:osm`: esos servicios vienen del GTFS oficial. Se conserva porque el wiki lo cita; `npm run sync:interurban-routes` sigue disponible a mano.
