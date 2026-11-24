@@ -89,7 +89,7 @@ function increment<K>(map: Map<K, number>, key: K, by = 1): void {
 
 const url = process.env.GTFS_URL ?? DEFAULT_GTFS_URL;
 const localZip = process.env.GTFS_ZIP_PATH;
-console.log(localZip ? `Leyendo zip local ${localZip}…` : `Descargando ${url}…`);
+console.log(localZip ? `Zip local: ${localZip}` : `Zip: ${url}`);
 const zip = localZip ? await localGtfsZip(localZip) : await downloadGtfsZip(url, resolve('.cache/gtfs'));
 console.log(`  → ${(zip.size / 1e6).toFixed(1)} MB · sha256 ${zip.sha256.slice(0, 12)}… · ${zip.origin}`);
 const entries = await listZipEntries(zip.path);
@@ -525,7 +525,10 @@ type GeneratedRoute = Omit<BusRoute, 'path' | 'stopIds' | 'directions'> & {
 
 const ROUTES: GeneratedRoute[] = ${JSON.stringify(routes)};
 
-export const GTFS_BUS_ROUTES: BusRoute[] = ROUTES.map((route) => ({
+// PURE: el barrel gtfs-concepcion.generated.ts re-exporta esto de forma
+// estática; sin la marca, Rollup no puede descartarlo y el chunk pesado
+// termina dentro de App.
+export const GTFS_BUS_ROUTES: BusRoute[] = /* @__PURE__ */ ROUTES.map((route) => ({
   ...route,
   path: route.directions[0].path,
   stopIds: route.directions[0].stopIds,

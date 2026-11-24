@@ -62,12 +62,21 @@ export const ROUTE_TYPES: Record<RouteTypeId, RouteType> = {
   },
 };
 
-const BIOTREN_FREQUENCY = {
-  'Lun – Vie': 'cada 6–12 min en punta · 15 min valle',
-  Sábado: 'cada 12–20 min',
-  Domingo: 'cada 20–30 min',
+// Resumen de los itinerarios EFE vigentes desde el 15-07-2026 (salida por
+// salida en static-service-patterns.ts). Cuenta solo trenes de cabecera a
+// cabecera; los horarios van de la primera salida a la última llegada.
+const BIOTREN_L1_FREQUENCY = {
+  'Lun – Vie': '19 trenes desde Hualqui y 18 desde Mercado · cada 30 min en punta, 45–60 min fuera de punta · sin trenes 13:15–15:00',
+  Sábado: '8 trenes por sentido · cada 60 min de 16:00 a 20:00, cada 1,5–4 h antes',
+  Domingo: '4 trenes por sentido (Tren Laja–Talcahuano) · cada 3–4 h',
 };
-const BIOTREN_HOURS = '05:45 — 23:10 (Lun-Vie)';
+const BIOTREN_L1_HOURS = '06:20 — 22:48 (Lun-Vie) · 08:30 — 21:26 (Sáb-Dom)';
+const BIOTREN_L2_FREQUENCY = {
+  'Lun – Vie': '52 trenes por sentido · cada ~12 min en punta (7–23 min), 15–80 min al mediodía',
+  Sábado: '26 trenes desde Coronel y 27 desde Concepción · cada 30 min en mañana y tarde, 15–80 min al mediodía',
+  Domingo: '16 trenes por sentido · cada 15–80 min (típico ~55 min)',
+};
+const BIOTREN_L2_HOURS = '05:55 — 23:32 (Lun-Vie) · 06:30 — 22:12 (Sáb) · 08:30 — 21:42 (Dom)';
 const RAIL_MAX_SEGMENT_METERS = 300;
 const ROAD_MAX_SEGMENT_METERS = 300;
 
@@ -88,9 +97,9 @@ const BIOTREN_ROUTES: Route[] = [
     type: 'biotren',
     color: '#0EA5E9',
     operator: 'EFE Sur · Biotrén',
-    headway: '12 min',
-    hours: BIOTREN_HOURS,
-    frequencyByDay: BIOTREN_FREQUENCY,
+    headway: '30 min en punta',
+    hours: BIOTREN_L1_HOURS,
+    frequencyByDay: BIOTREN_L1_FREQUENCY,
     stops: BIOTREN_L1_STOPS,
     path: densifyPath(BIOTREN_L1_TRACK, RAIL_MAX_SEGMENT_METERS),
   },
@@ -101,9 +110,9 @@ const BIOTREN_ROUTES: Route[] = [
     type: 'biotren',
     color: '#0284C7',
     operator: 'EFE Sur · Biotrén',
-    headway: '12 min',
-    hours: BIOTREN_HOURS,
-    frequencyByDay: BIOTREN_FREQUENCY,
+    headway: '12 min en punta',
+    hours: BIOTREN_L2_HOURS,
+    frequencyByDay: BIOTREN_L2_FREQUENCY,
     stops: BIOTREN_L2_STOPS,
     path: densifyPath(BIOTREN_L2_TRACK, RAIL_MAX_SEGMENT_METERS),
   },

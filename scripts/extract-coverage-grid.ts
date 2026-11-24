@@ -11,7 +11,9 @@
 
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { GTFS_STOPS } from '../src/data/gtfs-concepcion.generated.ts';
+// Directo al archivo de paraderos: el barrel gtfs-concepcion.generated.ts
+// re-exporta sin extensión (para Vite) y Node no lo puede resolver.
+import { GTFS_STOPS } from '../src/data/gtfs-stops.generated.ts';
 
 const OUT = resolve('src/data/coverage.generated.ts');
 

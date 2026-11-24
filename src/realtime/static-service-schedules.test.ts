@@ -40,6 +40,19 @@ describe('static service schedules', () => {
     }
   });
 
+  it('expands explicit trips instead of the frequency window when a pattern lists them', () => {
+    const trips: [number, number][] = [
+      [6 * 60 + 20, 64],
+      [6 * 60 + 56, 60],
+      [21 * 60 + 52, 56],
+    ];
+    expect(expandFrequencyWindow({ ...pattern, trips })).toEqual(trips);
+
+    const schedules = buildStaticRouteSchedules([{ ...pattern, days: ['sunday'], trips }]);
+    expect(schedules['test-pattern'][6]).toEqual(trips);
+    expect(schedules['test-pattern'].slice(0, 6).every((day) => day.length === 0)).toBe(true);
+  });
+
   it('maps weekday patterns to Monday through Friday only', () => {
     const schedules = buildStaticRouteSchedules([pattern]);
 
