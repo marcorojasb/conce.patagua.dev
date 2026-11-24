@@ -108,9 +108,14 @@ export function summarizeToday(schedules: readonly RouteSchedule[], now: Date): 
         if (t <= nowMin && nowMin < t + duration) operatingNow = true;
       }
     }
-    nearbyGaps.push(
-      ...gaps(startsAround(schedule, day, nowMin - HEADWAY_WINDOW_MIN, nowMin + HEADWAY_WINDOW_MIN)),
-    );
+    // Solo hay "intervalo ahora" si quedan salidas en la próxima hora: si la
+    // siguiente sale en tres horas, los intervalos de la mañana no aplican.
+    const upcoming = startsAround(schedule, day, nowMin, nowMin + HEADWAY_WINDOW_MIN);
+    if (upcoming.length > 0) {
+      nearbyGaps.push(
+        ...gaps(startsAround(schedule, day, nowMin - HEADWAY_WINDOW_MIN, nowMin + HEADWAY_WINDOW_MIN)),
+      );
+    }
   }
 
   return {

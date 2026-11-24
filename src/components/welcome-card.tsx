@@ -30,6 +30,8 @@ export function WelcomeCard({ routesCount, stopsCount, onSearch, onShowStops }: 
   if (hidden) return null;
 
   const dismiss = () => {
+    // La tarjeta se desmonta con el botón pulsado: el foco pasa al mapa.
+    document.querySelector<HTMLElement>('.leaflet-container')?.focus();
     setHidden(true);
     try {
       window.localStorage.setItem(STORAGE_KEY, 'hidden');

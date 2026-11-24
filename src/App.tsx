@@ -1,9 +1,10 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { ConceMap } from '@/components/conce-map';
 import { MapLegend } from '@/components/map-legend';
 import { Header } from '@/components/header';
 import { MapLayerControl } from '@/components/map-layer-control';
 import { Sidebar } from '@/components/sidebar';
+import { LazyBoundary } from '@/components/lazy-boundary';
 import type { AnalysisTab } from '@/components/floating-tools-panel';
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { useSimulationControl, useSimulationStatus } from '@/realtime/use-simulated-vehicles';
@@ -757,7 +758,7 @@ export default function App() {
           </div>
 
           {activeTool && (
-            <Suspense fallback={null}>
+            <LazyBoundary onError={() => setActiveTool(null)}>
               <FloatingToolsPanel
                 tool={activeTool}
                 onClose={() => setActiveTool(null)}
@@ -791,12 +792,12 @@ export default function App() {
                 onComputeMidpoint={onComputeMidpoint}
                 onClearMidpoint={clearMidpointState}
               />
-            </Suspense>
+            </LazyBoundary>
           )}
         </main>
       </div>
 
-      <Suspense fallback={null}>
+      <LazyBoundary onError={closeSheet}>
         {sheetKind === 'route' && (
           <RouteDetailSheet
             open={sheetKind === 'route'}
@@ -836,7 +837,7 @@ export default function App() {
           />
         )}
         {sourcesOpen && <DataSourcesSheet open onOpenChange={setSourcesOpen} />}
-      </Suspense>
+      </LazyBoundary>
     </div>
   );
 }

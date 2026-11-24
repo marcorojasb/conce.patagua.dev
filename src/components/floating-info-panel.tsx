@@ -33,7 +33,9 @@ interface FloatingInfoPanelProps {
 const DESKTOP_QUERY = '(min-width: 640px)';
 // Distancia mínima antes de tratar el puntero como arrastre (bajo esto sigue
 // siendo un toque/clic normal) y distancia para cambiar de estado al soltar.
-const DRAG_START_PX = 6;
+// Umbral de toque de iOS/Android (~10 px): un dedo que se corre un poco al
+// tocar la "×" sigue siendo un toque, no un arrastre.
+const DRAG_START_PX = 12;
 const DRAG_SNAP_PX = 40;
 const DRAG_MIN_HEIGHT_PX = 96;
 
@@ -133,9 +135,11 @@ export function FloatingInfoPanel({
     if (!drag || drag.pointerId !== event.pointerId) return;
     dragRef.current = null;
     if (!drag.dragging) return;
-    suppressClickRef.current = true;
     resetSheetStyle();
     const dy = event.clientY - drag.startY;
+    // Solo se descarta el clic si el arrastre cambió algo; un arrastre corto
+    // que vuelve a su alto deja pasar el toque.
+    suppressClickRef.current = Math.abs(dy) >= DRAG_SNAP_PX;
     if (dy <= -DRAG_SNAP_PX) setExpanded(true);
     else if (dy >= DRAG_SNAP_PX) {
       if (expanded) setExpanded(false);

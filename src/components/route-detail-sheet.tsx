@@ -41,6 +41,7 @@ import {
   type RouteTodaySummary,
 } from '@/lib/route-schedule-summary';
 import { formatServiceClock } from '@/lib/stop-services';
+import { isInterurban } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
 import type { Route, RouteSchedule } from '@/types/transport';
 
@@ -491,9 +492,9 @@ function InfoTab({
         <div className="rounded-md border bg-card p-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div className="flex items-baseline gap-1.5 text-sm font-medium">
-              {route.type === 'biotren' ? '$680 – $2.400' : '$750'}
+              {route.type === 'biotren' ? '$680 – $2.400' : isInterurban(route) ? 'Según tramo' : '$750'}
               <span className="text-[11px] font-normal text-muted-foreground">
-                CLP {route.type === 'biotren' ? 'por tramo' : 'adulto'}
+                {route.type === 'biotren' ? 'CLP por tramo' : isInterurban(route) ? 'interurbano' : 'CLP adulto'}
               </span>
             </div>
             <Badge variant="outline" className="gap-1 font-normal">
@@ -504,7 +505,9 @@ function InfoTab({
           <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
             {route.type === 'biotren'
               ? 'Boletería EFE: el valor depende del tramo origen-destino. Aún no hay tarjeta integrada con las micros.'
-              : 'Valor referencial en efectivo en buses del Gran Concepción. DTPR anunció pago electrónico integrado para 2026; reglas y descuentos aún no publicados.'}
+              : isInterurban(route)
+                ? 'Los servicios interurbanos cobran según el tramo y tienen su propia tarifa regulada; no aplica la tarifa urbana. Revisa el artículo del recorrido en la wiki.'
+                : 'Valor referencial en efectivo en buses urbanos del Gran Concepción. DTPR anunció pago electrónico integrado para 2026; reglas y descuentos aún no publicados.'}
           </p>
         </div>
       </section>
@@ -972,7 +975,7 @@ function StopsTab({
                         {stop.name}
                       </span>
                     </span>
-                    <span className="shrink-0 pt-0.5 font-mono text-[11px] text-muted-foreground tabular-nums">
+                    <span aria-hidden className="shrink-0 pt-0.5 font-mono text-[11px] text-muted-foreground tabular-nums">
                       {i + 1}
                     </span>
                   </button>

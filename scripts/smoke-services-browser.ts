@@ -106,14 +106,16 @@ try {
   await waitForBody(page, /conce\.patagua\.dev/, 'initial map shell');
 
   await page.getByRole('button', { name: 'Buscar recorridos y paraderos' }).click();
-  await page.getByPlaceholder('Buscar recorridos, paraderos…').fill('02A');
-  await page.getByText('02A', { exact: true }).first().click();
+  // GTFS oficial DTPR: route_id 833 = "02AD" (variantes 02A/02D); el paradero
+  // 37477 (O'Higgins esq. Salas) lo recorren la 62H y decenas de líneas más.
+  await page.getByPlaceholder('Buscar recorridos, paraderos…').fill('02AD');
+  await page.getByText('02AD', { exact: true }).first().click();
   await waitForBody(page, /02A/, 'route search selection');
   await page.keyboard.press('Escape');
 
-  await page.goto(`${BASE_URL}/?route=gtfs-route-2991`, { waitUntil: 'load' });
-  await waitForBody(page, /02A|Centinela/, 'GTFS route deep link');
-  await page.goto(`${BASE_URL}/?stop=gtfs-stop-1506365`, { waitUntil: 'load' });
+  await page.goto(`${BASE_URL}/?route=gtfs-route-833`, { waitUntil: 'load' });
+  await waitForBody(page, /02A|Mirador del Pacífico/, 'GTFS route deep link');
+  await page.goto(`${BASE_URL}/?stop=gtfs-stop-37477`, { waitUntil: 'load' });
   await waitForBody(page, /Próximas pasadas|Cargando próximas pasadas programadas/, 'stop next services');
   await waitForBody(page, /GTFS estático|Horarios estimados|Horas estimadas/, 'programmed stop services source copy');
   await page.locator('[data-live-state="live"]').waitFor({ timeout: 10_000 });
@@ -237,7 +239,7 @@ try {
   }
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto(`${BASE_URL}/?stop=gtfs-stop-1506365`, { waitUntil: 'load' });
+  await page.goto(`${BASE_URL}/?stop=gtfs-stop-37477`, { waitUntil: 'load' });
   await waitForBody(page, /Próximas pasadas|Cargando próximas pasadas programadas/, 'mobile stop panel');
   await page.mouse.wheel(0, 1400);
   await waitForBody(page, /no vienen del GPS|Sin próximas pasadas/, 'mobile detail scroll');
@@ -254,7 +256,7 @@ try {
   }
   // En móvil las herramientas secundarias viven en el menú "Más herramientas".
   await page.getByRole('button', { name: 'Más herramientas' }).click();
-  await page.getByRole('menuitem', { name: 'Calidad de datos' }).click();
+  await page.getByRole('menuitemradio', { name: 'Calidad de datos' }).click();
   await page.getByRole('dialog', { name: 'Calidad de datos' }).waitFor({ timeout: 10_000 });
   if ((await page.getByRole('menu').count()) !== 0) {
     throw new Error('Mobile tools menu stayed open after choosing a tool.');

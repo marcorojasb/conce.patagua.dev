@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ChevronRight, Clock, Eye, EyeOff, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -86,6 +86,11 @@ export function Sidebar({
 }: SidebarProps) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ListFilter>('all');
+  const searchRef = useRef<HTMLInputElement>(null);
+  // Quitar algo de "En el mapa" desmonta el botón pulsado; el foco vuelve a la
+  // sección para no caer en <body>.
+  const onMapRef = useRef<HTMLElement>(null);
+  const focusOnMap = () => onMapRef.current?.focus();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   // `ROUTES` se muta in-place cuando llega el chunk lazy de micros (misma
@@ -114,8 +119,12 @@ export function Sidebar({
   const onMap = useMemo(() => {
     void routesVersion;
     const byId = new Map(routes.map((r) => [r.id, r]));
-    return visibleRouteIds.map((id) => byId.get(id)).filter((r): r is Route => !!r);
-  }, [routes, visibleRouteIds, routesVersion]);
+    // Mismo criterio que el mapa: con "Operando ahora" no se dibuja lo que
+    // está fuera de horario, así que tampoco se cuenta aquí.
+    return visibleRouteIds
+      .map((id) => byId.get(id))
+      .filter((r): r is Route => !!r && (!onlyOperatingNow || isRouteOperatingNow(r)));
+  }, [routes, visibleRouteIds, onlyOperatingNow, routesVersion]);
 
   const toggleFamily = (family: string) =>
     setExpanded((cur) => {
@@ -167,6 +176,7 @@ export function Sidebar({
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
+                ref={searchRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Número o destino: 30Q, Lomas, Tomé…"
@@ -176,7 +186,11 @@ export function Sidebar({
               {query && (
                 <button
                   type="button"
-                  onClick={() => setQuery('')}
+                  onClick={() => {
+                    setQuery('');
+                    // El botón desaparece al vaciar: el foco vuelve al buscador.
+                    searchRef.current?.focus();
+                  }}
                   aria-label="Borrar búsqueda"
                   className="absolute right-1.5 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded text-muted-foreground hover:text-foreground focus-ring"
                 >
@@ -221,14 +235,17 @@ export function Sidebar({
           <ScrollArea className="min-w-0 flex-1 scroll-fade-y">
             <div className="min-w-0 space-y-4 p-3">
               {!searching && (
-                <section aria-label="En el mapa">
+                <section aria-label="En el mapa" ref={onMapRef} tabIndex={-1} className="outline-none">
                   <SectionLabel
                     icon={<Eye />}
                     aside={
                       onMap.length > 0 && (
                         <button
                           type="button"
-                          onClick={() => onSetVisible(onMap.map((r) => r.id), false)}
+                          onClick={() => {
+                            onSetVisible(onMap.map((r) => r.id), false);
+                            focusOnMap();
+                          }}
                           className="rounded-sm text-[11px] underline-offset-2 hover:text-foreground hover:underline focus-ring"
                         >
                           Quitar todo
@@ -241,7 +258,15 @@ export function Sidebar({
                   {onMap.length > 0 ? (
                     <div className="space-y-0.5">
                       {onMap.map((route) => (
-                        <RouteRow key={route.id} {...rowProps(route)} compact />
+                        <RouteRow
+                          key={route.id}
+                          {...rowProps(route)}
+                          compact
+                          onToggleVisible={() => {
+                            onToggleVisible(route.id);
+                            focusOnMap();
+                          }}
+                        />
                       ))}
                     </div>
                   ) : (
@@ -382,7 +407,7 @@ function RouteRow({ route, visible, selected, compact, onSelect, onToggleVisible
         type="button"
         onClick={onToggleVisible}
         aria-pressed={visible}
-        aria-label={visible ? `Quitar ${route.code} del mapa` : `Mostrar ${route.code} en el mapa`}
+        aria-label={`Ver ${route.code} en el mapa`}
         title={visible ? 'Quitar del mapa' : 'Mostrar en el mapa'}
         className={cn(
           'grid size-8 shrink-0 place-items-center rounded-md transition-colors focus-ring',
@@ -435,7 +460,7 @@ function LineGroupRow({ group, expanded, visibleCount, onToggleExpanded, onSetVi
           type="button"
           onClick={() => onSetVisible(!allVisible)}
           aria-pressed={allVisible}
-          aria-label={allVisible ? `Quitar la línea ${group.family} del mapa` : `Mostrar toda la línea ${group.family} en el mapa`}
+          aria-label={`Ver toda la línea ${group.family} en el mapa`}
           title={allVisible ? 'Quitar la línea del mapa' : 'Mostrar toda la línea'}
           className={cn(
             'grid size-8 shrink-0 place-items-center rounded-md transition-colors focus-ring',

@@ -104,6 +104,9 @@ export function SimulatedVehiclesLayer({ routeColorById, routeLabelById, onSelec
       }
       for (const [id, entry] of markers) {
         if (seen.has(id)) continue;
+        // Sin unbindTooltip, off() quita también el handler con que Leaflet
+        // cierra el tooltip al remover el marcador y queda flotando huérfano.
+        entry.marker.unbindTooltip();
         entry.marker.off();
         group.removeLayer(entry.marker);
         markers.delete(id);
@@ -112,7 +115,10 @@ export function SimulatedVehiclesLayer({ routeColorById, routeLabelById, onSelec
 
     return () => {
       unsubscribe();
-      for (const entry of markers.values()) entry.marker.off();
+      for (const entry of markers.values()) {
+        entry.marker.unbindTooltip();
+        entry.marker.off();
+      }
       group.remove();
     };
   }, [map]);

@@ -58,6 +58,14 @@ describe('summarizeToday', () => {
     expect(summary.nextDeparture).toEqual({ minutes: 360, dayOffset: 0 });
   });
 
+  it('sin salidas en la próxima hora no informa un intervalo "ahora"', () => {
+    // Recorrido con salidas solo de mañana: a las 13:00 la próxima es mañana.
+    const morningOnly = weekdaysOnly(every(360, 720, 15));
+    const summary = summarizeToday([morningOnly], new Date('2026-05-18T13:00:00-04:00'));
+    expect(summary.headwayNow).toBeNull();
+    expect(summary.nextDeparture).toEqual({ minutes: 360, dayOffset: 1 });
+  });
+
   it('pasada la última salida, la próxima es mañana', () => {
     const summary = summarizeToday([URBAN], new Date('2026-05-18T23:30:00-04:00'));
     expect(summary.operatingNow).toBe(false);

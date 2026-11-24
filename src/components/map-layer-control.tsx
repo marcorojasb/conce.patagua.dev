@@ -150,7 +150,7 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
 
   useEffect(() => {
     if (!open) return undefined;
-    menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
+    menuRef.current?.querySelector<HTMLElement>('[role="menuitemradio"]')?.focus();
     // En fase de captura: ningún stopPropagation del mapa o de otro panel
     // impide que el "clic fuera" cierre el menú.
     const onPointerDown = (event: PointerEvent) => {
@@ -181,7 +181,7 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
       return;
     }
     const items = Array.from(
-      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitemradio"]') ?? [],
     );
     if (items.length === 0) return;
     const current = items.indexOf(document.activeElement as HTMLElement);
@@ -203,7 +203,7 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
   return (
     // El menú se ancla a la columna completa (no a este botón) para abrir
     // desde arriba y no quedar bajo la hoja inferior de un panel abierto.
-    <div ref={wrapperRef} className="md:hidden" onKeyDown={onKeyDown}>
+    <div ref={wrapperRef} className="sm:hidden" onKeyDown={onKeyDown}>
       <Button
         ref={buttonRef}
         type="button"
@@ -237,9 +237,13 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
               <button
                 key={t.id}
                 type="button"
-                role="menuitem"
+                role="menuitemradio"
+                aria-checked={isActive}
                 tabIndex={-1}
                 onClick={() => {
+                  // El menú se desmonta: el foco vuelve a su botón y desde ahí
+                  // el panel que se abre lo toma.
+                  buttonRef.current?.focus();
                   setOpen(false);
                   onSelect(t.id);
                 }}
@@ -592,7 +596,7 @@ export function MapLayerControl({
               aria-pressed={isActive}
               className={cn(
                 BTN_CLASS,
-                t.id !== MOBILE_TOOL && 'hidden md:inline-flex',
+                t.id !== MOBILE_TOOL && 'hidden sm:inline-flex',
                 isActive && 'bg-accent text-accent-foreground border-foreground/40',
               )}
             >
