@@ -60,9 +60,12 @@ function formatWait(minutesUntil: number, scheduledMin: number): string {
 /** De dónde sale la hora: dicho tal cual, sin presentar una estimación como dato publicado. */
 function serviceDetail(service: NextStopService, route: Route | undefined): string {
   if (service.source === 'gtfs-window') {
-    return service.headwayMin
-      ? `aprox. · intervalo típico ~${service.headwayMin} min`
-      : 'aprox., según el horario del paradero';
+    const passes = service.passesInDay ?? 0;
+    if (service.windowEdge === 'first') {
+      return passes > 1 ? `primera de ${passes} pasadas del día` : 'única pasada del día';
+    }
+    if (service.windowEdge === 'last') return 'última pasada del día';
+    return service.headwayMin ? `aprox. · intervalo típico ~${service.headwayMin} min` : 'aprox.';
   }
   const published = service.source === 'static-trips';
   if (service.origin) {

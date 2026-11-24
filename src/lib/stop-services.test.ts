@@ -51,6 +51,8 @@ describe('próximas pasadas desde ventanas GTFS', () => {
         minutesUntil: 8,
         source: 'gtfs-window',
         headwayMin: 15,
+        passesInDay: 17,
+        windowEdge: undefined,
       },
     ]);
   });
@@ -85,8 +87,29 @@ describe('próximas pasadas desde ventanas GTFS', () => {
       now: new Date('2026-05-18T23:50:00-04:00'),
     });
     expect(snapshot.services).toHaveLength(1);
-    expect(snapshot.services[0].scheduledMin).toBe(1800);
+    expect(snapshot.services[0]).toMatchObject({ scheduledMin: 1800, windowEdge: 'first' });
     expect(formatServiceClock(snapshot.services[0].scheduledMin)).toBe('06:00');
+  });
+
+  it('marca la última pasada del día como hora del programa', () => {
+    const snapshot = getNextStopServices({
+      stopId: 'gtfs-stop-1',
+      routes: [ROUTE],
+      windows: [['gtfs-route-835', HEADSIGN_10A, 0, 360, 1320, 20, 49]],
+      now: new Date('2026-05-18T21:50:00-04:00'),
+    });
+    expect(snapshot.services[0]).toMatchObject({ scheduledMin: 1320, windowEdge: 'last' });
+  });
+
+  it('si la proyección cae después de la última pasada, ofrece la última', () => {
+    // 06:00–22:11 cada 5: a las 22:10:30 la proyección daría 22:15.
+    const snapshot = getNextStopServices({
+      stopId: 'gtfs-stop-1',
+      routes: [ROUTE],
+      windows: [['gtfs-route-835', HEADSIGN_10A, 0, 360, 1331, 5, 195]],
+      now: new Date('2026-05-18T22:10:30-04:00'),
+    });
+    expect(snapshot.services[0]).toMatchObject({ scheduledMin: 1331, windowEdge: 'last' });
   });
 
   it('de madrugada sigue la ventana de ayer que pasa de las 24:00', () => {

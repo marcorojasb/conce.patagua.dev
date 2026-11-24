@@ -2,9 +2,9 @@
 //
 // Micros: STOP_SERVICE_WINDOWS trae, por paradero, recorrido, sentido
 // (headsign oficial) y día, la primera y la última pasada con el intervalo
-// mediano. La próxima se proyecta como primera + k·intervalo, así que es
-// aproximada. Las ventanas de ayer que pasan de 24:00 siguen valiendo de
-// madrugada.
+// mediano. Esas dos son horas del programa; las de en medio se proyectan como
+// primera + k·intervalo, así que son aproximadas. Las ventanas de ayer que
+// pasan de 24:00 siguen valiendo de madrugada.
 //
 // Biotrén (sin GTFS): los patrones de static-service-patterns.ts traen cada
 // salida desde la cabecera con su duración. La pasada por una estación
@@ -34,13 +34,19 @@ export interface NextStopService {
   scheduledMin: number;
   minutesUntil: number;
   /**
-   * gtfs-window: proyectada desde la ventana del paradero (aprox.).
+   * gtfs-window: desde la ventana del paradero; aproximada salvo `windowEdge`.
    * static-trips: salida publicada una a una (Biotrén/EFE).
    * static-frequency: salida reconstruida desde una frecuencia anunciada.
    */
   source: 'gtfs-window' | 'static-trips' | 'static-frequency';
-  /** Intervalo mediano de la ventana GTFS (solo gtfs-window). */
+  /** Solo gtfs-window: intervalo mediano y pasadas de ese día por el paradero. */
   headwayMin?: number;
+  passesInDay?: number;
+  /**
+   * Solo gtfs-window: la hora es la primera o la última pasada del día tal
+   * como la trae el programa (no proyectada).
+   */
+  windowEdge?: 'first' | 'last';
   /** Patrones estáticos: cabecera y salida desde ella si este no es el punto de partida. */
   origin?: { name: string; departureMin: number };
 }
@@ -70,8 +76,8 @@ function nextFromWindow(
   if (nowMin > last) return null;
   if (nowMin <= first) return first;
   if (headwayMin <= 0) return null;
-  const next = first + Math.ceil((nowMin - first) / headwayMin) * headwayMin;
-  return next <= last ? next : null;
+  // La última pasada es del programa: si la proyección se pasa, queda ella.
+  return Math.min(first + Math.ceil((nowMin - first) / headwayMin) * headwayMin, last);
 }
 
 function keepEarliest(best: Map<string, NextStopService>, key: string, service: NextStopService): void {
@@ -86,7 +92,7 @@ export function endsAt(stops: readonly Stop[], stopId: string): boolean {
 
 function windowServices(
   windows: readonly StopServiceWindow[],
-  routes: ReadonlyMap<string, Route | undefined>,
+  routes: ReadonlyMap<string, Route>,
   stopId: string,
   day: number,
   nowMin: number,
@@ -100,6 +106,7 @@ function windowServices(
     if (next === null) continue;
     const direction = routes.get(routeId)?.directions?.find((d) => d.headsign === headsign);
     if (direction && endsAt(direction.stops, stopId)) continue;
+    const shift = dayOffset * DAY_MIN;
     keepEarliest(best, `${routeId}|${headsign}`, {
       routeId,
       variant: direction?.variant,
@@ -108,6 +115,8 @@ function windowServices(
       minutesUntil: Math.max(0, Math.round(next - nowMin)),
       source: 'gtfs-window',
       headwayMin: headway > 0 ? headway : undefined,
+      passesInDay: count,
+      windowEdge: next === first + shift ? 'first' : next === last + shift ? 'last' : undefined,
     });
   }
   return [...best.values()];
