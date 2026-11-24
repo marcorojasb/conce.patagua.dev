@@ -238,6 +238,8 @@ try {
   await page.mouse.wheel(0, 1400);
   await waitForBody(page, /GPS ni GTFS-RT|Sin próximos servicios programados/, 'mobile detail scroll');
   await page.getByRole('button', { name: 'Cerrar' }).first().waitFor({ timeout: 5_000 });
+  await page.getByRole('button', { name: 'Expandir panel' }).click();
+  await page.getByRole('button', { name: 'Reducir panel', expanded: true }).waitFor({ timeout: 5_000 });
   await page.goto(BASE_URL, { waitUntil: 'load' });
   await page.getByRole('button', { name: 'Abrir capas del mapa' }).click();
   await page.getByRole('dialog', { name: 'Capas del mapa' }).waitFor({ timeout: 5_000 });
@@ -245,6 +247,13 @@ try {
   const mobileLayerDialogs = await page.getByRole('dialog', { name: 'Capas del mapa' }).count();
   if (mobileLayerDialogs !== 0) {
     throw new Error('Mobile layer panel stayed open after opening planner.');
+  }
+  // En móvil las herramientas secundarias viven en el menú "Más herramientas".
+  await page.getByRole('button', { name: 'Más herramientas' }).click();
+  await page.getByRole('menuitem', { name: 'Calidad de datos' }).click();
+  await page.getByRole('dialog', { name: 'Calidad de datos' }).waitFor({ timeout: 10_000 });
+  if ((await page.getByRole('menu').count()) !== 0) {
+    throw new Error('Mobile tools menu stayed open after choosing a tool.');
   }
 
   for (const slug of ['gtfs-gran-concepcion', 'ruta-201-santa-juana', 'openstreetmap-fuente-visor']) {

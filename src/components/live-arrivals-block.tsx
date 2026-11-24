@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, Radio, WifiOff } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { RouteBadge } from '@/components/route-badge';
+import { Notice } from '@/components/ui/notice';
+import { SectionLabel } from '@/components/ui/section-label';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { LiveArrivalsSnapshot } from '@/hooks/use-live-arrivals';
 import {
@@ -10,10 +12,11 @@ import {
   liveView,
   minutesUntil,
   normalizeRouteCode,
+  servicesWithoutGps,
   type LiveArrival,
   type LiveDirection,
 } from '@/realtime/live-arrivals';
-import { cn, readableTextOn } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import type { Route } from '@/types/transport';
 
 interface Props {
@@ -34,8 +37,8 @@ function useClock(): number {
   return now;
 }
 
-function serviceLabel(route: string, direction: LiveDirection | null): string {
-  return direction ? `${route} ${DIRECTION_LABEL[direction]}` : route;
+function directionText(direction: LiveDirection | null): string {
+  return direction ? `Sentido ${DIRECTION_LABEL[direction]}` : 'Sentido no informado';
 }
 
 function formatDistance(meters: number): string {
@@ -49,145 +52,157 @@ export function LiveArrivalsBlock({ live, routes }: Props) {
     () => new Map(routes.map((r) => [normalizeRouteCode(r.code), r.color])),
     [routes],
   );
+  const colorFor = (code: string) => colorByCode.get(normalizeRouteCode(code)) ?? NEUTRAL_COLOR;
   const ageIsOld = view.ageMs != null && view.ageMs > STALE_AFTER_MS;
+  // Las alertas "Servicio X no está enviando información en tiempo real" ya
+  // quedan como nota "sin datos en vivo" en su línea: no se repiten.
+  const otherAlerts = view.alerts.filter((alert) => servicesWithoutGps([alert]).size === 0);
 
   return (
-    <section
-      className="rounded-md border bg-card p-3"
-      aria-label="Llegadas en vivo"
-      data-live-state={view.kind}
-    >
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          <Radio className="size-3.5 text-emerald-600" />
-          Llegadas en vivo
-        </div>
-        {view.ageMs != null && (
-          <span
-            className={cn(
-              'font-mono text-[11px]',
-              ageIsOld
-                ? 'rounded bg-amber-100 px-1.5 py-0.5 font-semibold text-amber-900 dark:bg-amber-500/20 dark:text-amber-200'
-                : 'text-muted-foreground',
-            )}
-          >
-            {formatAge(view.ageMs)}
-          </span>
+    <section aria-label="Llegadas en vivo" data-live-state={view.kind}>
+      <SectionLabel
+        icon={<Radio className="text-emerald-600 dark:text-emerald-400" />}
+        aside={
+          view.ageMs != null ? (
+            <span
+              className={cn(
+                ageIsOld &&
+                  'rounded bg-amber-100 px-1.5 py-0.5 font-semibold text-amber-900 dark:bg-amber-500/20 dark:text-amber-200',
+              )}
+            >
+              {formatAge(view.ageMs)}
+            </span>
+          ) : undefined
+        }
+      >
+        Llegadas en vivo · GPS
+      </SectionLabel>
+
+      <div className="space-y-2">
+        {view.kind === 'loading' && (
+          <div className="space-y-1.5" role="status" aria-label="Consultando llegadas en vivo">
+            {[0, 1].map((i) => (
+              <Skeleton key={i} className="h-[46px] w-full rounded-md" />
+            ))}
+          </div>
+        )}
+
+        {(view.kind === 'live' || view.kind === 'stale') && (
+          <ul className="space-y-1.5">
+            {view.arrivals.map((arrival) => (
+              <ArrivalRow
+                key={`${arrival.route}-${arrival.direction}-${arrival.arrivalAt}-${arrival.tripId ?? arrival.plate ?? ''}`}
+                arrival={arrival}
+                now={now}
+                color={colorFor(arrival.route)}
+                stale={view.kind === 'stale'}
+              />
+            ))}
+          </ul>
+        )}
+
+        {view.kind === 'stale' && (
+          <Notice tone="warning">
+            Dato viejo: la fuente no entrega nada nuevo desde {formatAge(view.ageMs ?? 0)}. Los
+            minutos se descuentan desde entonces.
+          </Notice>
+        )}
+
+        {view.lastFailure && view.lastFailure !== 'unconfigured' && view.ageMs != null && (
+          <p className="text-[11px] text-muted-foreground">
+            La última consulta falló; se muestra el último dato recibido.
+          </p>
+        )}
+
+        {view.kind === 'no-live-data' && (
+          <Notice>Ninguna micro con GPS en camino ahora.</Notice>
+        )}
+
+        {view.kind === 'empty' && (
+          <Notice>
+            Sin micros en camino según el GPS. La fuente solo informa las que llegan en los
+            próximos ~30 min.
+          </Notice>
+        )}
+
+        {view.kind === 'down' && (
+          <Notice tone="danger" icon={<WifiOff />}>
+            Fuente en vivo caída o sin respuesta. Se reintenta sola
+            {live.state.failures >= 3 ? ' cada 5 min' : ' en 1 min'}; mientras tanto, guíate por
+            el horario.
+          </Notice>
+        )}
+
+        {view.kind === 'unconfigured' && (
+          <Notice>Las llegadas en vivo no están activadas en este despliegue.</Notice>
+        )}
+
+        {view.notes.length > 0 && (
+          <ul className="space-y-1">
+            {view.notes.map((note) => (
+              <li
+                key={`${note.route}-${note.direction}`}
+                className="flex items-center gap-2 text-[12px] leading-snug"
+              >
+                <RouteBadge code={note.route} color={colorFor(note.route)} />
+                <span className="min-w-0 text-muted-foreground">
+                  {note.direction ? `${DIRECTION_LABEL[note.direction]} · ` : ''}
+                  {note.text}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {otherAlerts.length > 0 && (
+          <Notice tone="warning" icon={<AlertTriangle />}>
+            <ul className="space-y-1">
+              {otherAlerts.map((alert) => (
+                <li key={alert}>{alert}</li>
+              ))}
+            </ul>
+          </Notice>
         )}
       </div>
 
-      {view.kind === 'loading' && (
-        <div className="space-y-1.5" role="status" aria-label="Consultando llegadas en vivo">
-          {[0, 1].map((i) => (
-            <Skeleton key={i} className="h-[46px] w-full rounded-md" />
-          ))}
-        </div>
-      )}
-
-      {(view.kind === 'live' || view.kind === 'stale') && (
-        <ul className="space-y-1.5">
-          {view.arrivals.map((arrival) => (
-            <ArrivalRow
-              key={`${arrival.route}-${arrival.direction}-${arrival.arrivalAt}-${arrival.tripId ?? arrival.plate ?? ''}`}
-              arrival={arrival}
-              now={now}
-              color={colorByCode.get(normalizeRouteCode(arrival.route)) ?? NEUTRAL_COLOR}
-            />
-          ))}
-        </ul>
-      )}
-
-      {view.kind === 'stale' && (
-        <p className="mt-2 rounded-md bg-amber-50 p-2 text-[12px] leading-snug text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
-          Dato viejo: la fuente no ha entregado nada nuevo desde {formatAge(view.ageMs ?? 0)}. Los
-          minutos se descuentan desde entonces.
-        </p>
-      )}
-
-      {view.lastFailure && view.lastFailure !== 'unconfigured' && view.ageMs != null && (
-        <p className="mt-2 text-[11px] text-muted-foreground">
-          La última consulta falló; se muestra el último dato recibido.
-        </p>
-      )}
-
-      {view.notes.length > 0 && (
-        <ul className="mt-2 space-y-1">
-          {view.notes.map((note) => (
-            <li
-              key={`${note.route}-${note.direction}`}
-              className="flex items-baseline gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-[12px]"
-            >
-              <span className="font-mono font-semibold">{serviceLabel(note.route, note.direction)}</span>
-              <span className="text-muted-foreground">{note.text}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {view.kind === 'empty' && (
-        <p className="rounded-md bg-muted/40 p-2.5 text-[12px] leading-snug text-muted-foreground">
-          Sin micros en camino a este paradero. La fuente informa solo las que vienen en los
-          próximos ~30 min.
-        </p>
-      )}
-
-      {view.kind === 'down' && (
-        <p className="flex items-start gap-2 rounded-md bg-destructive/10 p-2.5 text-[12px] leading-snug text-destructive">
-          <WifiOff className="mt-0.5 size-3.5 shrink-0" />
-          Fuente en vivo caída o sin respuesta. Se reintenta sola
-          {live.state.failures >= 3 ? ' cada 5 min' : ' en 1 min'}; mientras tanto no se
-          muestran micros en vivo.
-        </p>
-      )}
-
-      {view.kind === 'unconfigured' && (
-        <p className="rounded-md bg-muted/40 p-2.5 text-[12px] leading-snug text-muted-foreground">
-          Las llegadas en vivo no están activadas en este despliegue.
-        </p>
-      )}
-
-      {view.alerts.length > 0 && (
-        <ul className="mt-2 space-y-1">
-          {view.alerts.map((alert) => (
-            <li key={alert} className="flex items-start gap-1.5 text-[11px] leading-snug text-muted-foreground">
-              <AlertTriangle className="mt-0.5 size-3 shrink-0 text-amber-600" />
-              {alert}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
-        GPS de las micros vía la app de Transapp/DTPR: fuente no oficial, puede fallar o
-        quedar vacía.
+      <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+        GPS de las micros vía Transapp/DTPR: fuente no oficial, puede fallar o quedar vacía.
       </p>
     </section>
   );
 }
 
-function ArrivalRow({ arrival, now, color }: { arrival: LiveArrival; now: number; color: string }) {
+function ArrivalRow({
+  arrival,
+  now,
+  color,
+  stale,
+}: {
+  arrival: LiveArrival;
+  now: number;
+  color: string;
+  stale: boolean;
+}) {
   const minutes = minutesUntil(arrival, now);
   const details = [
     arrival.distanceM != null ? `a ${formatDistance(arrival.distanceM)}` : null,
-    arrival.plate,
+    arrival.plate ? `patente ${arrival.plate}` : null,
   ].filter(Boolean);
   return (
-    <li className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border bg-muted/20 p-2">
-      <Badge
-        className="border-transparent font-mono"
-        style={{ background: color, color: readableTextOn(color) }}
-      >
-        {arrival.route}
-      </Badge>
+    <li className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border bg-card p-2">
+      <RouteBadge code={arrival.route} color={color} />
       <div className="min-w-0">
-        <div className="truncate text-sm font-medium">
-          {arrival.direction ? DIRECTION_LABEL[arrival.direction] : 'sentido no informado'}
-        </div>
+        <div className="truncate text-sm font-medium">{directionText(arrival.direction)}</div>
         <div className="truncate text-[11px] text-muted-foreground">
           {details.length > 0 ? details.join(' · ') : 'sin distancia informada'}
         </div>
       </div>
-      <div className="text-right font-mono text-sm font-semibold">
+      <div
+        className={cn(
+          'text-right font-mono text-sm font-semibold',
+          !stale && 'text-emerald-700 dark:text-emerald-400',
+        )}
+      >
         {minutes === 0 ? 'llegando' : `${minutes} min`}
       </div>
     </li>

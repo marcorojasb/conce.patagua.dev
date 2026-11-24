@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { MapPin } from 'lucide-react';
 import { ConceMap } from '@/components/conce-map';
 import { MapLegend } from '@/components/map-legend';
 import { Header } from '@/components/header';
@@ -13,14 +12,13 @@ import { PoiDetailSheet } from '@/components/poi-detail-sheet';
 import { DataSourcesSheet } from '@/components/data-sources-sheet';
 import { FloatingToolsPanel, type AnalysisTab } from '@/components/floating-tools-panel';
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
-import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
+import { useSimulationControl, useSimulationStatus } from '@/realtime/use-simulated-vehicles';
 import { useLiveArrivals } from '@/hooks/use-live-arrivals';
 import { liveStopCode, liveView, normalizeRouteCode } from '@/realtime/live-arrivals';
 import type { LiveVehicleMarker } from '@/components/conce-map';
 import type { SimulationRouteInput } from '@/realtime/simulated-vehicles';
-import { Card, CardDescription, CardHeader } from '@/components/ui/card';
-import { Kbd } from '@/components/ui/kbd';
-import { DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
+import { WelcomeCard } from '@/components/welcome-card';
+import { CONCE_CENTER, DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, STOPS, useRoutesVersion } from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
@@ -37,7 +35,7 @@ import {
 import { isRouteOperatingNow } from '@/lib/operating-hours';
 import { cn } from '@/lib/utils';
 import { CORRIDOR_BY_ID } from '@/data/interurban-corridors';
-import type { FlyToToken, Route, RouteTypeId, SheetKind } from '@/types/transport';
+import type { FlyToToken, Route, SheetKind } from '@/types/transport';
 
 const INITIAL_URL = readUrlState();
 // `?focus=<kind>:<id>` puede venir desde el wiki (`<MapLink>`). Lo leemos
@@ -144,11 +142,7 @@ export default function App() {
     }
     return DEFAULT_VISIBLE_ROUTE_IDS;
   });
-  const [typeFilters, setTypeFilters] = useState<Record<RouteTypeId, boolean>>(() =>
-    Object.fromEntries(
-      (Object.keys(ROUTE_TYPES) as RouteTypeId[]).map((k) => [k, true]),
-    ) as Record<RouteTypeId, boolean>,
-  );
+
 
   const [selectedDetail, setSelectedDetail] = useState<SelectedDetailState | null>(initialSelectedDetail);
   const selectedRouteId = selectedDetail?.kind === 'route' ? selectedDetail.id : null;
@@ -172,6 +166,16 @@ export default function App() {
       false,
   );
   const [showParaderos, setShowParaderos] = useState(INITIAL_URL.paraderos);
+  const [commandOpen, setCommandOpen] = useState(false);
+  // Los paraderos se dibujan desde zoom 14: el atajo los enciende y acerca al
+  // centro de Concepción para que se vean de inmediato.
+  const onShowStopsNearCenter = useCallback(() => {
+    setShowParaderos(true);
+    setFlyToToken({
+      key: Date.now(),
+      target: { kind: 'point', lat: CONCE_CENTER.lat, lng: CONCE_CENTER.lng, zoom: 16 },
+    });
+  }, []);
   const [showPois, setShowPois] = useState(
     () => !!INITIAL_URL.poi || INITIAL_FOCUS?.kind === 'poi' || false,
   );
@@ -264,17 +268,13 @@ export default function App() {
     },
     [routesVersion],
   );
-  const {
-    vehicles: simulatedVehicles,
-    loading: simulationLoading,
-    error: simulationError,
-    lastUpdate: simulationLastUpdate,
-  } = useSimulatedVehicles({
+  useSimulationControl({
     enabled: showSimulatedVehicles,
     routes: simulationRoutes,
     retryKey: simulationRetryKey,
-    intervalMs: 1000,
   });
+  const simulationStatus = useSimulationStatus();
+
   const liveVehicles = useMemo<LiveVehicleMarker[]>(() => {
     void routesVersion;
     const snapshot = liveArrivals.state.snapshot;
@@ -293,10 +293,7 @@ export default function App() {
     );
   }, [liveArrivals, routesVersion]);
 
-  const simulatedNonGtfsCount = useMemo(
-    () => simulatedVehicles.filter((v) => v.sourceKind !== 'gtfs').length,
-    [simulatedVehicles],
-  );
+
 
   const [showCoverage, setShowCoverage] = useState(false);
   const [coverageThreshold, setCoverageThreshold] = useState<'all' | 'underserved'>('all');
@@ -403,11 +400,10 @@ export default function App() {
     return visibleRouteIds.filter((id) => {
       const r = ROUTES_BY_ID.get(id);
       if (!r) return false;
-      if (!typeFilters[r.type]) return false;
       if (onlyOperatingNow && !isRouteOperatingNow(r)) return false;
       return true;
     });
-  }, [visibleRouteIds, typeFilters, onlyOperatingNow, routesVersion]);
+  }, [visibleRouteIds, onlyOperatingNow, routesVersion]);
   const legendRoutes = useMemo(() => {
     void routesVersion;
     return visibleIdsAfterTypeFilter
@@ -421,56 +417,23 @@ export default function App() {
     );
   }, []);
 
-  const onToggleType = useCallback((typeId: RouteTypeId) => {
-    setTypeFilters((f) => ({ ...f, [typeId]: !f[typeId] }));
+  const onSetVisible = useCallback((ids: string[], visible: boolean) => {
+    const target = new Set(ids);
+    setVisibleRouteIds((cur) => {
+      if (!visible) return cur.filter((id) => !target.has(id));
+      const next = new Set(cur);
+      for (const id of ids) next.add(id);
+      return Array.from(next);
+    });
   }, []);
-
-  const onSetAllByType = useCallback((typeId: RouteTypeId, on: boolean) => {
-    void routesVersion;
-    const idsOfType = new Set<string>();
-    for (const route of ROUTES) {
-      if (route.type === typeId) idsOfType.add(route.id);
-    }
-    setVisibleRouteIds((cur) => {
-      if (on) {
-        const next = new Set(cur);
-        for (const id of idsOfType) next.add(id);
-        return Array.from(next);
-      }
-      return cur.filter((id) => !idsOfType.has(id));
-    });
-    setTypeFilters((f) => ({ ...f, [typeId]: true }));
-  }, [routesVersion]);
-
-  const onSetAllByOperator = useCallback((operator: string, on: boolean) => {
-    void routesVersion;
-    const idsOfOp = new Set<string>();
-    let firstRoute: Route | undefined;
-    for (const route of ROUTES) {
-      if (route.operator !== operator) continue;
-      idsOfOp.add(route.id);
-      firstRoute ??= route;
-    }
-    setVisibleRouteIds((cur) => {
-      if (on) {
-        const next = new Set(cur);
-        for (const id of idsOfOp) next.add(id);
-        return Array.from(next);
-      }
-      return cur.filter((id) => !idsOfOp.has(id));
-    });
-    // Enable the relevant type filter so the operator's routes actually render.
-    if (firstRoute) {
-      setTypeFilters((f) => ({ ...f, [firstRoute.type]: true }));
-    }
-  }, [routesVersion]);
 
   const onShowOperatorRoutes = useCallback(
     (operator: string) => {
-      onSetAllByOperator(operator, true);
+      void routesVersion;
+      onSetVisible(ROUTES.filter((r) => r.operator === operator).map((r) => r.id), true);
       setActiveTool(null);
     },
-    [onSetAllByOperator],
+    [onSetVisible, routesVersion],
   );
 
   const clearSelection = closeDetailPanels;
@@ -484,7 +447,6 @@ export default function App() {
       const r = ROUTES_BY_ID.get(id);
       if (!r) return;
       setVisibleRouteIds((cur) => (cur.includes(id) ? cur : [...cur, id]));
-      setTypeFilters((f) => ({ ...f, [r.type]: true }));
       setSelectedDetail({ kind: 'route', id });
       setSourcesOpen(false);
       setLayersOpen(false);
@@ -603,6 +565,8 @@ export default function App() {
         onToggleSidebar={() => setSidebarOpen((o) => !o)}
         onSelectRoute={onSelectRoute}
         onSelectStop={onSelectStop}
+        commandOpen={commandOpen}
+        onCommandOpenChange={setCommandOpen}
       />
 
       <div className="relative flex min-h-0 flex-1">
@@ -612,12 +576,9 @@ export default function App() {
           routes={ROUTES}
           visibleRouteIds={visibleRouteIds}
           onToggleVisible={onToggleVisible}
+          onSetVisible={onSetVisible}
           selectedRouteId={selectedRouteId}
           onSelectRoute={onSelectRoute}
-          typeFilters={typeFilters}
-          onToggleType={onToggleType}
-          onSetAllByType={onSetAllByType}
-          onSetAllByOperator={onSetAllByOperator}
           onlyOperatingNow={onlyOperatingNow}
           onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
           onOpenSources={() => {
@@ -671,7 +632,6 @@ export default function App() {
             onPickPoint={onPickPoint}
             plannerOrigin={plannerOrigin}
             plannerDestination={plannerDestination}
-            simulatedVehicles={simulatedVehicles}
             routeColorById={routeColorById}
             routeLabelById={routeLabelById}
             onSelectSimulatedVehicle={onSelectSimulatedVehicle}
@@ -721,13 +681,7 @@ export default function App() {
             onToggleInterurbanCorridors={() => setShowInterurbanCorridors((v) => !v)}
             airQualityStatus={airQuality}
             onRetryAirQuality={() => setAirQualityRetryKey((v) => v + 1)}
-            simulationStatus={{
-              count: simulatedVehicles.length,
-              nonGtfsCount: simulatedNonGtfsCount,
-              loading: simulationLoading,
-              error: simulationError,
-              lastUpdate: simulationLastUpdate,
-            }}
+            simulationStatus={simulationStatus}
             onRetrySimulation={() => setSimulationRetryKey((v) => v + 1)}
             coverageStatus={coverageLayer.status}
             cyclewaysStatus={cyclewaysLayer.status}
@@ -747,42 +701,12 @@ export default function App() {
 
           {!sheetKind && !sourcesOpen && !activeTool && !layersOpen && (
             <div className="pointer-events-none absolute left-2 top-2 z-10 animate-fade-in md:left-3 md:top-3">
-              <Card className="pointer-events-auto max-w-[220px] border-border/80 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:max-w-[260px]">
-                <CardHeader className="space-y-1 p-3">
-                  <h2 className="flex items-center gap-1.5 font-semibold leading-none text-xs uppercase tracking-wider text-muted-foreground">
-                    <MapPin className="size-3" />
-                    Concepción · Biobío
-                  </h2>
-                  <CardDescription className="text-[12px] leading-snug text-foreground">
-                    <span className="hidden sm:inline">
-                      Capas de transporte público y, próximamente, planificación urbana y
-                      servicios para política pública del Gran Concepción.
-                    </span>
-                    <span className="hidden md:inline">
-                      {' '}
-                      Usa <Kbd>⌘</Kbd> <Kbd>K</Kbd> para buscar.
-                    </span>
-                    <span className="mt-1.5 grid grid-cols-3 gap-1.5 sm:mt-2">
-                      <span className="rounded border bg-background/70 px-1.5 py-1">
-                        <span className="block font-mono text-[11px]">
-                          {ROUTES.length.toLocaleString('es-CL')}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">recorridos</span>
-                      </span>
-                      <span className="rounded border bg-background/70 px-1.5 py-1">
-                        <span className="block font-mono text-[11px]">
-                          {GTFS_STOPS.length.toLocaleString('es-CL')}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground">paraderos</span>
-                      </span>
-                      <span className="rounded border bg-background/70 px-1.5 py-1">
-                        <span className="block font-mono text-[11px]">GTFS</span>
-                        <span className="text-[10px] text-muted-foreground">estático</span>
-                      </span>
-                    </span>
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+              <WelcomeCard
+                routesCount={ROUTES.length}
+                stopsCount={GTFS_STOPS.length}
+                onSearch={() => setCommandOpen(true)}
+                onShowStops={onShowStopsNearCenter}
+              />
             </div>
           )}
 
@@ -818,7 +742,6 @@ export default function App() {
             visibleRouteIds={visibleRouteIds}
             mapBounds={mapBounds}
             theme={theme}
-            simulatedVehicles={simulatedVehicles}
             simulationScope={simulationScope}
             activeMapLayers={{
               paraderos: showParaderos,

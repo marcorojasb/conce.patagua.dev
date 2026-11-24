@@ -19,7 +19,6 @@ import type {
   Poi,
   PoiCategory,
   Route,
-  SimulatedVehicle,
   Terminal,
   Theme,
 } from '@/types/transport';
@@ -31,6 +30,7 @@ import { GreenspaceLayer } from '@/components/greenspace-layer';
 import { InterurbanCorridorsLayer } from '@/components/interurban-corridors-layer';
 import { ParaderosLayer } from '@/components/paraderos-layer';
 import { SchoolsLayer } from '@/components/schools-layer';
+import { SimulatedVehiclesLayer } from '@/components/simulated-vehicles-layer';
 import type { LayerStatusControls } from '@/hooks/use-layer-status';
 import {
   DIRECTION_LABEL,
@@ -63,7 +63,6 @@ interface ConceMapProps {
   onPickPoint: (latlng: { lat: number; lng: number }) => void;
   plannerOrigin: { lat: number; lng: number } | null;
   plannerDestination: { lat: number; lng: number } | null;
-  simulatedVehicles: SimulatedVehicle[];
   routeColorById: Map<string, string>;
   routeLabelById: Map<string, string>;
   onSelectSimulatedVehicle: (id: string) => void;
@@ -237,22 +236,6 @@ function midpointIcon(): L.DivIcon {
   });
 }
 
-function safeToken(value: string): string {
-  return value.replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
-}
-
-function vehicleIcon(color: string, bearing: number, vehicle: SimulatedVehicle): L.DivIcon {
-  const rotation = Number.isFinite(bearing) ? bearing : 0;
-  const routeToken = safeToken(vehicle.routeId);
-  const sourceToken = safeToken(vehicle.sourceKind);
-  return L.divIcon({
-    className: `vehicle-marker-wrap route-${routeToken} source-${sourceToken}`,
-    html: `<div class="vehicle-marker is-estimate" data-route-id="${vehicle.routeId}" data-source-kind="${vehicle.sourceKind}" style="--vehicle-bg:${color};--vehicle-rotation:${rotation.toFixed(1)}deg" aria-hidden="true"><svg class="vehicle-marker-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 19 21 12 17 5 21 12 3Z"/></svg></div>`,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
-  });
-}
-
 // Micro con GPS real: cuadrada y con anillo, para que nunca se confunda con
 // las estimadas (redondas, borde punteado).
 function liveVehicleIcon(color: string, route: string): L.DivIcon {
@@ -264,14 +247,6 @@ function liveVehicleIcon(color: string, route: string): L.DivIcon {
     iconAnchor: [17, 11],
   });
 }
-
-const SOURCE_KIND_LABEL: Record<SimulatedVehicle['sourceKind'], string> = {
-  gtfs: 'GTFS oficial',
-  official: 'fuente oficial',
-  operator: 'operador',
-  community: 'fuente comunitaria',
-  estimated: 'estimado',
-};
 
 // El contenedor del mapa cambia de ancho cuando se abre o cierra el sidebar
 // (animado, 200 ms) y cuando cambia el viewport. Leaflet cachea el tamaño y,
@@ -407,7 +382,6 @@ export function ConceMap({
   onPickPoint,
   plannerOrigin,
   plannerDestination,
-  simulatedVehicles,
   routeColorById,
   routeLabelById,
   onSelectSimulatedVehicle,
@@ -666,49 +640,11 @@ export function ConceMap({
         </Marker>
       )}
 
-      {simulatedVehicles.length > 0 &&
-        simulatedVehicles.map((v) => {
-          const color = routeColorById.get(v.routeId) ?? '#0ea5e9';
-          const label = routeLabelById.get(v.routeId) ?? v.routeId;
-          return (
-            <Marker
-              key={v.id}
-              position={[v.lat, v.lng]}
-              icon={vehicleIcon(color, v.bearing, v)}
-              keyboard={false}
-              zIndexOffset={900}
-              eventHandlers={{ click: () => onSelectSimulatedVehicle(v.routeId) }}
-            >
-              <LeafletTooltip
-                direction="top"
-                offset={[0, -16]}
-                opacity={0.95}
-                className="!text-[11px]"
-              >
-                <span className="font-medium">{label}</span>
-                <br />
-                <span className="font-semibold">Estimación según horario · no es GPS</span>
-                <br />
-                {Math.round(v.progress * 100)}% del trayecto programado
-                {v.directionLabel && (
-                  <>
-                    <br />
-                    {v.directionLabel}
-                  </>
-                )}
-                <br />
-                Simulación {SOURCE_KIND_LABEL[v.sourceKind]}
-                {v.sourceLabel ? ` · ${v.sourceLabel}` : ''}
-                {v.note && (
-                  <>
-                    <br />
-                    {v.note}
-                  </>
-                )}
-              </LeafletTooltip>
-            </Marker>
-          );
-        })}
+      <SimulatedVehiclesLayer
+        routeColorById={routeColorById}
+        routeLabelById={routeLabelById}
+        onSelect={onSelectSimulatedVehicle}
+      />
 
       {liveVehicles.map(({ arrival, color, fetchedAt, now }) => {
         const minutes = minutesUntil(arrival, now);

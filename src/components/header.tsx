@@ -24,6 +24,9 @@ interface HeaderProps {
   onToggleSidebar: () => void;
   onSelectRoute: (id: string) => void;
   onSelectStop: (id: string) => void;
+  /** El buscador también se abre desde la tarjeta de inicio, por eso vive en App. */
+  commandOpen: boolean;
+  onCommandOpenChange: (open: boolean) => void;
 }
 
 export function Header({
@@ -32,20 +35,22 @@ export function Header({
   onToggleSidebar,
   onSelectRoute,
   onSelectStop,
+  commandOpen,
+  onCommandOpenChange,
 }: HeaderProps) {
-  const [commandOpen, setCommandOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const setCommandOpen = onCommandOpenChange;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setCommandOpen((o) => !o);
+        onCommandOpenChange(!commandOpen);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [commandOpen, onCommandOpenChange]);
 
   const q = query.trim().toLowerCase();
   // `ROUTES` y `STOPS` se mutan in-place cuando llega el chunk lazy de micros,

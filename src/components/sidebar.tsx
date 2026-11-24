@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react';
-import { ChevronRight, Clock, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { ChevronRight, Clock, Eye, EyeOff, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Switch } from '@/components/ui/switch';
-import { Tooltip } from '@/components/ui/tooltip';
+import { SectionLabel } from '@/components/ui/section-label';
+import { RouteBadge } from '@/components/route-badge';
 import { ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
-import { cn, readableTextOn } from '@/lib/utils';
-import type { Route, RouteTypeId } from '@/types/transport';
+import { isRouteOperatingNow } from '@/lib/operating-hours';
+import { compareRouteCodes, isInterurban, lineFamily, routeShortName } from '@/lib/route-labels';
+import { cn } from '@/lib/utils';
+import type { Route } from '@/types/transport';
 
 interface SidebarProps {
   open: boolean;
@@ -15,70 +16,124 @@ interface SidebarProps {
   routes: Route[];
   visibleRouteIds: string[];
   onToggleVisible: (id: string) => void;
+  onSetVisible: (ids: string[], visible: boolean) => void;
   selectedRouteId: string | null;
   onSelectRoute: (id: string) => void;
-  typeFilters: Record<RouteTypeId, boolean>;
-  onToggleType: (typeId: RouteTypeId) => void;
-  onSetAllByType: (typeId: RouteTypeId, on: boolean) => void;
-  onSetAllByOperator: (operator: string, on: boolean) => void;
   onlyOperatingNow: boolean;
   onToggleOnlyOperatingNow: () => void;
   onOpenSources: () => void;
   onOpenAnalysis: () => void;
 }
 
-type TypeStats = Partial<Record<RouteTypeId, { total: number; visible: number }>>;
+type ListFilter = 'all' | 'micro' | 'interurban' | 'biotren';
 
-interface OperatorGroup {
-  operator: string;
+const FILTERS: Array<{ id: ListFilter; label: string }> = [
+  { id: 'all', label: 'Todos' },
+  { id: 'micro', label: 'Micros' },
+  { id: 'interurban', label: 'Interurbanos' },
+  { id: 'biotren', label: 'Biotrén' },
+];
+
+interface LineGroup {
+  family: string;
   routes: Route[];
-  visible: number;
+  operator: string | null;
 }
 
-const NO_OPERATOR_LABEL = 'Sin operador registrado';
+function kindOf(route: Route): Exclude<ListFilter, 'all'> {
+  if (route.type === 'biotren') return 'biotren';
+  return isInterurban(route) ? 'interurban' : 'micro';
+}
 
+function matchesQuery(route: Route, q: string): boolean {
+  if (!q) return true;
+  return (
+    route.code.toLowerCase().replace(/\s+/g, '').includes(q.replace(/\s+/g, '')) ||
+    route.name.toLowerCase().includes(q) ||
+    (route.operator?.toLowerCase().includes(q) ?? false)
+  );
+}
+
+function groupByLine(routes: Route[]): LineGroup[] {
+  const byFamily = new Map<string, Route[]>();
+  for (const route of routes) {
+    const family = lineFamily(route.code);
+    const list = byFamily.get(family) ?? [];
+    list.push(route);
+    byFamily.set(family, list);
+  }
+  return Array.from(byFamily, ([family, list]) => {
+    list.sort((a, b) => compareRouteCodes(a.code, b.code));
+    const operators = new Set(list.map((r) => r.operator).filter(Boolean));
+    return { family, routes: list, operator: operators.size === 1 ? list[0].operator : null };
+  }).sort((a, b) => compareRouteCodes(a.family, b.family));
+}
+
+// react-doctor-disable-next-line react-doctor/no-giant-component -- La barra lateral junta buscador, filtros y las tres secciones de la lista; partirla solo reparte el mismo estado en más props.
 export function Sidebar({
   open,
   onClose,
   routes,
   visibleRouteIds,
   onToggleVisible,
+  onSetVisible,
   selectedRouteId,
   onSelectRoute,
-  typeFilters,
-  onToggleType,
-  onSetAllByType,
-  onSetAllByOperator,
   onlyOperatingNow,
   onToggleOnlyOperatingNow,
   onOpenSources,
   onOpenAnalysis,
 }: SidebarProps) {
   const [query, setQuery] = useState('');
-  const [expandedOps, setExpandedOps] = useState<Set<string>>(new Set());
+  const [filter, setFilter] = useState<ListFilter>('all');
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // `ROUTES` se muta in-place cuando aterriza el chunk lazy de micros (misma
-  // identidad de array a propósito), así que un useMemo que dependa de `routes`
-  // nunca se invalida y el sidebar se queda con el conteo y la lista del primer
-  // paint: solo Biotrén + interurbanos, con los 169 micros invisibles hasta que
-  // el usuario toca el buscador o un filtro. routesVersion es la señal real.
+  // `ROUTES` se muta in-place cuando llega el chunk lazy de micros (misma
+  // identidad de array), así que la señal real para recalcular es la versión.
   const routesVersion = useRoutesVersion();
-
   const visibleSet = useMemo(() => new Set(visibleRouteIds), [visibleRouteIds]);
-  const typeStats = useMemo(() => {
-    void routesVersion;
-    return buildTypeStats(routes, visibleSet);
-  }, [routes, visibleSet, routesVersion]);
-  const filteredFlat = useMemo(() => {
-    void routesVersion;
-    return filterRoutes(routes, query, typeFilters);
-  }, [query, routes, typeFilters, routesVersion]);
-  const grouped = useMemo(() => groupRoutesByOperator(filteredFlat, visibleSet), [
-    filteredFlat,
-    visibleSet,
-  ]);
+  const q = query.trim().toLowerCase();
 
-  const showFlat = query.trim().length > 0;
+  const filtered = useMemo(() => {
+    void routesVersion;
+    return routes.filter(
+      (r) =>
+        (filter === 'all' || kindOf(r) === filter) &&
+        matchesQuery(r, q) &&
+        (!onlyOperatingNow || isRouteOperatingNow(r)),
+    );
+  }, [routes, filter, q, onlyOperatingNow, routesVersion]);
+
+  const sections = useMemo(() => {
+    const biotren = filtered.filter((r) => kindOf(r) === 'biotren');
+    const interurban = filtered.filter((r) => kindOf(r) === 'interurban').sort((a, b) => compareRouteCodes(a.code, b.code));
+    const micro = groupByLine(filtered.filter((r) => kindOf(r) === 'micro'));
+    return { biotren, interurban, micro };
+  }, [filtered]);
+
+  const onMap = useMemo(() => {
+    void routesVersion;
+    const byId = new Map(routes.map((r) => [r.id, r]));
+    return visibleRouteIds.map((id) => byId.get(id)).filter((r): r is Route => !!r);
+  }, [routes, visibleRouteIds, routesVersion]);
+
+  const toggleFamily = (family: string) =>
+    setExpanded((cur) => {
+      const next = new Set(cur);
+      if (next.has(family)) next.delete(family);
+      else next.add(family);
+      return next;
+    });
+
+  const rowProps = (route: Route) => ({
+    route,
+    visible: visibleSet.has(route.id),
+    selected: selectedRouteId === route.id,
+    onSelect: () => onSelectRoute(route.id),
+    onToggleVisible: () => onToggleVisible(route.id),
+  });
+
+  const searching = q.length > 0;
 
   return (
     <>
@@ -100,424 +155,185 @@ export function Sidebar({
         )}
         data-state={open ? 'open' : 'closed'}
         aria-hidden={!open}
+        aria-label="Recorridos"
       >
         <div
           className={cn(
             'flex h-full min-w-0 flex-col overflow-hidden transition-opacity',
-            open ? 'opacity-100' : 'hidden pointer-events-none opacity-0',
+            open ? 'opacity-100' : 'pointer-events-none hidden opacity-0',
           )}
         >
-          <SidebarFilters
-            query={query}
-            onQueryChange={setQuery}
-            visibleCount={visibleRouteIds.length}
-            totalCount={routes.length}
-            typeFilters={typeFilters}
-            typeStats={typeStats}
-            onToggleType={onToggleType}
-            onSetAllByType={onSetAllByType}
-            onlyOperatingNow={onlyOperatingNow}
-            onToggleOnlyOperatingNow={onToggleOnlyOperatingNow}
-          />
-          <SidebarRouteList
-            showFlat={showFlat}
-            filteredFlat={filteredFlat}
-            grouped={grouped}
-            visibleSet={visibleSet}
-            selectedRouteId={selectedRouteId}
-            expandedOps={expandedOps}
-            onExpandedOpsChange={setExpandedOps}
-            onSelectRoute={onSelectRoute}
-            onToggleVisible={onToggleVisible}
-            onSetAllByOperator={onSetAllByOperator}
-          />
-          <SidebarFooter onOpenAnalysis={onOpenAnalysis} onOpenSources={onOpenSources} />
+          <div className="space-y-2.5 border-b p-3">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Número o destino: 30Q, Lomas, Tomé…"
+                aria-label="Buscar recorrido por número o destino"
+                className="h-9 pl-8 pr-8"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery('')}
+                  aria-label="Borrar búsqueda"
+                  className="absolute right-1.5 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded text-muted-foreground hover:text-foreground focus-ring"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-1" role="group" aria-label="Filtrar la lista">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  onClick={() => setFilter(f.id)}
+                  aria-pressed={filter === f.id}
+                  className={cn(
+                    'rounded-full border px-2.5 py-1 text-xs transition-colors focus-ring',
+                    filter === f.id
+                      ? 'border-foreground bg-foreground text-background'
+                      : 'bg-background text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={onToggleOnlyOperatingNow}
+                aria-pressed={onlyOperatingNow}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors focus-ring',
+                  onlyOperatingNow
+                    ? 'border-emerald-600 bg-emerald-600 text-white'
+                    : 'bg-background text-muted-foreground hover:text-foreground',
+                )}
+              >
+                <Clock className="size-3" />
+                Operando ahora
+              </button>
+            </div>
+          </div>
+
+          <ScrollArea className="min-w-0 flex-1 scroll-fade-y">
+            <div className="min-w-0 space-y-4 p-3">
+              {!searching && (
+                <section aria-label="En el mapa">
+                  <SectionLabel
+                    icon={<Eye />}
+                    aside={
+                      onMap.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => onSetVisible(onMap.map((r) => r.id), false)}
+                          className="rounded-sm text-[11px] underline-offset-2 hover:text-foreground hover:underline focus-ring"
+                        >
+                          Quitar todo
+                        </button>
+                      )
+                    }
+                  >
+                    En el mapa · {onMap.length}
+                  </SectionLabel>
+                  {onMap.length > 0 ? (
+                    <div className="space-y-0.5">
+                      {onMap.map((route) => (
+                        <RouteRow key={route.id} {...rowProps(route)} compact />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="rounded-md border border-dashed px-3 py-2.5 text-[12px] leading-snug text-muted-foreground">
+                      Nada dibujado. Toca el ojo de un recorrido para dejarlo en el mapa, o tócalo para ver su ficha.
+                    </p>
+                  )}
+                </section>
+              )}
+
+              {filtered.length === 0 && (
+                <p className="px-1 py-6 text-center text-sm text-muted-foreground">
+                  Ningún recorrido coincide{onlyOperatingNow ? ' (y opere ahora)' : ''}.
+                </p>
+              )}
+
+              {sections.biotren.length > 0 && (
+                <section aria-label="Biotrén">
+                  <SectionLabel aside={sections.biotren.length}>Biotrén</SectionLabel>
+                  <div className="space-y-0.5">
+                    {sections.biotren.map((route) => (
+                      <RouteRow key={route.id} {...rowProps(route)} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {sections.interurban.length > 0 && (
+                <section aria-label="Interurbanos">
+                  <SectionLabel aside={sections.interurban.length}>Interurbanos</SectionLabel>
+                  <div className="space-y-0.5">
+                    {sections.interurban.map((route) => (
+                      <RouteRow key={route.id} {...rowProps(route)} />
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {sections.micro.length > 0 && (
+                <section aria-label="Micros urbanas">
+                  <SectionLabel aside={`${sections.micro.reduce((n, g) => n + g.routes.length, 0)}`}>
+                    Micros urbanas
+                  </SectionLabel>
+                  <div className="space-y-0.5">
+                    {sections.micro.map((group) =>
+                      searching || group.routes.length === 1 ? (
+                        group.routes.map((route) => <RouteRow key={route.id} {...rowProps(route)} />)
+                      ) : (
+                        <LineGroupRow
+                          key={group.family}
+                          group={group}
+                          expanded={expanded.has(group.family)}
+                          visibleCount={group.routes.filter((r) => visibleSet.has(r.id)).length}
+                          onToggleExpanded={() => toggleFamily(group.family)}
+                          onSetVisible={(visible) => onSetVisible(group.routes.map((r) => r.id), visible)}
+                        >
+                          {group.routes.map((route) => (
+                            <RouteRow key={route.id} {...rowProps(route)} />
+                          ))}
+                        </LineGroupRow>
+                      ),
+                    )}
+                  </div>
+                </section>
+              )}
+            </div>
+          </ScrollArea>
+
+          <div className="flex items-center justify-between gap-3 border-t px-3 py-2.5 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={onOpenAnalysis} className="rounded-sm hover:text-foreground focus-ring">
+                Planificador
+              </button>
+              <button type="button" onClick={onOpenSources} className="rounded-sm hover:text-foreground focus-ring">
+                Fuentes de datos
+              </button>
+              <a href="/wiki" className="rounded-sm hover:text-foreground focus-ring">
+                Wiki
+              </a>
+            </div>
+            <a
+              href="https://github.com/marcorojasb/conce.patagua.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-sm hover:text-foreground focus-ring"
+            >
+              Código abierto
+            </a>
+          </div>
         </div>
       </aside>
     </>
-  );
-}
-
-function buildTypeStats(routes: Route[], visibleSet: Set<string>): TypeStats {
-  const stats: TypeStats = {};
-  for (const r of routes) {
-    const s = stats[r.type] ?? { total: 0, visible: 0 };
-    s.total += 1;
-    if (visibleSet.has(r.id)) s.visible += 1;
-    stats[r.type] = s;
-  }
-  return stats;
-}
-
-function filterRoutes(
-  routes: Route[],
-  query: string,
-  typeFilters: Record<RouteTypeId, boolean>,
-): Route[] {
-  const q = query.trim().toLowerCase();
-  return routes.filter((r) => {
-    if (!typeFilters[r.type]) return false;
-    if (!q) return true;
-    return (
-      r.name.toLowerCase().includes(q) ||
-      r.code.toLowerCase().includes(q) ||
-      ROUTE_TYPES[r.type].label.toLowerCase().includes(q) ||
-      (r.operator?.toLowerCase().includes(q) ?? false)
-    );
-  });
-}
-
-function groupRoutesByOperator(
-  routes: Route[],
-  visibleSet: Set<string>,
-): { biotren: Route[]; operators: OperatorGroup[] } {
-  const biotren: Route[] = [];
-  const byOp = new Map<string, Route[]>();
-  for (const r of routes) {
-    if (r.type === 'biotren') {
-      biotren.push(r);
-      continue;
-    }
-    const op = r.operator ?? NO_OPERATOR_LABEL;
-    const list = byOp.get(op) ?? [];
-    list.push(r);
-    byOp.set(op, list);
-  }
-  const operators = Array.from(byOp.entries())
-    .map(([operator, opRoutes]) => ({
-      operator,
-      routes: opRoutes,
-      visible: opRoutes.reduce((acc, r) => acc + (visibleSet.has(r.id) ? 1 : 0), 0),
-    }))
-    .sort((a, b) => b.routes.length - a.routes.length);
-  return { biotren, operators };
-}
-
-interface SidebarFiltersProps {
-  query: string;
-  onQueryChange: (query: string) => void;
-  visibleCount: number;
-  totalCount: number;
-  typeFilters: Record<RouteTypeId, boolean>;
-  typeStats: TypeStats;
-  onToggleType: (typeId: RouteTypeId) => void;
-  onSetAllByType: (typeId: RouteTypeId, on: boolean) => void;
-  onlyOperatingNow: boolean;
-  onToggleOnlyOperatingNow: () => void;
-}
-
-function SidebarFilters({
-  query,
-  onQueryChange,
-  visibleCount,
-  totalCount,
-  typeFilters,
-  typeStats,
-  onToggleType,
-  onSetAllByType,
-  onlyOperatingNow,
-  onToggleOnlyOperatingNow,
-}: SidebarFiltersProps) {
-  return (
-    <div className="min-w-0 border-b p-3">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Buscar recorrido u operador…"
-          className="h-9 pl-8"
-        />
-      </div>
-
-      <div className="mt-3">
-        <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Tipo
-          </span>
-          <span className="text-[11px] text-muted-foreground">
-            {visibleCount}/{totalCount} visibles
-          </span>
-        </div>
-        <div className="grid min-w-0 grid-cols-2 gap-1.5">
-          {Object.values(ROUTE_TYPES).map((t) => {
-            const active = !!typeFilters[t.id];
-            const Icon = t.Icon;
-            const stats = typeStats[t.id];
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => onToggleType(t.id)}
-                aria-pressed={active}
-                className={cn(
-                  'inline-flex min-h-10 min-w-0 items-center justify-center gap-1.5 rounded-md border p-2 text-xs transition-colors focus-ring md:min-h-8 md:px-2.5 md:py-1.5',
-                  active
-                    ? 'border-foreground/70 bg-foreground text-background shadow-sm'
-                    : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                )}
-              >
-                <Icon className="size-3.5" />
-                {t.short}
-                {stats && stats.total > 1 && (
-                  <span className="opacity-70">
-                    {stats.visible}/{stats.total}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {Object.values(ROUTE_TYPES).map((t) => {
-          const stats = typeStats[t.id];
-          if (!stats || stats.total < 5) return null;
-          const allVisible = stats.visible === stats.total;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => onSetAllByType(t.id, !allVisible)}
-              className="mt-1.5 inline-flex items-center gap-1 rounded-sm px-1 py-0.5 text-[11px] text-muted-foreground hover:text-foreground focus-ring"
-            >
-              {allVisible
-                ? `Quitar todos los ${t.short.toLowerCase()}s (${stats.total})`
-                : `Activar todos los ${t.short.toLowerCase()}s (${stats.total})`}
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="mt-3 flex min-h-9 items-center gap-2 rounded-md border bg-muted/30 px-2.5 py-1.5 text-[12px]">
-        <Clock className="size-3.5 text-muted-foreground" />
-        <span className="min-w-0 flex-1 truncate leading-tight">Solo activos ahora</span>
-        <Switch
-          checked={onlyOperatingNow}
-          onCheckedChange={onToggleOnlyOperatingNow}
-          aria-label="Solo recorridos activos ahora"
-          className="shrink-0 scale-90"
-        />
-      </div>
-    </div>
-  );
-}
-
-interface SidebarRouteListProps {
-  showFlat: boolean;
-  filteredFlat: Route[];
-  grouped: { biotren: Route[]; operators: OperatorGroup[] };
-  visibleSet: Set<string>;
-  selectedRouteId: string | null;
-  expandedOps: Set<string>;
-  onExpandedOpsChange: (updater: (current: Set<string>) => Set<string>) => void;
-  onSelectRoute: (id: string) => void;
-  onToggleVisible: (id: string) => void;
-  onSetAllByOperator: (operator: string, on: boolean) => void;
-}
-
-function SidebarRouteList({
-  showFlat,
-  filteredFlat,
-  grouped,
-  visibleSet,
-  selectedRouteId,
-  expandedOps,
-  onExpandedOpsChange,
-  onSelectRoute,
-  onToggleVisible,
-  onSetAllByOperator,
-}: SidebarRouteListProps) {
-  return (
-    <ScrollArea className="min-w-0 flex-1 scroll-fade-y">
-      <div className="min-w-0 max-w-full space-y-1 overflow-hidden p-2 pr-4">
-        {filteredFlat.length === 0 && (
-          <div className="px-3 py-8 text-center text-sm text-muted-foreground">
-            Sin recorridos para los filtros actuales.
-          </div>
-        )}
-
-        {showFlat &&
-          filteredFlat.map((r) => (
-            <RouteRow
-              key={r.id}
-              route={r}
-              visible={visibleSet.has(r.id)}
-              selected={selectedRouteId === r.id}
-              onSelect={() => onSelectRoute(r.id)}
-              onToggle={() => onToggleVisible(r.id)}
-            />
-          ))}
-
-        {!showFlat && grouped.biotren.length > 0 && (
-          <div className="pt-1">
-            <div className="px-2 pb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              Biotrén
-            </div>
-            {grouped.biotren.map((r) => (
-              <RouteRow
-                key={r.id}
-                route={r}
-                visible={visibleSet.has(r.id)}
-                selected={selectedRouteId === r.id}
-                onSelect={() => onSelectRoute(r.id)}
-                onToggle={() => onToggleVisible(r.id)}
-              />
-            ))}
-          </div>
-        )}
-
-        {!showFlat &&
-          grouped.operators.map((g) => (
-            <OperatorSection
-              key={g.operator}
-              group={g}
-              visibleSet={visibleSet}
-              selectedRouteId={selectedRouteId}
-              expanded={expandedOps.has(g.operator)}
-              onToggleExpanded={() =>
-                onExpandedOpsChange((cur) => {
-                  const next = new Set(cur);
-                  if (next.has(g.operator)) next.delete(g.operator);
-                  else next.add(g.operator);
-                  return next;
-                })
-              }
-              onSelectRoute={onSelectRoute}
-              onToggleVisible={onToggleVisible}
-              onSetAllByOperator={onSetAllByOperator}
-            />
-          ))}
-      </div>
-    </ScrollArea>
-  );
-}
-
-interface OperatorSectionProps {
-  group: OperatorGroup;
-  visibleSet: Set<string>;
-  selectedRouteId: string | null;
-  expanded: boolean;
-  onToggleExpanded: () => void;
-  onSelectRoute: (id: string) => void;
-  onToggleVisible: (id: string) => void;
-  onSetAllByOperator: (operator: string, on: boolean) => void;
-}
-
-function OperatorSection({
-  group,
-  visibleSet,
-  selectedRouteId,
-  expanded,
-  onToggleExpanded,
-  onSelectRoute,
-  onToggleVisible,
-  onSetAllByOperator,
-}: OperatorSectionProps) {
-  const allVisible = group.visible === group.routes.length;
-  return (
-    <div className="min-w-0 pt-1">
-      <div className="grid min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-1 px-1">
-        <button
-          type="button"
-          onClick={onToggleExpanded}
-          className="flex min-w-0 overflow-hidden rounded-md px-1.5 py-1 text-left text-[12px] hover:bg-accent/60 focus-ring"
-          aria-expanded={expanded}
-        >
-          <ChevronRight
-            className={cn(
-              'mr-1 size-3 shrink-0 text-muted-foreground transition-transform',
-              expanded && 'rotate-90',
-            )}
-          />
-          <span className="min-w-0 flex-1 truncate font-medium">{group.operator}</span>
-          <span className="ml-2 shrink-0 rounded border bg-muted/30 px-1 font-mono text-[10px] text-muted-foreground">
-            {group.visible}/{group.routes.length}
-          </span>
-        </button>
-        <Tooltip
-          content={allVisible ? 'Quitar todos del operador' : 'Activar todos del operador'}
-          side="left"
-        >
-          <span className="inline-flex">
-            <Switch
-              checked={allVisible}
-              onCheckedChange={() => onSetAllByOperator(group.operator, !allVisible)}
-              aria-label={`Alternar todos los recorridos de ${group.operator}`}
-              className="scale-90"
-            />
-          </span>
-        </Tooltip>
-      </div>
-      {expanded && (
-        <div className="mt-0.5">
-          {group.routes.map((r) => (
-            <RouteRow
-              key={r.id}
-              route={r}
-              visible={visibleSet.has(r.id)}
-              selected={selectedRouteId === r.id}
-              onSelect={() => onSelectRoute(r.id)}
-              onToggle={() => onToggleVisible(r.id)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-interface SidebarFooterProps {
-  onOpenAnalysis: () => void;
-  onOpenSources: () => void;
-}
-
-function SidebarFooter({ onOpenAnalysis, onOpenSources }: SidebarFooterProps) {
-  return (
-    <div className="border-t p-3">
-      <div className="flex items-center justify-between gap-3 text-[11px] text-muted-foreground">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onOpenAnalysis}
-            className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-ring"
-          >
-            Análisis
-          </button>
-          <span aria-hidden className="text-muted-foreground/50">
-            ·
-          </span>
-          <button
-            type="button"
-            onClick={onOpenSources}
-            className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-ring"
-          >
-            Fuentes
-          </button>
-          <span aria-hidden className="text-muted-foreground/50">
-            ·
-          </span>
-          <a
-            href="/wiki"
-            className="rounded-sm underline-offset-2 hover:text-foreground hover:underline focus-ring"
-          >
-            Wiki
-          </a>
-        </div>
-        <span>v0.8</span>
-      </div>
-      <div className="mt-2 text-[10px] leading-snug text-muted-foreground">
-        Programado por{' '}
-        <a
-          href="https://patagua.dev"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium underline-offset-2 hover:text-foreground hover:underline"
-        >
-          mrcr en patagua.dev
-        </a>
-        . Visión: aporte a la comunidad y a la política pública del Gran Concepción.
-      </div>
-    </div>
   );
 }
 
@@ -525,54 +341,111 @@ interface RouteRowProps {
   route: Route;
   visible: boolean;
   selected: boolean;
+  compact?: boolean;
   onSelect: () => void;
-  onToggle: () => void;
+  onToggleVisible: () => void;
 }
 
-function RouteRow({ route, visible, selected, onSelect, onToggle }: RouteRowProps) {
-  const Icon = ROUTE_TYPES[route.type].Icon;
+function RouteRow({ route, visible, selected, compact, onSelect, onToggleVisible }: RouteRowProps) {
+  const operating = isRouteOperatingNow(route);
+  const TypeIcon = ROUTE_TYPES[route.type].Icon;
   return (
     <div
       className={cn(
-        'group flex min-h-11 min-w-0 max-w-full overflow-hidden rounded-md border border-transparent p-2 transition-colors',
-        selected ? 'border-border bg-accent' : 'hover:bg-accent/60',
+        'group flex min-w-0 items-center gap-1 rounded-md transition-colors',
+        selected ? 'bg-accent' : 'hover:bg-accent/60',
       )}
     >
       <button
         type="button"
         onClick={onSelect}
-        className="flex min-w-0 flex-1 basis-0 items-center gap-2 overflow-hidden rounded-sm text-left focus-ring"
+        aria-current={selected ? 'true' : undefined}
+        className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1.5 text-left focus-ring"
       >
-        <Badge
-          className="shrink-0 border-transparent font-mono"
-          style={{ backgroundColor: route.color, color: readableTextOn(route.color) }}
-        >
-          {route.code}
-        </Badge>
-        <div className="min-w-0 flex-1 basis-0">
-          <div className="truncate text-sm font-medium leading-tight">{route.name}</div>
-          <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
-            <Icon className="size-[11px]" />
-            <span className="shrink-0">{ROUTE_TYPES[route.type].short}</span>
-            {route.stops.length > 0 && (
-              <>
-                <span aria-hidden>·</span>
-                <span className="truncate">{route.stops.length} paraderos</span>
-              </>
-            )}
-          </div>
-        </div>
-      </button>
-      <Tooltip content={visible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'} side="left">
-        <span className="inline-flex">
-          <Switch
-            checked={visible}
-            onCheckedChange={onToggle}
-            aria-label={visible ? 'Ocultar en el mapa' : 'Mostrar en el mapa'}
-            className="shrink-0 scale-90"
-          />
+        <RouteBadge code={route.code} color={route.color} className="min-w-[2.75rem] justify-center" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[13px] leading-tight">{routeShortName(route)}</span>
+          {!compact && (
+            <span className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
+              <TypeIcon className="size-3 shrink-0" />
+              <span className="truncate">{route.operator}</span>
+            </span>
+          )}
         </span>
-      </Tooltip>
+        <span
+          className={cn('size-1.5 shrink-0 rounded-full', operating ? 'bg-emerald-500' : 'bg-muted-foreground/30')}
+          title={operating ? 'Operando ahora' : 'Fuera de horario ahora'}
+          aria-label={operating ? 'Operando ahora' : 'Fuera de horario ahora'}
+        />
+      </button>
+      <button
+        type="button"
+        onClick={onToggleVisible}
+        aria-pressed={visible}
+        aria-label={visible ? `Quitar ${route.code} del mapa` : `Mostrar ${route.code} en el mapa`}
+        title={visible ? 'Quitar del mapa' : 'Mostrar en el mapa'}
+        className={cn(
+          'grid size-8 shrink-0 place-items-center rounded-md transition-colors focus-ring',
+          visible ? 'text-foreground hover:bg-background' : 'text-muted-foreground/60 hover:text-foreground',
+        )}
+      >
+        {visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+      </button>
+    </div>
+  );
+}
+
+interface LineGroupRowProps {
+  group: LineGroup;
+  expanded: boolean;
+  visibleCount: number;
+  onToggleExpanded: () => void;
+  onSetVisible: (visible: boolean) => void;
+  children: React.ReactNode;
+}
+
+function LineGroupRow({ group, expanded, visibleCount, onToggleExpanded, onSetVisible, children }: LineGroupRowProps) {
+  const allVisible = visibleCount === group.routes.length;
+  return (
+    <div className="min-w-0">
+      <div className="flex min-w-0 items-center gap-1 rounded-md hover:bg-accent/60">
+        <button
+          type="button"
+          onClick={onToggleExpanded}
+          aria-expanded={expanded}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1.5 text-left focus-ring"
+        >
+          <ChevronRight
+            className={cn('size-3.5 shrink-0 text-muted-foreground transition-transform', expanded && 'rotate-90')}
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block text-[13px] font-medium leading-tight">Línea {group.family}</span>
+            <span className="block truncate text-[11px] text-muted-foreground">
+              {group.routes.map((r) => r.code).join(' · ')}
+              {group.operator ? ` — ${group.operator}` : ''}
+            </span>
+          </span>
+          {visibleCount > 0 && (
+            <span className="shrink-0 rounded-full bg-foreground px-1.5 font-mono text-[10px] text-background">
+              {visibleCount}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => onSetVisible(!allVisible)}
+          aria-pressed={allVisible}
+          aria-label={allVisible ? `Quitar la línea ${group.family} del mapa` : `Mostrar toda la línea ${group.family} en el mapa`}
+          title={allVisible ? 'Quitar la línea del mapa' : 'Mostrar toda la línea'}
+          className={cn(
+            'grid size-8 shrink-0 place-items-center rounded-md transition-colors focus-ring',
+            allVisible ? 'text-foreground' : 'text-muted-foreground/60 hover:text-foreground',
+          )}
+        >
+          {allVisible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+        </button>
+      </div>
+      {expanded && <div className="ml-4 border-l pl-1.5">{children}</div>}
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { POIS } from '@/data/pois.generated';
 import { TERMINALS } from '@/data/terminals.generated';
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { computeActiveVehicles, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
+import { getSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
 import { buildWallpaper, buildWallpaperLegend, CURATED_VIEWS, downloadBlob, padBbox, selectWallpaperRoutes, WALLPAPER_SIZES, WALLPAPER_STYLES, type WallpaperRouteMode, type WallpaperSizePreset, type WallpaperStyle } from '@/lib/wallpaper';
 import type { CoverageCell, RouteSchedule, SimulatedVehicle, Theme } from '@/types/transport';
 import type { RoutingResult } from '@/lib/routing';
@@ -16,7 +17,6 @@ interface WallpaperTabProps {
   visibleRouteIds: string[];
   mapBounds: [[number, number], [number, number]] | null;
   theme: Theme;
-  simulatedVehicles: SimulatedVehicle[];
   simulationScope: 'visible' | 'all';
   activeMapLayers: {
     paraderos: boolean;
@@ -53,7 +53,6 @@ export default function WallpaperTool({
   visibleRouteIds,
   mapBounds,
   theme,
-  simulatedVehicles,
   simulationScope,
   activeMapLayers,
   plannerMidpoint,
@@ -141,7 +140,7 @@ export default function WallpaperTool({
 
     const routeIds = new Set(selectedRouteSources.map((r) => r.id));
     const vehicles = layers.servicios
-      ? await loadWallpaperVehicles(servicesScope, visibleRouteIds, simulatedVehicles)
+      ? await loadWallpaperVehicles(servicesScope, visibleRouteIds, getSimulatedVehicles())
       : [];
     const scopedVehicles = servicesScope === 'visible'
       ? vehicles.filter((v) => routeIds.size === 0 || routeIds.has(v.routeId))
