@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { compareRouteCodes, isInterurban, lineFamily, routeShortName } from '@/lib/route-labels';
+import { compareRouteCodes, isInterurban, lineFamily, routeCodeKey, routeShortName } from '@/lib/route-labels';
+import type { RouteDirection } from '@/types/transport';
+
+function direction(directionId: 0 | 1, destination: string): RouteDirection {
+  return { directionId, headsign: `Op ${destination}`, destination, path: [], stops: [] };
+}
 
 describe('routeShortName', () => {
   it('quita el código que ya se muestra aparte', () => {
@@ -12,9 +17,29 @@ describe('routeShortName', () => {
     expect(routeShortName({ code: '17 O', name: '17 O: Lomas de San Sebastián' })).toBe('Lomas de San Sebastián');
   });
 
+  it('usa los destinos oficiales de cada sentido cuando existen', () => {
+    const name = 'Vía Láctea 10N - Los Bloques - Vía Láctea 10A - Centinela';
+    expect(
+      routeShortName({ code: '10AN', name, directions: [direction(0, 'Centinela'), direction(1, 'Los Bloques')] }),
+    ).toBe('Los Bloques ↔ Centinela');
+    expect(routeShortName({ code: '70F', name: 'Las Bahías 70F - Nonguén', directions: [direction(1, 'Nonguén')] })).toBe(
+      'hacia Nonguén',
+    );
+  });
+
   it('deja el nombre tal cual si no empieza con el código', () => {
     expect(routeShortName({ code: '201', name: 'Concepción ↔ Santa Juana' })).toBe('Concepción ↔ Santa Juana');
     expect(routeShortName({ code: '201', name: '201:' })).toBe('201:');
+  });
+});
+
+describe('routeCodeKey', () => {
+  it('iguala códigos escritos de distintas formas', () => {
+    expect(routeCodeKey('201 AU')).toBe(routeCodeKey('201-AU'));
+    expect(routeCodeKey('02a')).toBe('2A');
+    expect(routeCodeKey('10 J')).toBe('10J');
+    expect(routeCodeKey('B02')).toBe('B02');
+    expect(routeCodeKey('80J-Y')).toBe('80JY');
   });
 });
 
@@ -36,8 +61,9 @@ describe('compareRouteCodes', () => {
 
 describe('isInterurban', () => {
   it('reconoce todas las redes interurbanas, no solo la del 201', () => {
-    expect(isInterurban({ network: 'Interurbano Biobío' })).toBe(true);
+    expect(isInterurban({ network: 'Interurbano Santa Juana' })).toBe(true);
     expect(isInterurban({ network: 'Interurbano Tomé' })).toBe(true);
+    expect(isInterurban({ network: 'Interurbano Lota' })).toBe(true);
     expect(isInterurban({ network: 'GTFS Gran Concepción' })).toBe(false);
     expect(isInterurban({})).toBe(false);
   });

@@ -49,6 +49,7 @@ import {
   type TripDropReason,
   type TripWindowAccumulator,
 } from './lib/gtfs-transform.ts';
+import { serviceSpansFromTrips } from '../src/lib/operating-hours.ts';
 import type {
   BusRoute,
   BusRouteDirection,
@@ -340,11 +341,12 @@ function buildDirection(directionId: 0 | 1, trips: TripInfo[]): BusRouteDirectio
   if (rawPath.length < 2) return null;
 
   const headsign = mostCommonKey(headsignCounts) ?? '';
-  const { variant } = parseHeadsign(headsign);
+  const { variant, destination } = parseHeadsign(headsign);
   return {
     directionId,
     headsign,
     ...(variant ? { variant } : {}),
+    ...(destination ? { destination } : {}),
     path: simplify(rawPath, SIMPLIFY_TOLERANCE).map(([lat, lng]) => [round7(lat), round7(lng)]),
     stopIds: stopIdxs.map((idx) => paraderos[idx].id),
   };
@@ -415,6 +417,16 @@ for (const trip of tripById.values()) {
 }
 const byStart = (a: ScheduledTrip, b: ScheduledTrip) => a[0] - b[0] || a[1] - b[1];
 for (const schedule of directionSchedules.values()) for (const day of schedule) day.sort(byStart);
+
+// Tramos con servicio por día (ambos sentidos): el "operando ahora" del visor
+// los lee sin cargar el chunk pesado de horarios.
+for (const route of routes) {
+  const days: ScheduledTrip[][] = [[], [], [], [], [], [], []];
+  for (const { directionId } of route.directions) {
+    directionSchedules.get(`${route.id}#${directionId}`)?.forEach((trips, day) => days[day].push(...trips));
+  }
+  if (days.some((trips) => trips.length > 0)) route.serviceSpans = serviceSpansFromTrips(days);
+}
 
 // ---------------------------------------------------------------------------
 // 6. Frecuencia horaria y ventanas de servicio por paradero
@@ -516,7 +528,9 @@ export const GTFS_STOPS: Paradero[] = ${JSON.stringify(paraderos)};
 
 const routesFile = `${banner(`// GTFS bus routes con sus dos sentidos (directions) — chunk pesado que
 // src/data/routes.ts carga en diferido al iniciar. \`path\`/\`stopIds\` de cada
-// ruta son los del primer sentido (direction_id 0 si existe).`)}
+// ruta son los del primer sentido (direction_id 0 si existe).
+// serviceSpans: por día (0=lunes), tramos [inicio, fin] con algún viaje en
+// curso; ver src/lib/operating-hours.ts.`)}
 import type { BusRoute, BusRouteDirection } from '@/types/transport';
 
 type GeneratedRoute = Omit<BusRoute, 'path' | 'stopIds' | 'directions'> & {

@@ -36,6 +36,31 @@ export interface StopWithRoutes extends Stop {
 
 export type LatLngTuple = [number, number];
 
+/**
+ * Un sentido de un recorrido, ya resuelto contra los paraderos. Los micros
+ * GTFS traen uno o dos (direction_id 0/1); Biotrén no tiene.
+ */
+export interface RouteDirection {
+  directionId: 0 | 1;
+  /** Letrero oficial completo del sentido ("Vía Láctea 10P - Leonera"). */
+  headsign: string;
+  /** Código que muestra la micro en este sentido ("10P"). */
+  variant?: string;
+  /** Destino corto sacado del letrero ("Leonera"). */
+  destination?: string;
+  path: LatLngTuple[];
+  stops: Stop[];
+}
+
+/**
+ * Tramos del día con algún viaje programado en curso, por día de la semana
+ * (0 = lunes … 6 = domingo). Cada tramo es [inicio, fin] en minutos desde la
+ * medianoche del día de servicio; `fin` puede pasar de 1440 si el último
+ * viaje termina de madrugada.
+ */
+export type ServiceSpan = [startMin: number, endMin: number];
+export type ServiceSpans = ServiceSpan[][];
+
 export interface Route {
   id: string;
   code: string;
@@ -46,11 +71,20 @@ export interface Route {
   headway: string;
   hours: string;
   frequencyByDay: Record<string, string>;
+  /**
+   * Paraderos que atiende el recorrido en cualquier sentido: primero los del
+   * sentido 0 en orden, luego los que solo toca el otro. El orden por sentido
+   * está en `directions[].stops`.
+   */
   stops: Stop[];
+  /** Trazado completo para dibujar: ida seguida del regreso cuando hay dos sentidos. */
   path: LatLngTuple[];
+  directions?: RouteDirection[];
+  /** Tramos con servicio programado; sin este dato la ruta no se da por operando. */
+  serviceSpans?: ServiceSpans;
   /**
    * Etiqueta de red de servicio (ej.: "GTFS Gran Concepción",
-   * "Interurbano Biobío"). Sirve para diferenciar urbanos del 201 etc.
+   * "Interurbano Tomé"). Sirve para diferenciar urbanos de interurbanos.
    */
   network?: string;
   /**
@@ -160,6 +194,8 @@ export interface BusRoute {
    * `stopIds` de la ruta repiten el primero (el 0 cuando existe).
    */
   directions?: BusRouteDirection[];
+  /** Tramos con viajes en curso por día, calculados desde stop_times. */
+  serviceSpans?: ServiceSpans;
   /**
    * Marca rutas cuyo trazado fue digitalizado manualmente desde una
    * descripción oficial — no es un shape GTFS ni una relación route=bus
@@ -177,6 +213,8 @@ export interface BusRouteDirection {
   headsign: string;
   /** Código que muestra la micro en ese sentido (ej. "10P"), sacado del headsign. */
   variant?: string;
+  /** Destino corto del headsign (ej. "Leonera"). */
+  destination?: string;
   path: LatLngTuple[];
   /** Paraderos del patrón de paradas más frecuente del sentido. */
   stopIds: string[];

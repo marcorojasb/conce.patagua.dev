@@ -1,10 +1,29 @@
 import type { Route } from '@/types/transport';
 
-/** "02A: Centinela I" → "Centinela I"; "Biotrén L1 · Hualqui ↔ …" → "Hualqui ↔ …". */
-export function routeShortName(route: Pick<Route, 'code' | 'name'>): string {
+/**
+ * Nombre corto para listas. Con dos sentidos, "origen ↔ destino" desde los
+ * letreros oficiales (10AN → "Los Bloques ↔ Centinela", mismo orden que el
+ * route_long_name de DTPR); con uno, "hacia <destino>". Sin sentidos se quita
+ * el código del nombre: "02A: Centinela I" → "Centinela I", "Biotrén L1 · Hualqui ↔ …" → "Hualqui ↔ …".
+ */
+export function routeShortName(route: Pick<Route, 'code' | 'name' | 'directions'>): string {
+  const destinations = (route.directions ?? []).map((d) => d.destination).filter((d): d is string => !!d);
+  if (destinations.length === 2 && destinations[0] !== destinations[1]) {
+    return `${destinations[1]} ↔ ${destinations[0]}`;
+  }
+  if (destinations.length >= 1) return `hacia ${destinations[0]}`;
   const code = route.code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const stripped = route.name.replace(new RegExp(`^(Biotrén\\s+)?${code}\\s*[:·]\\s*`), '');
   return stripped || route.name;
+}
+
+/**
+ * Clave para comparar códigos tal como los escribe la gente o los trae otra
+ * fuente: sin mayúsculas, espacios, guiones ni ceros a la izquierda
+ * ("02A" = "2a", "201 AU" = "201-AU").
+ */
+export function routeCodeKey(code: string): string {
+  return code.toUpperCase().replace(/[\s-]+/g, '').replace(/^0+(?=\d)/, '');
 }
 
 /**
@@ -24,7 +43,11 @@ export function compareRouteCodes(a: string, b: string): number {
   return collator.compare(a, b);
 }
 
-/** Servicios fuera del GTFS urbano: hoy "Interurbano Biobío" (201) e "Interurbano Tomé" (401/411/421). */
+/**
+ * Servicios interurbanos que DTPR publica en el mismo GTFS que la red urbana:
+ * "Interurbano Santa Juana" (201, 201-AU), "Interurbano Tomé" (401, 401Y,
+ * 411, 421) e "Interurbano Lota" (302, 304).
+ */
 export function isInterurban(route: Pick<Route, 'network'>): boolean {
   return route.network?.startsWith('Interurbano') ?? false;
 }
