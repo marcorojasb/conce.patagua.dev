@@ -148,9 +148,10 @@ export function FloatingInfoPanel({
     resetSheetStyle();
   };
 
-  // Un arrastre que empezó sobre un botón no debe terminar activándolo.
+  // Un arrastre que empezó sobre un botón no debe terminar activándolo. Los
+  // clics de teclado (detail 0) nunca vienen de un arrastre: no se tocan.
   const onDragClickCapture = (event: ReactMouseEvent) => {
-    if (!suppressClickRef.current) return;
+    if (!suppressClickRef.current || event.detail === 0) return;
     suppressClickRef.current = false;
     event.preventDefault();
     event.stopPropagation();
