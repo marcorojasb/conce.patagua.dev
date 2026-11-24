@@ -35,7 +35,7 @@ npm install
 npm run dev
 ```
 
-Con esto alcanza para trabajar en el visor y en el wiki: ninguno de los dos requiere la sqlite de GTFS para levantar el dev server, porque los `*.generated.ts` ya están commiteados en el repo (ver más abajo la distinción de qué scripts `sync:*` sí requieren la sqlite).
+Con esto alcanza para trabajar en el visor y en el wiki: ninguno de los dos necesita descargar datos para levantar el dev server, porque los `*.generated.ts` ya están commiteados en el repo (ver más abajo los scripts `sync:*` que los regeneran).
 
 ## Antes de un PR
 
@@ -81,27 +81,29 @@ Para agregar un enlace mapa→wiki: crear o identificar el artículo, añadir la
 
 ## Scripts de sincronización de datos (`sync:*`)
 
-Los datasets en `src/data/*.generated.ts` no se escriben a mano: se generan a partir de fuentes externas (Overpass/OSM, GTFS, Wikidata) corriendo los scripts correspondientes en `scripts/`. Un workflow de GitHub Actions (`.github/workflows/`) corre `npm run sync:all` diariamente (06:30 UTC) y abre un PR automático si hay cambios en `src/data`.
+Los datasets en `src/data/*.generated.ts` no se escriben a mano: se generan a partir de fuentes externas (Overpass/OSM, GTFS, Wikidata) corriendo los scripts correspondientes en `scripts/`. Un workflow de GitHub Actions (`.github/workflows/sync-data.yml`) corre `sync:osm` y `sync:gtfs` (lo mismo que `sync:all`) diariamente (06:30 UTC) y abre un PR automático si hay cambios en `src/data`.
 
 | Script | Fuente | Genera |
 |---|---|---|
 | `sync:biotren` | Overpass (`railway=station`, operador EFE) | `biotren.generated.ts` |
 | `sync:biotren-track` | Overpass (`railway=rail`) + Dijkstra | `biotren-track.generated.ts` |
 | `sync:terminals` | Overpass (`amenity=bus_station`) | `terminals.generated.ts` |
-| `sync:gtfs-concepcion` | sqlite local vía `sqlite3` CLI | `gtfs-concepcion.generated.ts`, `gtfs-stops.generated.ts`, `gtfs-bus-routes.generated.ts` |
-| `sync:gtfs-schedule` | sqlite local | `gtfs-schedule.generated.ts` |
-| `sync:coverage` | — | `coverage.generated.ts` (grilla de cobertura) |
-| `sync:stop-frequency` | sqlite local | `gtfs-stop-frequency.generated.ts` |
-| `sync:stop-services` | sqlite local | `gtfs-stop-services.generated.ts` |
+| `sync:gtfs` | GTFS oficial de la DTPR (`granconcepcion.zip` en dtpr.gob.cl), luego corre `sync:coverage` | `gtfs-stops.generated.ts` (+ `GTFS_CONCEPCION_SOURCE`), `gtfs-bus-routes.generated.ts` (con ambos sentidos), `gtfs-concepcion.generated.ts` (barrel), `gtfs-schedule.generated.ts`, `gtfs-stop-frequency.generated.ts`, `gtfs-stop-services.generated.ts` |
+| `sync:coverage` | `gtfs-stops.generated.ts` | `coverage.generated.ts` (grilla de cobertura) |
 | `sync:pois` | Overpass | `pois.generated.ts` |
 | `sync:wikidata` | SPARQL de Wikidata (Q-ids ya presentes en `biotren.generated.ts`) | `wikidata.generated.ts` |
 | `sync:cycleways` | Overpass | `cycleways.generated.ts` |
 | `sync:greenspace` | Overpass | `greenspace.generated.ts` |
 | `sync:schools` | Overpass | `schools.generated.ts` |
 | `sync:interurban-routes` | Overpass | `interurban-routes.generated.ts` |
-| `sync:all` | — | corre todos los anteriores excepto `sync:coverage` (según `package.json` actual) |
+| `sync:all` | — | `sync:osm` + `sync:gtfs` (todos los anteriores) |
 
-Los scripts `sync:gtfs-*` y `sync:stop-*` dependen de un binario `sqlite3` disponible en el sistema y de una base de datos GTFS local apuntada por la variable de entorno `GTFS_DB_PATH` (con un default hardcodeado a una ruta local de macOS en `scripts/generate-gtfs-concepcion.ts` que no existe en otros entornos). **Pendiente**: no hay `.env.example` en el repo ni documentación de cómo obtener/generar esa base sqlite (`gran_concepcion_candidate.sqlite`) desde cero — quien quiera correr estos scripts necesita averiguarlo por su cuenta o pedirle la base al mantenedor.
+`sync:gtfs` (`scripts/sync-gtfs-official.ts`) no necesita credenciales ni binarios del sistema: descarga el zip oficial y lo lee en streaming con Node (`stop_times.txt` pesa ~300 MB descomprimido). Detalles:
+
+- **Fuente**: `GTFS_URL` (por defecto `https://dtpr.gob.cl/wp-content/uploads/2025/12/granconcepcion.zip`). El zip queda en `.cache/gtfs/` (ignorado por git) y se reutiliza mientras el servidor informe el mismo ETag/Last-Modified y tamaño. Con `GTFS_ZIP_PATH=/ruta/al.zip` se lee un zip local sin descargar. Detrás de un proxy HTTPS, Node ≥ 22.21 necesita `NODE_USE_ENV_PROXY=1`.
+- **Vigencia**: la versión publicada (`feed_version` "Gran Concepción20250228") declara calendario 2024-01-01 a 2025-12-31 y no hay una posterior. Los días de servicio salen de los flags de `calendar.txt` sin filtrar por fecha; el rango declarado, la URL, el sha256 y la fecha de descarga quedan en `GTFS_CONCEPCION_SOURCE`.
+- **Horas**: las horas vacías de `stop_times` (paradas que no son timepoint) se ignoran, nunca se leen como 00:00. Un viaje va de la primera salida con hora a la última llegada con hora; solo se descartan viajes rotos (sin horas, duración ≤ 0 o > 6 h) y el script los cuenta por ruta en su resumen.
+- **Formato**: horarios y ventanas por paradero se guardan compactos (ver `scripts/lib/gtfs-encode.ts`) y se decodifican al cargar el módulo, para respetar los presupuestos de `bundle:budget`. Si lo único que cambia es la marca de tiempo, los archivos no se reescriben.
 
 El resto de los scripts (Overpass, Wikidata) no requieren credenciales: usan endpoints públicos con un User-Agent identificándose como este proyecto.
 

@@ -1,4 +1,4 @@
-name: Sync OSM data
+name: Sync OSM + GTFS data
 
 on:
   schedule:
@@ -14,7 +14,7 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,9 +29,22 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Sync all OSM-backed datasets
-        # Solo los datasets que dependen de APIs públicas (Overpass/Wikidata).
-        # Los `sync:gtfs-*` necesitan sqlite3 + GTFS_DB_PATH y corren en local.
         run: npm run sync:osm
+
+      - name: Restore GTFS zip cache
+        # El script reutiliza .cache/gtfs/ si dtpr.gob.cl informa el mismo
+        # ETag/Last-Modified y tamaño: evita bajar ~37 MB cada noche.
+        uses: actions/cache@v4
+        with:
+          path: .cache/gtfs
+          key: gtfs-zip-${{ github.run_id }}
+          restore-keys: gtfs-zip-
+
+      - name: Sync official GTFS (DTPR)
+        # Descarga el GTFS oficial de Gran Concepción y regenera gtfs-*.generated.ts
+        # y la grilla de cobertura. Si el feed no cambió, solo cambia coverage
+        # (marca de tiempo) y nada más.
+        run: npm run sync:gtfs
 
       - name: Detect changes
         id: diff
@@ -49,12 +62,13 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           commit-message: |
-            data: refresh OSM-backed datasets (automated sync)
+            data: refresh OSM and GTFS datasets (automated sync)
           branch: data/auto-sync
           delete-branch: true
-          title: 'data: refresh OSM-backed datasets'
+          title: 'data: refresh OSM and GTFS datasets'
           body: |
-            Automated nightly sync from OpenStreetMap (Overpass API) and Wikidata.
+            Automated nightly sync from OpenStreetMap (Overpass API), Wikidata and
+            the official GTFS of Gran Concepción published by DTPR.
 
             Refreshed:
             - `src/data/biotren.generated.ts` (railway=station, operator=EFE)
@@ -66,9 +80,12 @@ jobs:
             - `src/data/greenspace.generated.ts` (parques, plazas, reservas)
             - `src/data/schools.generated.ts` (establecimientos educacionales)
             - `src/data/interurban-routes.generated.ts` (corredores 201/401/411/421)
+            - `src/data/gtfs-*.generated.ts` (GTFS oficial DTPR: paraderos, recorridos,
+              horarios y pasadas por paradero; solo cambian si cambió el feed)
+            - `src/data/coverage.generated.ts` (grilla de cobertura de paraderos)
 
-            Los datasets GTFS (`gtfs-*.generated.ts`) NO se tocan aquí: requieren
-            sqlite3 + `GTFS_DB_PATH` y se sincronizan en local con `npm run sync:gtfs`.
+            Si cambió el GTFS, revisar `GTFS_CONCEPCION_SOURCE` en
+            `gtfs-stops.generated.ts` (versión, vigencia y sha256 del zip).
 
             Review the diff: if it looks reasonable, merge and Vercel will redeploy.
           labels: |
