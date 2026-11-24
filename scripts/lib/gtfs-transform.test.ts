@@ -7,6 +7,7 @@ import {
   finishTripWindow,
   formatGtfsDate,
   mostCommonKey,
+  correctTripHeadsign,
   parseHeadsign,
   routeNetwork,
   routeOperator,
@@ -195,5 +196,32 @@ describe('utilidades', () => {
     expect(feedVersionDate('Gran Concepción20250228')).toBe('2025-02-28');
     expect(feedVersionDate('v1')).toBeNull();
     expect(cleanText('  Los Manios esq Av San Pedro  Norte ')).toBe('Los Manios esq Av San Pedro Norte');
+  });
+});
+
+describe('correctTripHeadsign', () => {
+  it('endereza la variante cruzada y deja el destino', () => {
+    expect(correctTripHeadsign('02AD', 0, 'Hualpensan 02D - Mirador del Pacífico')).toBe(
+      'Hualpensan 02A - Mirador del Pacífico',
+    );
+    expect(correctTripHeadsign('02AD', 1, 'Hualpensan 02A - Parque empresarial Biobio')).toBe(
+      'Hualpensan 02D - Parque empresarial Biobio',
+    );
+  });
+
+  it('en 23BS endereza también el destino', () => {
+    expect(correctTripHeadsign('23BS', 0, 'San Pedro del Mar 23S - Av. Michaihue')).toBe(
+      'San Pedro del Mar 23B - Terminal Collao',
+    );
+    expect(correctTripHeadsign('23BS', 1, 'San Pedro del Mar 23B - Terminal Collao')).toBe(
+      'San Pedro del Mar 23S - Av. Michaihue',
+    );
+  });
+
+  it('no toca letreros que ya vienen bien ni otras líneas', () => {
+    expect(correctTripHeadsign('23BS', 0, 'San Pedro del Mar 23B - Terminal Collao')).toBe(
+      'San Pedro del Mar 23B - Terminal Collao',
+    );
+    expect(correctTripHeadsign('10AN', 0, 'Vía Láctea 10A - Centinela')).toBe('Vía Láctea 10A - Centinela');
   });
 });

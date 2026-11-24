@@ -45,6 +45,7 @@ import {
   finishTripWindow,
   formatGtfsDate,
   mostCommonKey,
+  correctTripHeadsign,
   parseHeadsign,
   routeNetwork,
   routeOperator,
@@ -235,11 +236,12 @@ for (const row of await readGtfsRows(zip.path, entries, 'trips.txt')) {
   }
   const serviceIdx = serviceIndex.get(row.service_id.trim()) ?? -1;
   if (serviceIdx === -1) tripsWithoutCalendar += 1;
-  const headsign = cleanText(row.trip_headsign);
+  const directionId = direction === '1' ? 1 : 0;
+  const headsign = correctTripHeadsign(route.ref, directionId, cleanText(row.trip_headsign));
   tripById.set(row.trip_id.trim(), {
     route,
     serviceIdx,
-    directionId: direction === '1' ? 1 : 0,
+    directionId,
     headsign,
     shapeId: (row.shape_id ?? '').trim(),
     routeHeadsignIdx: internRouteHeadsign(route.routeId, headsign),

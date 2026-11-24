@@ -67,6 +67,32 @@ export function parseHeadsign(headsign: string): ParsedHeadsign {
   };
 }
 
+// Letreros cruzados entre sentidos en el feed DTPR «Gran Concepción20250228».
+// En 02AD y 02KP solo la variante está invertida (el viaje del sentido 0 dice
+// "02D - Mirador del Pacífico" y termina en Pingueral, que es la 02A); en
+// 23BS está invertido el letrero completo (el sentido 0 termina en el
+// Terminal Collao pero dice "23S - Av. Michaihue"). Lo confirman el orden de
+// letras del código (la primera es el sentido 0), los paraderos extremos de
+// cada sentido y la red que publica la app de Transapp/DTPR (nov-2026).
+// Solo se corrige si el letrero viene cruzado: un feed corregido pasa tal cual.
+const CROSSED_HEADSIGNS: Readonly<Record<string, { destinations?: readonly [string, string] }>> = {
+  '02AD': {},
+  '02KP': {},
+  '23BS': { destinations: ['Terminal Collao', 'Av. Michaihue'] },
+};
+
+export function correctTripHeadsign(ref: string, directionId: 0 | 1, headsign: string): string {
+  const fix = CROSSED_HEADSIGNS[ref];
+  const pair = /^(\d{2})([A-Z])([A-Z])$/.exec(ref);
+  if (!fix || !pair) return headsign;
+  const parsed = parseHeadsign(headsign);
+  const expected = pair[1] + (directionId === 0 ? pair[2] : pair[3]);
+  const crossed = pair[1] + (directionId === 0 ? pair[3] : pair[2]);
+  if (parsed.variant !== crossed) return headsign;
+  const destination = fix.destinations?.[directionId] ?? parsed.destination;
+  return `${parsed.operator ? `${parsed.operator} ` : ''}${expected} - ${destination}`;
+}
+
 /** Operador de la ruta solo si todos los headsigns que lo traen coinciden. */
 export function routeOperator(headsigns: Iterable<string>): string | undefined {
   const operators = new Set<string>();
