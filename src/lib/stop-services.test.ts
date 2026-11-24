@@ -112,6 +112,27 @@ describe('próximas pasadas desde ventanas GTFS', () => {
     expect(snapshot.services[0]).toMatchObject({ variant: undefined, destination: HEADSIGN_10A });
   });
 
+  it('no ofrece el sentido que termina en el paradero', () => {
+    const stop = (id: string): Stop => ({ id, name: id, lat: 0, lng: 0 });
+    const terminal: Route = {
+      ...ROUTE,
+      directions: [
+        { ...ROUTE.directions![0], stops: [stop('a'), stop('terminal')] },
+        { ...ROUTE.directions![1], stops: [stop('terminal'), stop('a')] },
+      ],
+    };
+    const snapshot = getNextStopServices({
+      stopId: 'terminal',
+      routes: [terminal],
+      windows: [
+        ['gtfs-route-835', HEADSIGN_10A, 0, 400, 1300, 10, 91],
+        ['gtfs-route-835', HEADSIGN_10N, 0, 360, 1260, 10, 91],
+      ],
+      now: new Date('2026-05-18T08:00:00-04:00'),
+    });
+    expect(snapshot.services.map((s) => s.variant)).toEqual(['10N']);
+  });
+
   it('ignora ventanas de recorridos que no son del paradero', () => {
     const snapshot = getNextStopServices({
       stopId: 'gtfs-stop-1',

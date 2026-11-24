@@ -12,7 +12,8 @@
 // conserva la salida desde la cabecera para no presentarla como dato oficial.
 //
 // En ambos casos se muestra una fila por recorrido y sentido: la más próxima,
-// sea de hoy o del día siguiente.
+// sea de hoy o del día siguiente. Donde un sentido termina no se lista: el
+// vehículo llega, pero no sale hacia su destino.
 
 import { STATIC_SERVICE_PATTERNS, type StaticServiceDay } from '@/data/static-service-patterns';
 import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
@@ -78,9 +79,15 @@ function keepEarliest(best: Map<string, NextStopService>, key: string, service: 
   if (!current || service.scheduledMin < current.scheduledMin) best.set(key, service);
 }
 
+/** El paradero es el último del sentido: la micro llega y termina, no sale hacia su destino. */
+export function endsAt(stops: readonly Stop[], stopId: string): boolean {
+  return stops.length > 1 && stops[stops.length - 1].id === stopId;
+}
+
 function windowServices(
   windows: readonly StopServiceWindow[],
   routes: ReadonlyMap<string, Route | undefined>,
+  stopId: string,
   day: number,
   nowMin: number,
 ): NextStopService[] {
@@ -92,6 +99,7 @@ function windowServices(
     const next = nextFromWindow(first, last, headway, nowMin, dayOffset);
     if (next === null) continue;
     const direction = routes.get(routeId)?.directions?.find((d) => d.headsign === headsign);
+    if (direction && endsAt(direction.stops, stopId)) continue;
     keepEarliest(best, `${routeId}|${headsign}`, {
       routeId,
       variant: direction?.variant,
@@ -190,7 +198,7 @@ export function getNextStopServices(input: {
   const { day, minutes: nowMin } = chileClock(input.now);
   const routesById = new Map(input.routes.map((route) => [route.id, route] as const));
   const services = [
-    ...windowServices(input.windows ?? [], routesById, day, nowMin),
+    ...windowServices(input.windows ?? [], routesById, input.stopId, day, nowMin),
     ...staticServices(input.routes, input.stopId, day, nowMin),
   ];
   services.sort((a, b) => a.scheduledMin - b.scheduledMin || a.routeId.localeCompare(b.routeId));

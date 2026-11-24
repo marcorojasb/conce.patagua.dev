@@ -6,7 +6,7 @@ import { SectionLabel } from '@/components/ui/section-label';
 import { RouteBadge } from '@/components/route-badge';
 import { ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
-import { compareRouteCodes, isInterurban, lineFamily, routeShortName } from '@/lib/route-labels';
+import { compareRouteCodes, isInterurban, lineFamily, matchesRouteQuery, routeShortName } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
 import type { Route } from '@/types/transport';
 
@@ -43,15 +43,6 @@ interface LineGroup {
 function kindOf(route: Route): Exclude<ListFilter, 'all'> {
   if (route.type === 'biotren') return 'biotren';
   return isInterurban(route) ? 'interurban' : 'micro';
-}
-
-function matchesQuery(route: Route, q: string): boolean {
-  if (!q) return true;
-  return (
-    route.code.toLowerCase().replace(/\s+/g, '').includes(q.replace(/\s+/g, '')) ||
-    route.name.toLowerCase().includes(q) ||
-    (route.operator?.toLowerCase().includes(q) ?? false)
-  );
 }
 
 function groupByLine(routes: Route[]): LineGroup[] {
@@ -104,7 +95,7 @@ export function Sidebar({
     return routes.filter(
       (r) =>
         (filter === 'all' || kindOf(r) === filter) &&
-        matchesQuery(r, q) &&
+        matchesRouteQuery(r, q) &&
         (!onlyOperatingNow || isRouteOperatingNow(r)),
     );
   }, [routes, filter, q, onlyOperatingNow, routesVersion]);

@@ -41,10 +41,19 @@ jobs:
           restore-keys: gtfs-zip-
 
       - name: Sync official GTFS (DTPR)
+        id: gtfs
         # Descarga el GTFS oficial de Gran Concepción y regenera gtfs-*.generated.ts
-        # y la grilla de cobertura. Si el feed no cambió, solo cambia coverage
-        # (marca de tiempo) y nada más.
+        # y la grilla de cobertura. Si el feed no cambió, ninguno de esos
+        # archivos cambia. Un problema de dtpr.gob.cl (404, 5xx, zip inválido)
+        # deja este paso en rojo pero no bloquea el PR con los datos OSM.
+        continue-on-error: true
         run: npm run sync:gtfs
+
+      - name: Discard GTFS output after a failed sync
+        if: steps.gtfs.outcome == 'failure'
+        run: |
+          echo "::warning title=GTFS DTPR::Falló el sync del GTFS oficial; el PR solo trae los datos OSM."
+          git checkout -- 'src/data/gtfs-*.generated.ts' src/data/coverage.generated.ts
 
       - name: Detect changes
         id: diff
@@ -86,6 +95,7 @@ jobs:
 
             Si cambió el GTFS, revisar `GTFS_CONCEPCION_SOURCE` en
             `gtfs-stops.generated.ts` (versión, vigencia y sha256 del zip).
+            ${{ steps.gtfs.outcome == 'failure' && '**Atención:** en esta corrida falló el sync del GTFS oficial (ver el log de Actions); los archivos GTFS quedaron como estaban.' || '' }}
 
             Review the diff: if it looks reasonable, merge and Vercel will redeploy.
           labels: |

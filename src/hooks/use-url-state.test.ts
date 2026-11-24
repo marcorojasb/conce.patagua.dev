@@ -25,10 +25,10 @@ describe('URL state', () => {
   });
 
   it('reads route and layer query params', () => {
-    stubWindow('?route=gtfs-route-1&paraderos=1&pois=1&aire=0');
+    stubWindow('?route=gtfs-route-833&paraderos=1&pois=1&aire=0');
 
     expect(readUrlState()).toMatchObject({
-      route: 'gtfs-route-1',
+      route: 'gtfs-route-833',
       paraderos: true,
       pois: true,
       aire: false,
@@ -36,13 +36,21 @@ describe('URL state', () => {
   });
 
   it('reads and clears focus params without dropping other params', () => {
-    const history = stubWindow('?focus=route:101&route=gtfs-route-1');
+    const history = stubWindow('?focus=route:10A&route=gtfs-route-835');
 
-    expect(readFocusParam()).toEqual({ kind: 'route', id: '101' });
+    expect(readFocusParam()).toEqual({ kind: 'route', id: '10A' });
 
     clearFocusParam();
 
-    expect(history.replaceState).toHaveBeenCalledWith(null, '', '/?route=gtfs-route-1');
-    expect(window.location.search).toBe('?route=gtfs-route-1');
+    expect(history.replaceState).toHaveBeenCalledWith(null, '', '/?route=gtfs-route-835');
+    expect(window.location.search).toBe('?route=gtfs-route-835');
+  });
+
+  it('keeps official codes with hyphens or encoded spaces intact in focus params', () => {
+    // App resuelve el código (o la variante de un sentido) con findRoute.
+    stubWindow('?focus=route:201-AU');
+    expect(readFocusParam()).toEqual({ kind: 'route', id: '201-AU' });
+    stubWindow('?focus=route:201%20AU');
+    expect(readFocusParam()).toEqual({ kind: 'route', id: '201 AU' });
   });
 });

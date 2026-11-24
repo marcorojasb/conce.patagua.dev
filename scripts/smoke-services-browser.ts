@@ -1,9 +1,35 @@
 import { spawn } from 'node:child_process';
 import { chromium, type Browser, type Page } from 'playwright';
+import { GTFS_BUS_ROUTES } from '../src/data/gtfs-bus-routes.generated.ts';
 import { stopInfoFixtures } from '../src/realtime/live-arrivals.fixtures.ts';
 
 const PORT = 5175;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
+
+// Visibles por defecto: Biotrén + interurbanos del GTFS oficial.
+const DEFAULT_VISIBLE_ROUTE_IDS = new Set([
+  'bt-l1',
+  'bt-l2',
+  ...GTFS_BUS_ROUTES.filter((r) => r.network?.startsWith('Interurbano')).map((r) => r.id),
+]);
+
+// Un paradero que solo toca el regreso (sentido 1) de un recorrido debe
+// listarlo igual. Se elige uno sin otros recorridos para que el código se lea.
+const stopRouteCount = new Map<string, number>();
+for (const r of GTFS_BUS_ROUTES) {
+  for (const id of new Set((r.directions ?? []).flatMap((d) => d.stopIds))) {
+    stopRouteCount.set(id, (stopRouteCount.get(id) ?? 0) + 1);
+  }
+}
+const returnOnlyStop = GTFS_BUS_ROUTES.flatMap((r) => {
+  const [first, second] = r.directions ?? [];
+  if (!first || !second || r.network?.startsWith('Interurbano')) return [];
+  const outbound = new Set(first.stopIds);
+  return second.stopIds
+    .filter((id) => !outbound.has(id) && stopRouteCount.get(id) === 1)
+    .map((stopId) => ({ stopId, code: r.ref }));
+})[0];
+if (!returnOnlyStop) throw new Error('No GTFS stop served only by a return direction');
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -115,9 +141,38 @@ try {
 
   await page.goto(`${BASE_URL}/?route=gtfs-route-833`, { waitUntil: 'load' });
   await waitForBody(page, /02A|Mirador del Pacífico/, 'GTFS route deep link');
+
+  // La variante de un sentido ("10A", lo que muestra la micro y cita el wiki)
+  // abre el recorrido oficial que la contiene (10AN), aunque llegue en el
+  // chunk diferido.
+  await page.goto(`${BASE_URL}/?focus=route:10A`, { waitUntil: 'load' });
+  await waitForBody(page, /10AN/, 'focus by direction variant 10A');
+  await page.waitForURL(/[?&]route=gtfs-route-835\b/, { timeout: 10_000 }).catch(() => {
+    throw new Error(`Expected ?focus=route:10A to select gtfs-route-835, URL is ${page.url()}`);
+  });
+
+  await page.goto(`${BASE_URL}/?stop=${returnOnlyStop.stopId}`, { waitUntil: 'load' });
+  await waitForBody(
+    page,
+    new RegExp(`\\b${returnOnlyStop.code}\\b`),
+    `stop ${returnOnlyStop.stopId} served only by the ${returnOnlyStop.code} return direction`,
+  );
+
+  // "Operando ahora" sigue el horario oficial por día: a las 08:30 de un
+  // lunes la 11C (solo 17:00–19:49) está fuera de horario y la 10AN no.
+  const sidebar = page.getByRole('complementary', { name: 'Recorridos' });
+  const sidebarSearch = sidebar.getByLabel('Buscar recorrido por número o destino');
+  for (const [code, expected] of [['11C', 'Fuera de horario ahora'], ['10AN', 'Operando ahora']] as const) {
+    await sidebarSearch.fill(code);
+    const row = sidebar.getByRole('button', { name: new RegExp(`^${code} `) }).first();
+    await row.locator(`[title="${expected}"]`).waitFor({ timeout: 10_000 }).catch(() => {
+      throw new Error(`Expected sidebar row ${code} to say "${expected}"`);
+    });
+  }
+  await sidebarSearch.fill('');
   await page.goto(`${BASE_URL}/?stop=gtfs-stop-37477`, { waitUntil: 'load' });
   await waitForBody(page, /Próximas pasadas|Cargando próximas pasadas programadas/, 'stop next services');
-  await waitForBody(page, /GTFS estático|Horarios estimados|Horas estimadas/, 'programmed stop services source copy');
+  await waitForBody(page, /GTFS oficial DTPR|programa publicado/, 'programmed stop services source copy');
   await page.locator('[data-live-state="live"]').waitFor({ timeout: 10_000 });
   await waitForBody(page, /Llegadas en vivo[\s\S]*62H[\s\S]*regreso[\s\S]*1 min/, 'live arrivals block');
   await waitForBody(page, /fuente no oficial/, 'live arrivals source disclaimer');
@@ -192,10 +247,17 @@ try {
     throw new Error('Expected at least one .vehicle-marker');
   }
   if (nonGtfsMarkers <= 0) {
-    throw new Error('Expected at least one non-GTFS .vehicle-marker');
+    throw new Error('Expected at least one Biotrén (non-GTFS) .vehicle-marker');
   }
-  if (markers !== nonGtfsMarkers) {
-    throw new Error(`Expected default scope to show only visible non-GTFS routes, got ${markers} markers / ${nonGtfsMarkers} non-GTFS.`);
+  if (markers === nonGtfsMarkers) {
+    throw new Error('Expected official interurban (GTFS) vehicles in the default scope.');
+  }
+  const markerRouteIds = await page
+    .locator('.vehicle-marker')
+    .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-route-id') ?? ''));
+  const outsideDefault = markerRouteIds.filter((id) => !DEFAULT_VISIBLE_ROUTE_IDS.has(id));
+  if (outsideDefault.length > 0) {
+    throw new Error(`Default scope drew vehicles of non-visible routes: ${[...new Set(outsideDefault)].join(', ')}`);
   }
   await page.getByRole('button', { name: 'Toda la red' }).click();
   await page.waitForFunction(
@@ -293,7 +355,7 @@ try {
   }
 
   console.log(
-    `Browser smoke OK: ${count.toLocaleString('es-CL')} visible-scope services, ${allScopeCount.toLocaleString('es-CL')} all-network services, map/wiki/focus/mobile checks.`,
+    `Browser smoke OK: ${count.toLocaleString('es-CL')} visible-scope services, ${allScopeCount.toLocaleString('es-CL')} all-network services, map/wiki/focus/variant/direction/mobile checks.`,
   );
 } catch (err) {
   console.error(serverOutput.trim());

@@ -91,6 +91,10 @@ interface ConceMapProps {
 export interface LiveVehicleMarker {
   arrival: LiveArrival & { position: { lat: number; lng: number } };
   color: string;
+  /** Código para mostrar ("20A", "401"); sin calce, el nombre de la fuente. */
+  label?: string;
+  /** Destino del sentido según el letrero oficial, si calza con el visor. */
+  destination?: string;
   /** Momento de la consulta que trajo la posición. */
   fetchedAt: number;
   now: number;
@@ -239,7 +243,7 @@ function midpointIcon(): L.DivIcon {
 // Micro con GPS real: cuadrada y con anillo, para que nunca se confunda con
 // las estimadas (redondas, borde punteado).
 function liveVehicleIcon(color: string, route: string): L.DivIcon {
-  const label = route.replace(/[^0-9A-Za-z]/g, '').slice(0, 5);
+  const label = route.replace(/[^0-9A-Za-z-]/g, '').slice(0, 6);
   return L.divIcon({
     className: 'live-vehicle-wrap',
     html: `<div class="live-vehicle-marker" style="--vehicle-bg:${color}" data-live-route="${label}"><span>${label}</span></div>`,
@@ -646,26 +650,32 @@ export function ConceMap({
         onSelect={onSelectSimulatedVehicle}
       />
 
-      {liveVehicles.map(({ arrival, color, fetchedAt, now }) => {
+      {liveVehicles.map(({ arrival, color, label, destination, fetchedAt, now }) => {
         const minutes = minutesUntil(arrival, now);
+        const code = label ?? arrival.route;
         return (
           <Marker
             key={`live-${arrival.tripId ?? arrival.plate ?? `${arrival.route}-${arrival.arrivalAt}`}`}
             position={[arrival.position.lat, arrival.position.lng]}
-            icon={liveVehicleIcon(color, arrival.route)}
+            icon={liveVehicleIcon(color, code)}
             keyboard={false}
             zIndexOffset={1000}
           >
             <LeafletTooltip direction="top" offset={[0, -12]} opacity={0.95} className="!text-[11px]">
               <span className="font-medium">
-                {arrival.route}
-                {arrival.direction ? ` ${DIRECTION_LABEL[arrival.direction]}` : ''}
+                {code}
+                {destination
+                  ? ` hacia ${destination}`
+                  : arrival.direction
+                    ? ` ${DIRECTION_LABEL[arrival.direction]}`
+                    : ''}
               </span>
               <br />
               <span className="font-semibold">GPS en vivo</span> · posición {formatAge(now - fetchedAt)}
               <br />
               {minutes === 0 ? 'Llegando al paradero' : `Llega en ${minutes} min`}
-              {arrival.distanceM != null && ` · a ${Math.round(arrival.distanceM)} m`}
+              {arrival.distanceM != null &&
+                ` · a ${arrival.distanceM < 1000 ? `${Math.round(arrival.distanceM)} m` : `${(arrival.distanceM / 1000).toFixed(1).replace('.', ',')} km`} en línea recta`}
               {arrival.plate && (
                 <>
                   <br />

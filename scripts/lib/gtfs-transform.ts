@@ -19,6 +19,24 @@ export function feedVersionDate(version: string | undefined): string | null {
   return match ? formatGtfsDate(match[1]) : null;
 }
 
+// Un stop_code de verdad es corto y lleva dígitos. En unos pocos paraderos
+// DTPR puso ahí las calles entre las que está ("Entre San Martin y Bulnes")
+// y un hito en stop_name ("Plaza de Armas"): eso es parte del nombre, no un
+// código.
+const STOP_CODE_RE = /^[A-Z]{0,4}-?\d+[A-Z]?$/i;
+
+export function stopNameAndRef(
+  stopName: string | undefined,
+  stopCode: string | undefined,
+  stopId: string,
+): { name: string; ref?: string } {
+  const name = cleanText(stopName);
+  const code = cleanText(stopCode);
+  if (!code) return { name: name || `Paradero ${stopId}` };
+  if (STOP_CODE_RE.test(code)) return { name: name || `Paradero ${code}`, ref: code };
+  return { name: name ? `${name} (${code})` : code };
+}
+
 // Código de variante que se ve en el letrero de la micro: "10P", "02K",
 // "B02", "201", "201-AU". "XXI" (Vía Siglo XXI) no califica: no tiene dígitos.
 const VARIANT_RE = /^[A-Z]?\d{1,3}[A-Z]{0,2}(?:-[A-Z]{1,2})?$/;

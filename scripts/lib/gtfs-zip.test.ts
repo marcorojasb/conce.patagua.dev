@@ -1,15 +1,19 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { crc32, deflateRawSync } from 'node:zlib';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
+  downloadGtfsZip,
   isSameRemoteFile,
   listZipEntries,
   parseCsv,
   parseGtfsTime,
   readGtfsRows,
   readZipEntry,
+  REQUIRED_GTFS_FILES,
 } from './gtfs-zip.ts';
 
 async function collect(source: Iterable<Uint8Array | string>): Promise<Array<Record<string, string>>> {
@@ -54,7 +58,12 @@ describe('parseCsv', () => {
   });
 
   it('completa con "" las columnas faltantes, recorta nombres de columna e ignora líneas en blanco', async () => {
-    expect(await collect([' trip_id , stop_id\n\nT1\n'])).toEqual([{ trip_id: 'T1', stop_id: '' }]);
+    expect(await collect([' trip_id , stop_id\n\nT1\n  \r\n'])).toEqual([{ trip_id: 'T1', stop_id: '' }]);
+  });
+
+  it('falla con bytes que no son UTF-8 en vez de inventar caracteres', async () => {
+    const latin1 = Buffer.from('stop_id,stop_name\n1,Vía Láctea\n', 'latin1');
+    await expect(collect([latin1])).rejects.toThrow(/no es UTF-8 válido/);
   });
 
   it('falla ante comillas sin cerrar o texto después de cerrarlas', async () => {
@@ -184,5 +193,46 @@ describe('lectura del zip', () => {
       for await (const chunk of readZipEntry(zipPath, entry)) void chunk;
     };
     await expect(read()).rejects.toThrow(/CRC-32/);
+  });
+});
+
+describe('downloadGtfsZip', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'gtfs-download-test-'));
+  const goodZip = makeZip(REQUIRED_GTFS_FILES.map((name) => ({ name, content: 'id\n1\n' })));
+  let body = goodZip;
+  let etag = '"v1"';
+  const server = createServer((req, res) => {
+    res.writeHead(200, { etag, 'content-length': body.length });
+    res.end(req.method === 'HEAD' ? undefined : body);
+  });
+  let url = '';
+  beforeAll(async () => {
+    await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+    url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/granconcepcion.zip`;
+  });
+  afterAll(() => {
+    server.closeAllConnections();
+    server.close();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it('no reemplaza la caché con una respuesta 200 que no es un GTFS', async () => {
+    const cacheDir = join(dir, 'cache');
+    expect((await downloadGtfsZip(url, cacheDir)).origin).toBe('download');
+    expect((await downloadGtfsZip(url, cacheDir)).origin).toBe('cache');
+
+    body = Buffer.from('<html>Sitio en mantención</html>');
+    etag = '"v2"';
+    await expect(downloadGtfsZip(url, cacheDir)).rejects.toThrow(/no entregó un GTFS válido/);
+    // Y la corrida siguiente vuelve a intentar en vez de reutilizar la página.
+    await expect(downloadGtfsZip(url, cacheDir)).rejects.toThrow(/no entregó un GTFS válido/);
+
+    body = makeZip([{ name: 'agency.txt', content: 'id\n1\n' }]);
+    etag = '"v3"';
+    await expect(downloadGtfsZip(url, cacheDir)).rejects.toThrow(/no trae calendar\.txt, routes\.txt/);
+
+    expect(readdirSync(cacheDir).sort()).toEqual(['granconcepcion.zip', 'granconcepcion.zip.json']);
+    expect(readFileSync(join(cacheDir, 'granconcepcion.zip')).equals(goodZip)).toBe(true);
+    expect(JSON.parse(readFileSync(join(cacheDir, 'granconcepcion.zip.json'), 'utf8')).etag).toBe('"v1"');
   });
 });

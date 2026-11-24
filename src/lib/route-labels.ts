@@ -26,6 +26,30 @@ export function routeCodeKey(code: string): string {
   return code.toUpperCase().replace(/[\s-]+/g, '').replace(/^0+(?=\d)/, '');
 }
 
+const fold = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+
+/**
+ * Búsqueda de recorridos por número —el código o la variante que muestra la
+ * micro en cada sentido ("10A" encuentra 10AN, "201 au" el 201-AU)—, por
+ * destino del letrero u operador. Sin tildes: "tome" encuentra Tomé.
+ */
+export function matchesRouteQuery(
+  route: Pick<Route, 'code' | 'name' | 'operator' | 'directions'>,
+  query: string,
+): boolean {
+  const q = fold(query.trim());
+  if (!q) return true;
+  const key = routeCodeKey(q);
+  const directions = route.directions ?? [];
+  const codes = [route.code, ...directions.flatMap((d) => (d.variant ? [d.variant] : []))];
+  return (
+    (key !== '' && codes.some((code) => routeCodeKey(code).startsWith(key))) ||
+    fold(route.name).includes(q) ||
+    directions.some((d) => fold(d.headsign).includes(q)) ||
+    fold(route.operator).includes(q)
+  );
+}
+
 /**
  * Número de línea al que pertenece una variante: "30Q" y "30B" son la línea
  * 30, "02A" la 2, "10 J" la 10. Así se agrupa en la lista: la gente conoce

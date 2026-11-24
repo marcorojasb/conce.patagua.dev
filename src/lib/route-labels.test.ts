@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { compareRouteCodes, isInterurban, lineFamily, routeCodeKey, routeShortName } from '@/lib/route-labels';
+import {
+  compareRouteCodes,
+  isInterurban,
+  lineFamily,
+  matchesRouteQuery,
+  routeCodeKey,
+  routeShortName,
+} from '@/lib/route-labels';
 import type { RouteDirection } from '@/types/transport';
 
 function direction(directionId: 0 | 1, destination: string): RouteDirection {
@@ -40,6 +47,39 @@ describe('routeCodeKey', () => {
     expect(routeCodeKey('10 J')).toBe('10J');
     expect(routeCodeKey('B02')).toBe('B02');
     expect(routeCodeKey('80J-Y')).toBe('80JY');
+  });
+});
+
+describe('matchesRouteQuery', () => {
+  const route10AN = {
+    code: '10AN',
+    name: 'Vía Láctea 10N - Los Bloques - Vía Láctea 10A - Centinela',
+    operator: 'Vía Láctea',
+    directions: [
+      { ...direction(0, 'Centinela'), variant: '10A', headsign: 'Vía Láctea 10A - Centinela' },
+      { ...direction(1, 'Los Bloques'), variant: '10N', headsign: 'Vía Láctea 10N - Los Bloques' },
+    ],
+  };
+  const route201AU = {
+    code: '201-AU',
+    name: '201-AU - Santa Juana - 201-AU - Concepción',
+    operator: 'Operador no registrado (GTFS)',
+    directions: [],
+  };
+
+  it('encuentra por código, variante de un sentido o código escrito de otra forma', () => {
+    expect(matchesRouteQuery(route10AN, '10an')).toBe(true);
+    expect(matchesRouteQuery(route10AN, '10A')).toBe(true);
+    expect(matchesRouteQuery(route10AN, '10 n')).toBe(true);
+    expect(matchesRouteQuery(route10AN, '10P')).toBe(false);
+    expect(matchesRouteQuery(route201AU, '201 au')).toBe(true);
+  });
+
+  it('encuentra por destino u operador sin importar tildes', () => {
+    expect(matchesRouteQuery(route10AN, 'centinela')).toBe(true);
+    expect(matchesRouteQuery(route10AN, 'via lactea')).toBe(true);
+    expect(matchesRouteQuery(route201AU, 'concepcion')).toBe(true);
+    expect(matchesRouteQuery(route201AU, 'tomé')).toBe(false);
   });
 });
 

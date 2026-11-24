@@ -30,6 +30,7 @@ import { isoDayOfWeek, useStopFrequency } from '@/hooks/use-stop-frequency';
 import { chileClock } from '@/lib/chile-time';
 import { routeShortName } from '@/lib/route-labels';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
+import { endsAt } from '@/lib/stop-services';
 import { cn } from '@/lib/utils';
 import type { Route, RouteDirection, StopWithRoutes } from '@/types/transport';
 
@@ -276,20 +277,35 @@ function RoutesSection({
                 <RouteBadge code={r.code} color={r.color} />
                 <div className="min-w-0 flex-1">
                   {here.length > 0 ? (
-                    here.map((d) => (
-                      <div
-                        key={d.directionId}
-                        className="flex min-w-0 items-center gap-1 text-sm font-medium"
-                      >
-                        {d.variant && d.variant !== r.code && (
-                          <span className="shrink-0 font-mono text-[12px] text-muted-foreground">
-                            {d.variant}
-                          </span>
-                        )}
-                        <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" aria-label="hacia" />
-                        <span className="truncate">{d.destination ?? d.headsign}</span>
-                      </div>
-                    ))
+                    here.map((d) => {
+                      const ends = endsAt(d.stops, stopId);
+                      return (
+                        <div
+                          key={d.directionId}
+                          className={cn(
+                            'flex min-w-0 items-center gap-1 text-sm',
+                            ends ? 'text-muted-foreground' : 'font-medium',
+                          )}
+                        >
+                          {d.variant && d.variant !== r.code && (
+                            <span className="shrink-0 font-mono text-[12px] text-muted-foreground">
+                              {d.variant}
+                            </span>
+                          )}
+                          {ends ? (
+                            <span className="truncate">termina aquí</span>
+                          ) : (
+                            <>
+                              <ArrowRight
+                                className="size-3.5 shrink-0 text-muted-foreground"
+                                aria-label="hacia"
+                              />
+                              <span className="truncate">{d.destination ?? d.headsign}</span>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })
                   ) : (
                     <div className="truncate text-sm font-medium">{routeShortName(r)}</div>
                   )}

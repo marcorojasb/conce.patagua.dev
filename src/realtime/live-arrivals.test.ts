@@ -10,11 +10,17 @@ import {
   minutesUntil,
   nextPollDelay,
   parseStopInfo,
+  indexLiveServices,
+  liveServiceLabel,
+  liveServiceName,
+  liveStopCode,
   serviceNotes,
-  splitServicio,
+  visorServiceName,
   type StopInfoSnapshot,
 } from '@/realtime/live-arrivals';
 import { stopInfoFixtures } from '@/realtime/live-arrivals.fixtures';
+import { GTFS_BUS_ROUTES } from '@/data/gtfs-bus-routes.generated';
+import type { Route, RouteDirection } from '@/types/transport';
 
 const NOW = Date.UTC(2026, 10, 24, 12, 0, 0);
 const NOW_S = NOW / 1000;
@@ -30,8 +36,33 @@ describe('parseStopInfo', () => {
   it('lee predicciones, routeInfo y alertas, ordenadas por llegada', () => {
     const snap = snapshotOf(fixtures.withBuses);
     expect(snap.arrivals.map((a) => a.route)).toEqual(['62H', '30Q', '30Q']);
-    expect(snap.arrivals[0]).toMatchObject({ direction: 'R', distanceM: 210.7, timeLabel: 'Llegando' });
-    expect(snap.routeInfo[0]).toEqual({ route: '30Q', direction: 'I', msg: 'Bus pasa cada 10 min aprox.' });
+    expect(snap.arrivals[0]).toMatchObject({
+      direction: 'I',
+      distanceM: 210.7,
+      timeLabel: 'Llegando',
+      plate: 'PRUE20',
+      tripId: '62H_I_L_1325',
+      position: { lat: -36.8262, lng: -73.0497 },
+      realtime: true,
+    });
+    // "11R" es una variante urbana: la R no es el sentido.
+    expect(snap.routeInfo[0]).toEqual({ route: '11R', direction: null, msg: 'Bus pasa cada 10 minutos aprox.' });
+  });
+
+  it('no inventa posición ni patente con datos fuera de rango', () => {
+    const base = { route: '10A', direction: 'I', epochTime: NOW_S + 60 };
+    const snap = snapshotOf({
+      predictions: [
+        { ...base, latitude: 0, longitude: 0, licensePlate: '???' },
+        { ...base, latitude: -33.45, longitude: -70.66, licensePlate: 'ab-cd-12' },
+        { ...base, latitude: '-36.82', longitude: '-73.05', licensePlate: 'AB1234', realtime: false },
+      ],
+    });
+    expect(snap.arrivals.map((a) => [a.position, a.plate, a.realtime])).toEqual([
+      [null, null, true],
+      [null, 'ABCD12', true],
+      [{ lat: -36.82, lng: -73.05 }, 'AB1234', false],
+    ]);
   });
 
   it('trata como falla lo que no se entiende, no como "sin micros"', () => {
@@ -64,7 +95,7 @@ describe('parseStopInfo', () => {
   it('pasa las alertas HTML a texto plano', () => {
     const snap = snapshotOf(fixtures.noLiveData);
     expect(snap.alerts).toEqual([
-      '🚨 Alerta GPS: Servicio 201 (Ida) no está enviando información en tiempo real.',
+      '🚨 Alerta GPS: Servicio 201AU (Regreso) no está enviando información en tiempo real.',
     ]);
     expect(htmlToText('<b>a&nbsp;&amp;&#233;</b><script>x</script>')).toBe('a &éx');
   });
@@ -103,15 +134,21 @@ describe('minutos', () => {
 });
 
 describe('servicio y notas', () => {
-  it('separa el sentido pegado al servicio', () => {
-    expect(splitServicio('201I')).toEqual({ route: '201', direction: 'I' });
-    expect(splitServicio('201AUR')).toEqual({ route: '201AU', direction: 'R' });
-    expect(splitServicio('X')).toEqual({ route: 'X', direction: null });
+  it('nombre canónico: el sentido solo va pegado en interurbanas y Biobús', () => {
+    expect(liveServiceName('201AU', 'R')).toBe('201AUR');
+    expect(liveServiceName('201 AU', 'I')).toBe('201AUI');
+    expect(liveServiceName('401', 'I')).toBe('401I');
+    expect(liveServiceName('401I', 'I')).toBe('401I');
+    expect(liveServiceName('b02', 'R')).toBe('B02R');
+    expect(liveServiceName('401Y', 'I')).toBe('401Y');
+    expect(liveServiceName('11R', 'R')).toBe('11R');
+    expect(liveServiceName('63I', 'I')).toBe('63I');
+    expect(liveServiceName('02C-Y', null)).toBe('02CY');
   });
 
   it('sin micros + alerta GPS + frecuencia → "sin datos en vivo · pasa cada …"', () => {
     expect(serviceNotes(snapshotOf(fixtures.noLiveData))).toEqual([
-      { route: '201', direction: 'I', text: 'sin datos en vivo · pasa cada 1 hora aprox.' },
+      { route: '201AUR', direction: 'R', text: 'sin datos en vivo · pasa cada 1 hora aprox.' },
     ]);
   });
 
@@ -119,12 +156,25 @@ describe('servicio y notas', () => {
     const notes = serviceNotes(
       snapshotOf({
         predictions: [],
-        routeInfo: [{ servicio: '201R', msg: 'Bus pasa cada 1 hora aprox.' }],
+        routeInfo: [{ servicio: '201AUI', msg: 'Bus pasa cada 1 hora aprox.' }],
         alerts: fixtures.noLiveData.alerts,
       }),
     );
-    expect(notes).toContainEqual({ route: '201', direction: 'R', text: 'pasa cada 1 hora aprox.' });
-    expect(notes).toContainEqual({ route: '201', direction: 'I', text: 'sin datos en vivo' });
+    expect(notes).toContainEqual({ route: '201AUI', direction: 'I', text: 'pasa cada 1 hora aprox.' });
+    expect(notes).toContainEqual({ route: '201AUR', direction: 'R', text: 'sin datos en vivo' });
+  });
+
+  it('la alerta urbana da el sentido a la nota de routeInfo', () => {
+    const notes = serviceNotes(
+      snapshotOf({
+        predictions: [],
+        routeInfo: [{ servicio: '10K', msg: 'Bus pasa cada 25 minutos aprox.' }],
+        alerts: [{ message: 'Alerta GPS: Servicio 10K (Regreso) no está enviando información en tiempo real.' }],
+      }),
+    );
+    expect(notes).toEqual([
+      { route: '10K', direction: 'R', text: 'sin datos en vivo · pasa cada 25 minutos aprox.' },
+    ]);
   });
 
   it('la nota se mantiene hasta que vuelven las predicciones de esa línea', () => {
@@ -134,7 +184,7 @@ describe('servicio y notas', () => {
     expect(state.notes).toHaveLength(1);
     state = applySnapshot(
       state,
-      snapshotOf({ predictions: [{ route: '201', direction: 'I', epochTime: NOW_S + 600 }] }, NOW + 60_000),
+      snapshotOf({ predictions: [{ route: '201AU', direction: 'R', epochTime: NOW_S + 600 }] }, NOW + 60_000),
     );
     expect(state.notes).toEqual([]);
   });
@@ -192,5 +242,71 @@ describe('estados', () => {
     expect(formatAge(4_000)).toBe('recién');
     expect(formatAge(43_000)).toBe('hace 40 s');
     expect(formatAge(185_000)).toBe('hace 3 min');
+  });
+});
+
+describe('calce con el visor', () => {
+  const dir = (directionId: 0 | 1, variant?: string, destination?: string): RouteDirection =>
+    ({ directionId, variant, destination, headsign: '', path: [], stops: [] }) as RouteDirection;
+  const route = (code: string, directions: RouteDirection[]): Route =>
+    ({ id: `r-${code}`, code, color: '#123456', directions }) as unknown as Route;
+
+  it('stopCode de la fuente = "P" + stop_id del GTFS', () => {
+    expect(liveStopCode('gtfs-stop-37520')).toBe('P37520');
+    expect(liveStopCode('gtfs-stop-PV42001')).toBe('PPV42001');
+    expect(liveStopCode('gtfs-stop-39592')).toBe('PF-00004');
+    expect(liveStopCode('osm-node-123')).toBeNull();
+  });
+
+  it('nombre de la fuente para cada sentido del visor', () => {
+    expect(visorServiceName('20VA', dir(1, '20A'))).toBe('20A');
+    expect(visorServiceName('23BS', dir(0, '23S'))).toBe('23S');
+    expect(visorServiceName('201-AU', dir(1))).toBe('201AUR');
+    expect(visorServiceName('B02', dir(0))).toBe('B02I');
+    expect(visorServiceName('401Y', dir(0))).toBe('401Y');
+    expect(visorServiceName('02C-Y', dir(1, '02C'))).toBe('02CY');
+    expect(visorServiceName('302', dir(0))).toBeNull();
+    expect(visorServiceName('L1', dir(0))).toBeNull();
+  });
+
+  it('etiqueta: variante del letrero o código de la línea', () => {
+    const index = indexLiveServices([
+      route('20VA', [dir(0, '20V'), dir(1, '20A', 'Lomas')]),
+      route('401', [dir(0), dir(1)]),
+      route('02C-Y', [dir(1, '02C')]),
+      route('18PY', [dir(0, '18P'), dir(1, '18Y')]),
+    ]);
+    expect(index.get('20A')?.direction.destination).toBe('Lomas');
+    expect(liveServiceLabel('20A', index.get('20A'))).toBe('20A');
+    expect(liveServiceLabel('401I', index.get('401I'))).toBe('401');
+    expect(liveServiceLabel('02CY', index.get('02CY'))).toBe('02C-Y');
+    expect(liveServiceLabel('18Y', index.get('18Y'))).toBe('18Y');
+    expect(liveServiceLabel('421R', undefined)).toBe('421');
+    expect(liveServiceLabel('20F', undefined)).toBe('20F');
+  });
+
+  // Servicios que publica la fuente (tabla de recorridos de Transapp del
+  // 21-nov-2026, leída el 24-nov-2026). Los que no calzan son servicios que
+  // el GTFS de DTPR (feb-2025) no tiene con ese nombre.
+  const SOURCE_SERVICES = `02A 02CY 02D 02H 02K 02L 02P 10A 10B 10C 10D 10J 10K 10L 10M 10N 10O 10P 10T
+    11C 11E 11F 11M 11Q 11R 12A 12B 12Q 12R 13G 13S 14H 14T 14U 14Z 16H 16I 16K 16V 17A 17C 17M 17O 17W
+    17X 18P 18Y 201AUI 201AUR 201I 201R 20A 20F 20J 20L 20M 20N 20T 20V 20W 20Z 21B 21Q 22C 22D 22E 22J
+    22K 22N 22O 22R 22S 22X 23A 23B 23C 23E 23H 23L 23N 23P 23Q 23S 23T 23V 24F 24M 24R 24T 30B 30C 30D
+    30E 30H 30M 30N 30Q 30R 30Z 31D 31F 32E 32G 32J 32K 401I 401R 401Y 40B 40G 40N 40P 411I 411R 41C 41Q
+    41R 41V 421I 421R 42F 42H 42U 42W 43J 43T 44A 44B 44E 44U 50P 50S 50SY 50U 50Y 52A 52D 56O 56V 60K
+    60L 60M 60X 60Y 60Z 62H 62M 62N 62O 63B 63F 63G 63H 63I 63K 63L 63P 65D 65E 65F 65Q 65R 65S 70F 70FY
+    70G 70H 70HY 70I 70J 70K 71I 71Z 72J 72K 72W 72Z 80B 80H 80J 80JY 80K 80L 80Q 80V 80Z 81C 81S 90E
+    90J 90X 90Y B02I B02R`.split(/\s+/);
+
+  it('cada servicio de la fuente calza con un sentido del GTFS, salvo los nuevos', () => {
+    const routes = GTFS_BUS_ROUTES.map((r) => route(r.ref, (r.directions ?? []) as unknown as RouteDirection[]));
+    const index = indexLiveServices(routes);
+    expect(SOURCE_SERVICES).toHaveLength(194);
+    const unmatched = SOURCE_SERVICES.filter((name) => !index.has(name));
+    expect(unmatched).toEqual(['02H', '02L', '20F', '20N', '30H', '30Z', '50SY', '70FY', '70HY', '80B', '80V']);
+    // Y ningún sentido del visor queda con dos nombres de la fuente.
+    const names = routes.flatMap((r) => (r.directions ?? []).map((d) => visorServiceName(r.code, d)));
+    const used = names.filter((n): n is string => n != null);
+    expect(new Set(used).size).toBe(used.length);
   });
 });

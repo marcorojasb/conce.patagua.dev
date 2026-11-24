@@ -11,13 +11,17 @@
 //   fecha, y el rango declarado queda en GTFS_CONCEPCION_SOURCE.
 // - Horas vacías en stop_times (paradas no timepoint) se ignoran; nunca se
 //   leen como 00:00.
+// - El zip y los CSV se leen en streaming, pero lo que se acumula por viaje y
+//   por paradero crece con las filas de stop_times (~400 MB de RSS con los
+//   4,5 M de filas de la versión 20250228).
 //
 // Run: npm run sync:gtfs   (después corre sync:coverage)
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
+import { pointToSegmentMeters } from './lib/geo.ts';
 import { simplify } from './lib/simplify.ts';
+import { writeGeneratedFiles } from './lib/write-generated.ts';
 import {
   compareStopServiceWindows,
   renderScheduleModule,
@@ -46,6 +50,7 @@ import {
   routeOperator,
   serviceDaysFromCalendar,
   serviceWindow,
+  stopNameAndRef,
   type TripDropReason,
   type TripWindowAccumulator,
 } from './lib/gtfs-transform.ts';
@@ -61,6 +66,9 @@ import type {
 
 const SCRIPT = 'scripts/sync-gtfs-official.ts';
 const SIMPLIFY_TOLERANCE = 0.00008;
+// Un paradero de un sentido a más de esto de su trazado es un defecto del feed
+// (39514 en 63FH/63LB y 40344 en 70F, sentido 1, en la versión 20250228).
+const FAR_STOP_METERS = 100;
 const OUT = {
   stops: resolve('src/data/gtfs-stops.generated.ts'),
   routes: resolve('src/data/gtfs-bus-routes.generated.ts'),
@@ -156,15 +164,15 @@ for (const row of await readGtfsRows(zip.path, entries, 'stops.txt')) {
     continue;
   }
   const sourceId = row.stop_id.trim();
-  const code = cleanText(row.stop_code);
+  const { name, ref } = stopNameAndRef(row.stop_name, row.stop_code, sourceId);
   paraderos.push({
     id: stopKey(sourceId),
     source: 'gtfs',
     sourceId,
-    name: cleanText(row.stop_name) || `Paradero ${code || sourceId}`,
+    name,
     lat: round7(lat),
     lng: round7(lng),
-    ...(code ? { ref: code } : {}),
+    ...(ref ? { ref } : {}),
   });
 }
 paraderos.sort((a, b) => byText(a.sourceId!, b.sourceId!));
@@ -268,8 +276,11 @@ for await (const row of readGtfsTable(zip.path, entries, 'stop_times.txt')) {
     unknownStopTimes += 1;
     continue;
   }
-  const sequence = Number(row.stop_sequence);
-  if (!Number.isInteger(sequence)) throw new Error(`stop_times.txt: stop_sequence="${row.stop_sequence}"`);
+  const sequenceText = row.stop_sequence.trim();
+  const sequence = Number(sequenceText);
+  if (sequenceText === '' || !Number.isInteger(sequence)) {
+    throw new Error(`stop_times.txt: stop_sequence="${row.stop_sequence}" en ${row.trip_id}`);
+  }
   const arrival = parseGtfsTime(row.arrival_time);
   const departure = parseGtfsTime(row.departure_time);
   trip.stopPairs.push(sequence, stopIdx);
@@ -315,7 +326,9 @@ for (const trip of tripById.values()) {
   tripsByRoute.set(trip.route.routeId, list);
 }
 
-function buildDirection(directionId: 0 | 1, trips: TripInfo[]): BusRouteDirection | null {
+const farStops: string[] = [];
+
+function buildDirection(route: RouteInfo, directionId: 0 | 1, trips: TripInfo[]): BusRouteDirection | null {
   const patternCounts = new Map<string, number>();
   const patterns = new Map<TripInfo, string>();
   for (const trip of trips) {
@@ -339,6 +352,18 @@ function buildDirection(directionId: 0 | 1, trips: TripInfo[]): BusRouteDirectio
       ? shape.map(([, lat, lng]) => [lat, lng])
       : stopIdxs.map((idx) => [paraderos[idx].lat, paraderos[idx].lng]);
   if (rawPath.length < 2) return null;
+  if (shape.length > 1) {
+    for (const idx of new Set(stopIdxs)) {
+      const stop: LatLngTuple = [paraderos[idx].lat, paraderos[idx].lng];
+      let distance = Infinity;
+      for (let i = 1; i < rawPath.length; i++) {
+        distance = Math.min(distance, pointToSegmentMeters(stop, rawPath[i - 1], rawPath[i]));
+      }
+      if (distance > FAR_STOP_METERS) {
+        farStops.push(`${paraderos[idx].sourceId} a ${Math.round(distance)} m de ${route.ref} sentido ${directionId}`);
+      }
+    }
+  }
 
   const headsign = mostCommonKey(headsignCounts) ?? '';
   const { variant, destination } = parseHeadsign(headsign);
@@ -364,7 +389,7 @@ const sortedRoutes = Array.from(routeById.values()).sort(
 for (const route of sortedRoutes) {
   const trips = tripsByRoute.get(route.routeId) ?? [];
   const directions = ([0, 1] as const)
-    .map((directionId) => buildDirection(directionId, trips.filter((t) => t.directionId === directionId)))
+    .map((directionId) => buildDirection(route, directionId, trips.filter((t) => t.directionId === directionId)))
     .filter((direction) => direction !== null);
   if (directions.length === 0) {
     skippedRoutes += 1;
@@ -624,24 +649,24 @@ const servicesFile = renderStopServicesModule({
   },
 });
 
-// Las marcas de tiempo cambian en cada corrida; si es lo único distinto no se
-// reescribe el archivo, así el sync diario no abre PRs vacíos.
-const TIMESTAMP_RE = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/g;
-function writeGenerated(path: string, content: string): { path: string; raw: number; gzip: number; changed: boolean } {
-  const previous = existsSync(path) ? readFileSync(path, 'utf8') : null;
-  const changed = previous?.replace(TIMESTAMP_RE, '') !== content.replace(TIMESTAMP_RE, '');
-  if (changed) writeFileSync(path, content);
-  return { path, raw: Buffer.byteLength(content), gzip: gzipSync(content).length, changed };
-}
-
-const written = [
-  writeGenerated(OUT.stops, stopsFile),
-  writeGenerated(OUT.routes, routesFile),
-  writeGenerated(OUT.barrel, barrelFile),
-  writeGenerated(OUT.schedule, scheduleFile),
-  writeGenerated(OUT.frequency, frequencyFile),
-  writeGenerated(OUT.services, servicesFile),
+// Mismo feed → archivos intactos (las marcas de tiempo no cuentan como
+// cambio). Ojo: los sync OSM reescriben en cada corrida, así que el PR diario
+// se abre o actualiza igual; esto solo evita ruido en los archivos GTFS.
+const outputs = [
+  { path: OUT.stops, content: stopsFile },
+  { path: OUT.routes, content: routesFile },
+  { path: OUT.barrel, content: barrelFile },
+  { path: OUT.schedule, content: scheduleFile },
+  { path: OUT.frequency, content: frequencyFile },
+  { path: OUT.services, content: servicesFile },
 ];
+const changedOutputs = writeGeneratedFiles(outputs);
+const written = outputs.map(({ path, content }, i) => ({
+  path,
+  raw: Buffer.byteLength(content),
+  gzip: gzipSync(content).length,
+  changed: changedOutputs[i],
+}));
 
 // ---------------------------------------------------------------------------
 // 8. Resumen
@@ -673,6 +698,10 @@ const anomalies = [
   [untimedStopTimes, 'filas de stop_times sin hora (ignoradas en frecuencia/ventanas)'],
 ] as const;
 for (const [count, label] of anomalies) if (count > 0) console.log(`  ! ${count.toLocaleString('en-US')} ${label}`);
+if (farStops.length > 0) {
+  console.log(`  ! paraderos a más de ${FAR_STOP_METERS} m del trazado de su sentido (defecto del feed):`);
+  for (const line of farStops) console.log(`    ${line}`);
+}
 console.log(`  stop_times: ${stopTimeRows.toLocaleString('en-US')} filas · ventanas por paradero: ${totalWindows.toLocaleString('en-US')}`);
 console.log('Archivos:');
 for (const file of written) {

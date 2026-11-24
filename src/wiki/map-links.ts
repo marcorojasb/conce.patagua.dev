@@ -13,12 +13,13 @@
 // El índice se organiza por tipo de entidad porque cada uno tiene su
 // propio identificador estable:
 //
-//   - `byRouteCode`   → claves como "201", "L1", "10A" (route.code en el
-//                       visor — proviene de GTFS routes.txt `route_short_name`
-//                       o de la relación OSM). Útil para enlazar artículos
-//                       de un recorrido específico desde la sheet del mapa.
+//   - `byRouteCode`   → claves como "201", "201-AU", "L1" (route.code en el
+//                       visor — `route_short_name` del GTFS oficial DTPR, o
+//                       L1/L2 de Biotrén). Se comparan sin espacios, guiones
+//                       ni ceros a la izquierda (`routeCodeKey`), así que
+//                       "201 AU" y "201-AU" son la misma clave.
 //   - `byCorridorId`  → claves arbitrarias (slug-style) para corredores
-//                       interurbanos que no tienen route en el GTFS urbano
+//                       interurbanos que no están en el GTFS oficial
 //                       (ver `src/data/interurban-corridors.ts`).
 //   - `byTerminalId`  → IDs del dataset `terminals.generated.ts`
 //                       (ej.: `osm-way-135488014` = Estación Intermodal
@@ -40,29 +41,30 @@
 // edición manual es más simple y evita conflictos con el agente que
 // escribe contenido en paralelo.
 
+import { routeCodeKey } from '../lib/route-labels.ts';
+
 const MAP_WIKI_LINKS = {
   byRouteCode: {
     // Biotrén (OSM + EFE). Ambas líneas comparten el artículo operativo.
     L1: 'biotren',
     L2: 'biotren',
-    // Servicios licitados con artículo dedicado. Los códigos "201" y
-    // "401"/"411"/"421" se enchufan contra rutas nativas interurbanas
-    // servidas desde `src/data/interurban-routes.generated.ts` (trazado
-    // digitalizado desde OSM, paraderos OSM citados). El visor las trata
-    // como cualquier urbana y muestra el botón "Ver en el wiki →" porque
-    // hay match en este mapa.
+    // Interurbanos que la DTPR publica en el mismo GTFS oficial que la red
+    // urbana: la ficha del recorrido muestra "Ver en el wiki →" para ellos.
     '201': 'ruta-201-santa-juana',
-    '201 AU': 'ruta-201-santa-juana',
-    // Servicios del Perímetro de Exclusión de Tomé (op. 2022). Los tres
-    // apuntan al mismo artículo del corredor Concepción ↔ Tomé que los
-    // documenta como familia de Transportes Tomé.
+    '201-AU': 'ruta-201-santa-juana',
+    // Perímetro de Exclusión de Tomé (op. 2022): todos al artículo del
+    // corredor Concepción ↔ Tomé.
     '401': 'concepcion-tome',
+    '401Y': 'concepcion-tome',
     '411': 'concepcion-tome',
     '421': 'concepcion-tome',
+    // Lota ↔ Concepción por la Ruta 160.
+    '302': 'concepcion-coronel-lota',
+    '304': 'concepcion-coronel-lota',
   } as Record<string, string>,
 
-  // Corredores interurbanos sin shape GTFS (pins en interurban-corridors.ts).
-  // 201 y Tomé migraron a rutas nativas; Florida / Yumbel viven acá.
+  // Corredores interurbanos sin GTFS (pins en interurban-corridors.ts):
+  // Florida y Yumbel.
   byCorridorId: {
     'concepcion-florida': 'concepcion-florida',
     'concepcion-yumbel': 'concepcion-yumbel',
@@ -87,9 +89,13 @@ const MAP_WIKI_LINKS = {
 /** Expuesto para tests y el validador de MapLinks (no mutar). */
 export const MAP_WIKI_LINK_INDEX = MAP_WIKI_LINKS;
 
-/** Devuelve el slug del artículo wiki para un código de ruta (ej. "201"). */
+const SLUG_BY_ROUTE_CODE_KEY = new Map(
+  Object.entries(MAP_WIKI_LINKS.byRouteCode).map(([code, slug]) => [routeCodeKey(code), slug]),
+);
+
+/** Devuelve el slug del artículo wiki para un código de ruta (ej. "201", "201 AU"). */
 export function findWikiSlugForRouteCode(code: string): string | null {
-  return MAP_WIKI_LINKS.byRouteCode[code] ?? null;
+  return SLUG_BY_ROUTE_CODE_KEY.get(routeCodeKey(code)) ?? null;
 }
 
 /** Devuelve el slug del artículo wiki para un corredor interurbano. */

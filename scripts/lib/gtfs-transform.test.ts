@@ -12,6 +12,7 @@ import {
   routeOperator,
   serviceDaysFromCalendar,
   serviceWindow,
+  stopNameAndRef,
   URBAN_NETWORK,
 } from './gtfs-transform.ts';
 import { parseGtfsTime } from './gtfs-zip.ts';
@@ -69,6 +70,27 @@ describe('routeNetwork', () => {
     expect(routeNetwork('304')).toBe('Interurbano Lota');
     expect(routeNetwork('B02')).toBe(URBAN_NETWORK);
     expect(routeNetwork('10CP')).toBe(URBAN_NETWORK);
+  });
+});
+
+describe('stopNameAndRef', () => {
+  it('sin stop_code (casi todo el feed) no hay ref', () => {
+    expect(stopNameAndRef('Av. Collao -  Juan Bosco', '', '50040')).toEqual({ name: 'Av. Collao - Juan Bosco' });
+    expect(stopNameAndRef('', undefined, '50040')).toEqual({ name: 'Paradero 50040' });
+  });
+
+  it('un código de verdad queda como ref', () => {
+    expect(stopNameAndRef('Los Carrera', 'PC1234', '1')).toEqual({ name: 'Los Carrera', ref: 'PC1234' });
+    expect(stopNameAndRef('', '1506365', '1')).toEqual({ name: 'Paradero 1506365', ref: '1506365' });
+  });
+
+  it('las calles que DTPR dejó en stop_code van al nombre', () => {
+    expect(stopNameAndRef('Plaza de Armas', 'Entre San Martin y Bulnes', '38646')).toEqual({
+      name: 'Plaza de Armas (Entre San Martin y Bulnes)',
+    });
+    expect(stopNameAndRef('', 'entre Av. Collao esq Juan Bosco', '35203')).toEqual({
+      name: 'entre Av. Collao esq Juan Bosco',
+    });
   });
 });
 

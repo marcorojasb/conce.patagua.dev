@@ -81,7 +81,7 @@ Para agregar un enlace mapa→wiki: crear o identificar el artículo, añadir la
 
 ## Scripts de sincronización de datos (`sync:*`)
 
-Los datasets en `src/data/*.generated.ts` no se escriben a mano: se generan a partir de fuentes externas (Overpass/OSM, GTFS, Wikidata) corriendo los scripts correspondientes en `scripts/`. Un workflow de GitHub Actions (`.github/workflows/sync-data.yml`) corre `sync:osm` y `sync:gtfs` (lo mismo que `sync:all`) diariamente (06:30 UTC) y abre un PR automático si hay cambios en `src/data`.
+Los datasets en `src/data/*.generated.ts` no se escriben a mano: se generan a partir de fuentes externas (Overpass/OSM, GTFS, Wikidata) corriendo los scripts correspondientes en `scripts/`. Un workflow de GitHub Actions (`.github/workflows/sync-data.yml`) corre `sync:osm` y `sync:gtfs` (lo mismo que `sync:all`) diariamente (06:30 UTC) y abre un PR automático si hay cambios en `src/data`. Si falla el paso del GTFS (por ejemplo, dtpr.gob.cl caído), el PR igual se abre con los datos OSM y los archivos GTFS quedan como estaban.
 
 | Script | Fuente | Genera |
 |---|---|---|
@@ -100,10 +100,10 @@ Los datasets en `src/data/*.generated.ts` no se escriben a mano: se generan a pa
 
 `sync:gtfs` (`scripts/sync-gtfs-official.ts`) no necesita credenciales ni binarios del sistema: descarga el zip oficial y lo lee en streaming con Node (`stop_times.txt` pesa ~300 MB descomprimido). Detalles:
 
-- **Fuente**: `GTFS_URL` (por defecto `https://dtpr.gob.cl/wp-content/uploads/2025/12/granconcepcion.zip`). El zip queda en `.cache/gtfs/` (ignorado por git) y se reutiliza mientras el servidor informe el mismo ETag/Last-Modified y tamaño. Con `GTFS_ZIP_PATH=/ruta/al.zip` se lee un zip local sin descargar. Detrás de un proxy HTTPS, Node ≥ 22.21 necesita `NODE_USE_ENV_PROXY=1`.
+- **Fuente**: `GTFS_URL` (por defecto `https://dtpr.gob.cl/wp-content/uploads/2025/12/granconcepcion.zip`). El zip queda en `.cache/gtfs/` (ignorado por git) y se reutiliza mientras el servidor informe el mismo ETag/Last-Modified y tamaño; una descarga que no es un zip GTFS completo falla sin reemplazar la caché. Con `GTFS_ZIP_PATH=/ruta/al.zip` se lee un zip local sin descargar. Detrás de un proxy HTTPS, Node ≥ 22.21 necesita `NODE_USE_ENV_PROXY=1`.
 - **Vigencia**: la versión publicada (`feed_version` "Gran Concepción20250228") declara calendario 2024-01-01 a 2025-12-31 y no hay una posterior. Los días de servicio salen de los flags de `calendar.txt` sin filtrar por fecha; el rango declarado, la URL, el sha256 y la fecha de descarga quedan en `GTFS_CONCEPCION_SOURCE`.
 - **Horas**: las horas vacías de `stop_times` (paradas que no son timepoint) se ignoran, nunca se leen como 00:00. Un viaje va de la primera salida con hora a la última llegada con hora; solo se descartan viajes rotos (sin horas, duración ≤ 0 o > 6 h) y el script los cuenta por ruta en su resumen.
-- **Formato**: horarios y ventanas por paradero se guardan compactos (ver `scripts/lib/gtfs-encode.ts`) y se decodifican al cargar el módulo, para respetar los presupuestos de `bundle:budget`. Si lo único que cambia es la marca de tiempo, los archivos no se reescriben.
+- **Formato**: horarios y ventanas por paradero se guardan compactos (ver `scripts/lib/gtfs-encode.ts`) y se decodifican al cargar el módulo, para respetar los presupuestos de `bundle:budget`. Si lo único que cambia es la marca de tiempo, ni estos archivos ni `coverage.generated.ts` se reescriben.
 
 El resto de los scripts (Overpass, Wikidata) no requieren credenciales: usan endpoints públicos con un User-Agent identificándose como este proyecto.
 

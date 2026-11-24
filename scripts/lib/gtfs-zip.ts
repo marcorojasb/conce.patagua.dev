@@ -21,6 +21,7 @@ import {
   mkdirSync,
   readFileSync,
   renameSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
@@ -34,6 +35,9 @@ import { crc32, createInflateRaw } from 'node:zlib';
 export const DEFAULT_GTFS_URL = 'https://dtpr.gob.cl/wp-content/uploads/2025/12/granconcepcion.zip';
 
 const USER_AGENT = 'gtfs-sync/1.0 (node)';
+
+/** Lo que scripts/sync-gtfs-official.ts necesita sí o sí del zip. */
+export const REQUIRED_GTFS_FILES = ['calendar.txt', 'routes.txt', 'stops.txt', 'trips.txt', 'stop_times.txt'];
 
 export interface GtfsZipFile {
   path: string;
@@ -158,10 +162,21 @@ export async function downloadGtfsZip(url: string, cacheDir: string): Promise<Gt
     },
     createWriteStream(partPath),
   );
-  const expected = res.headers.get('content-length');
-  if (expected !== null && Number(expected) !== size) {
-    throw new Error(`Descarga incompleta de ${url}: ${size} de ${expected} bytes`);
+  // Se valida antes de tocar la caché: una página de error servida con HTTP
+  // 200 quedaría guardada y el HEAD de la corrida siguiente la daría por buena.
+  try {
+    const expected = res.headers.get('content-length');
+    if (expected !== null && Number(expected) !== size) {
+      throw new Error(`descarga incompleta, ${size} de ${expected} bytes`);
+    }
+    const entries = await listZipEntries(partPath);
+    const missing = REQUIRED_GTFS_FILES.filter((name) => !entries.has(name));
+    if (missing.length > 0) throw new Error(`el zip no trae ${missing.join(', ')}`);
+  } catch (error) {
+    rmSync(partPath, { force: true });
+    throw new Error(`GET ${url} no entregó un GTFS válido: ${(error as Error).message}`);
   }
+  rmSync(metaPath, { force: true });
   renameSync(partPath, zipPath);
 
   const meta: CacheMeta = {
@@ -368,12 +383,21 @@ function splitCsvRecords(text: string, final: boolean, out: string[][]): number 
 
 /**
  * Registros CSV como objetos `{ columna: valor }` según la primera fila.
- * Las columnas faltantes quedan como '' y las líneas en blanco se ignoran.
+ * Las columnas faltantes quedan como '' y las líneas en blanco (o solo con
+ * espacios) se ignoran.
  */
 export async function* parseCsv(
   source: AsyncIterable<Uint8Array | string> | Iterable<Uint8Array | string>,
 ): AsyncGenerator<Record<string, string>> {
-  const decoder = new TextDecoder('utf-8');
+  // fatal: un feed en Latin-1 debe fallar, no llenar los nombres de "V�a".
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  const decode = (bytes?: Uint8Array) => {
+    try {
+      return bytes ? decoder.decode(bytes, { stream: true }) : decoder.decode();
+    } catch {
+      throw new Error('CSV: el archivo no es UTF-8 válido (¿viene en Latin-1?)');
+    }
+  };
   let header: string[] | null = null;
   let pending = '';
   let atStart = true;
@@ -381,7 +405,7 @@ export async function* parseCsv(
 
   function* drain(): Generator<Record<string, string>> {
     for (const fields of batch) {
-      if (fields.length === 1 && fields[0] === '') continue;
+      if (fields.length === 1 && fields[0].trim() === '') continue;
       if (!header) {
         header = fields.map((name) => name.trim());
         continue;
@@ -394,7 +418,7 @@ export async function* parseCsv(
   }
 
   for await (const chunk of source) {
-    let text = typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true });
+    let text = typeof chunk === 'string' ? chunk : decode(chunk);
     if (atStart && text.length > 0) {
       // TextDecoder ya descarta el BOM de los bytes; esto cubre entradas string.
       if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
@@ -404,7 +428,7 @@ export async function* parseCsv(
     pending = pending.slice(splitCsvRecords(pending, false, batch));
     yield* drain();
   }
-  pending += decoder.decode();
+  pending += decode();
   splitCsvRecords(pending, true, batch);
   yield* drain();
 }

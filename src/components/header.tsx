@@ -15,6 +15,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import { ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
+import { matchesRouteQuery, routeShortName } from '@/lib/route-labels';
 import { ARTICLES } from '@/wiki/articles';
 import type { Theme } from '@/types/transport';
 
@@ -61,11 +62,7 @@ export function Header({
     () => {
       void routesVersion;
       return ROUTES.filter(
-        (r) =>
-          !q ||
-          r.name.toLowerCase().includes(q) ||
-          r.code.toLowerCase().includes(q) ||
-          ROUTE_TYPES[r.type].label.toLowerCase().includes(q),
+        (r) => matchesRouteQuery(r, q) || ROUTE_TYPES[r.type].label.toLowerCase().includes(q),
       );
     },
     [q, routesVersion],
@@ -193,10 +190,13 @@ export function Header({
             <CommandGroup heading="Recorridos">
               {routeMatches.map((r) => {
                 const Icon = ROUTE_TYPES[r.type].Icon;
+                // cmdk vuelve a filtrar por `value`: lleva también las
+                // variantes de cada sentido para que "10A" encuentre 10AN.
+                const variants = (r.directions ?? []).map((d) => d.variant ?? '').join(' ');
                 return (
                   <CommandItem
                     key={r.id}
-                    value={`${r.code} ${r.name}`}
+                    value={`${r.code} ${variants} ${r.name}`}
                     onSelect={() => {
                       setCommandOpen(false);
                       setQuery('');
@@ -210,7 +210,7 @@ export function Header({
                       <Icon className="size-[13px]" />
                     </span>
                     <span className="font-medium">{r.code}</span>
-                    <span className="truncate text-muted-foreground">{r.name}</span>
+                    <span className="truncate text-muted-foreground">{routeShortName(r)}</span>
                     <CommandShortcut>{ROUTE_TYPES[r.type].short}</CommandShortcut>
                   </CommandItem>
                 );

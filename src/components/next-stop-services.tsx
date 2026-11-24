@@ -163,7 +163,7 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
         </ul>
         <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
           Hora de Chile según el programa publicado (GTFS oficial DTPR en micros, itinerario EFE
-          en Biotrén), no según el GPS. Una fila por línea y sentido; las marcadas aprox. se
+          en Biotrén); no vienen del GPS. Una fila por línea y sentido; las marcadas aprox. se
           proyectan desde el intervalo típico del paradero o la distancia a la cabecera.
         </p>
       </>

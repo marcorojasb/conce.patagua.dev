@@ -38,13 +38,15 @@ import {
   type NextDeparture,
 } from '@/lib/route-schedule-summary';
 import { formatServiceClock } from '@/lib/stop-services';
-import { isInterurban } from '@/lib/route-labels';
+import { isInterurban, routeShortName } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
 import type { LatLngTuple, Route, RouteSchedule, Stop } from '@/types/transport';
 
 interface RouteDetailSheetProps {
   open: boolean;
   route: Route | null;
+  /** Sentido pedido (p. ej. la variante "10A" de la URL); sin él, el primero. */
+  directionId?: 0 | 1;
   onOpenChange: (open: boolean) => void;
   onFocusRoute: () => void;
   onDeselectRoute: () => void;
@@ -256,6 +258,11 @@ function pathKilometers(path: LatLngTuple[]): number {
   return km;
 }
 
+/** "hacia Nonguén" → "Hacia Nonguén" (título de la ficha). */
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
 /** "2025-12-31" → "31-12-2025". */
 function formatIsoDate(iso: string): string {
   const [y, m, d] = iso.split('-');
@@ -271,6 +278,7 @@ const FEED_PROGRAM_DATE = (() => {
 export function RouteDetailSheet({
   open,
   route,
+  directionId,
   onOpenChange,
   onFocusRoute,
   onDeselectRoute,
@@ -285,10 +293,11 @@ export function RouteDetailSheet({
   const [pickedDirection, setPickedDirection] = useState<{ routeId: string; key: string } | null>(
     null,
   );
+  const requestedKey = route && directionId !== undefined ? `${route.id}#${directionId}` : undefined;
   const directionKey =
     pickedDirection && pickedDirection.routeId === route?.id
       ? pickedDirection.key
-      : directions[0]?.key;
+      : (directions.find((d) => d.key === requestedKey) ?? directions[0])?.key;
 
   const panelChrome = useMemo(() => {
     if (!route) return null;
@@ -353,7 +362,7 @@ export function RouteDetailSheet({
     <FloatingInfoPanel
       open={open}
       onClose={() => onOpenChange(false)}
-      title={route.name}
+      title={capitalize(routeShortName(route))}
       description={route.operator}
       scroll={false}
       eyebrow={panelChrome.eyebrow}
@@ -661,7 +670,9 @@ function TodayCards({
         value={summary.departures}
         detail={
           bothWays
-            ? `${data.estimated ? 'estimadas' : 'programadas'} · ambos sentidos`
+            ? data.estimated
+              ? 'estimadas, 2 sentidos'
+              : 'en ambos sentidos'
             : data.estimated
               ? 'estimadas hoy'
               : 'programadas hoy'
