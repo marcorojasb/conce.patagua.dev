@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import {
   departuresByHour,
   summarizeDay,
   summarizeToday,
+  summarizeWindowsDay,
+  summarizeWindowsToday,
 } from '@/lib/route-schedule-summary';
 import type { RouteSchedule, ScheduledTrip } from '@/types/transport';
 
@@ -136,5 +139,43 @@ describe('departuresByHour', () => {
     const hours = departuresByHour([a, b], 0);
     expect(hours[8]).toBe(2);
     expect(hours[0]).toBe(1);
+  });
+});
+
+describe('ventanas de paso (respaldo sin viajes)', () => {
+  // Lunes a viernes 06:00–23:30 cada 20 min (57 pasadas); el sábado solo
+  // trae una ventana 00:00–00:00 sin horas reales.
+  const WINDOWS: StopServiceWindow[] = [
+    ...[0, 1, 2, 3, 4].map(
+      (day): StopServiceWindow => ['gtfs-route-1', 'Centro', day, 360, 1410, 20, 57],
+    ),
+    ['gtfs-route-1', 'Centro', 5, 0, 0, 0, 1],
+  ];
+
+  it('resume el día con la ventana e ignora las de 00:00 sin horas', () => {
+    expect(summarizeWindowsDay(WINDOWS, 0)).toEqual({
+      first: 360,
+      last: 1410,
+      departures: 57,
+      medianHeadway: 20,
+    });
+    expect(summarizeWindowsDay(WINDOWS, 5).departures).toBe(0);
+  });
+
+  it('dentro de la ventana opera con su intervalo y no inventa la próxima salida', () => {
+    const summary = summarizeWindowsToday(WINDOWS, MONDAY_0830);
+    expect(summary.operatingNow).toBe(true);
+    expect(summary.headwayNow).toBe(20);
+    expect(summary.nextDeparture).toBeNull();
+  });
+
+  it('fuera de la ventana da la primera pasada siguiente', () => {
+    const early = summarizeWindowsToday(WINDOWS, new Date('2026-05-18T04:00:00-04:00'));
+    expect(early.operatingNow).toBe(false);
+    expect(early.headwayNow).toBeNull();
+    expect(early.nextDeparture).toEqual({ minutes: 360, dayOffset: 0 });
+
+    const friday = summarizeWindowsToday(WINDOWS, new Date('2026-05-22T23:45:00-04:00'));
+    expect(friday.nextDeparture).toEqual({ minutes: 360, dayOffset: 3 });
   });
 });

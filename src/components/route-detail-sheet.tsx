@@ -27,13 +27,18 @@ import {
   type StaticServiceDirection,
   type StaticServicePattern,
 } from '@/data/static-service-patterns';
+import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import { WikiLinkButton } from '@/components/wiki-link';
 import { chileClock } from '@/lib/chile-time';
 import {
   departuresByHour,
   summarizeDay,
   summarizeToday,
+  summarizeWindowsDay,
+  summarizeWindowsToday,
+  type DayServiceSummary,
   type NextDeparture,
+  type RouteTodaySummary,
 } from '@/lib/route-schedule-summary';
 import { formatServiceClock } from '@/lib/stop-services';
 import { cn } from '@/lib/utils';
@@ -63,6 +68,17 @@ function loadSchedules(): Promise<Record<string, RouteSchedule>> {
   return schedulesPromise;
 }
 
+// Respaldo para los recorridos GTFS que el extractor de horarios dejó sin
+// viajes: sus ventanas de paso por paradero. Es el mismo chunk (~330 KB gz)
+// que usa la ficha de paradero, así que solo se pide para esos recorridos.
+let stopWindowsPromise: Promise<Record<string, StopServiceWindow[]>> | null = null;
+function loadStopWindows(): Promise<Record<string, StopServiceWindow[]>> {
+  stopWindowsPromise ??= import('@/data/gtfs-stop-services.generated').then(
+    (mod) => mod.STOP_SERVICE_WINDOWS,
+  );
+  return stopWindowsPromise;
+}
+
 const PATTERNS_BY_ROUTE = new Map<string, StaticServicePattern[]>();
 for (const pattern of STATIC_SERVICE_PATTERNS) {
   const list = PATTERNS_BY_ROUTE.get(pattern.routeId) ?? [];
@@ -75,13 +91,31 @@ interface ScheduleDirection {
   schedules: RouteSchedule[];
 }
 
-interface RouteScheduleData {
-  /** Todos los sentidos juntos (para contar salidas). */
-  all: RouteSchedule[];
-  /** Solo en patrones estáticos: el GTFS no separa sentidos en este dataset. */
-  directions: ScheduleDirection[];
-  /** Reconstruido desde una frecuencia publicada, no viajes programados uno a uno. */
-  estimated: boolean;
+type RouteScheduleData =
+  | {
+      kind: 'trips';
+      /** Todos los sentidos juntos (para contar salidas). */
+      all: RouteSchedule[];
+      /** Solo en patrones estáticos: el GTFS no separa sentidos en este dataset. */
+      directions: ScheduleDirection[];
+      /** Reconstruido desde una frecuencia publicada, no viajes programados uno a uno. */
+      estimated: boolean;
+    }
+  | {
+      /** Sin viajes uno a uno: ventana de paso por el primer paradero. */
+      kind: 'windows';
+      windows: StopServiceWindow[];
+      originName: string;
+    };
+
+function todaySummary(data: RouteScheduleData, now: Date): RouteTodaySummary {
+  return data.kind === 'trips'
+    ? summarizeToday(data.all, now)
+    : summarizeWindowsToday(data.windows, now);
+}
+
+function daySummary(data: RouteScheduleData, day: number): DayServiceSummary {
+  return data.kind === 'trips' ? summarizeDay(data.all, day) : summarizeWindowsDay(data.windows, day);
 }
 
 function scheduleForRoute(
@@ -103,10 +137,15 @@ function scheduleForRoute(
     }
     const directions = [...byDirection.values()];
     if (directions.length === 0) return null;
-    return { all: directions.flatMap((d) => d.schedules), directions, estimated: true };
+    return {
+      kind: 'trips',
+      all: directions.flatMap((d) => d.schedules),
+      directions,
+      estimated: true,
+    };
   }
   const schedule = index[routeId];
-  return schedule ? { all: [schedule], directions: [], estimated: false } : null;
+  return schedule ? { kind: 'trips', all: [schedule], directions: [], estimated: false } : null;
 }
 
 type ScheduleState =
@@ -114,9 +153,17 @@ type ScheduleState =
   | { status: 'error'; retry: () => void }
   | { status: 'ready'; data: RouteScheduleData | null };
 
-function useRouteSchedule(routeId: string | undefined): ScheduleState {
+function useRouteSchedule(route: Route | null, active: boolean): ScheduleState {
   const [index, setIndex] = useState<Record<string, RouteSchedule> | null>(null);
+  const [stopWindows, setStopWindows] = useState<Record<string, StopServiceWindow[]> | null>(
+    null,
+  );
   const [failed, setFailed] = useState(false);
+  const routeId = active ? route?.id : undefined;
+  const origin = route?.stops[0];
+  const needsWindows = Boolean(
+    index && origin && routeId?.startsWith('gtfs-route-') && !index[routeId],
+  );
 
   useEffect(() => {
     if (!routeId || index || failed) return undefined;
@@ -134,10 +181,37 @@ function useRouteSchedule(routeId: string | undefined): ScheduleState {
     };
   }, [routeId, index, failed]);
 
+  useEffect(() => {
+    if (!needsWindows || stopWindows || failed) return undefined;
+    let cancelled = false;
+    loadStopWindows()
+      .then((loaded) => {
+        if (!cancelled) setStopWindows(loaded);
+      })
+      .catch(() => {
+        stopWindowsPromise = null;
+        if (!cancelled) setFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [needsWindows, stopWindows, failed]);
+
   return useMemo<ScheduleState>(() => {
-    if (index && routeId) return { status: 'ready', data: scheduleForRoute(routeId, index) };
-    return failed ? { status: 'error', retry: () => setFailed(false) } : { status: 'loading' };
-  }, [failed, index, routeId]);
+    if (failed) return { status: 'error', retry: () => setFailed(false) };
+    if (!routeId || !index) return { status: 'loading' };
+    const own = scheduleForRoute(routeId, index);
+    if (own || !needsWindows || !origin) return { status: 'ready', data: own };
+    if (!stopWindows) return { status: 'loading' };
+    const windows = (stopWindows[origin.id] ?? []).filter((w) => w[0] === routeId);
+    const hasService = [0, 1, 2, 3, 4, 5, 6].some(
+      (day) => summarizeWindowsDay(windows, day).departures > 0,
+    );
+    return {
+      status: 'ready',
+      data: hasService ? { kind: 'windows', windows, originName: origin.name } : null,
+    };
+  }, [failed, index, needsWindows, origin, routeId, stopWindows]);
 }
 
 /** Hora actual que avanza sola mientras la ficha está abierta. */
@@ -221,7 +295,7 @@ export function RouteDetailSheet({
   onDeselectRoute,
   onSelectStop,
 }: RouteDetailSheetProps) {
-  const schedule = useRouteSchedule(open ? route?.id : undefined);
+  const schedule = useRouteSchedule(route, open);
   const now = useNow(open);
   const lengthKm = useMemo(() => (route ? pathKilometers(route.path) : 0), [route]);
 
@@ -462,8 +536,10 @@ function TodayCards({
   now: Date;
   routeCard: ReactNode;
 }) {
-  const summary = summarizeToday(data.all, now);
+  const summary = todaySummary(data, now);
   const range = formatRange(summary.first, summary.last);
+  const directions = data.kind === 'trips' ? data.directions.length : 1;
+  const estimated = data.kind === 'trips' && data.estimated;
   const next = summary.nextDeparture ? formatNext(summary.nextDeparture, summary.day) : null;
 
   let nowValue: string;
@@ -473,8 +549,13 @@ function TodayCards({
     nowDetail = next ? `próxima salida ${next}` : 'sin más salidas';
   } else if (summary.operatingNow) {
     nowValue = summary.headwayNow ? `cada ~${formatHeadway(summary.headwayNow)}` : 'En servicio';
-    nowDetail = next ? `próxima ${next}` : 'sin más salidas';
-    if (summary.headwayNow && data.directions.length > 1) nowDetail = `por sentido · ${nowDetail}`;
+    // Con ventanas de paso no se conoce cada salida, pero sí hasta cuándo hay.
+    nowDetail = next
+      ? `próxima ${next}`
+      : summary.last !== null
+        ? `hasta las ${formatServiceClock(summary.last)}`
+        : 'sin más salidas';
+    if (summary.headwayNow && directions > 1) nowDetail = `por sentido · ${nowDetail}`;
   } else {
     nowValue = 'Sin servicio';
     nowDetail = next ? `próxima ${next}` : 'sin salidas programadas';
@@ -491,9 +572,9 @@ function TodayCards({
         label="Salidas"
         value={summary.departures}
         detail={
-          data.directions.length > 1
-            ? `${data.estimated ? 'estimadas' : 'programadas'} · ambos sentidos`
-            : data.estimated
+          directions > 1
+            ? `${estimated ? 'estimadas' : 'programadas'} · ambos sentidos`
+            : estimated
               ? 'estimadas hoy'
               : 'programadas hoy'
         }
@@ -550,12 +631,14 @@ function SourceNote({ route, schedule }: { route: Route; schedule: ScheduleState
   }
 
   if (route.id.startsWith('gtfs-route-')) {
-    const hasSchedule = schedule.status === 'ready' && schedule.data !== null;
+    const kind = schedule.status === 'ready' ? schedule.data?.kind : undefined;
     return (
       <Notice icon={<Info />}>
-        {hasSchedule
+        {kind === 'trips'
           ? 'Recorrido, paraderos y horario programado del GTFS estático Gran Concepción (Subsecretaría de Transportes). Cada salida es un viaje planificado desde su cabecera; no son llegadas en vivo.'
-          : 'Recorrido y paraderos del GTFS estático Gran Concepción (Subsecretaría de Transportes).'}
+          : kind === 'windows'
+            ? 'Recorrido, paraderos y horario programado del GTFS estático Gran Concepción (Subsecretaría de Transportes), resumido en su primer paradero porque el feed trae horas incompletas en algunos viajes. No son llegadas en vivo.'
+            : 'Recorrido y paraderos del GTFS estático Gran Concepción (Subsecretaría de Transportes).'}
       </Notice>
     );
   }
@@ -609,8 +692,7 @@ function ScheduleTab({
   const data = schedule.data;
   const day = representativeDay(group, clock.day);
   const isToday = day === clock.day;
-  const daySummary = summarizeDay(data.all, day);
-  const hourly = departuresByHour(data.all, day);
+  const summary = daySummary(data, day);
   const currentHour = isToday ? Math.floor(clock.minutes / 60) : null;
   const dayLabel = isToday ? `hoy, ${DAY_NAMES[day]}` : DAY_NAMES[day];
 
@@ -645,34 +727,44 @@ function ScheduleTab({
         ))}
       </div>
 
-      {daySummary.departures === 0 ? (
+      {summary.departures === 0 ? (
         <Notice icon={<Info />}>
           Sin salidas el {DAY_NAMES[day]}.
         </Notice>
       ) : (
         <>
           <div className="grid grid-cols-4 gap-2">
-            <MiniStat label="Primera" value={formatServiceClock(daySummary.first ?? 0)} />
-            <MiniStat label="Última" value={formatServiceClock(daySummary.last ?? 0)} />
-            <MiniStat label="Salidas" value={String(daySummary.departures)} />
+            <MiniStat label="Primera" value={formatServiceClock(summary.first ?? 0)} />
+            <MiniStat label="Última" value={formatServiceClock(summary.last ?? 0)} />
+            <MiniStat label="Salidas" value={String(summary.departures)} />
             <MiniStat
               label="Intervalo"
-              value={
-                daySummary.medianHeadway ? `~${formatHeadway(daySummary.medianHeadway)}` : '—'
-              }
+              value={summary.medianHeadway ? `~${formatHeadway(summary.medianHeadway)}` : '—'}
             />
           </div>
 
-          <section>
-            <SectionLabel icon={<BarChart3 />} aside={dayLabel}>
-              Salidas por hora
-            </SectionLabel>
-            <HourlyChart hourly={hourly} currentHour={currentHour} dayName={DAY_NAMES[day]} />
-          </section>
+          {data.kind === 'trips' ? (
+            <section>
+              <SectionLabel icon={<BarChart3 />} aside={dayLabel}>
+                Salidas por hora
+              </SectionLabel>
+              <HourlyChart
+                hourly={departuresByHour(data.all, day)}
+                currentHour={currentHour}
+                dayName={DAY_NAMES[day]}
+              />
+            </section>
+          ) : (
+            <Notice icon={<Info />}>
+              Sin desglose por hora para este recorrido: las cifras son las pasadas
+              programadas por su primer paradero,{' '}
+              <span className="font-medium text-foreground">{data.originName}</span>.
+            </Notice>
+          )}
         </>
       )}
 
-      {data.directions.length > 1 && (
+      {data.kind === 'trips' && data.directions.length > 1 && (
         <section>
           <SectionLabel icon={<RouteIcon />}>Por sentido</SectionLabel>
           <ul className="divide-y rounded-md border bg-card">

@@ -11,6 +11,7 @@
 // anterior: cuentan en las cifras de ese día y, de madrugada, como servicio
 // "de ayer" todavía en curso.
 
+import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import { chileClock } from '@/lib/chile-time';
 import type { RouteSchedule } from '@/types/transport';
 
@@ -39,7 +40,7 @@ export interface NextDeparture {
 export interface RouteTodaySummary extends DayServiceSummary {
   /** Día de hoy en Chile, 0=lunes..6=domingo. */
   day: number;
-  /** Hay al menos un viaje en curso según el horario. */
+  /** Hay al menos un viaje en curso según el horario (o dentro de la ventana de paso). */
   operatingNow: boolean;
   /** Intervalo típico entre salidas en ±60 min de ahora (null si no hay dos salidas). */
   headwayNow: number | null;
@@ -112,29 +113,95 @@ export function summarizeToday(schedules: readonly RouteSchedule[], now: Date): 
     );
   }
 
-  let next: number | null = null;
-  for (let offset = -1; offset <= LOOKAHEAD_DAYS; offset++) {
-    // Todo viaje del día `offset` sale después de su medianoche: si ya hay
-    // una salida antes, los días siguientes no pueden mejorarla.
-    if (next !== null && offset * DAY_MIN > next) break;
-    for (const schedule of schedules) {
-      for (const [start] of schedule[(day + offset + 7) % 7]) {
-        const t = start + offset * DAY_MIN;
-        if (t >= nowMin && (next === null || t < next)) next = t;
-      }
-    }
-  }
-
-  const nextDayOffset = next === null ? 0 : Math.floor(next / DAY_MIN);
   return {
     ...summarizeDay(schedules, day),
     day,
     operatingNow,
     headwayNow: median(nearbyGaps),
-    nextDeparture:
-      next === null
-        ? null
-        : { minutes: next - nextDayOffset * DAY_MIN, dayOffset: nextDayOffset },
+    nextDeparture: earliestStartFrom(day, nowMin, (d) =>
+      schedules.flatMap((schedule) => schedule[d].map(([start]) => start)),
+    ),
+  };
+}
+
+/** Primer inicio >= ahora, mirando desde los nocturnos de ayer hasta una semana adelante. */
+function earliestStartFrom(
+  day: number,
+  nowMin: number,
+  startsOfDay: (day: number) => number[],
+): NextDeparture | null {
+  let next: number | null = null;
+  for (let offset = -1; offset <= LOOKAHEAD_DAYS; offset++) {
+    // Todo inicio del día `offset` es posterior a su medianoche: si ya hay
+    // uno antes, los días siguientes no pueden mejorarlo.
+    if (next !== null && offset * DAY_MIN > next) break;
+    for (const start of startsOfDay((day + offset + 7) % 7)) {
+      const t = start + offset * DAY_MIN;
+      if (t >= nowMin && (next === null || t < next)) next = t;
+    }
+  }
+  if (next === null) return null;
+  const dayOffset = Math.floor(next / DAY_MIN);
+  return { minutes: next - dayOffset * DAY_MIN, dayOffset };
+}
+
+// Respaldo para recorridos GTFS que no están en ROUTE_SCHEDULES (el extractor
+// descarta sus viajes): la ventana de paso por su primer paradero
+// (STOP_SERVICE_WINDOWS) trae primera y última pasada, cantidad e intervalo
+// mediano por día, pero no cada salida. Por eso no se inventa la próxima
+// salida dentro de la ventana; solo se da la primera de la ventana siguiente.
+// Las ventanas 00:00–00:00 son viajes del feed sin horas reales: se ignoran.
+function realWindows(windows: readonly StopServiceWindow[]): StopServiceWindow[] {
+  return windows.filter(([, , , first, last, , count]) => count > 0 && !(first === 0 && last === 0));
+}
+
+export function summarizeWindowsDay(
+  windows: readonly StopServiceWindow[],
+  day: number,
+): DayServiceSummary {
+  let first: number | null = null;
+  let last: number | null = null;
+  let departures = 0;
+  const headways: number[] = [];
+  for (const [, , d, f, l, headway, count] of realWindows(windows)) {
+    if (d !== day) continue;
+    departures += count;
+    if (first === null || f < first) first = f;
+    if (last === null || l > last) last = l;
+    if (headway > 0) headways.push(headway);
+  }
+  return { first, last, departures, medianHeadway: median(headways) };
+}
+
+export function summarizeWindowsToday(
+  windows: readonly StopServiceWindow[],
+  now: Date,
+): RouteTodaySummary {
+  const { day, minutes: nowMin } = chileClock(now);
+  const usable = realWindows(windows);
+
+  let operatingNow = false;
+  const headways: number[] = [];
+  for (const [, , d, first, last, headway] of usable) {
+    for (const offset of [-1, 0]) {
+      if (d !== (day + offset + 7) % 7) continue;
+      if (first + offset * DAY_MIN <= nowMin && nowMin <= last + offset * DAY_MIN) {
+        operatingNow = true;
+        if (headway > 0) headways.push(headway);
+      }
+    }
+  }
+
+  return {
+    ...summarizeWindowsDay(usable, day),
+    day,
+    operatingNow,
+    headwayNow: median(headways),
+    nextDeparture: operatingNow
+      ? null
+      : earliestStartFrom(day, nowMin, (d) =>
+          usable.filter((w) => w[2] === d).map((w) => w[3]),
+        ),
   };
 }
 
