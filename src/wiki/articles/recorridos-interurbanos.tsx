@@ -1,7 +1,8 @@
 // Recorridos interurbanos del Gran Concepción
-// Lista panorámica de servicios licitados que conectan el área urbana
-// con comunas rurales/satélite y que NO están en el GTFS urbano que
-// alimenta el visor principal.
+// Lista panorámica de servicios que conectan el área urbana con comunas
+// rurales/satélite. 201/201-AU, 401/401Y/411/421 y 302/304 vienen en el GTFS
+// oficial DTPR (versión 20250228) que alimenta el visor; Florida y Yumbel no
+// tienen GTFS publicado.
 
 import { Section, ServiceRow } from './_components';
 import { MapLink } from '@/wiki/map-link';
@@ -11,10 +12,12 @@ const TOME_NOTES = (
     Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016,
     operativo mar-2022). Operador único Transportes Tomé (fusión de operadores
     previos, representante Bernardo Montoya), 71 buses, tarifa $750 base
-    (vigencia 2026 sin polinomio publicado). Servicios 401 (Tomé Alto), 411
-    (Dichato), 421 (Av. Estadio). El tramo Concepción↔Penco↔Lirquén está
-    cubierto además por líneas GTFS urbanas; Lirquén↔Tomé↔Dichato entra al
-    visor como trazado nativo con servicios en curso estimados.{' '}
+    (vigencia 2026 sin polinomio publicado). Servicios 401 (Tomé), 401Y
+    (Bellavista, solo hacia Concepción en la punta mañana), 411 (Dichato) y
+    421 (Av. Estadio, refuerzo de punta en día hábil), todos en el GTFS
+    oficial DTPR con trazado, paraderos y horario programado. El tramo
+    Concepción↔Penco↔Lirquén lo cubren además recorridos urbanos (17MC,
+    30MB, 31DF, 62HM y otros).{' '}
     <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
       Electrocorredor MOP Ruta 150
     </a>{' '}
@@ -26,23 +29,23 @@ export default function RecorridosInterurbanos() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <p>
-        El visor principal de <code className="font-mono">conce.patagua.dev</code> se
-        alimenta del feed{' '}
+        Los buses del visor de <code className="font-mono">conce.patagua.dev</code>{' '}
+        salen del{' '}
         <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-          <strong>GTFS estático Gran Concepción</strong>
+          <strong>GTFS oficial de la DTPR</strong>
         </a>{' '}
-        publicado por
-        la Subsecretaría de Transportes (CC&nbsp;BY&nbsp;4.0). Ese feed cubre el área
-        urbana metropolitana, Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante,
-        Penco/Lirquén, Coronel y Lota, y deja afuera los <strong>servicios
-        interurbanos licitados</strong> que conectan el Gran Concepción con comunas
-        rurales o satélite del Biobío.
+        (programa del 28-feb-2025; su calendario declarado venció el
+        31-dic-2025, pero es la última versión publicada). Además de la red
+        urbana, ese archivo trae ocho servicios interurbanos:{' '}
+        <strong>201 y 201-AU</strong> a Santa Juana,{' '}
+        <strong>401, 401Y, 411 y 421</strong> a Tomé y Dichato, y{' '}
+        <strong>302 y 304</strong> entre Lota y Concepción. El visor los
+        muestra con sus dos sentidos, sus paraderos y su horario programado.
       </p>
       <p>
-        Esta página es un índice abierto: información compilada desde fuentes
-        secundarias mientras esperamos un feed GTFS público para estos servicios.
-        Cuando aparezca, se enchufa al visor y este artículo queda como contexto
-        histórico. La autoridad que los regula (vía Ley 18.696, Ley 20.378 y
+        Quedan fuera los corredores privados sin GTFS publicado (Florida,
+        Yumbel), que este índice documenta con fuentes secundarias. La
+        autoridad que regula los servicios (vía Ley 18.696, Ley 20.378 y
         autorizaciones puntuales) es la{' '}
         <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
           SEREMITT Biobío
@@ -55,20 +58,27 @@ export default function RecorridosInterurbanos() {
 
       <Section title="Servicios identificados">
         <ServiceRow
-          code="201 · 201 AU"
+          code="201 · 201-AU"
           title="Concepción ↔ Santa Juana"
-          notes="Licitado bajo DTPR ELC0007, operado por Sociedad de Transporte de Pasajeros Santa Juana SpA desde julio 2024. AU = Accesibilidad Universal (piso bajo, rampa). 23 buses Agrale Euro V, tarifa adulto $1.000. Primera licitación del Biobío en 10+ años. Pago electrónico previsto fin de 2026."
+          notes="Licitado bajo DTPR ELC0007, operado por Sociedad de Transporte de Pasajeros Santa Juana SpA desde julio 2024. AU = Accesibilidad Universal (piso bajo, rampa). 23 buses Agrale Euro V, tarifa adulto $1.000. Primera licitación del Biobío en 10+ años. Pago electrónico previsto fin de 2026. Ambos códigos están en el GTFS oficial DTPR."
           slug="ruta-201-santa-juana"
           verified
           extra={<MapLink route="201">Ver la 201 en el mapa →</MapLink>}
         />
         <ServiceRow
-          code="401 · 411 · 421"
+          code="401 · 401Y · 411 · 421"
           title="Concepción ↔ Tomé"
           notes={TOME_NOTES}
           slug="concepcion-tome"
           verified
-          extra={<MapLink route="401">Ver la 401 Tomé Alto en el mapa →</MapLink>}
+          extra={<MapLink route="401">Ver la 401 en el mapa →</MapLink>}
+        />
+        <ServiceRow
+          code="302 · 304"
+          title="Lota ↔ Concepción"
+          notes="Dos servicios del GTFS oficial DTPR que van de Lota a Concepción por Coronel y la Ruta 160. El resto de los troncales del corredor sur (régimen Res. Ex. 457) no tiene GTFS publicado."
+          slug="concepcion-coronel-lota"
+          extra={<MapLink route="302">Ver la 302 en el mapa →</MapLink>}
         />
         <ServiceRow
           code="4 op."
@@ -93,21 +103,25 @@ export default function RecorridosInterurbanos() {
         />
       </Section>
 
-      <Section title="¿Por qué no están en el visor principal?">
+      <Section title="Qué está en el visor y qué no">
         <p>
-          El feed GTFS urbano del Gran Concepción es un producto técnico, un
-          archivo conformado a un estándar específico, que la Subsecretaría
-          publica con un alcance acotado al área metropolitana. Los servicios
-          interurbanos están bajo licitaciones distintas y no se reflejan en
-          ese feed. Sin un feed GTFS público para ellos, no hay forma directa
-          de validar trazado, frecuencia o paraderos en código.
+          La DTPR publica estos interurbanos en el mismo GTFS que la red
+          urbana, así que entran al visor sin trabajo manual: trazado de
+          cada sentido, paraderos y horario programado por día. El feed no
+          los distingue de los urbanos; el visor los rotula «Interurbano
+          Santa Juana», «Interurbano Tomé» e «Interurbano Lota».
         </p>
         <p>
-          Lo confirma una revisión directa del feed GTFS Gran Concepción
-          publicado por la Subsecretaría: no contiene servicios con códigos
-          "201", "Santa Juana", "Tomé", "Florida" ni "Yumbel". Los stops del
-          dataset que mencionan "Tomé" son nombres de calles dentro del área
-          urbana, no servicios interurbanos hacia esa comuna.
+          Hasta noviembre de 2026 el visor usaba el feed 2019 de la
+          Subsecretaría de Transportes, que no traía ninguno de estos
+          servicios. Por eso la 201 y las 401/411/421 se dibujaban desde
+          OpenStreetMap con ventanas horarias estimadas. Eso quedó atrás:
+          hoy todo sale de la fuente oficial.
+        </p>
+        <p>
+          Florida y Yumbel siguen fuera: son operadores privados que no
+          publican GTFS. En el mapa aparecen solo como un pin del corredor
+          que enlaza a su artículo.
         </p>
       </Section>
 
