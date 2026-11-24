@@ -129,13 +129,12 @@ const TILE_URL = {
 const TILE_MAX_NATIVE_ZOOM = 16;
 const TILE_MAX_ZOOM = 19;
 
-// Attribution is split into two pieces: the abbreviated form always renders;
-// the long form (with "Subsecretaría de Transportes (Chile)" disclaimer) is
-// CSS-hidden in narrow viewports to avoid a 2-line wrap that clutters the
-// map's bottom edge on phones. License obligations are still met because
-// the Data Sources sheet carries the full credit.
+// Atribución en dos partes: la corta siempre se ve; la larga se oculta por
+// CSS en pantallas angostas para no partir en dos líneas el borde del mapa.
+// El crédito completo de cada fuente está en "Fuentes de datos". El GTFS de
+// DTPR no declara licencia: se cita la fuente sin atribuirle una.
 const ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://www.esri.com/">Esri</a>, HERE, Garmin · GTFS Gran Concepción <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><span class="attr-long"> Subsecretaría de Transportes (Chile)</span>';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://www.esri.com/">Esri</a>, HERE, Garmin · GTFS <a href="https://dtpr.gob.cl/">DTPR</a><span class="attr-long"> · itinerarios EFE</span>';
 
 const BUILDING_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/></svg>';

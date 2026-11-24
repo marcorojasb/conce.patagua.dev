@@ -100,7 +100,7 @@ const PENDING: Source[] = [
   {
     title: 'Tarifa y pago electrónico DTPR',
     detail:
-      'Tarifa adulto urbana referencial $750 CLP (efectivo); rangos por tramo en Biotrén. DTPR anunció que el pago electrónico se activará en buses urbanos del Gran Concepción durante el ciclo 2026, los valores oficiales por tarjeta integrada y reglas de transbordo se sumarán al visor cuando la resolución se publique.',
+      'Tarifa urbana vigente desde el 23-feb-2025: $580 adulto, $290 adulto mayor, $190 estudiante; los interurbanos cobran por tramo (Concepción–Tomé $780, –Dichato $830) y el Biotrén por tramo. DTPR anunció que el pago electrónico se activará en buses urbanos del Gran Concepción durante el ciclo 2026, los valores oficiales por tarjeta integrada y reglas de transbordo se sumarán al visor cuando la resolución se publique.',
   },
 ];
 

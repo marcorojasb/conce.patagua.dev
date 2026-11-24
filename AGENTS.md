@@ -63,5 +63,4 @@ No editar directamente los `*.generated.ts` en `src/data/` — si un dataset nec
 
 - Las llegadas en vivo necesitan `TRANSAPP_PHONE_ID` en las variables de entorno (Vercel, o `.env.local` para `npm run dev`). Sin ella `/api/stop-arrivals` responde 503 y la ficha dice que no están activadas. La fuente no es oficial ni documentada: puede cambiar o cortarse sin aviso.
 - El calendario del GTFS oficial venció el 2025-12-31 y no hay versión posterior: cambios de la red en 2026 (por ejemplo 11 servicios que la fuente en vivo ya sigue: 02H 02L 20F 20N 30H 30Z 50SY 70FY 70HY 80B 80V) no están en el visor hasta que la DTPR publique otra.
-- `.env.example` todavía describe `GTFS_DB_PATH` y los scripts sqlite, que ya no existen.
-- `sync:interurban-routes` sigue en `sync:osm` y regenera `interurban-routes.generated.ts`, que el visor ya no importa (201/401/411/421 vienen del GTFS).
+- `interurban-routes.generated.ts` (trazados OSM de 201/401/411/421) ya no se importa ni se regenera en `sync:osm`: esos servicios vienen del GTFS oficial. Se conserva porque el wiki lo cita; `npm run sync:interurban-routes` sigue disponible a mano.

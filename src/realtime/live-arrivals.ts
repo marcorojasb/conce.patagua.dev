@@ -474,7 +474,7 @@ const STOP_CODE_RENAMED: Record<string, string> = {
  * stopCode de la fuente para un paradero del visor: "P" + stop_id del GTFS de
  * DTPR ("37520" → "P37520", "PV42001" → "PPV42001"). Así calzan 2.202 de los
  * 2.239 paraderos del GTFS; 6 más con `STOP_CODE_RENAMED` y 31 no existen en
- * la fuente. Los paraderos interurbanos digitalizados desde OSM no tienen código.
+ * la fuente. Fuera del GTFS (estaciones del Biotrén) no hay código.
  */
 export function liveStopCode(stopId: string): string | null {
   const match = /^gtfs-stop-([A-Za-z0-9-]+)$/.exec(stopId);

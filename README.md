@@ -104,7 +104,7 @@ Los datasets en `src/data/*.generated.ts` no se escriben a mano: se generan a pa
 | `sync:cycleways` | Overpass | `cycleways.generated.ts` |
 | `sync:greenspace` | Overpass | `greenspace.generated.ts` |
 | `sync:schools` | Overpass | `schools.generated.ts` |
-| `sync:interurban-routes` | Overpass | `interurban-routes.generated.ts` (trazados OSM de 201/401/411/421 digitalizados a mano; el visor ya no los usa, esos servicios vienen del GTFS oficial) |
+| `sync:interurban-routes` | Overpass | `interurban-routes.generated.ts` (trazados OSM de 201/401/411/421 digitalizados a mano; el visor ya no los usa ni `sync:osm` los regenera: esos servicios vienen del GTFS oficial) |
 | `sync:all` | — | `sync:osm` + `sync:gtfs` (todos los anteriores) |
 
 `sync:gtfs` (`scripts/sync-gtfs-official.ts`) no necesita credenciales ni binarios del sistema: descarga el zip oficial y lo lee en streaming con Node (`stop_times.txt` pesa ~300 MB descomprimido). Detalles:

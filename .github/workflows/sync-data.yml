@@ -88,7 +88,6 @@ jobs:
             - `src/data/cycleways.generated.ts` (infra ciclista)
             - `src/data/greenspace.generated.ts` (parques, plazas, reservas)
             - `src/data/schools.generated.ts` (establecimientos educacionales)
-            - `src/data/interurban-routes.generated.ts` (corredores 201/401/411/421)
             - `src/data/gtfs-*.generated.ts` (GTFS oficial DTPR: paraderos, recorridos,
               horarios y pasadas por paradero; solo cambian si cambió el feed)
             - `src/data/coverage.generated.ts` (grilla de cobertura de paraderos)

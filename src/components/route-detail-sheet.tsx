@@ -587,7 +587,7 @@ function InfoTab({
         <div className="rounded-md border bg-card p-3">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <div className="flex items-baseline gap-1.5 text-sm font-medium">
-              {route.type === 'biotren' ? '$680 – $2.400' : isInterurban(route) ? 'Según tramo' : '$750'}
+              {route.type === 'biotren' ? '$680 – $2.400' : isInterurban(route) ? 'Según tramo' : '$580'}
               <span className="text-[11px] font-normal text-muted-foreground">
                 {route.type === 'biotren' ? 'CLP por tramo' : isInterurban(route) ? 'interurbano' : 'CLP adulto'}
               </span>
