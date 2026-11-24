@@ -154,10 +154,9 @@ export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: strin
       </Button>
 
       <div className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
-        Atribución requerida en cualquier publicación: los recorridos y paraderos
-        vienen del GTFS Gran Concepción CC BY 4.0 de la Subsecretaría de
-        Transportes; terminales, POIs y trazado del Biotrén de OpenStreetMap
-        bajo ODbL.
+        Cita las fuentes en cualquier publicación: los recorridos y paraderos de micros
+        vienen del GTFS oficial de DTPR (no declara licencia); terminales, POIs y
+        trazado del Biotrén, de OpenStreetMap bajo ODbL.
       </div>
     </div>
   );

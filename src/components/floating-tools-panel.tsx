@@ -6,7 +6,7 @@ import { ROUTES, useRoutesVersion } from '@/data/routes';
 import type { PlannerMatch } from '@/lib/planner';
 import { useOperatorStats } from '@/lib/operator-stats';
 import type { RoutingResult } from '@/lib/routing';
-import type { SimulatedVehicle, Theme } from '@/types/transport';
+import type { Theme } from '@/types/transport';
 
 const ExportTool = lazy(() => import('@/components/export-tool'));
 const WallpaperTool = lazy(() => import('@/components/wallpaper-tool'));
@@ -59,7 +59,6 @@ interface FloatingToolsPanelProps {
   // For the Wallpaper tab, current viewport + theme.
   mapBounds: [[number, number], [number, number]] | null;
   theme: Theme;
-  simulatedVehicles: SimulatedVehicle[];
   simulationScope: 'visible' | 'all';
   activeMapLayers: {
     paraderos: boolean;
@@ -96,7 +95,6 @@ export function FloatingToolsPanel({
   visibleRouteIds,
   mapBounds,
   theme,
-  simulatedVehicles,
   simulationScope,
   activeMapLayers,
   plannerMidpoint,
@@ -217,7 +215,6 @@ export function FloatingToolsPanel({
               visibleRouteIds={visibleRouteIds}
               mapBounds={mapBounds}
               theme={theme}
-              simulatedVehicles={simulatedVehicles}
               simulationScope={simulationScope}
               activeMapLayers={activeMapLayers}
               plannerMidpoint={plannerMidpoint}

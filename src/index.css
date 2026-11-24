@@ -327,6 +327,12 @@
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
+/* La transición de 950 ms hace avanzar las micros entre ticks; durante el zoom
+   Leaflet reubica los marcadores y con transición se verían arrastrarse. */
+.leaflet-zoom-anim .vehicle-marker-wrap {
+  transition: none;
+}
+
 /* Estimadas desde el horario: borde punteado y algo translúcidas, para no
    confundirlas con las micros con GPS real (.live-vehicle-marker). */
 .vehicle-marker.is-estimate {

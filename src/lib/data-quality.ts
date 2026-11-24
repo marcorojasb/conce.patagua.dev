@@ -2,8 +2,7 @@ import { BIOTREN_L1_STOPS, BIOTREN_L2_STOPS } from '../data/biotren.generated.ts
 import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '../data/biotren-track.generated.ts';
 import { GTFS_BUS_ROUTES } from '../data/gtfs-bus-routes.generated.ts';
 import { GTFS_STOPS } from '../data/gtfs-stops.generated.ts';
-import { ROUTE_SCHEDULES } from '../data/gtfs-schedule.generated.ts';
-import { INTERURBAN_BUS_ROUTES, INTERURBAN_PARADEROS } from '../data/interurban-routes.generated.ts';
+import { ROUTE_DIRECTION_SCHEDULES } from '../data/gtfs-schedule.generated.ts';
 import { STATIC_SERVICE_PATTERNS } from '../data/static-service-patterns.ts';
 import { densifyPath, distanceToPathMeters, maxSegmentMeters } from './geo.ts';
 import type { LatLngTuple, Stop } from '../types/transport.ts';
@@ -51,14 +50,14 @@ export function summarizeIssues(issues: readonly DataQualityIssue[]): Record<Dat
 export function buildDataQualityReport(): DataQualityReport {
   const issues: DataQualityIssue[] = [];
   const gtfsRouteIds = new Set(GTFS_BUS_ROUTES.map((route) => route.id));
-  const routeIds = new Set([
-    'bt-l1',
-    'bt-l2',
-    ...INTERURBAN_BUS_ROUTES.map((route) => route.id),
-    ...gtfsRouteIds,
-  ]);
+  const routeIds = new Set(['bt-l1', 'bt-l2', ...gtfsRouteIds]);
   const stopIds = new Set(GTFS_STOPS.map((stop) => stop.id));
-  const scheduleRouteIds = new Set(Object.keys(ROUTE_SCHEDULES));
+  // Los horarios GTFS van por sentido: `<routeId>#<directionId>`.
+  const directionScheduleIds = new Set(Object.keys(ROUTE_DIRECTION_SCHEDULES));
+  const scheduleRouteIds = new Set(
+    Array.from(directionScheduleIds, (key) => key.slice(0, key.lastIndexOf('#'))),
+  );
+  const directionIds = new Set<string>();
 
   if (GTFS_BUS_ROUTES.length === 0) {
     issue(issues, 'error', 'routes', 'GTFS sin recorridos', 'GTFS_BUS_ROUTES está vacío.');
@@ -66,59 +65,75 @@ export function buildDataQualityReport(): DataQualityReport {
   if (GTFS_STOPS.length === 0) {
     issue(issues, 'error', 'stops', 'GTFS sin paraderos', 'GTFS_STOPS está vacío.');
   }
-  if (scheduleRouteIds.size === 0) {
-    issue(issues, 'error', 'schedules', 'Horarios vacíos', 'ROUTE_SCHEDULES no tiene rutas.');
+  if (directionScheduleIds.size === 0) {
+    issue(issues, 'error', 'schedules', 'Horarios vacíos', 'ROUTE_DIRECTION_SCHEDULES no tiene sentidos.');
   }
 
   for (const route of GTFS_BUS_ROUTES) {
-    if (route.path.length < 2) {
-      issue(
-        issues,
-        'error',
-        'geometry',
-        'Ruta GTFS sin trazado usable',
-        `${route.ref} no tiene path suficiente para dibujarse.`,
-        { routeId: route.id },
-      );
+    const directions = route.directions ?? [];
+    if (directions.length === 0) {
+      issue(issues, 'error', 'routes', 'Ruta GTFS sin sentidos', `${route.ref} no trae sentidos (directions).`, {
+        routeId: route.id,
+      });
     }
-    for (const stopId of route.stopIds) {
-      if (!stopIds.has(stopId)) {
+    for (const direction of directions) {
+      const label = `${route.ref} sentido ${direction.directionId}`;
+      const scheduleId = `${route.id}#${direction.directionId}`;
+      directionIds.add(scheduleId);
+      if (direction.path.length < 2) {
+        issue(issues, 'error', 'geometry', 'Sentido GTFS sin trazado usable', `${label} no tiene path suficiente para dibujarse.`, {
+          routeId: route.id,
+        });
+      }
+      for (const stopId of direction.stopIds) {
+        if (!stopIds.has(stopId)) {
+          issue(
+            issues,
+            'error',
+            'stops',
+            'Paradero referenciado sin geometría',
+            `${label} referencia ${stopId}, pero no existe en GTFS_STOPS.`,
+            { routeId: route.id, stopId },
+          );
+        }
+      }
+      if (!directionScheduleIds.has(scheduleId)) {
         issue(
           issues,
-          'error',
-          'stops',
-          'Paradero referenciado sin geometría',
-          `${route.ref} referencia ${stopId}, pero no existe en GTFS_STOPS.`,
-          { routeId: route.id, stopId },
+          'warning',
+          'schedules',
+          'Ruta GTFS sin bucket horario',
+          `${label} aparece como ruta, pero no tiene entradas en ROUTE_DIRECTION_SCHEDULES.`,
+          { routeId: route.id },
         );
       }
     }
-    if (!scheduleRouteIds.has(route.id)) {
+    if (!route.serviceSpans) {
       issue(
         issues,
         'warning',
         'schedules',
-        'Ruta GTFS sin bucket horario',
-        `${route.ref} aparece como ruta, pero no tiene entradas en ROUTE_SCHEDULES.`,
+        'Ruta GTFS sin tramos de servicio',
+        `${route.ref} no trae serviceSpans: "Operando ahora" la mostrará siempre fuera de horario.`,
         { routeId: route.id },
       );
     }
   }
 
-  for (const scheduleId of scheduleRouteIds) {
-    if (!routeIds.has(scheduleId)) {
+  for (const scheduleId of directionScheduleIds) {
+    if (!directionIds.has(scheduleId)) {
+      const routeId = scheduleId.slice(0, scheduleId.lastIndexOf('#'));
       issue(
         issues,
         'error',
         'schedules',
-        'Horario referencia ruta inexistente',
-        `${scheduleId} existe en ROUTE_SCHEDULES pero no en rutas cargables.`,
-        { routeId: scheduleId },
+        'Horario referencia sentido inexistente',
+        `${scheduleId} existe en ROUTE_DIRECTION_SCHEDULES pero no como sentido de una ruta cargable.`,
+        { routeId },
       );
     }
   }
 
-  const interurbanParaderoById = new Map(INTERURBAN_PARADEROS.map((stop) => [stop.id, stop]));
   const routeQualityInputs: Array<{
     id: string;
     label: string;
@@ -143,14 +158,6 @@ export function buildDataQualityReport(): DataQualityReport {
       rawMaxSegmentMeters: 4_000,
       maxStopDistanceMeters: 120,
     },
-    ...INTERURBAN_BUS_ROUTES.map((route) => ({
-      id: route.id,
-      label: route.ref,
-      path: route.path,
-      stops: route.stopIds.map((id) => interurbanParaderoById.get(id)).filter((stop) => stop != null),
-      rawMaxSegmentMeters: 1_500,
-      maxStopDistanceMeters: 150,
-    })),
   ];
 
   for (const route of routeQualityInputs) {

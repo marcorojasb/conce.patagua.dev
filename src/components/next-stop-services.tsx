@@ -1,21 +1,23 @@
-import { useEffect, useMemo, useReducer } from 'react';
-import { Clock3 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useEffect, useReducer, type ReactNode } from 'react';
+import { ArrowRight, CalendarClock } from 'lucide-react';
+import { RouteBadge } from '@/components/route-badge';
+import { Notice } from '@/components/ui/notice';
+import { SectionLabel } from '@/components/ui/section-label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ROUTES_BY_ID, useRoutesVersion } from '@/data/routes';
 import {
   formatServiceClock,
   getNextStopServices,
+  type NextStopService,
   type StopServiceSnapshot,
 } from '@/lib/stop-services';
 import { chileClock } from '@/lib/chile-time';
-import { readableTextOn } from '@/lib/utils';
 import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import type { Route } from '@/types/transport';
 
 interface Props {
   stopId: string;
-  routeIds: string[];
+  /** Recorridos que pasan por el paradero (con sus sentidos). */
+  routes: Route[];
   enabled: boolean;
 }
 
@@ -46,152 +48,157 @@ function reducer(state: State, action: Action): State {
   return { loading: false, error: action.error, snapshot: null };
 }
 
-export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
-  const routesVersion = useRoutesVersion();
+/** "ahora", "en 12 min", "en 1 h 05 min", o "mañana" si pasa después de medianoche y falta más de una hora. */
+function formatWait(minutesUntil: number, scheduledMin: number): string {
+  if (minutesUntil === 0) return 'ahora';
+  if (minutesUntil < 60) return `en ${minutesUntil} min`;
+  if (scheduledMin >= 1440) return 'mañana';
+  const minutes = minutesUntil % 60;
+  return `en ${Math.floor(minutesUntil / 60)} h${minutes ? ` ${String(minutes).padStart(2, '0')} min` : ''}`;
+}
+
+/** De dónde sale la hora: dicho tal cual, sin presentar una estimación como dato publicado. */
+function serviceDetail(service: NextStopService, route: Route | undefined): string {
+  if (service.source === 'gtfs-window') {
+    const passes = service.passesInDay ?? 0;
+    if (service.windowEdge === 'first') {
+      return passes > 1 ? `primera de ${passes} pasadas del día` : 'única pasada del día';
+    }
+    if (service.windowEdge === 'last') return 'última pasada del día';
+    return service.headwayMin ? 'en servicio · intervalo según el programa' : 'aprox.';
+  }
+  const published = service.source === 'static-trips';
+  if (service.origin) {
+    const departure = `sale de ${service.origin.name} ${formatServiceClock(service.origin.departureMin)}`;
+    return `${departure} · paso ${published ? 'aprox.' : 'estimado'}`;
+  }
+  if (!published) return 'estimada según frecuencia publicada';
+  return route?.type === 'biotren' ? 'sale de aquí · itinerario EFE' : 'sale de aquí · itinerario oficial';
+}
+
+export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const routeKey = routeIds.join('|');
 
   useEffect(() => {
     if (!enabled || !stopId) return;
     let cancelled = false;
     dispatch({ type: 'loading' });
-    void routesVersion;
-    const ids = routeKey ? routeKey.split('|') : [];
-    const routes: Route[] = [];
-    let hasGtfsRoute = false;
-    for (const id of ids) {
-      const route = ROUTES_BY_ID.get(id);
-      if (route) routes.push(route);
-      if (id.startsWith('gtfs-route-')) hasGtfsRoute = true;
-    }
-    if (!stopId.startsWith('gtfs-stop-') || !hasGtfsRoute) {
-      dispatch({
-        type: 'success',
-        snapshot: getNextStopServices({
-          stopId,
-          routeIds: ids,
-          windows: undefined,
-          now: new Date(),
-          staticRoutes: routes,
-        }),
-      });
+    const snapshot = (windows: StopServiceWindow[] | undefined) =>
+      getNextStopServices({ stopId, routes, windows, now: new Date() });
+    // Solo los paraderos GTFS con micros necesitan el chunk de ventanas.
+    if (!stopId.startsWith('gtfs-stop-') || !routes.some((r) => r.id.startsWith('gtfs-route-'))) {
+      dispatch({ type: 'success', snapshot: snapshot(undefined) });
       return;
     }
     void import('@/data/gtfs-stop-services.generated')
       .then((mod) => {
         if (cancelled) return;
-        const windows = mod.STOP_SERVICE_WINDOWS[stopId] as StopServiceWindow[] | undefined;
-        dispatch({
-          type: 'success',
-          snapshot: getNextStopServices({
-            stopId,
-            routeIds: ids,
-            windows,
-            now: new Date(),
-            staticRoutes: routes,
-          }),
-        });
+        dispatch({ type: 'success', snapshot: snapshot(mod.STOP_SERVICE_WINDOWS[stopId]) });
       })
       .catch((err) => {
         if (cancelled) return;
         dispatch({
           type: 'error',
-          error: err instanceof Error ? err.message : 'No se pudieron cargar próximos servicios',
+          error: err instanceof Error ? err.message : 'No se pudo cargar el horario',
         });
       });
     return () => {
       cancelled = true;
     };
-  }, [enabled, stopId, routeKey, routesVersion]);
+  }, [enabled, stopId, routes]);
 
   const services = state.snapshot?.services ?? [];
-  const routeById = useMemo(() => {
-    void routesVersion;
-    const entries = (routeKey ? routeKey.split('|') : []).map((id) => [id, ROUTES_BY_ID.get(id)] as const);
-    return new Map(entries);
-  }, [routeKey, routesVersion]);
+  const routeById = new Map(routes.map((route) => [route.id, route] as const));
 
+  let content: ReactNode;
   if (state.loading) {
-    return (
-      <div className="mt-4 space-y-1.5" aria-label="Cargando próximos servicios programados" role="status">
+    content = (
+      <div className="space-y-1.5" aria-label="Cargando próximas pasadas programadas" role="status">
         {[0, 1, 2].map((i) => (
           <Skeleton key={i} className="h-[52px] w-full rounded-md" />
         ))}
       </div>
     );
-  }
-
-  if (state.error) {
-    return (
-      <div className="mt-4 rounded-md border bg-destructive/10 p-3 text-[12px] text-destructive">
-        {state.error}
-      </div>
+  } else if (state.error) {
+    content = <Notice tone="danger">No se pudo cargar el horario: {state.error}</Notice>;
+  } else if (services.length === 0) {
+    content = (
+      <Notice>
+        Sin próximas pasadas en el horario publicado para estos recorridos. Si una línea no
+        publica horario, el visor no inventa una hora.
+      </Notice>
+    );
+  } else {
+    content = (
+      <>
+        <ul className="space-y-1.5">
+          {services.map((service) => {
+            const route = routeById.get(service.routeId);
+            // Dentro de una ventana la hora exacta sería una proyección
+            // (primera + k × intervalo): se muestra el intervalo, no una hora inventada.
+            const projected =
+              service.source === 'gtfs-window' && !service.windowEdge && service.headwayMin != null;
+            return (
+              <li
+                key={`${service.routeId}-${service.destination}-${service.scheduledMin}`}
+                className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border bg-card p-2"
+              >
+                <RouteBadge
+                  code={service.variant ?? route?.code ?? service.routeId}
+                  color={route?.color ?? '#64748b'}
+                />
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-1 text-sm font-medium">
+                    <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" aria-label="hacia" />
+                    <span className="truncate">{service.destination}</span>
+                  </div>
+                  <div className="truncate text-[11px] text-muted-foreground">
+                    {serviceDetail(service, route)}
+                  </div>
+                </div>
+                <div className="text-right">
+                  {projected ? (
+                    <>
+                      <div className="font-mono text-sm font-semibold">~{service.headwayMin} min</div>
+                      <div className="text-[11px] text-muted-foreground">entre pasadas</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="font-mono text-sm font-semibold">
+                        {formatServiceClock(service.scheduledMin)}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {formatWait(service.minutesUntil, service.scheduledMin)}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
+          Hora de Chile según el programa publicado (GTFS oficial DTPR en micros, itinerario EFE
+          en Biotrén); no vienen del GPS. Una fila por línea y sentido. Si la línea está en servicio
+          se muestra cada cuánto pasa según el programa, no una hora exacta; las marcadas aprox. o
+          estimado se calculan desde la distancia a la cabecera.
+        </p>
+      </>
     );
   }
 
-  if (!state.snapshot || services.length === 0) {
-    return (
-      <div className="mt-4 rounded-md border bg-muted/40 p-3 text-[12px] leading-snug text-muted-foreground">
-        Sin próximos servicios programados para las rutas vinculadas en este momento.
-        Cuando la ruta no tiene <span className="font-mono">stop_times.txt</span>, el visor no inventa una hora exacta.
-      </div>
-    );
-  }
+  const clock = state.snapshot ? formatServiceClock(chileClock(state.snapshot.generatedAt).minutes) : null;
 
   return (
-    <div className="mt-4 rounded-md border bg-card p-3">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          <Clock3 className="size-3.5" />
-          Próximos servicios
-        </div>
-        <span className="font-mono text-[11px] text-muted-foreground">
-          {formatServiceClock(chileClock(state.snapshot.generatedAt).minutes)}
-        </span>
-      </div>
+    <section aria-label="Próximas pasadas según el horario">
+      <SectionLabel
+        icon={<CalendarClock />}
+        aside={clock && !state.loading ? <span title="Hora de Chile">{clock}</span> : undefined}
+      >
+        Próximas pasadas · horario
+      </SectionLabel>
 
-      <div className="space-y-1.5">
-        {services.map((service) => {
-          const route = routeById.get(service.routeId);
-          const label = route?.code ?? service.routeId.replace('gtfs-route-', '');
-          const badgeColor = route?.color ?? '#0ea5e9';
-          return (
-            <div
-              key={`${service.routeId}-${service.headsign}-${service.scheduledMin}-${service.source}`}
-              className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border bg-muted/20 p-2"
-            >
-              <Badge
-                className="border-transparent font-mono"
-                style={{ background: badgeColor, color: readableTextOn(badgeColor) }}
-              >
-                {label}
-              </Badge>
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium">
-                  {service.headsign || route?.name || 'Servicio programado'}
-                </div>
-                <div className="text-[11px] text-muted-foreground">
-                  {service.source === 'gtfs-window'
-                    ? `GTFS estático · ${service.countInWindow} pasadas/día`
-                    : 'Estimación por frecuencia publicada'}
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="font-mono text-sm font-semibold">
-                  {formatServiceClock(service.scheduledMin)}
-                </div>
-                <div className="text-[11px] text-muted-foreground">
-                  {service.minutesUntil === 0 ? 'ahora' : `en ${service.minutesUntil} min`}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-2 text-[10px] leading-snug text-muted-foreground">
-        Horas estimadas desde GTFS estático o frecuencias publicadas; no son GPS ni GTFS-RT.
-      </div>
-    </div>
+      {content}
+    </section>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { routeShortName } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
 import type { Route } from '@/types/transport';
 
@@ -10,13 +11,6 @@ interface Props {
 }
 
 const MAX_ROWS = 10;
-
-/** "02A: Centinela I" → "Centinela I"; "Biotrén L1 · Hualqui ↔ …" → "Hualqui ↔ …". */
-export function routeShortName(route: Pick<Route, 'code' | 'name'>): string {
-  const code = route.code.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const stripped = route.name.replace(new RegExp(`^(Biotrén\\s+)?${code}\\s*[:·]\\s*`), '');
-  return stripped || route.name;
-}
 
 export function MapLegend({ routes, selectedRouteId, onSelectRoute }: Props) {
   // En pantallas chicas arranca plegada: ahí el mapa es lo que importa.

@@ -12,9 +12,12 @@ const budgets: Array<{ pattern: RegExp; maxBytes: number; maxGzipBytes: number; 
   // React 18 a 19; el límite se movió con esa base, no por código propio.
   { pattern: /^index-.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 100 * KB, label: 'main app' },
   { pattern: /^App-.*\.js$/, maxBytes: 700 * KB, maxGzipBytes: 180 * KB, label: 'React app shell' },
-  { pattern: /gtfs-bus-routes.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 120 * KB, label: 'GTFS routes' },
+  // GTFS oficial DTPR (2025-02-28): recorridos con ambos sentidos (723 KB,
+  // 104 KB gzip) y 2.239 paraderos con más viajes en la frecuencia (1.019 KB,
+  // 67 KB gzip). Crecimiento propio de los datos; los topes dejan ~15 % de margen.
+  { pattern: /gtfs-bus-routes.*\.js$/, maxBytes: 840 * KB, maxGzipBytes: 120 * KB, label: 'GTFS routes' },
   { pattern: /gtfs-schedule.*\.js$/, maxBytes: 800 * KB, maxGzipBytes: 65 * KB, label: 'GTFS schedules' },
-  { pattern: /gtfs-stop-frequency.*\.js$/, maxBytes: 1_100 * KB, maxGzipBytes: 75 * KB, label: 'GTFS stop frequency' },
+  { pattern: /gtfs-stop-frequency.*\.js$/, maxBytes: 1_175 * KB, maxGzipBytes: 77 * KB, label: 'GTFS stop frequency' },
   { pattern: /gtfs-stop-services.*\.js$/, maxBytes: 5_600 * KB, maxGzipBytes: 360 * KB, label: 'GTFS stop services' },
   { pattern: /greenspace.*\.js$/, maxBytes: 1_500 * KB, maxGzipBytes: 230 * KB, label: 'green spaces' },
 ];

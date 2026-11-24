@@ -22,7 +22,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Ficha institucional de la autoridad regional de transportes. SEREMITT Biobío (instancia política; titular Henry Campos Coa desde ~27-mar-2026, tras Patricio Fierro y Héctor Silva) y DTPR Biobío (brazo técnico de Subtrans, dprbiobio.dpr.gob.cl). Diferencia con DTPM (Santiago) y 3CV. Marco legal: DFL 343, Leyes 18.059, 18.696, 20.378, 19.880, 20.285. Cartera: PE Gran Concepción, PE Tomé, BusPay, interurbanos, electrocorredores MOP.',
     section: 'estructural',
-    updated: '2026-09-22',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/seremitt-dtpr-biobio')),
   },
   {
@@ -31,16 +31,16 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Régimen tarifario y operativo bajo el cual operan, desde el 1-ene-2024, todos los buses urbanos del Gran Concepción (7 comunas, 36 unidades de negocio, 35 empresas). Reemplaza la licitación 2002 caducada el 31-mar-2024. Tarifa $580 adulto (vigente 23-feb-2025), polinomio de ajuste, contrato hasta 31-dic-2028. BusPay adjudicado a Consorcio Buspay en ene-2026, marcha blanca Q3 2026. Columna vertebral conceptual del visor urbano.',
     section: 'estructural',
-    updated: '2026-09-22',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/perimetro-exclusion-gran-concepcion-2024')),
   },
   {
     slug: 'perimetro-exclusion-tome',
     title: 'Perímetro de Exclusión de Tomé',
     summary:
-      'Segundo perímetro de exclusión metropolitano del Biobío (decreto MTT jul-2016 firmado por Andrés Gómez-Lobo, operativo 10-mar-2022). Régimen de operador único bajo art. 3° Ley 18.696: Transportes Tomé corre los servicios 401 / 411 / 421 desde Concepción hacia Penco, Lirquén, Tomé y Dichato con 71 buses declarados. Tarifa de partida $750 adulto (rebaja de $150 vs régimen previo). Refuerzos may-2025 +11% hora punta tarde. Integración BusPay desde Q3 2026. Tensión con el electrocorredor MOP Ruta 150 que solo llega hasta Enlace Penco. Los servicios 401/411/421 no están en el feed GTFS Gran Concepción.',
+      'Segundo perímetro de exclusión metropolitano del Biobío (decreto MTT jul-2016 firmado por Andrés Gómez-Lobo, operativo 10-mar-2022). Régimen de operador único bajo art. 3° Ley 18.696: Transportes Tomé corre los servicios 401 / 411 / 421 desde Concepción hacia Penco, Lirquén, Tomé y Dichato con 71 buses declarados. Tarifa de partida $750 adulto (rebaja de $150 vs régimen previo). Refuerzos may-2025 +11% hora punta tarde. Integración BusPay desde Q3 2026. Tensión con el electrocorredor MOP Ruta 150 que solo llega hasta Enlace Penco. Los servicios 401/401Y/411/421 vienen en el GTFS oficial de la DTPR que usa el visor y en un GTFS propio de Tomé.',
     section: 'estructural',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/perimetro-exclusion-tome')),
   },
   {
@@ -58,7 +58,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Tres concesiones MOP de corredores exclusivos para buses urbanos sobre las troncales del Gran Concepción (Ruta 160 San Pedro-Coronel, Ruta 150 Concepción-Penco y Autopista Concepción-Talcahuano Tramo II). Llamados todavía rotulados "Electro-Cointer" / "Electro-Cointer II" en los expedientes MOP, pero el MTT/MOP ya no usan "electrocorredor" como nombre oficial — el SEREMI Fierro lo aclaró en nov-2025 al precisar que la flota no será 100% eléctrica. ~USD 250 millones, 23+ km, plazo 25 años (300 meses). Oferente único en los dos llamados (Cointer Concesiones S.L. / Grupo Azvi). CGR visó bases 13-nov-2024; ofertas recibidas nov-dic 2025; adjudicación 1S 2026; obras 2029-2030; puesta en servicio 2031-2032. Tensión política con extensiones del Biotrén a Penco, Lota y Carriel Sur.',
     section: 'estructural',
-    updated: '2026-09-22',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/corredores-transporte-publico-mop-biobio')),
   },
   {
@@ -74,18 +74,18 @@ export const ARTICLES: ArticleMeta[] = [
     slug: 'recorridos-interurbanos',
     title: 'Recorridos interurbanos del Gran Concepción',
     summary:
-      'Servicios licitados que conectan Concepción metropolitana con Santa Juana, Tomé, Florida, Yumbel y otras comunas rurales del Biobío. No están en el GTFS urbano del visor.',
+      'Servicios que conectan Concepción metropolitana con Santa Juana, Tomé, Lota, Florida, Yumbel y otras comunas del Biobío. 201/201-AU, 401/401Y/411/421 y 302/304 vienen en el GTFS oficial de la DTPR y el visor los muestra con trazado y horario; Florida y Yumbel no tienen GTFS y son solo un pin.',
     section: 'interurbanos',
-    updated: '2026-05-15',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/recorridos-interurbanos')),
   },
   {
     slug: 'ruta-201-santa-juana',
     title: 'Ruta 201 y 201 AU · Concepción ↔ Santa Juana',
     summary:
-      'Servicio licitado bajo DTPR ELC0007, operado por Sociedad de Transporte de Pasajeros Santa Juana SpA desde julio 2024. 23 buses Agrale Euro V, tarifa $1.000, accesibilidad universal en 6 unidades. Primera licitación del Biobío en 10+ años.',
+      'Servicio licitado bajo DTPR ELC0007, operado por Sociedad de Transporte de Pasajeros Santa Juana SpA desde julio 2024. 23 buses Agrale Euro V, tarifa $1.000, accesibilidad universal en 6 unidades. Primera licitación del Biobío en 10+ años. En el visor desde el GTFS oficial DTPR (201 y 201-AU, programa del 28-feb-2025).',
     section: 'interurbanos',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/ruta-201-santa-juana')),
   },
   {
@@ -101,9 +101,9 @@ export const ARTICLES: ArticleMeta[] = [
     slug: 'concepcion-tome',
     title: 'Concepción ↔ Tomé · corredor norte',
     summary:
-      'Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022) con operador único Transportes Tomé y servicios 401/411/421. Tarifa $750 al inicio, 71 buses, refuerzos may-2025 (+11% punta tarde). El tramo Concepción↔Penco↔Lirquén sí está en el GTFS urbano; Lirquén↔Tomé↔Dichato no. Electrocorredor MOP Ruta 150 (USD 172M) en licitación; puesta en servicio 2032.',
+      'Segundo perímetro de exclusión metropolitano (decreto MTT jul-2016, operativo mar-2022) con operador único Transportes Tomé y servicios 401/411/421. Tarifa $750 al inicio, 71 buses, refuerzos may-2025 (+11% punta tarde). Los recorridos urbanos hasta Penco/Lirquén y los servicios 401/401Y/411/421 vienen en el GTFS oficial de la DTPR, con horario programado. Electrocorredor MOP Ruta 150 (USD 172M) en licitación; puesta en servicio 2032.',
     section: 'interurbanos',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/concepcion-tome')),
   },
   {
@@ -112,25 +112,25 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Corredor privado puro (sin licitación DTPR ni perímetro de exclusión) por la Ruta 146 "Autopista Valles del Biobío" (concesión Sacyr, decreto MOP 179/2013). Cuatro operadores interurbanos (Línea Azul, Buses Bío Bío, Pullman Bus, Pullman Santa María) con frecuencias 30-60 min, tarifa $2.000-$3.500. Eje turístico-religioso: Fiesta de San Sebastián de Yumbel 20-ene y 20-mar mueve 250-350 mil peregrinos por jornada. Sin GTFS y fuera del perímetro Buspay 2026.',
     section: 'interurbanos',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/concepcion-yumbel')),
   },
   {
     slug: 'concepcion-coronel-lota',
     title: 'Concepción ↔ Coronel ↔ Lota · corredor sur',
     summary:
-      'Espina dorsal sur del Gran Concepción por la Ruta 160 ("Camino a Lota"). Régimen especial bajo Resolución Exenta 457 MTT (2012-2013, "aproximada a un PE") sin operador único ni polinomio público — el PE Coronel-Lota formal está en bases en Contraloría desde jul-2025, proyecta 80 buses nuevos. Operadores parciales identificados (Las Galaxias, Buses J. Ewert). BusPay (Consorcio Buspay) cubre Coronel y Lota desde Q3 2026. Coexiste con la Línea 2 del Biotrén (Concepción-Coronel, 2009) y con el electrocorredor MOP Ruta 160 (UF 4.414.000, Electro-Cointer oferta única 5-nov-2025, puesta en servicio 2031-2032). Corredor más conflictivo del Biobío por la transición post-carbón (Enacar 14-abr-1997) y tarifa históricamente disputada.',
+      'Espina dorsal sur del Gran Concepción por la Ruta 160 ("Camino a Lota"). Régimen especial bajo Resolución Exenta 457 MTT (2012-2013, "aproximada a un PE") sin operador único ni polinomio público — el PE Coronel-Lota formal está en bases en Contraloría desde jul-2025, proyecta 80 buses nuevos. Operadores parciales identificados (Las Galaxias, Buses J. Ewert). En el visor: 302 y 304 (Lota ↔ Concepción) desde el GTFS oficial DTPR; el resto de los troncales no tiene GTFS. BusPay (Consorcio Buspay) cubre Coronel y Lota desde Q3 2026. Coexiste con la Línea 2 del Biotrén (Concepción-Coronel, 2009) y con el electrocorredor MOP Ruta 160 (UF 4.414.000, Electro-Cointer oferta única 5-nov-2025, puesta en servicio 2031-2032). Corredor más conflictivo del Biobío por la transición post-carbón (Enacar 14-abr-1997) y tarifa históricamente disputada.',
     section: 'interurbanos',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/concepcion-coronel-lota')),
   },
   {
     slug: 'biotren',
     title: 'Biotrén',
     summary:
-      'Servicio EFE Biobío en operación: tren urbano del Gran Concepción operado por EFE Trenes Metropolitanos S.A. (filial de EFE Sur). Línea 1 Hualqui ↔ Mercado de Talcahuano (12 estaciones) y Línea 2 Coronel ↔ Concepción (14 estaciones), trazado y estaciones digitalizados desde OSM. Tarifas por zonas Z1-Z10 vigentes desde 2-ene-2026 (rango $420-$850 adulto, alza promedio $60 por viaje). Nuevo puente Biobío en servicio 2025. No integra tarifariamente con BusPay 2026.',
+      'Servicio EFE Biobío en operación: tren urbano del Gran Concepción operado por EFE Trenes Metropolitanos S.A. (filial de EFE Sur). Línea 1 Hualqui ↔ Mercado de Talcahuano (12 estaciones) y Línea 2 Coronel ↔ Concepción (14 estaciones). Estaciones y vía desde OSM; horarios de los itinerarios oficiales de EFE vigentes desde 15-jul-2026 (día hábil: L1 37 trenes, L2 104). Tarifas por zonas Z1-Z10 vigentes desde 2-ene-2026 (rango $420-$850 adulto, alza promedio $60 por viaje). Nuevo puente Biobío en servicio 2025. No integra tarifariamente con BusPay 2026.',
     section: 'urbanos',
-    updated: '2026-07-17',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/biotren')),
   },
   {
@@ -139,7 +139,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Extensiones y proyectos futuros del Biotrén en distintas etapas de estudio y debate: extensión norte a Penco (L1, más debatida), continuación a Tomé, extensión sur a Lota (L2, traza del ramal del carbón) y eventual ramal al Aeropuerto Carriel Sur. Ninguna con RS MIDESO ni licitación abierta al cierre 2025-2026. Documenta la tensión política con el electrocorredor MOP Ruta 150 (USD 172M, oferta única 10-dic-2025) — la disputa de política pública más jugosa del corredor norte.',
     section: 'urbanos',
-    updated: '2026-09-22',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/biotren-extensiones-proyectos')),
   },
   {
@@ -148,25 +148,25 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'El otro modo urbano masivo del Gran Concepción, ausente del visor y poco documentado. Vehículos de hasta 6 pasajeros operando en líneas fijas con tarifa por persona, regulados por el DS 212/1992 del MTT y por la Ley 20.474 (padrón nacional cerrado desde 2011). Operadores fragmentados (cooperativas y propietarios individuales agrupados por línea), tarifa variable por línea autorizada por la SEREMITT. Quedan fuera de BusPay 2026 y del feed GTFS Gran Concepción — el visor no los muestra. Ejes troncales en Talcahuano, Hualpén, Chiguayante, San Pedro, barrio universitario y Collao / Nonguén.',
     section: 'urbanos',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/taxis-colectivos-gran-concepcion')),
   },
   {
     slug: 'gtfs-gran-concepcion',
     title: 'GTFS Gran Concepción',
     summary:
-      'Ficha metodológica del feed GTFS estático que alimenta el visor urbano. Publicado en el Portal de Datos Abiertos del Estado (datos.gob.cl) bajo gestión de la Subsecretaría de Transportes / DTPR Biobío, cubre los buses urbanos del Perímetro de Exclusión del Gran Concepción 2024 (7 comunas, 36 unidades, 35 empresas). Documenta qué cubre el feed y qué no (Tomé, Santa Juana, Florida, Yumbel, Biotrén quedan afuera), la estructura del ZIP, el pipeline de procesamiento del visor (scripts/generate-gtfs-concepcion.ts + simplificación RDP), licencia, limitaciones y comparación con otros feeds chilenos.',
+      'Ficha metodológica del GTFS oficial que la DTPR publica en dtpr.gob.cl y que alimenta los buses del visor: versión «Gran Concepción20250228» (programa del 28-feb-2025, calendario declarado vencido el 31-dic-2025 pero última publicación), 102 recorridos, 188 sentidos y 2.239 paraderos. Cubre la red urbana del PE Gran Concepción 2024 y los interurbanos 201/201-AU, 401/401Y/411/421 y 302/304; Biotrén, Florida, Yumbel y colectivos quedan fuera. Documenta la estructura del zip, el pipeline del visor (scripts/sync-gtfs-official.ts, sincronización diaria), los letreros cruzados que corrige, la licencia, el contraste con la fuente no oficial de llegadas en vivo y la comparación con otros feeds chilenos.',
     section: 'fuentes',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/gtfs-gran-concepcion')),
   },
   {
     slug: 'openstreetmap-fuente-visor',
     title: 'OpenStreetMap como fuente del visor',
     summary:
-      'Ficha metodológica de la segunda fuente estructural del visor, complementaria del GTFS Gran Concepción. OSM aporta todo lo que el feed urbano no cubre: el Biotrén (route_master 6857223 L1 + 6857222 L2 verificadas vía Overpass, 26 estaciones), los servicios interurbanos sin GTFS (201 Santa Juana, 401/411/421 Tomé) digitalizados con waypoints OSM citados + corridor-Dijkstra, paraderos (highway=bus_stop), terminales, POIs, ciclovías, áreas verdes, escuelas y el basemap Esri. Licencia ODbL 1.0 (atribución + share-alike), pipeline scripts/fetch-*.ts → src/data/*.generated.ts → Leaflet. Documenta queries Overpass concretas, mirrors usados (kumi.systems / overpass-api.de / overpass.osm.ch), simplificación RDP a 5e-5 grados, y cómo verificar / corregir OSM para el Biobío.',
+      'Ficha metodológica de la segunda fuente estructural del visor, complementaria del GTFS Gran Concepción. OSM aporta lo que el GTFS no cubre: estaciones y vía del Biotrén (route_master 6857223 L1 + 6857222 L2 verificadas vía Overpass, 26 estaciones), los pins de Florida y Yumbel, paraderos (highway=bus_stop), terminales, POIs, ciclovías, áreas verdes, escuelas y el basemap Esri. Hasta nov-2026 también los trazados de 201 y 401/411/421, hoy tomados del GTFS oficial. Licencia ODbL 1.0 (atribución + share-alike), pipeline scripts/fetch-*.ts → src/data/*.generated.ts → Leaflet. Documenta queries Overpass concretas, mirrors usados (kumi.systems / overpass-api.de / overpass.osm.ch), simplificación RDP a 5e-5 grados, y cómo verificar / corregir OSM para el Biobío.',
     section: 'fuentes',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/openstreetmap-fuente-visor')),
   },
   {
@@ -175,7 +175,7 @@ export const ARTICLES: ArticleMeta[] = [
     summary:
       'Qué es, qué no es, cómo contribuir y la visión de mediano plazo: convertirse en el centro de verdad regional del transporte y la planificación urbana del Biobío. Incluye glosario de siglas recurrentes (BCN, BusPay, DTPR, EFE, GTFS, MOP, MTT, PE, Res. Ex., RNTPP, SEREMITT, TNE, UF, UN y otras).',
     section: 'metodologia',
-    updated: '2026-05-16',
+    updated: '2026-11-24',
     Component: lazy(() => import('./articles/sobre-este-wiki')),
   },
 ];

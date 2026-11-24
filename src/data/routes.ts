@@ -2,20 +2,22 @@
 //
 // Progressive loading model
 // -------------------------
-// On first paint we only have the two Biotrén routes (small, eager). The 169
-// micro routes (~250 KB gz with their full paths) are dynamically imported
-// from the split `gtfs-bus-routes.generated.ts` chunk a tick after mount —
-// no Suspense boundary, no loading spinner, the visor renders the map
-// immediately and the sidebar/search fills in once micros arrive.
+// On first paint we only have the two Biotrén routes (small, eager). The 102
+// bus routes of the official GTFS (both directions, ~110 KB gz) are
+// dynamically imported from the split `gtfs-bus-routes.generated.ts` chunk a
+// tick after mount — no Suspense boundary, no loading spinner, the visor
+// renders the map immediately and the sidebar/search fills in once they land.
 //
 // Data sources
-//  ✔ Biotrén L1 & L2 — OSM stations + EFE Trenes (efe.cl/biotren); track
-//    polyline stitched from OSM railway=rail (see scripts/fetch-biotren-track.ts).
-//    Re-generate: `npm run sync:biotren-track`.
+//  ✔ Biotrén L1 & L2 — estaciones OSM; trazado unido desde railway=rail de OSM
+//    (scripts/fetch-biotren-track.ts); horarios de los itinerarios oficiales
+//    de EFE en static-service-patterns.ts. Re-generate: `npm run sync:biotren-track`.
 //
-//  ✔ Recorridos de micros — GTFS estático Gran Concepción (Subsecretaría de
-//    Transportes). Generator emits two files; we eager-import stops, lazy-
-//    import bus routes. Re-generate: `npm run sync:gtfs-concepcion`.
+//  ✔ Micros urbanas e interurbanos 201/201-AU (Santa Juana), 401/401Y/411/421
+//    (Tomé) y 302/304 (Lota) — GTFS oficial de la DTPR (versión del
+//    2025-02-28; calendario declarado hasta el 2025-12-31, la última
+//    publicación). Cada recorrido trae sus dos sentidos. Re-generate:
+//    `npm run sync:gtfs`.
 //
 //  ✘ Taxibús / colectivo — no open dataset exists for the metro area.
 
@@ -27,18 +29,20 @@ import {
 } from '@/data/biotren.generated';
 import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generated';
 import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
-import {
-  INTERURBAN_BUS_ROUTES,
-  INTERURBAN_PARADEROS,
-} from '@/data/interurban-routes.generated';
+import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { densifyPath } from '@/lib/geo';
+import { serviceSpansFromTrips } from '@/lib/operating-hours';
+import { isInterurban, routeCodeKey } from '@/lib/route-labels';
+import { buildStaticRouteSchedules } from '@/realtime/static-service-schedules';
 import type {
   BusRoute,
   MapCenter,
-  Paradero,
   Route,
+  RouteDirection,
   RouteType,
   RouteTypeId,
+  ScheduledTrip,
+  ServiceSpans,
   Stop,
   StopWithRoutes,
 } from '@/types/transport';
@@ -62,14 +66,31 @@ export const ROUTE_TYPES: Record<RouteTypeId, RouteType> = {
   },
 };
 
-const BIOTREN_FREQUENCY = {
-  'Lun – Vie': 'cada 6–12 min en punta · 15 min valle',
-  Sábado: 'cada 12–20 min',
-  Domingo: 'cada 20–30 min',
+// Resumen de los itinerarios EFE vigentes desde el 15-07-2026 (salida por
+// salida en static-service-patterns.ts). Cuenta solo trenes de cabecera a
+// cabecera; los horarios van de la primera salida a la última llegada.
+const BIOTREN_L1_FREQUENCY = {
+  'Lun – Vie': '19 trenes desde Hualqui y 18 desde Mercado · cada 30 min en punta, 45–60 min fuera de punta · sin trenes 13:15–15:00',
+  Sábado: '8 trenes por sentido · cada 60 min de 16:00 a 20:00, cada 1,5–4 h antes',
+  Domingo: '4 trenes por sentido (Tren Laja–Talcahuano) · cada 3–4 h',
 };
-const BIOTREN_HOURS = '05:45 — 23:10 (Lun-Vie)';
+const BIOTREN_L1_HOURS = '06:20 — 22:48 (Lun-Vie) · 08:30 — 21:26 (Sáb-Dom)';
+const BIOTREN_L2_FREQUENCY = {
+  'Lun – Vie': '52 trenes por sentido · cada ~12 min en punta (7–23 min), 15–80 min al mediodía',
+  Sábado: '26 trenes desde Coronel y 27 desde Concepción · cada 30 min en mañana y tarde, 15–80 min al mediodía',
+  Domingo: '16 trenes por sentido · cada 15–80 min (típico ~55 min)',
+};
+const BIOTREN_L2_HOURS = '05:55 — 23:32 (Lun-Vie) · 06:30 — 22:12 (Sáb) · 08:30 — 21:42 (Dom)';
 const RAIL_MAX_SEGMENT_METERS = 300;
 const ROAD_MAX_SEGMENT_METERS = 300;
+
+// Tramos con servicio de Biotrén desde los itinerarios EFE (ambos sentidos).
+function staticServiceSpans(routeId: string): ServiceSpans {
+  const days: ScheduledTrip[][] = [[], [], [], [], [], [], []];
+  const schedules = buildStaticRouteSchedules(STATIC_SERVICE_PATTERNS.filter((p) => p.routeId === routeId));
+  for (const schedule of Object.values(schedules)) schedule.forEach((trips, day) => days[day].push(...trips));
+  return serviceSpansFromTrips(days);
+}
 
 // Hash operator name → stable hue so the same operator's routes share a color.
 function operatorColor(operator: string | undefined, fallbackSeed: string): string {
@@ -88,11 +109,12 @@ const BIOTREN_ROUTES: Route[] = [
     type: 'biotren',
     color: '#0EA5E9',
     operator: 'EFE Sur · Biotrén',
-    headway: '12 min',
-    hours: BIOTREN_HOURS,
-    frequencyByDay: BIOTREN_FREQUENCY,
+    headway: '30 min en punta',
+    hours: BIOTREN_L1_HOURS,
+    frequencyByDay: BIOTREN_L1_FREQUENCY,
     stops: BIOTREN_L1_STOPS,
     path: densifyPath(BIOTREN_L1_TRACK, RAIL_MAX_SEGMENT_METERS),
+    serviceSpans: staticServiceSpans('bt-l1'),
   },
   {
     id: 'bt-l2',
@@ -101,73 +123,71 @@ const BIOTREN_ROUTES: Route[] = [
     type: 'biotren',
     color: '#0284C7',
     operator: 'EFE Sur · Biotrén',
-    headway: '12 min',
-    hours: BIOTREN_HOURS,
-    frequencyByDay: BIOTREN_FREQUENCY,
+    headway: '12 min en punta',
+    hours: BIOTREN_L2_HOURS,
+    frequencyByDay: BIOTREN_L2_FREQUENCY,
     stops: BIOTREN_L2_STOPS,
     path: densifyPath(BIOTREN_L2_TRACK, RAIL_MAX_SEGMENT_METERS),
+    serviceSpans: staticServiceSpans('bt-l2'),
   },
 ];
 
-// Combinamos paraderos GTFS con los digitalizados de rutas interurbanas
-// (hoy: 201 Santa Juana + 401/411/421 Tomé). Si más adelante el GTFS
-// oficial incluye estos paraderos, el dataset interurbano queda vacío y
-// este Map vuelve a ser trivialmente igual a `GTFS_STOPS`.
-const PARADERO_BY_ID = new Map<string, Paradero>([
-  ...GTFS_STOPS.map((p) => [p.id, p] as const),
-  ...INTERURBAN_PARADEROS.map((p) => [p.id, p] as const),
-]);
+const PARADERO_BY_ID = new Map(GTFS_STOPS.map((p) => [p.id, p] as const));
 
-// Buses interurbanos (201 Santa Juana + 401/411/421 Tomé) — pequeñísimos
-// en bytes vs. los 169 GTFS, así que los cargamos eagerly y aparecen junto
-// con Biotrén en el primer paint. La sheet de detalle, la búsqueda y el
-// simulador los tratan exactamente igual que un urbano.
-const INTERURBAN_ROUTES: Route[] = INTERURBAN_BUS_ROUTES.map((b) =>
-  busRouteToRoute(b, PARADERO_BY_ID),
-);
-
-function busRouteToRoute(b: BusRoute, paraderoIndex: Map<string, Paradero>): Route {
+function resolveStops(stopIds: string[]): Stop[] {
   const stops: Stop[] = [];
-  for (const id of b.stopIds) {
-    const p = paraderoIndex.get(id);
+  for (const id of stopIds) {
+    const p = PARADERO_BY_ID.get(id);
     if (!p) continue;
-    stops.push({
-      id: p.id,
-      name: p.name ?? `Paradero ${p.ref ?? p.osmId}`,
-      lat: p.lat,
-      lng: p.lng,
-      ref: p.ref,
-    });
+    stops.push({ id: p.id, name: p.name ?? `Paradero ${p.ref ?? p.sourceId}`, lat: p.lat, lng: p.lng, ref: p.ref });
   }
-  // Las rutas interurbanas (network !== GTFS) viven fuera del feed; al no
-  // tener stop_times.txt no podemos prometer una frecuencia programada.
-  const isGtfs = b.source === 'gtfs';
+  return stops;
+}
+
+function busRouteToRoute(b: BusRoute): Route {
+  const directions = (b.directions ?? [{ directionId: 0, headsign: b.name, path: b.path, stopIds: b.stopIds }]).map(
+    (d): RouteDirection => ({
+      directionId: d.directionId,
+      headsign: d.headsign,
+      variant: d.variant,
+      destination: d.destination,
+      path: densifyPath(d.path, ROAD_MAX_SEGMENT_METERS),
+      stops: resolveStops(d.stopIds),
+    }),
+  );
+  // Un paradero que solo toca el regreso también es del recorrido: la ficha
+  // del paradero lo lista igual.
+  const stopById = new Map<string, Stop>();
+  for (const d of directions) for (const stop of d.stops) if (!stopById.has(stop.id)) stopById.set(stop.id, stop);
   return {
     id: b.id,
     code: b.ref,
     name: b.name,
     type: 'micro',
     color: b.colour ?? operatorColor(b.operator, b.id),
-    operator: b.operator ?? 'Operador no registrado (GTFS)',
-    headway: isGtfs ? 'Programado GTFS' : 'Frecuencia operativa publicada por operador',
-    hours: isGtfs ? 'Según calendario GTFS' : 'Según horario publicado por operador',
+    operator: b.operator ?? 'Operador no informado en el GTFS',
+    headway: 'Programado GTFS',
+    hours: 'Según calendario GTFS',
     frequencyByDay: {},
-    stops,
-    path: densifyPath(b.path, ROAD_MAX_SEGMENT_METERS),
+    stops: Array.from(stopById.values()),
+    // Ida y regreso se tocan en las cabeceras (< 100 m en todo el feed), así
+    // que seguidos forman el circuito completo sin saltos visibles.
+    path: directions.flatMap((d) => d.path),
+    directions,
+    serviceSpans: b.serviceSpans,
     network: b.network,
     digitized: b.digitized,
   };
 }
 
-// Mutable arrays/Maps: arrancamos con Biotrén + interurbanos (estos dos
-// son chicos y se prerenderean eagerly). Los 169 micros GTFS llegan después
-// vía dynamic import. La identidad del array NO cambia — los consumidores
-// que mantienen una referencia ven los nuevos elementos cuando aparecen;
-// el contador de versión + subscripción debajo dispara los re-renders.
-const SEED_ROUTES: Route[] = [...BIOTREN_ROUTES, ...INTERURBAN_ROUTES];
-export const ROUTES: Route[] = [...SEED_ROUTES];
+// Mutable arrays/Maps: arrancamos con Biotrén (chico, se prerenderea
+// eagerly). Los 102 recorridos GTFS llegan después vía dynamic import. La
+// identidad del array NO cambia — los consumidores que mantienen una
+// referencia ven los nuevos elementos cuando aparecen; el contador de
+// versión + subscripción debajo dispara los re-renders.
+export const ROUTES: Route[] = [...BIOTREN_ROUTES];
 export const ROUTES_BY_ID = new Map<string, Route>(
-  SEED_ROUTES.map((r) => [r.id, r]),
+  BIOTREN_ROUTES.map((r) => [r.id, r]),
 );
 
 function buildStopIndex(routes: Route[]): StopWithRoutes[] {
@@ -187,14 +207,38 @@ function buildStopIndex(routes: Route[]): StopWithRoutes[] {
 
 export const STOPS: StopWithRoutes[] = buildStopIndex(ROUTES);
 
-// Visibles por defecto: Biotrén + interurbanos (servicios licitados que
-// el usuario debería ver desde el primer paint). Los 169 micros del GTFS
-// urbano siguen siendo opt-in via sidebar — saturan el mapa si todos
-// aparecieran prendidos.
-export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = [
-  ...BIOTREN_ROUTES.map((r) => r.id),
-  ...INTERURBAN_ROUTES.map((r) => r.id),
-];
+// Visibles por defecto: Biotrén + interurbanos oficiales. Los interurbanos
+// vienen en el chunk GTFS, así que se agregan cuando llega (misma lista,
+// mutada como ROUTES); App los suma a lo visible en ese momento. Las micros
+// urbanas siguen siendo opt-in desde la barra lateral: todas prendidas
+// saturan el mapa.
+export const DEFAULT_VISIBLE_ROUTE_IDS: string[] = BIOTREN_ROUTES.map((r) => r.id);
+
+export interface RouteMatch {
+  route: Route;
+  /** Sentido cuando se encontró por la variante de un letrero ("10A"). */
+  directionId?: 0 | 1;
+}
+
+/**
+ * Busca un recorrido por id, por código ("10AN", "201 AU") o por la variante
+ * de uno de sus sentidos ("10A" → 10AN sentido 0), que es lo que muestra la
+ * micro y lo que citan el wiki y las llegadas en vivo. Acepta también los ids
+ * de los interurbanos digitalizados que hubo antes ("interurban-201").
+ */
+export function findRoute(ref: string): RouteMatch | null {
+  const byId = ROUTES_BY_ID.get(ref);
+  if (byId) return { route: byId };
+  const key = routeCodeKey(ref.replace(/^interurban-/, ''));
+  if (!key) return null;
+  const byCode = ROUTES.find((r) => routeCodeKey(r.code) === key);
+  if (byCode) return { route: byCode };
+  for (const route of ROUTES) {
+    const direction = route.directions?.find((d) => d.variant && routeCodeKey(d.variant) === key);
+    if (direction) return { route, directionId: direction.directionId };
+  }
+  return null;
+}
 
 // Tiny subscription store: bump a counter and notify so consumers
 // re-render the moment micros land. (Not using useSyncExternalStore to
@@ -218,6 +262,7 @@ function appendMicros(routes: Route[]): void {
   if (microRoutesReady) return;
   ROUTES.push(...routes);
   for (const r of routes) ROUTES_BY_ID.set(r.id, r);
+  DEFAULT_VISIBLE_ROUTE_IDS.push(...routes.filter(isInterurban).map((r) => r.id));
   // Extend the stops index with the new routes' stops in place — same
   // array identity so paradero detail sheets keep working.
   const stopIndex = new Map(STOPS.map((s) => [s.id, s]));
@@ -251,10 +296,7 @@ function appendMicros(routes: Route[]): void {
 function startMicroLoad(): void {
   void import('@/data/gtfs-bus-routes.generated')
     .then((mod) => {
-      const micros = mod.GTFS_BUS_ROUTES.map((b) =>
-        busRouteToRoute(b, PARADERO_BY_ID),
-      );
-      appendMicros(micros);
+      appendMicros(mod.GTFS_BUS_ROUTES.map(busRouteToRoute));
     })
     .catch((err) => {
       // eslint-disable-next-line no-console

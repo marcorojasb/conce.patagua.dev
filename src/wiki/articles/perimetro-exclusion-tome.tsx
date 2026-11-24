@@ -205,8 +205,8 @@ export default function PerimetroExclusionTome() {
         <p className="text-[12px] text-muted-foreground">
           <strong>Tramo solapado con el PE Gran Concepción:</strong> el
           eje Concepción ↔ Penco ↔ Lirquén es cubierto en paralelo por
-          servicios urbanos del PE Gran Concepción (líneas 17M, 30B /
-          30C / 30E, 31F, 57Y, 62H). Los pasajeros pueden elegir
+          servicios urbanos del PE Gran Concepción (recorridos 17MC,
+          30MB, 30NC, 30QE, 31DF, 50YP y 62HM). Los pasajeros pueden elegir
           micro urbana ($580) o servicio del PE Tomé en ese tramo.
           El PE Tomé tiene exclusividad recién en{' '}
           <strong>Lirquén → Tomé → Dichato</strong>. Detalle de los
@@ -417,13 +417,13 @@ export default function PerimetroExclusionTome() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Servicios</td>
-                <td className="px-3 py-2">401 / 411 / 421 (tres códigos)</td>
+                <td className="px-3 py-2">401 / 411 / 421, más la variante 401Y</td>
                 <td className="px-3 py-2">~95 servicios urbanos</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">GTFS público</td>
-                <td className="px-3 py-2">NO (operador no publica feed)</td>
-                <td className="px-3 py-2">SÍ (feed oficial Subtrans / DTPR)</td>
+                <td className="px-3 py-2">SÍ: GTFS propio del PE Tomé y dentro del GTFS de Gran Concepción (DTPR)</td>
+                <td className="px-3 py-2">SÍ: GTFS oficial de la DTPR (programa 28-feb-2025)</td>
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Pago electrónico inicial</td>
@@ -609,38 +609,43 @@ export default function PerimetroExclusionTome() {
         </Sources>
       </Section>
 
-      <Section title="Hueco GTFS y cobertura del visor">
+      <Section title="GTFS y cobertura del visor">
         <p>
-          El operador del PE Tomé <strong>no publica feed GTFS</strong>{' '}
-          y no está integrado al feed urbano de Subtrans / DTPR. El
-          feed{' '}
+          La DTPR publica dos GTFS que incluyen al PE Tomé: uno propio
+          del perímetro (<code className="font-mono">tome.zip</code>,
+          versión Tomé20230308, con 401, 401Y, 411 y 421) y el{' '}
           <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-            GTFS Gran Concepción
+            GTFS de Gran Concepción
           </a>
-          {' '}cubre solo los servicios urbanos del PE Gran Concepción
-          que físicamente recorren el tramo Concepción ↔ Penco ↔
-          Lirquén (17M, 30B / 30C / 30E, 31F, 57Y, 62H). Los servicios
-          401 / 411 / 421 del PE Tomé operan en exclusiva el tramo
-          Lirquén → Tomé → Dichato y no aparecen en el feed.
+          {' '}(versión 20250228), que trae esos mismos cuatro servicios
+          junto con la red urbana. El visor usa este último: desde el
+          24-nov-2026 los servicios del PE Tomé aparecen con trazado de
+          cada sentido, paraderos y horario programado, rotulados
+          «Interurbano Tomé».
         </p>
         <p className="text-[12px] text-muted-foreground">
-          Por qué pasa esto: el feed GTFS Gran Concepción es producido
-          y mantenido por Subtrans / DTPR Biobío con foco en el PE
-          Gran Concepción 2024. El operador del PE Tomé no fue
-          incluido en ese pipeline porque opera bajo otro perímetro y
-          no entrega datos de horarios y trazados al MTT en formato
-          GTFS. La marcha blanca BusPay Q3 2026 puede cambiar esta
-          situación si el contrato del consorcio exige al operador
-          publicar feed propio, no está confirmado en fuente abierta.
+          Antes, el visor usaba el feed 2019 de la Subsecretaría de
+          Transportes, que no traía estos servicios, y los dibujaba desde
+          trazados OpenStreetMap digitalizados a mano. En el tramo
+          Concepción ↔ Penco ↔ Lirquén conviven con los recorridos
+          urbanos del PE Gran Concepción, que también están en el feed.
         </p>
         <p className="text-[12px] text-muted-foreground">
-          Detalle de qué sí y qué no aparece en el visor para el
-          corredor en{' '}
+          Detalle de qué aparece en el visor para el corredor y del
+          horario programado en{' '}
           <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
             Concepción ↔ Tomé
           </a>
           .
         </p>
+        <Sources>
+          <SourceLink href="https://dtpr.gob.cl/pe/tome/gtfs/">
+            DTPR · Tomé · GTFS (tome.zip, versión Tomé20230308)
+          </SourceLink>
+          <SourceLink href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/">
+            DTPR · Gran Concepción · GTFS (versión 20250228)
+          </SourceLink>
+        </Sources>
       </Section>
 
       <Section title="Cronología institucional">
@@ -734,8 +739,9 @@ export default function PerimetroExclusionTome() {
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS Gran Concepción
-            </a>{' '}, el feed que cubre el corredor hasta Lirquén pero no
-            incluye los servicios 401 / 411 / 421 del PE Tomé.
+            </a>{' '}, el feed oficial que usa el visor; incluye la red urbana
+            hasta Lirquén y los servicios 401 / 401Y / 411 / 421 del PE
+            Tomé.
           </li>
           <li>
             <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">

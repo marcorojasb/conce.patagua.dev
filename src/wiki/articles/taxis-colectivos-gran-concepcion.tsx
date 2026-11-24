@@ -465,7 +465,8 @@ export default function TaxisColectivosGranConcepcion() {
           <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
             GTFS Gran Concepción
           </a>{' '}
-          publicado por Subtrans para el PE 2024. Los colectivos no están
+          que publica la DTPR (red urbana del PE 2024 y algunos
+          interurbanos). Los colectivos no están
           obligados a publicar GTFS y no lo hacen, por: régimen legal
           distinto (inscripción RNSTP sin contrato equivalente), operación
           fragmentada (centenares de propietarios), sin obligación

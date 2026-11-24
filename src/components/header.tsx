@@ -15,6 +15,7 @@ import {
   CommandShortcut,
 } from '@/components/ui/command';
 import { ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
+import { matchesRouteQuery, routeShortName } from '@/lib/route-labels';
 import { ARTICLES } from '@/wiki/articles';
 import type { Theme } from '@/types/transport';
 
@@ -24,6 +25,9 @@ interface HeaderProps {
   onToggleSidebar: () => void;
   onSelectRoute: (id: string) => void;
   onSelectStop: (id: string) => void;
+  /** El buscador también se abre desde la tarjeta de inicio, por eso vive en App. */
+  commandOpen: boolean;
+  onCommandOpenChange: (open: boolean) => void;
 }
 
 export function Header({
@@ -32,20 +36,22 @@ export function Header({
   onToggleSidebar,
   onSelectRoute,
   onSelectStop,
+  commandOpen,
+  onCommandOpenChange,
 }: HeaderProps) {
-  const [commandOpen, setCommandOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const setCommandOpen = onCommandOpenChange;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setCommandOpen((o) => !o);
+        onCommandOpenChange(!commandOpen);
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [commandOpen, onCommandOpenChange]);
 
   const q = query.trim().toLowerCase();
   // `ROUTES` y `STOPS` se mutan in-place cuando llega el chunk lazy de micros,
@@ -56,11 +62,7 @@ export function Header({
     () => {
       void routesVersion;
       return ROUTES.filter(
-        (r) =>
-          !q ||
-          r.name.toLowerCase().includes(q) ||
-          r.code.toLowerCase().includes(q) ||
-          ROUTE_TYPES[r.type].label.toLowerCase().includes(q),
+        (r) => matchesRouteQuery(r, q) || ROUTE_TYPES[r.type].label.toLowerCase().includes(q),
       );
     },
     [q, routesVersion],
@@ -188,10 +190,13 @@ export function Header({
             <CommandGroup heading="Recorridos">
               {routeMatches.map((r) => {
                 const Icon = ROUTE_TYPES[r.type].Icon;
+                // cmdk vuelve a filtrar por `value`: lleva también las
+                // variantes de cada sentido para que "10A" encuentre 10AN.
+                const variants = (r.directions ?? []).map((d) => d.variant ?? '').join(' ');
                 return (
                   <CommandItem
                     key={r.id}
-                    value={`${r.code} ${r.name}`}
+                    value={`${r.code} ${variants} ${r.name}`}
                     onSelect={() => {
                       setCommandOpen(false);
                       setQuery('');
@@ -205,7 +210,7 @@ export function Header({
                       <Icon className="size-[13px]" />
                     </span>
                     <span className="font-medium">{r.code}</span>
-                    <span className="truncate text-muted-foreground">{r.name}</span>
+                    <span className="truncate text-muted-foreground">{routeShortName(r)}</span>
                     <CommandShortcut>{ROUTE_TYPES[r.type].short}</CommandShortcut>
                   </CommandItem>
                 );

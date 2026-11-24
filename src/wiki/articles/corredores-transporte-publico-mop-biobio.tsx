@@ -578,9 +578,10 @@ export default function CorredoresTransportePublicoMOPBiobio() {
             Las pistas exclusivas todavía no existen físicamente (mayo
             2026). Las rutas que en el futuro circularán por estos
             corredores hoy se ven en el visor compartiendo pista con
-            el tráfico normal: Ruta 160 (San Pedro ↔ Coronel) en el
-            feed GTFS Gran Concepción; Ruta 150 con servicios 17M,
-            30B/C/E, 31F, 57Y, 62H, ver{' '}
+            el tráfico normal: Ruta 160 (San Pedro ↔ Coronel) con la 302
+            y la 304 del GTFS oficial de la DTPR; Ruta 150 con los
+            recorridos urbanos 17MC, 30MB, 30NC, 30QE, 31DF, 50YP y 62HM
+            y los interurbanos 401/411/421, ver{' '}
             <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
               Concepción ↔ Tomé
             </a>

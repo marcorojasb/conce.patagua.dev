@@ -19,7 +19,6 @@ import type {
   Poi,
   PoiCategory,
   Route,
-  SimulatedVehicle,
   Terminal,
   Theme,
 } from '@/types/transport';
@@ -31,6 +30,7 @@ import { GreenspaceLayer } from '@/components/greenspace-layer';
 import { InterurbanCorridorsLayer } from '@/components/interurban-corridors-layer';
 import { ParaderosLayer } from '@/components/paraderos-layer';
 import { SchoolsLayer } from '@/components/schools-layer';
+import { SimulatedVehiclesLayer } from '@/components/simulated-vehicles-layer';
 import type { LayerStatusControls } from '@/hooks/use-layer-status';
 import {
   DIRECTION_LABEL,
@@ -63,7 +63,6 @@ interface ConceMapProps {
   onPickPoint: (latlng: { lat: number; lng: number }) => void;
   plannerOrigin: { lat: number; lng: number } | null;
   plannerDestination: { lat: number; lng: number } | null;
-  simulatedVehicles: SimulatedVehicle[];
   routeColorById: Map<string, string>;
   routeLabelById: Map<string, string>;
   onSelectSimulatedVehicle: (id: string) => void;
@@ -92,6 +91,10 @@ interface ConceMapProps {
 export interface LiveVehicleMarker {
   arrival: LiveArrival & { position: { lat: number; lng: number } };
   color: string;
+  /** Código para mostrar ("20A", "401"); sin calce, el nombre de la fuente. */
+  label?: string;
+  /** Destino del sentido según el letrero oficial, si calza con el visor. */
+  destination?: string;
   /** Momento de la consulta que trajo la posición. */
   fetchedAt: number;
   now: number;
@@ -126,13 +129,12 @@ const TILE_URL = {
 const TILE_MAX_NATIVE_ZOOM = 16;
 const TILE_MAX_ZOOM = 19;
 
-// Attribution is split into two pieces: the abbreviated form always renders;
-// the long form (with "Subsecretaría de Transportes (Chile)" disclaimer) is
-// CSS-hidden in narrow viewports to avoid a 2-line wrap that clutters the
-// map's bottom edge on phones. License obligations are still met because
-// the Data Sources sheet carries the full credit.
+// Atribución en dos partes: la corta siempre se ve; la larga se oculta por
+// CSS en pantallas angostas para no partir en dos líneas el borde del mapa.
+// El crédito completo de cada fuente está en "Fuentes de datos". El GTFS de
+// DTPR no declara licencia: se cita la fuente sin atribuirle una.
 const ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://www.esri.com/">Esri</a>, HERE, Garmin · GTFS Gran Concepción <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><span class="attr-long"> Subsecretaría de Transportes (Chile)</span>';
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> · <a href="https://www.esri.com/">Esri</a>, HERE, Garmin · GTFS <a href="https://dtpr.gob.cl/">DTPR</a><span class="attr-long"> · itinerarios EFE</span>';
 
 const BUILDING_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/></svg>';
@@ -237,26 +239,10 @@ function midpointIcon(): L.DivIcon {
   });
 }
 
-function safeToken(value: string): string {
-  return value.replace(/[^a-z0-9_-]/gi, '-').toLowerCase();
-}
-
-function vehicleIcon(color: string, bearing: number, vehicle: SimulatedVehicle): L.DivIcon {
-  const rotation = Number.isFinite(bearing) ? bearing : 0;
-  const routeToken = safeToken(vehicle.routeId);
-  const sourceToken = safeToken(vehicle.sourceKind);
-  return L.divIcon({
-    className: `vehicle-marker-wrap route-${routeToken} source-${sourceToken}`,
-    html: `<div class="vehicle-marker is-estimate" data-route-id="${vehicle.routeId}" data-source-kind="${vehicle.sourceKind}" style="--vehicle-bg:${color};--vehicle-rotation:${rotation.toFixed(1)}deg" aria-hidden="true"><svg class="vehicle-marker-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 19 21 12 17 5 21 12 3Z"/></svg></div>`,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
-  });
-}
-
 // Micro con GPS real: cuadrada y con anillo, para que nunca se confunda con
 // las estimadas (redondas, borde punteado).
 function liveVehicleIcon(color: string, route: string): L.DivIcon {
-  const label = route.replace(/[^0-9A-Za-z]/g, '').slice(0, 5);
+  const label = route.replace(/[^0-9A-Za-z-]/g, '').slice(0, 6);
   return L.divIcon({
     className: 'live-vehicle-wrap',
     html: `<div class="live-vehicle-marker" style="--vehicle-bg:${color}" data-live-route="${label}"><span>${label}</span></div>`,
@@ -264,14 +250,6 @@ function liveVehicleIcon(color: string, route: string): L.DivIcon {
     iconAnchor: [17, 11],
   });
 }
-
-const SOURCE_KIND_LABEL: Record<SimulatedVehicle['sourceKind'], string> = {
-  gtfs: 'GTFS oficial',
-  official: 'fuente oficial',
-  operator: 'operador',
-  community: 'fuente comunitaria',
-  estimated: 'estimado',
-};
 
 // El contenedor del mapa cambia de ancho cuando se abre o cierra el sidebar
 // (animado, 200 ms) y cuando cambia el viewport. Leaflet cachea el tamaño y,
@@ -407,7 +385,6 @@ export function ConceMap({
   onPickPoint,
   plannerOrigin,
   plannerDestination,
-  simulatedVehicles,
   routeColorById,
   routeLabelById,
   onSelectSimulatedVehicle,
@@ -666,70 +643,38 @@ export function ConceMap({
         </Marker>
       )}
 
-      {simulatedVehicles.length > 0 &&
-        simulatedVehicles.map((v) => {
-          const color = routeColorById.get(v.routeId) ?? '#0ea5e9';
-          const label = routeLabelById.get(v.routeId) ?? v.routeId;
-          return (
-            <Marker
-              key={v.id}
-              position={[v.lat, v.lng]}
-              icon={vehicleIcon(color, v.bearing, v)}
-              keyboard={false}
-              zIndexOffset={900}
-              eventHandlers={{ click: () => onSelectSimulatedVehicle(v.routeId) }}
-            >
-              <LeafletTooltip
-                direction="top"
-                offset={[0, -16]}
-                opacity={0.95}
-                className="!text-[11px]"
-              >
-                <span className="font-medium">{label}</span>
-                <br />
-                <span className="font-semibold">Estimación según horario · no es GPS</span>
-                <br />
-                {Math.round(v.progress * 100)}% del trayecto programado
-                {v.directionLabel && (
-                  <>
-                    <br />
-                    {v.directionLabel}
-                  </>
-                )}
-                <br />
-                Simulación {SOURCE_KIND_LABEL[v.sourceKind]}
-                {v.sourceLabel ? ` · ${v.sourceLabel}` : ''}
-                {v.note && (
-                  <>
-                    <br />
-                    {v.note}
-                  </>
-                )}
-              </LeafletTooltip>
-            </Marker>
-          );
-        })}
+      <SimulatedVehiclesLayer
+        routeColorById={routeColorById}
+        routeLabelById={routeLabelById}
+        onSelect={onSelectSimulatedVehicle}
+      />
 
-      {liveVehicles.map(({ arrival, color, fetchedAt, now }) => {
+      {liveVehicles.map(({ arrival, color, label, destination, fetchedAt, now }) => {
         const minutes = minutesUntil(arrival, now);
+        const code = label ?? arrival.route;
         return (
           <Marker
             key={`live-${arrival.tripId ?? arrival.plate ?? `${arrival.route}-${arrival.arrivalAt}`}`}
             position={[arrival.position.lat, arrival.position.lng]}
-            icon={liveVehicleIcon(color, arrival.route)}
+            icon={liveVehicleIcon(color, code)}
             keyboard={false}
             zIndexOffset={1000}
           >
             <LeafletTooltip direction="top" offset={[0, -12]} opacity={0.95} className="!text-[11px]">
               <span className="font-medium">
-                {arrival.route}
-                {arrival.direction ? ` ${DIRECTION_LABEL[arrival.direction]}` : ''}
+                {code}
+                {destination
+                  ? ` hacia ${destination}`
+                  : arrival.direction
+                    ? ` ${DIRECTION_LABEL[arrival.direction]}`
+                    : ''}
               </span>
               <br />
               <span className="font-semibold">GPS en vivo</span> · posición {formatAge(now - fetchedAt)}
               <br />
               {minutes === 0 ? 'Llegando al paradero' : `Llega en ${minutes} min`}
-              {arrival.distanceM != null && ` · a ${Math.round(arrival.distanceM)} m`}
+              {arrival.distanceM != null &&
+                ` · a ${arrival.distanceM < 1000 ? `${Math.round(arrival.distanceM)} m` : `${(arrival.distanceM / 1000).toFixed(1).replace('.', ',')} km`} en línea recta`}
               {arrival.plate && (
                 <>
                   <br />

@@ -19,3 +19,9 @@ conce-patagua-dev/
 .claude/launch.json
 .claude/worktrees/
 .commandcode/
+
+# Caché local del zip GTFS oficial (scripts/sync-gtfs-official.ts)
+.cache/
+
+# Escritura en dos fases de los sync (scripts/lib/write-generated.ts)
+*.generated.ts.tmp

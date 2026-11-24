@@ -9,9 +9,11 @@
 //
 // Run: npm run sync:coverage
 
-import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { GTFS_STOPS } from '../src/data/gtfs-concepcion.generated.ts';
+// Directo al archivo de paraderos: el barrel gtfs-concepcion.generated.ts
+// re-exporta sin extensión (para Vite) y Node no lo puede resolver.
+import { GTFS_STOPS } from '../src/data/gtfs-stops.generated.ts';
+import { writeGeneratedFiles } from './lib/write-generated.ts';
 
 const OUT = resolve('src/data/coverage.generated.ts');
 
@@ -130,5 +132,7 @@ export const COVERAGE_META = {
 } as const;
 `;
 
-writeFileSync(OUT, output);
-console.log(`Wrote ${OUT} (${(output.length / 1024).toFixed(1)} KB raw)`);
+// Corre después de cada sync:gtfs: con los mismos paraderos la grilla es
+// idéntica y el archivo no se toca aunque cambie generatedAt.
+const [changed] = writeGeneratedFiles([{ path: OUT, content: output }]);
+console.log(`${changed ? 'Wrote' : 'Unchanged'} ${OUT} (${(output.length / 1024).toFixed(1)} KB raw)`);

@@ -8,6 +8,7 @@ import {
   Compass,
   Crosshair,
   Download,
+  Ellipsis,
   Gauge,
   GraduationCap,
   Grid3x3,
@@ -20,7 +21,7 @@ import {
   Trees,
   Wind,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { Switch } from '@/components/ui/switch';
@@ -62,7 +63,6 @@ interface MapLayerControlProps {
     nonGtfsCount: number;
     loading: boolean;
     error: string | null;
-    lastUpdate: Date | null;
   };
   coverageStatus: LayerLoadStatus;
   cyclewaysStatus: LayerLoadStatus;
@@ -120,9 +120,151 @@ const TOOLS: ToolBtn[] = [
   { id: 'cobertura', label: 'Planificador (cobertura OD)', Icon: Compass },
   { id: 'operadores', label: 'Operadores', Icon: Building2 },
   { id: 'calidad', label: 'Calidad de datos', Icon: Gauge },
-  { id: 'export', label: 'Export GeoJSON', Icon: Download },
+  { id: 'export', label: 'Exportar GeoJSON', Icon: Download },
   { id: 'wallpaper', label: 'Fondo de pantalla', Icon: ImageDown },
 ];
+
+// En móvil la columna solo muestra el planificador; el resto de las
+// herramientas va al menú "Más herramientas" para no tapar el mapa.
+const MOBILE_TOOL: AnalysisTab = 'cobertura';
+const OVERFLOW_TOOLS = TOOLS.filter((t) => t.id !== MOBILE_TOOL);
+
+// Sized smaller in mobile so the stacked buttons fit comfortably without
+// dominating the right edge of the map.
+const BTN_CLASS =
+  'pointer-events-auto size-9 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85 md:h-10 md:w-10';
+
+interface ToolsOverflowMenuProps {
+  activeTool: AnalysisTab | null;
+  onSelect: (tab: AnalysisTab) => void;
+}
+
+/** Menú de herramientas secundarias, solo bajo `md`. */
+function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
+  const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuId = useId();
+  const activeInMenu = OVERFLOW_TOOLS.some((t) => t.id === activeTool);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    menuRef.current?.querySelector<HTMLElement>('[role="menuitemradio"]')?.focus();
+    // En fase de captura: ningún stopPropagation del mapa o de otro panel
+    // impide que el "clic fuera" cierre el menú.
+    const onPointerDown = (event: PointerEvent) => {
+      if (!wrapperRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => document.removeEventListener('pointerdown', onPointerDown, true);
+  }, [open]);
+
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!open) {
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        setOpen(true);
+      }
+      return;
+    }
+    if (event.key === 'Escape') {
+      // Sin esto el Escape también cerraría el panel de herramienta abierto.
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(false);
+      buttonRef.current?.focus();
+      return;
+    }
+    if (event.key === 'Tab') {
+      setOpen(false);
+      return;
+    }
+    const items = Array.from(
+      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitemradio"]') ?? [],
+    );
+    if (items.length === 0) return;
+    const current = items.indexOf(document.activeElement as HTMLElement);
+    const next =
+      event.key === 'ArrowDown'
+        ? (current + 1) % items.length
+        : event.key === 'ArrowUp'
+          ? (current - 1 + items.length) % items.length
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? items.length - 1
+              : -1;
+    if (next === -1) return;
+    event.preventDefault();
+    items[next].focus();
+  };
+
+  return (
+    // El menú se ancla a la columna completa (no a este botón) para abrir
+    // desde arriba y no quedar bajo la hoja inferior de un panel abierto.
+    <div ref={wrapperRef} className="sm:hidden" onKeyDown={onKeyDown}>
+      <Button
+        ref={buttonRef}
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={() => setOpen((value) => !value)}
+        aria-label="Más herramientas"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        className={cn(
+          BTN_CLASS,
+          (open || activeInMenu) && 'bg-accent text-accent-foreground',
+          activeInMenu && 'border-foreground/40',
+        )}
+      >
+        <Ellipsis className="size-4" />
+      </Button>
+      {open && (
+        <div
+          ref={menuRef}
+          id={menuId}
+          role="menu"
+          aria-label="Más herramientas"
+          className="pointer-events-auto absolute right-full top-0 mr-2 w-56 rounded-lg border bg-popover/95 p-1 text-popover-foreground shadow-xl backdrop-blur supports-[backdrop-filter]:bg-popover/90 animate-fade-in"
+        >
+          {OVERFLOW_TOOLS.map((t) => {
+            const Icon = t.Icon;
+            const isActive = activeTool === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="menuitemradio"
+                aria-checked={isActive}
+                tabIndex={-1}
+                onClick={() => {
+                  // El menú se desmonta: el foco vuelve a su botón y desde ahí
+                  // el panel que se abre lo toma.
+                  buttonRef.current?.focus();
+                  setOpen(false);
+                  onSelect(t.id);
+                }}
+                className={cn(
+                  'flex min-h-11 w-full items-center gap-3 rounded-md px-2.5 text-left text-sm outline-none transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring',
+                  isActive && 'bg-accent font-medium text-accent-foreground',
+                )}
+              >
+                <Icon className="size-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1 truncate">{t.label}</span>
+                {isActive && (
+                  <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-foreground" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // react-doctor-disable-next-line react-doctor/no-giant-component -- Data-driven layer rows keep the floating toolbar and its layer popover in one cohesive control surface.
 export function MapLayerControl({
@@ -398,11 +540,6 @@ export function MapLayerControl({
     ],
   );
 
-  // Sized smaller in mobile so 6 stacked buttons + separator fit comfortably
-  // without dominating the right edge of the map.
-  const BTN_CLASS =
-    'pointer-events-auto size-9 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85 md:h-10 md:w-10';
-
   return (
     <>
       <div className="pointer-events-none absolute right-2 top-2 z-20 flex flex-col items-end gap-1.5 md:right-3 md:top-3 md:gap-2">
@@ -459,6 +596,7 @@ export function MapLayerControl({
               aria-pressed={isActive}
               className={cn(
                 BTN_CLASS,
+                t.id !== MOBILE_TOOL && 'hidden sm:inline-flex',
                 isActive && 'bg-accent text-accent-foreground border-foreground/40',
               )}
             >
@@ -467,6 +605,14 @@ export function MapLayerControl({
           </Tooltip>
         );
       })}
+
+      <ToolsOverflowMenu
+        activeTool={activeTool}
+        onSelect={(tab) => {
+          onCloseLayers();
+          onOpenTool(tab);
+        }}
+      />
       </div>
 
       <FloatingInfoPanel

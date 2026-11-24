@@ -12,6 +12,8 @@ function emptySchedule(): RouteSchedule {
 }
 
 export function expandFrequencyWindow(pattern: StaticServicePattern): ScheduledTrip[] {
+  if (pattern.trips) return pattern.trips.map(([start, duration]): ScheduledTrip => [start, duration]);
+
   // Un headway <= 0 colgaría el `for` en el module load (este builder corre al
   // importar el archivo). Se trata como "sin intervalo útil": un único viaje a
   // la hora de inicio, igual que hace getNextStopServices en stop-services.ts.

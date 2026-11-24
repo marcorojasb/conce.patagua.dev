@@ -1,6 +1,8 @@
 // Biotrén, tren urbano operacional del Gran Concepción.
 // L1 Hualqui ↔ Mercado de Talcahuano, L2 Coronel ↔ Concepción,
-// 26 estaciones (OSM), tarifas Z1-Z10 vigentes desde 2-ene-2026.
+// 26 estaciones (OSM), tarifas Z1-Z10 vigentes desde 2-ene-2026, horarios
+// de los itinerarios oficiales de EFE vigentes desde 15-jul-2026 (transcritos
+// tren por tren en src/data/static-service-patterns.ts).
 // Extensiones futuras → `biotren-extensiones-proyectos`.
 
 import {
@@ -26,20 +28,21 @@ export default function Biotren() {
       <VerifiedBanner>
         <strong>Verificado parcialmente con fuentes primarias.</strong>{' '}
         Estaciones, trazado, operador EFE Trenes Metropolitanos, hitos
-        históricos y tarifas Z1-Z10 desde 2-ene-2026 ($420-$850 adulto):
+        históricos, tarifas Z1-Z10 desde 2-ene-2026 ($420-$850 adulto) e
+        itinerarios oficiales de EFE vigentes desde el 15-jul-2026:
         citados.{' '}
         <strong>Pendientes</strong>: demanda diaria 2025-2026, monto del
         subsidio MTT, integración tarifaria con BusPay 2026.
       </VerifiedBanner>
 
       <FactStrip
-        snapshot="2026-07-17"
+        snapshot="2026-11-24"
         items={[
           { label: 'Líneas', value: 'L1 · L2' },
           { label: 'Estaciones', value: '26 (OSM)' },
           { label: 'Tarifa adulto', value: '$420–$850 (Z1–Z10)' },
           { label: 'Operador', value: 'EFE Trenes Metropolitanos' },
-          { label: 'BusPay', value: 'No integrado' },
+          { label: 'Trenes lun–vie', value: 'L1 37 · L2 104 (itinerario EFE)' },
           { label: 'Mapa', value: <><MapLink route="L1">L1</MapLink>{' · '}<MapLink route="L2">L2</MapLink></> },
         ]}
       />
@@ -61,8 +64,13 @@ export default function Biotren() {
             BusPay.
           </>,
           <>
-            El visor dibuja L1/L2 desde OSM (no GTFS). Capa “Servicios en
-            curso” proyecta trenes por frecuencia publicada, no GPS en vivo.
+            Horario oficial (itinerarios EFE desde el 15-jul-2026): en día
+            hábil, L1 corre 37 trenes de cabecera a cabecera, cada ~30 min
+            en punta; L2 corre 104, cada ~12 min en punta.
+          </>,
+          <>
+            EFE no publica GTFS: el visor dibuja L1/L2 desde OSM y proyecta
+            cada tren según el itinerario oficial. No es GPS en vivo.
           </>,
           <>
             Extensiones (Penco, Tomé, Lota, Carriel Sur) →{' '}
@@ -87,6 +95,16 @@ export default function Biotren() {
             },
           },
           {
+            date: '15-jul-2026',
+            title: 'Itinerarios L1 y L2 vigentes desde el 15-jul-2026',
+            detail:
+              'EFE publica las tablas de salidas por línea, sentido y día (lunes a viernes y fin de semana). El visor las usa tren por tren.',
+            source: {
+              href: 'https://www.efe.cl/itinerario-biotren/',
+              label: 'EFE · Itinerario Biotrén',
+            },
+          },
+          {
             date: '2-ene-2026',
             title: 'Nueva tarifa por zonas Z1–Z10',
             detail: 'Rango adulto $420–$850; alza promedio ~$60 por viaje.',
@@ -107,7 +125,9 @@ export default function Biotren() {
           <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
             GTFS Gran Concepción
           </a>
-          , el visor lo arma desde OSM (relations 6857222 / 6857223).
+          , no tiene GTFS: el visor toma estaciones y vía de OSM (relations
+          6857222 / 6857223) y los horarios de los itinerarios oficiales de
+          EFE.
         </p>
         <Sources>
           <SourceLink href="https://www.efetrenes.cl/biotren">
@@ -119,28 +139,52 @@ export default function Biotren() {
         </Sources>
       </Section>
 
-      <Section title="Servicios en curso">
+      <Section title="Horario oficial y Servicios en curso">
         <p>
-          Desde el 18-may-2026 el visor incluye Biotrén en la capa{' '}
+          EFE publica los itinerarios del Biotrén como imágenes en su sitio,
+          por línea, sentido y día, vigentes desde el{' '}
+          <strong>15-jul-2026</strong>. El visor los transcribe salida por
+          salida y con ellos arma la ficha de cada línea y la capa{' '}
           <strong>Servicios en curso</strong>. La posición no viene de GPS:
-          se proyecta sobre el trazado OSM usando ventanas y frecuencias
-          públicas. Para L1 se reparte la oferta diaria publicada de{' '}
-          <strong>44 servicios</strong>; para L2, <strong>82 servicios</strong>.
+          cada tren se proyecta sobre el trazado OSM entre su salida y su
+          llegada publicadas.
         </p>
+        <DataTable columns={['Línea', 'Lunes a viernes', 'Sábado', 'Domingo']} bodyClassName="divide-y align-top text-[12px]">
+          <tr>
+            <td className="px-3 py-2 font-medium">L1 Hualqui ↔ Mercado</td>
+            <td className="px-3 py-2">
+              37 trenes (19 desde Hualqui, 18 desde Mercado) · cada ~30 min
+              en punta; entre 10:00 y 15:00 solo 2 o 3 por sentido y ningún
+              tren en vía entre ~13:15 y 15:00 · 06:20 a 22:48
+            </td>
+            <td className="px-3 py-2">16 trenes (8 por sentido) · 08:30 a 21:26</td>
+            <td className="px-3 py-2">8 trenes (4 por sentido, todos Tren Laja–Talcahuano) · 08:30 a 21:26</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">L2 Coronel ↔ Concepción</td>
+            <td className="px-3 py-2">
+              104 trenes (52 por sentido) · cada ~12 min en punta, 15–80 min
+              al mediodía · 05:55 a 23:32
+            </td>
+            <td className="px-3 py-2">53 trenes (26 desde Coronel, 27 desde Concepción) · cada ~30 min · 06:30 a 22:12</td>
+            <td className="px-3 py-2">32 trenes (16 por sentido) · cada ~45 min en promedio (entre 15 y 80 min) · 08:30 a 21:42</td>
+          </tr>
+        </DataTable>
         <KeyValueList
           items={[
-            ['Fuente de horario', 'EFE/BioBioChile · cambios de itinerario publicados el 18-ago-2025'],
-            ['Confianza', 'Estimación por frecuencia publicada, no salida exacta por tren'],
-            ['Trazado', 'OSM railway=rail, densificado en el visor para evitar saltos largos entre estaciones'],
-            ['Limitación', 'Sin GTFS-RT ni ubicación en vivo: atrasos, cancelaciones y contingencias no aparecen'],
+            ['Fuente de horario', 'EFE · itinerarios L1 y L2 vigentes desde el 15-jul-2026 (lunes a viernes y fin de semana)'],
+            ['Qué cuenta', 'Solo trenes de cabecera a cabecera. L1 suma 4 servicios Tren Laja–Talcahuano por sentido en día hábil; los servicios cortos de día hábil (hasta Arenal, Leonera, Los Canelos o Cristo Redentor) no se simulan.'],
+            ['Tiempo de viaje', 'L1 56–67 min de cabecera a cabecera; L2 42–45 min.'],
+            ['Confianza', 'Oficial: salida y llegada publicadas por EFE para cada tren.'],
+            ['Limitación', 'Sin GTFS ni ubicación en vivo: atrasos, cancelaciones, contingencias y horarios de feriado no aparecen.'],
           ]}
         />
         <Sources>
-          <SourceLink href="https://www.biobiochile.cl/noticias/servicios/toma-nota/2025/08/18/los-nuevos-servicios-en-lineas-1-y-2-de-biotren-conoce-los-horarios-y-frecuencia-de-trayectos.shtml">
-            BioBioChile · nuevos servicios L1/L2 Biotrén
+          <SourceLink href="https://www.efe.cl/itinerario-biotren/">
+            EFE · Itinerario Biotrén (vigente desde 15-jul-2026)
           </SourceLink>
-          <SourceLink href="https://www.efetrenes.cl/biotren">
-            EFE Trenes · Biotrén
+          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/blob/main/src/data/static-service-patterns.ts">
+            Transcripción tren por tren · src/data/static-service-patterns.ts
           </SourceLink>
         </Sources>
       </Section>
@@ -231,8 +275,8 @@ export default function Biotren() {
             ['Línea 1', <><strong>Hualqui ↔ Mercado de Talcahuano</strong> · 12 estaciones · azul claro. <MapLink route="L1">Ver L1 →</MapLink></>],
             ['Línea 2', <><strong>Coronel ↔ Concepción</strong> · ramal del carbón (Lomas Coloradas, San Pedro, Juan Pablo II) · 14 estaciones · azul oscuro. <MapLink route="L2">Ver L2 →</MapLink></>],
             ['Operador', 'EFE Trenes Metropolitanos S.A. (filial EFE Sur), con subsidio operacional MTT.'],
-            ['Headway', '6-12 min punta · 15 min valle (Lun-Vie); 12-20 min sábado; 20-30 min domingo.'],
-            ['Ventana operativa', '05:45, 23:10 (Lun-Vie). Festivos en app oficial.'],
+            ['Frecuencia', 'Lun-Vie: L1 cada ~30 min en punta y con huecos de hasta 3 h 20 min a media jornada; L2 cada ~12 min en punta. Fin de semana: L2 cada ~30 min el sábado y ~45 min en promedio el domingo; L1 8 trenes por sentido el sábado y 4 el domingo. Detalle en "Horario oficial".'],
+            ['Ventana operativa', 'Lun-Vie: L1 06:20 a 22:48, L2 05:55 a 23:32 (primera salida a última llegada, itinerario EFE desde 15-jul-2026). Festivos: consultar a EFE.'],
             ['Material rodante', 'Xtrapolis (Alstom Brasil) y ABe históricas; 3 coches articulados; 3 kV DC catenaria.'],
             ['Estructura tarifaria', 'Zonas Z1-Z10 desde 2-ene-2026 (rango $420-$850 adulto). Ver sección "Tarifas vigentes 2026".'],
             ['Tiempo real', 'App "EFE Trenes" y avisos en estaciones.'],
@@ -353,8 +397,9 @@ export default function Biotren() {
 
       <Section title="Estaciones">
         <p>
-          26 estaciones (12 en L1, 14 en L2) digitalizadas desde OSM
-          (<code>railway=stop</code> con <code>operator~EFE</code>) en{' '}
+          26 estaciones (12 en L1, 14 en L2) tomadas de OSM
+          (<code>railway=station</code> o <code>halt</code> con{' '}
+          <code>operator~EFE</code>) en{' '}
           <code className="font-mono">src/data/biotren.generated.ts</code>.
           Códigos EFE (<code>HQ</code>, <code>CC</code>, <code>TH</code>)
           provienen de efetrenes.cl.
@@ -563,7 +608,7 @@ export default function Biotren() {
             ['Tipo de tren', 'Xtrapolis modular (Alstom Brasil), 3 coches articulados, motorización distribuida. ABe históricas en complemento.'],
             ['Electrificación', '3 kV DC catenaria (misma tensión que la Línea Central Santiago ↔ Chillán).'],
             ['Vía', 'Ancho ibérico 1.676 mm. Doble vía en el tramo urbano (Concepción ↔ Talcahuano, Concepción ↔ Hualqui).'],
-            ['Frecuencias', '6-12 min punta · 15 min valle (Lun-Vie); 12-20 min sábado; 20-30 min domingo.'],
+            ['Frecuencias', 'Itinerario EFE desde 15-jul-2026: L1 37 trenes y L2 104 trenes en día hábil; ver "Horario oficial".'],
             ['Capacidad por composición', 'No documentada con cifra única. Cierre por ficha del fabricante.'],
             ['Subsidio operacional', 'EFE Trenes Metropolitanos vía Ley de Presupuestos anual. Monto y polinomio pendientes. EFE no se financia con Ley 20.378.'],
             ['Accidentes en pasos a nivel', 'Issue recurrente, Lorenzo Arenas, Los Cóndores, Lomas Coloradas. Campañas y señalética sin resolver el problema estructural.'],
@@ -591,8 +636,11 @@ export default function Biotren() {
               Frecuencia y cabotaje
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              15 min valle y 20-30 min domingo es alto. En punta hay pasajeros
-              en andén (Chiguayante, Concepción).
+              Según el itinerario EFE desde el 15-jul-2026, la L1 corre solo
+              2 o 3 trenes por sentido entre 10:00 y 15:00 en día hábil, sin
+              trenes en vía entre ~13:15 y 15:00, y el domingo corre solo 4
+              trenes por sentido. En
+              punta hay pasajeros en andén (Chiguayante, Concepción).
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -643,7 +691,9 @@ export default function Biotren() {
             reconstruido desde <code>railway=rail</code> con Dijkstra.
             Re-generación:{' '}
             <code className="font-mono">npm run sync:biotren</code> y{' '}
-            <code className="font-mono">sync:biotren-track</code>.
+            <code className="font-mono">sync:biotren-track</code>. Horarios:
+            itinerarios EFE transcritos a mano en{' '}
+            <code className="font-mono">src/data/static-service-patterns.ts</code>.
           </p>
           <p className="mt-2 text-[12px]">
             <MapLink route="L1">L1 Hualqui ↔ Talcahuano →</MapLink>{' '}·{' '}
@@ -653,7 +703,8 @@ export default function Biotren() {
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">Lo que NO está</div>
           <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px] text-muted-foreground">
-            <li>Frecuencias por franja horaria detallada.</li>
+            <li>Servicios cortos de día hábil (Arenal, Leonera, Los Canelos, Cristo Redentor): están en el itinerario EFE pero no se simulan.</li>
+            <li>Atrasos, cancelaciones y horarios de feriado.</li>
             <li>Cuadro tarifario Z1-Z10 en el visor (vive en esta ficha).</li>
             <li>
               Extensiones propuestas (Penco, Tomé, Lota, Carriel Sur), sin trazado oficial digitalizable. Ver{' '}
@@ -677,8 +728,8 @@ export default function Biotren() {
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS Gran Concepción
-            </a>{' '}, el feed urbano NO incluye al Biotrén; el visor lo arma desde
-            OSM.
+            </a>{' '}, el feed de buses NO incluye al Biotrén; el visor toma
+            estaciones y vía de OSM y horarios de EFE.
           </li>
           <li>
             <a href="/wiki/openstreetmap-fuente-visor" className="underline underline-offset-2">
@@ -736,6 +787,11 @@ export default function Biotren() {
             </SourceLink>
           </li>
           <li>
+            <SourceLink href="https://www.efe.cl/itinerario-biotren/">
+              EFE · Itinerario Biotrén, vigente desde 15-jul-2026 (horarios que usa el visor)
+            </SourceLink>
+          </li>
+          <li>
             <SourceLink href="https://www.efe.cl/proyectos/puente-bio-bio/">
               EFE · Proyecto Puente Bío-Bío (operación 1.ª vía 07/2025, inauguración nov-2025)
             </SourceLink>
@@ -778,9 +834,11 @@ export default function Biotren() {
           <li>
             Datasets internos:{' '}
             <code className="font-mono">src/data/biotren.generated.ts</code>{' '}
-            (estaciones) y{' '}
+            (estaciones),{' '}
             <code className="font-mono">biotren-track.generated.ts</code>{' '}
-            (trazado).
+            (trazado) y{' '}
+            <code className="font-mono">static-service-patterns.ts</code>{' '}
+            (itinerarios EFE).
           </li>
         </ul>
         <p className="mt-3 text-[13px]">

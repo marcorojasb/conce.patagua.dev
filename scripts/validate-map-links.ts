@@ -10,8 +10,8 @@ import { join } from 'node:path';
 import { BIOTREN_L1_STOPS, BIOTREN_L2_STOPS } from '../src/data/biotren.generated.ts';
 import { GTFS_BUS_ROUTES } from '../src/data/gtfs-bus-routes.generated.ts';
 import { GTFS_STOPS } from '../src/data/gtfs-stops.generated.ts';
-import { INTERURBAN_BUS_ROUTES, INTERURBAN_PARADEROS } from '../src/data/interurban-routes.generated.ts';
 import { CORRIDOR_BY_ID, INTERURBAN_CORRIDORS } from '../src/data/interurban-corridors.ts';
+import { routeCodeKey } from '../src/lib/route-labels.ts';
 import { POIS } from '../src/data/pois.generated.ts';
 import { TERMINALS } from '../src/data/terminals.generated.ts';
 import { MAP_WIKI_LINK_INDEX } from '../src/wiki/map-links.ts';
@@ -28,21 +28,22 @@ function fail(msg: string) {
 
 // --- Entity sets -----------------------------------------------------------
 
-const routeCodes = new Set<string>(['L1', 'L2']);
+// Mismas reglas que findRoute en src/data/routes.ts: el visor acepta el
+// código del recorrido ("10AN", "201 AU") o la variante de un sentido ("10A").
+const routeCodeKeys = new Set<string>(['L1', 'L2']);
+const variantKeys = new Set<string>();
 const routeIds = new Set<string>(['bt-l1', 'bt-l2']);
-for (const r of INTERURBAN_BUS_ROUTES) {
-  routeCodes.add(r.ref);
-  routeIds.add(r.id);
-}
 for (const r of GTFS_BUS_ROUTES) {
-  routeCodes.add(r.ref);
+  routeCodeKeys.add(routeCodeKey(r.ref));
   routeIds.add(r.id);
+  for (const d of r.directions ?? []) if (d.variant) variantKeys.add(routeCodeKey(d.variant));
 }
+const isRouteRef = (ref: string) =>
+  routeIds.has(ref) || routeCodeKeys.has(routeCodeKey(ref)) || variantKeys.has(routeCodeKey(ref));
 
 const stopIds = new Set<string>();
 for (const s of [...BIOTREN_L1_STOPS, ...BIOTREN_L2_STOPS]) stopIds.add(s.id);
 for (const s of GTFS_STOPS) stopIds.add(s.id);
-for (const s of INTERURBAN_PARADEROS) stopIds.add(s.id);
 
 const terminalIds = new Set(TERMINALS.map((t) => t.id));
 const poiIds = new Set(POIS.map((p) => p.id));
@@ -106,13 +107,13 @@ for (const hit of allHits) {
   const label = `${hit.file}:${hit.line} MapLink ${hit.kind}="${hit.id}"`;
   switch (hit.kind) {
     case 'route':
-      if (!routeCodes.has(hit.id) && !routeIds.has(hit.id)) {
-        fail(`${label}: route code/id not found in Biotrén, interurban or GTFS datasets`);
+      if (!isRouteRef(hit.id)) {
+        fail(`${label}: route id, code or direction variant not found in Biotrén or GTFS datasets`);
       }
       break;
     case 'stop':
       if (!stopIds.has(hit.id)) {
-        fail(`${label}: stop id not found in Biotrén/GTFS/interurban stops`);
+        fail(`${label}: stop id not found in Biotrén/GTFS stops`);
       }
       break;
     case 'terminal':
@@ -139,13 +140,10 @@ for (const [code, slug] of Object.entries(MAP_WIKI_LINK_INDEX.byRouteCode)) {
   if (!articleSlugs.has(slug)) {
     fail(`map-links byRouteCode["${code}"] → slug "${slug}" not in articles.ts`);
   }
-  // Alias codes (ej. "201 AU") pueden vivir en el índice aunque el dataset
-  // solo exponga el ref canónico ("201"). Si el visor algún día muestra ese
-  // code en una sheet, el botón wiki aparece; si no, la entrada es inocua.
-  if (!routeCodes.has(code)) {
-    console.warn(
-      `Warning: map-links byRouteCode["${code}"] is not in current route datasets (alias or future code).`,
-    );
+  // La ficha busca el wiki por route.code: una clave que no es código de
+  // ningún recorrido nunca muestra el botón.
+  if (!routeCodeKeys.has(routeCodeKey(code))) {
+    fail(`map-links byRouteCode["${code}"]: not a route code in Biotrén or GTFS datasets`);
   }
 }
 

@@ -1,7 +1,12 @@
 // Llegadas en vivo a un paradero desde la fuente que usa la app de Transapp
-// (phone.dtpr.transapp.cl/v7/phone/<id>/stopInfo). No es un feed oficial ni
+// (phone.dtpr.transapp.cl/v7/phone/<zona>/stopInfo). No es un feed oficial ni
 // documentado: el visor la consulta a través de /api/stop-arrivals (ver
 // api/stop-arrivals.ts) y aquí solo se interpreta la respuesta cruda.
+//
+// Forma comprobada con respuestas reales (24-nov-2026, 6 paraderos de 6
+// comunas): cada predicción trae `route` y `direction` ("I"/"R"), `epochTime`
+// (s), `timeLabel`, `distance` (metros en línea recta, no por la ruta),
+// `latitude`/`longitude` del bus, `licensePlate` y `tripId`.
 //
 // Reglas heredadas de la integración que ya funciona en otro proyecto:
 // - Si la respuesta no se entiende o `predictions` no es una lista, es una
@@ -15,19 +20,24 @@
 // - Una línea sin micros con alerta "Servicio X (Ida) … tiempo real" se
 //   muestra como "sin datos en vivo"; nunca se rellena con simuladas.
 
+import type { Route, RouteDirection } from '@/types/transport';
+
 export type LiveDirection = 'I' | 'R';
 
 export interface LiveArrival {
+  /** Nombre del servicio en la fuente, uno por sentido ("20A", "401I"): ver `liveServiceName`. */
   route: string;
   direction: LiveDirection | null;
   /** Llegada estimada (ms Unix). */
   arrivalAt: number;
   timeLabel: string | null;
-  /** Metros hasta el paradero, según la fuente. */
+  /** Metros en línea recta hasta el paradero, según la fuente. */
   distanceM: number | null;
   plate: string | null;
   tripId: string | null;
   position: { lat: number; lng: number } | null;
+  /** `false` si la fuente marca la predicción como no basada en GPS. */
+  realtime: boolean;
 }
 
 export interface LiveRouteInfo {
@@ -50,7 +60,6 @@ export type StopInfoParse =
   | { ok: false; error: string };
 
 // ── Forma cruda de la respuesta ─────────────────────────────────────────────
-// Campos de posición, patente y viaje: ver `readVehicleFields`.
 
 interface RawPrediction {
   route?: unknown;
@@ -58,7 +67,11 @@ interface RawPrediction {
   epochTime?: unknown;
   timeLabel?: unknown;
   distance?: unknown;
-  [key: string]: unknown;
+  realtime?: unknown;
+  latitude?: unknown;
+  longitude?: unknown;
+  licensePlate?: unknown;
+  tripId?: unknown;
 }
 
 interface RawRouteInfo {
@@ -107,15 +120,31 @@ export function minutesFromLabel(label: string): number | null {
   return match ? Number(match[0]) : null;
 }
 
-function readVehicleFields(_raw: RawPrediction): Pick<LiveArrival, 'plate' | 'tripId' | 'position'> {
-  return { plate: null, tripId: null, position: null };
+// Caja amplia del Gran Concepción (Tomé/Dichato a Santa Juana/Lota): una
+// posición fuera de ella o en 0,0 es un GPS sin señal, no un bus.
+const REGION = { minLat: -37.6, maxLat: -36.3, minLng: -73.6, maxLng: -72.5 };
+
+function readPosition(raw: RawPrediction): LiveArrival['position'] {
+  const lat = finiteNumber(raw.latitude);
+  const lng = finiteNumber(raw.longitude);
+  if (lat == null || lng == null) return null;
+  if (lat < REGION.minLat || lat > REGION.maxLat || lng < REGION.minLng || lng > REGION.maxLng) return null;
+  return { lat, lng };
+}
+
+/** Patentes chilenas: "ABCD12" o "AB1234"; cualquier otra cosa no se muestra. */
+function readPlate(value: unknown): string | null {
+  const plate = nonEmptyString(value)?.toUpperCase().replace(/[\s.-]+/g, '');
+  return plate && /^[A-Z]{2,4}\d{2,4}$/.test(plate) && plate.length === 6 ? plate : null;
 }
 
 function parsePrediction(raw: unknown, fetchedAt: number): LiveArrival | null {
   if (!isRecord(raw)) return null;
   const p = raw as RawPrediction;
-  const route = nonEmptyString(p.route);
-  if (!route) return null;
+  const rawRoute = nonEmptyString(p.route);
+  if (!rawRoute) return null;
+  const explicitDirection = parseDirection(p.direction);
+  const route = liveServiceName(rawRoute, explicitDirection);
   const timeLabel = nonEmptyString(p.timeLabel);
   const epochSeconds = finiteNumber(p.epochTime);
   let arrivalAt: number | null = null;
@@ -129,21 +158,36 @@ function parsePrediction(raw: unknown, fetchedAt: number): LiveArrival | null {
   const distance = finiteNumber(p.distance);
   return {
     route,
-    direction: parseDirection(p.direction),
+    direction: explicitDirection ?? suffixDirection(route),
     arrivalAt,
     timeLabel,
     distanceM: distance != null && distance >= 0 ? distance : null,
-    ...readVehicleFields(p),
+    plate: readPlate(p.licensePlate),
+    tripId: nonEmptyString(p.tripId),
+    position: readPosition(p),
+    realtime: p.realtime !== false,
   };
 }
 
-/** "201I" → { route: "201", direction: "I" }. El sentido viene pegado al final. */
-export function splitServicio(servicio: string): { route: string; direction: LiveDirection | null } {
-  const last = servicio.slice(-1);
-  if (servicio.length > 1 && (last === 'I' || last === 'R')) {
-    return { route: servicio.slice(0, -1), direction: last };
-  }
-  return { route: servicio, direction: null };
+// ── Nombres de servicio ─────────────────────────────────────────────────────
+// La fuente nombra cada sentido por separado, como el letrero de la micro:
+// las urbanas con la variante ("20A" es el 20VA de regreso, "02CY" el 02C-Y)
+// y las interurbanas y el Biobús con el sentido pegado ("401I", "201AUR",
+// "B02R"). En "11R" o "63I" la última letra es parte de la variante, no el
+// sentido. Las alertas a veces omiten el sufijo ("Servicio 201AU (Regreso)").
+
+const SUFFIXED_SERVICE = /^(?:\d{3}|B\d{2})(?:AU)?$/;
+const SUFFIXED_WITH_DIRECTION = /^(?:\d{3}|B\d{2})(?:AU)?([IR])$/;
+
+/** Nombre canónico del servicio: "201 AU" + R → "201AUR", "20A" → "20A". */
+export function liveServiceName(route: string, direction: LiveDirection | null): string {
+  const name = route.toUpperCase().replace(/[\s-]+/g, '');
+  return direction && SUFFIXED_SERVICE.test(name) ? name + direction : name;
+}
+
+function suffixDirection(service: string): LiveDirection | null {
+  const match = SUFFIXED_WITH_DIRECTION.exec(service);
+  return match ? (match[1] as LiveDirection) : null;
 }
 
 const HTML_ENTITIES: Record<string, string> = {
@@ -194,7 +238,8 @@ export function parseStopInfo(raw: unknown, fetchedAt: number): StopInfoParse {
       const info = item as RawRouteInfo;
       const servicio = nonEmptyString(info.servicio);
       if (!servicio) continue;
-      routeInfo.push({ ...splitServicio(servicio), msg: nonEmptyString(info.msg) });
+      const route = liveServiceName(servicio, null);
+      routeInfo.push({ route, direction: suffixDirection(route), msg: nonEmptyString(info.msg) });
     }
   }
 
@@ -239,18 +284,14 @@ export function formatAge(ageMs: number): string {
   return `hace ${Math.floor(seconds / 60)} min`;
 }
 
-export function serviceKey(route: string, direction: LiveDirection | null): string {
-  return `${route}|${direction ?? ''}`;
-}
-
-/** Servicios con la alerta "Servicio X (Ida|Regreso) … tiempo real". */
-export function servicesWithoutGps(alerts: string[]): Set<string> {
-  const out = new Set<string>();
+/** Servicios con la alerta "Servicio X (Ida|Regreso) … tiempo real", por nombre canónico. */
+export function servicesWithoutGps(alerts: string[]): Map<string, LiveDirection> {
+  const out = new Map<string, LiveDirection>();
   for (const alert of alerts) {
     if (!/tiempo real/i.test(alert)) continue;
-    for (const match of alert.matchAll(/Servicio\s+([0-9A-Za-z]+)\s*\((Ida|Regreso|Vuelta|Retorno)\)/gi)) {
+    for (const match of alert.matchAll(/Servicio\s+([0-9A-Za-z-]+)\s*\((Ida|Regreso|Vuelta|Retorno)\)/gi)) {
       const direction: LiveDirection = /^ida$/i.test(match[2]) ? 'I' : 'R';
-      out.add(serviceKey(match[1], direction));
+      out.set(liveServiceName(match[1], direction), direction);
     }
   }
   return out;
@@ -268,23 +309,21 @@ export interface ServiceNote {
  * alerta lo dice para esa línea y sentido, "pasa cada N" si routeInfo lo trae.
  */
 export function serviceNotes(snapshot: StopInfoSnapshot): ServiceNote[] {
-  const withArrivals = new Set(snapshot.arrivals.map((a) => serviceKey(a.route, a.direction)));
+  const withArrivals = new Set(snapshot.arrivals.map((a) => a.route));
   const noGps = servicesWithoutGps(snapshot.alerts);
   const services = new Map<string, { route: string; direction: LiveDirection | null; msg: string | null }>();
   for (const info of snapshot.routeInfo) {
-    services.set(serviceKey(info.route, info.direction), info);
+    services.set(info.route, { ...info, direction: info.direction ?? noGps.get(info.route) ?? null });
   }
-  for (const key of noGps) {
-    if (services.has(key)) continue;
-    const [route, direction] = key.split('|');
-    services.set(key, { route, direction: parseDirection(direction), msg: null });
+  for (const [route, direction] of noGps) {
+    if (!services.has(route)) services.set(route, { route, direction, msg: null });
   }
 
   const notes: ServiceNote[] = [];
-  for (const [key, service] of services) {
-    if (withArrivals.has(key)) continue;
+  for (const [route, service] of services) {
+    if (withArrivals.has(route)) continue;
     const parts: string[] = [];
-    if (noGps.has(key)) parts.push('sin datos en vivo');
+    if (noGps.has(route)) parts.push('sin datos en vivo');
     const frequency = service.msg?.match(/pasa cada\s+(.+)$/i);
     if (frequency) parts.push(`pasa cada ${frequency[1]}`);
     if (parts.length === 0) continue;
@@ -317,15 +356,12 @@ export const INITIAL_LIVE_STATE: LiveArrivalsState = {
 };
 
 function mergeNotes(previous: ServiceNote[], snapshot: StopInfoSnapshot): ServiceNote[] {
-  const withArrivals = new Set(snapshot.arrivals.map((a) => serviceKey(a.route, a.direction)));
+  const withArrivals = new Set(snapshot.arrivals.map((a) => a.route));
   const merged = new Map<string, ServiceNote>();
   for (const note of previous) {
-    const key = serviceKey(note.route, note.direction);
-    if (!withArrivals.has(key)) merged.set(key, note);
+    if (!withArrivals.has(note.route)) merged.set(note.route, note);
   }
-  for (const note of serviceNotes(snapshot)) {
-    merged.set(serviceKey(note.route, note.direction), note);
-  }
+  for (const note of serviceNotes(snapshot)) merged.set(note.route, note);
   return [...merged.values()];
 }
 
@@ -421,18 +457,84 @@ export function liveView(state: LiveArrivalsState, now: number, loading: boolean
 // ── Calce con los datos del visor ───────────────────────────────────────────
 
 /**
- * stopCode de la fuente para un paradero del visor. Los paraderos GTFS del
- * visor no traen stop_code (viene vacío en el feed), así que se usa el stop_id.
- * Los paraderos interurbanos digitalizados desde OSM no tienen código.
+ * Paraderos que la fuente renombró como "parada ficticia" (PF): mismo nombre
+ * y a menos de 40 m del GTFS de DTPR, según la tabla de la fuente del
+ * 21-nov-2026.
+ */
+const STOP_CODE_RENAMED: Record<string, string> = {
+  '38812': 'PF-00003',
+  '39592': 'PF-00004',
+  '40350': 'PF40350',
+  '40545': 'PF40545',
+  '42890': 'PF42890',
+  '42898': 'PF42898',
+};
+
+/**
+ * stopCode de la fuente para un paradero del visor: "P" + stop_id del GTFS de
+ * DTPR ("37520" → "P37520", "PV42001" → "PPV42001"). Así calzan 2.202 de los
+ * 2.239 paraderos del GTFS; 6 más con `STOP_CODE_RENAMED` y 31 no existen en
+ * la fuente. Fuera del GTFS (estaciones del Biotrén) no hay código.
  */
 export function liveStopCode(stopId: string): string | null {
-  const match = /^gtfs-stop-(\d+)$/.exec(stopId);
-  return match ? match[1] : null;
+  const match = /^gtfs-stop-([A-Za-z0-9-]+)$/.exec(stopId);
+  if (!match) return null;
+  return STOP_CODE_RENAMED[match[1]] ?? `P${match[1]}`;
 }
 
-/** "02A" y "2A", "17 O" y "17O" se comparan igual. */
-export function normalizeRouteCode(code: string): string {
-  return code.toUpperCase().replace(/\s+/g, '').replace(/^0+(?=[0-9A-Z])/, '');
+/**
+ * Líneas del GTFS de DTPR que la fuente en vivo no sigue (Coronel–Lota: sus
+ * paraderos existen pero sin recorridos, comprobado el 24-nov-2026).
+ */
+const NOT_IN_LIVE_SOURCE = new Set(['302', '304']);
+
+/**
+ * Nombre en la fuente para un sentido de un recorrido del visor, o null si la
+ * fuente no lo sigue. Sigue el orden de las letras del código, que es el que
+ * usa la fuente y el que calza con las secuencias de paradas: en "23BS" la B
+ * es el sentido 0 ("I") y la S el 1 ("R"). No se usa la variante del letrero
+ * del GTFS porque en 02AD, 02KP y 23BS viene cruzada entre sentidos.
+ */
+export function visorServiceName(
+  code: string,
+  direction: Pick<RouteDirection, 'directionId'>,
+): string | null {
+  const base = code.toUpperCase().replace(/[\s-]+/g, '');
+  const first = direction.directionId === 0;
+  if (NOT_IN_LIVE_SOURCE.has(base)) return null;
+  if (SUFFIXED_SERVICE.test(base)) return base + (first ? 'I' : 'R');
+  if (/^\d{3}Y$/.test(base)) return base;
+  // "02C-Y", "80J-Y": una sola variante con la Y pegada.
+  if (/^\d{2}[A-Z]-Y$/i.test(code.trim().replace(/\s+/g, ''))) return base;
+  const pair = /^(\d{2})([A-Z])([A-Z])$/.exec(base);
+  if (pair) return pair[1] + (first ? pair[2] : pair[3]);
+  return /^\d{2}[A-Z]$/.test(base) ? base : null;
+}
+
+export interface LiveServiceMatch {
+  route: Route;
+  direction: RouteDirection;
+}
+
+/** Índice nombre de la fuente → recorrido y sentido del visor. */
+export function indexLiveServices(routes: readonly Route[]): Map<string, LiveServiceMatch> {
+  const index = new Map<string, LiveServiceMatch>();
+  for (const route of routes) {
+    for (const direction of route.directions ?? []) {
+      const name = visorServiceName(route.code, direction);
+      if (name && !index.has(name)) index.set(name, { route, direction });
+    }
+  }
+  return index;
+}
+
+/** Código para mostrar: el nombre de la fuente ("20A", "23B") o el de la línea ("401", "201-AU", "02C-Y"). */
+export function liveServiceLabel(service: string, match: LiveServiceMatch | undefined): string {
+  const lineCode = SUFFIXED_SERVICE.test(service.slice(0, -1)) || (/Y$/.test(service) && /-Y$/i.test(match?.route.code ?? ''));
+  if (match && lineCode) {
+    return match.route.code;
+  }
+  return suffixDirection(service) ? service.slice(0, -1) : service;
 }
 
 export const DIRECTION_LABEL: Record<LiveDirection, string> = { I: 'ida', R: 'regreso' };

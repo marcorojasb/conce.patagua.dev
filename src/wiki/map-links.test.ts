@@ -16,14 +16,27 @@ describe('MAP_WIKI_LINKS reverse index', () => {
     expect(findWikiSlugForRouteCode('L1')).toBe('biotren');
     expect(findWikiSlugForRouteCode('L2')).toBe('biotren');
     expect(findWikiSlugForRouteCode('201')).toBe('ruta-201-santa-juana');
-    expect(findWikiSlugForRouteCode('201 AU')).toBe('ruta-201-santa-juana');
+    expect(findWikiSlugForRouteCode('201-AU')).toBe('ruta-201-santa-juana');
     expect(findWikiSlugForRouteCode('401')).toBe('concepcion-tome');
+    expect(findWikiSlugForRouteCode('401Y')).toBe('concepcion-tome');
     expect(findWikiSlugForRouteCode('411')).toBe('concepcion-tome');
     expect(findWikiSlugForRouteCode('421')).toBe('concepcion-tome');
+    expect(findWikiSlugForRouteCode('302')).toBe('concepcion-coronel-lota');
+  });
+
+  it('matches route codes written with spaces, hyphens or lowercase', () => {
+    expect(findWikiSlugForRouteCode('201 AU')).toBe('ruta-201-santa-juana');
+    expect(findWikiSlugForRouteCode('201au')).toBe('ruta-201-santa-juana');
+    expect(findWikiSlugForRouteCode('l1')).toBe('biotren');
+  });
+
+  it('uses the official GTFS route codes as keys', () => {
+    expect(Object.keys(MAP_WIKI_LINK_INDEX.byRouteCode)).toContain('201-AU');
+    expect(Object.keys(MAP_WIKI_LINK_INDEX.byRouteCode)).not.toContain('201 AU');
   });
 
   it('returns null for unknown route codes', () => {
-    expect(findWikiSlugForRouteCode('10A')).toBeNull();
+    expect(findWikiSlugForRouteCode('10AN')).toBeNull();
     expect(findWikiSlugForRouteCode('')).toBeNull();
   });
 
@@ -58,6 +71,7 @@ describe('wikiUrl / mapFocusUrl', () => {
 
   it('builds focus deep-links with encoding', () => {
     expect(mapFocusUrl('route', '201')).toBe('/?focus=route:201');
+    expect(mapFocusUrl('route', '201-AU')).toBe('/?focus=route:201-AU');
     expect(mapFocusUrl('route', '201 AU')).toBe('/?focus=route:201%20AU');
     expect(mapFocusUrl('corridor', 'concepcion-florida')).toBe(
       '/?focus=corridor:concepcion-florida',
