@@ -4,7 +4,7 @@ Visor open source del transporte público del Gran Concepción, Chile: Biotrén,
 
 ## Stack
 
-- React 18 + TypeScript + Vite 6
+- React 19 + TypeScript + Vite 6
 - Tailwind CSS + shadcn/ui (Radix primitives) — configuración en `components.json`
 - react-leaflet / Leaflet para el mapa
 - Vitest para tests
@@ -27,6 +27,15 @@ Son dos productos distintos que comparten build, estilos (Tailwind/shadcn) y des
 - `src/hooks/` — hooks de datos en vivo (calidad del aire vía SINCA, llegadas en vivo al paradero abierto).
 - `api/` — funciones de Vercel (hoy solo `stop-arrivals.ts`, intermediaria de las llegadas en vivo).
 - `scripts/` — scripts de sync/generación de datos y de verificación (`check`).
+
+## De dónde salen los datos
+
+- **Buses**: el [GTFS oficial de la DTPR](https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/) para el Gran Concepción ([`granconcepcion.zip`](https://dtpr.gob.cl/wp-content/uploads/2025/12/granconcepcion.zip)), versión `Gran Concepción20250228` (programa del 28-02-2025). Su calendario declarado (01-01-2024 a 31-12-2025) ya venció, pero es la última publicación oficial; el visor la usa como el programa más reciente y lo dice en la ficha de cada recorrido. Trae 102 recorridos con 188 sentidos (16 recorridos publican uno solo), 2.239 paraderos y 57.019 viajes (29.240 por día hábil, 14.405 el sábado y 13.374 el domingo). Incluye los interurbanos 201/201-AU (Santa Juana), 401/401Y/411/421 (Tomé y Dichato) y 302/304 (Lota ↔ Concepción). Hasta noviembre de 2026 el visor usaba el feed 2019 de la Subsecretaría de Transportes (169 servicios, uno por letra), procesado con sqlite; ese pipeline ya no existe.
+- **Códigos de recorrido**: el código del GTFS junta las dos letras de un recorrido, una por sentido: `10AN` es el sentido 0 `10A` más el sentido 1 `10N`. La variante es el código que muestra el bus y sale del letrero oficial ("Vía Láctea 10A - Centinela"). En 02AD, 02KP y 23BS el feed trae el letrero cruzado entre sentidos (en 23BS también el destino); la sincronización lo corrige solo cuando viene cruzado (`correctTripHeadsign` en `scripts/lib/gtfs-transform.ts`).
+- **Biotrén**: estaciones y vía desde OpenStreetMap; horarios de los [itinerarios oficiales de EFE](https://www.efe.cl/itinerario-biotren/) vigentes desde el 15-07-2026, transcritos tren por tren en `src/data/static-service-patterns.ts` (día hábil: L1 37 trenes, L2 104). EFE no publica GTFS.
+- **Florida y Yumbel**: no tienen GTFS; en el mapa son solo un pin de corredor con enlace al wiki (`src/data/interurban-corridors.ts`).
+- **Llegadas en vivo**: fuente no oficial de la app de Transapp, solo para el paradero abierto (ver más abajo).
+- **Servicios en curso**: estimación según el horario programado (GTFS y EFE), nunca GPS; la UI la rotula como estimación.
 
 ## Correr en local
 
@@ -95,7 +104,7 @@ Los datasets en `src/data/*.generated.ts` no se escriben a mano: se generan a pa
 | `sync:cycleways` | Overpass | `cycleways.generated.ts` |
 | `sync:greenspace` | Overpass | `greenspace.generated.ts` |
 | `sync:schools` | Overpass | `schools.generated.ts` |
-| `sync:interurban-routes` | Overpass | `interurban-routes.generated.ts` |
+| `sync:interurban-routes` | Overpass | `interurban-routes.generated.ts` (trazados OSM de 201/401/411/421 digitalizados a mano; el visor ya no los usa, esos servicios vienen del GTFS oficial) |
 | `sync:all` | — | `sync:osm` + `sync:gtfs` (todos los anteriores) |
 
 `sync:gtfs` (`scripts/sync-gtfs-official.ts`) no necesita credenciales ni binarios del sistema: descarga el zip oficial y lo lee en streaming con Node (`stop_times.txt` pesa ~300 MB descomprimido). Detalles:
@@ -103,6 +112,7 @@ Los datasets en `src/data/*.generated.ts` no se escriben a mano: se generan a pa
 - **Fuente**: `GTFS_URL` (por defecto `https://dtpr.gob.cl/wp-content/uploads/2025/12/granconcepcion.zip`). El zip queda en `.cache/gtfs/` (ignorado por git) y se reutiliza mientras el servidor informe el mismo ETag/Last-Modified y tamaño; una descarga que no es un zip GTFS completo falla sin reemplazar la caché. Con `GTFS_ZIP_PATH=/ruta/al.zip` se lee un zip local sin descargar. Detrás de un proxy HTTPS, Node ≥ 22.21 necesita `NODE_USE_ENV_PROXY=1`.
 - **Vigencia**: la versión publicada (`feed_version` "Gran Concepción20250228") declara calendario 2024-01-01 a 2025-12-31 y no hay una posterior. Los días de servicio salen de los flags de `calendar.txt` sin filtrar por fecha; el rango declarado, la URL, el sha256 y la fecha de descarga quedan en `GTFS_CONCEPCION_SOURCE`.
 - **Horas**: las horas vacías de `stop_times` (paradas que no son timepoint) se ignoran, nunca se leen como 00:00. Un viaje va de la primera salida con hora a la última llegada con hora; solo se descartan viajes rotos (sin horas, duración ≤ 0 o > 6 h) y el script los cuenta por ruta en su resumen.
+- **Sentidos y letreros**: cada recorrido trae sus dos sentidos (`direction_id` 0 y 1), con la secuencia de paraderos más común, su shape y su letrero; del letrero salen la variante (`10A`) y el destino. Si el letrero de un sentido viene cruzado con el del otro (hoy 02AD, 02KP y 23BS), `correctTripHeadsign` lo corrige; la evidencia es el orden de letras del código, los paraderos terminales de cada sentido y la red publicada en la app Transapp/DTPR.
 - **Formato**: horarios y ventanas por paradero se guardan compactos (ver `scripts/lib/gtfs-encode.ts`) y se decodifican al cargar el módulo, para respetar los presupuestos de `bundle:budget`. Si lo único que cambia es la marca de tiempo, ni estos archivos ni `coverage.generated.ts` se reescriben.
 
 El resto de los scripts (Overpass, Wikidata) no requieren credenciales: usan endpoints públicos con un User-Agent identificándose como este proyecto.
@@ -111,8 +121,10 @@ El resto de los scripts (Overpass, Wikidata) no requieren credenciales: usan end
 
 Al abrir un paradero GTFS, la ficha muestra las micros que vienen a ese paradero con su GPS real (línea, sentido, minutos, distancia y patente) y el mapa las dibuja como marcadores cuadrados con anillo verde. Las micros de "Servicios en curso" siguen siendo una **estimación según horario** (redondas, borde punteado) y así se rotulan.
 
-- Fuente: `phone.dtpr.transapp.cl/v7/phone/<id>/stopInfo`, la que usa la app de Transapp. No es oficial ni documentada y no manda CORS, así que el navegador consulta `api/stop-arrivals.ts` (función de Vercel): caché de 25 s por paradero en la CDN y en memoria, consultas en vuelo compartidas y tope de 30 consultas por minuto por instancia.
-- Variable de entorno: `TRANSAPP_PHONE_ID` (ver `.env.example`). Sin ella la función responde 503 y la ficha dice que las llegadas en vivo no están activadas.
+- Fuente: `phone.dtpr.transapp.cl`, la que usa la app de Transapp para la DTPR. No es oficial ni documentada y no manda CORS, así que el navegador consulta `api/stop-arrivals.ts` (función de Vercel): caché de 25 s por paradero en la CDN y en memoria, consultas en vuelo compartidas, tope de 30 consultas por minuto por instancia y un nombre de cliente genérico.
+- Variable de entorno: `TRANSAPP_PHONE_ID`, el identificador de cliente que pide la fuente (configurado en Vercel; nunca va en el repo). Sin ella la función responde 503 y la ficha dice que las llegadas en vivo no están activadas.
+- Qué trae (comprobado con respuestas reales el 24-11-2026 en paraderos de Concepción, Tomé, San Pedro, Talcahuano y Coronel): por micro, línea, sentido, minutos, posición GPS, patente y distancia en línea recta al paradero (no por la ruta). Las líneas sin GPS llegan como "sin datos en vivo · pasa cada N".
+- Calce con el GTFS: el código de paradero de la fuente es `P` + el `stop_id` oficial (2.202 de 2.239 paraderos; 6 más con otro nombre; 31 no existen en la fuente). La fuente nombra las líneas por sentido (`20A`, `401I`): 183 de los 188 sentidos oficiales tienen par. Sigue 11 servicios de 2026 que el GTFS 2025 no trae (02H 02L 20F 20N 30H 30Z 50SY 70FY 70HY 80B 80V) y no sigue en vivo la 302 ni la 304. Sus coordenadas de paradero coinciden con las oficiales (mediana 3 m, 97% a menos de 20 m), lo que respalda la ubicación oficial de los paraderos.
 - Reglas (en `src/realtime/live-arrivals.ts`, con pruebas): respuesta ilegible = falla; minutos desde `epochTime` o `timeLabel`; se descarta la micro que debía pasar hace más de 2 min; una respuesta vacía de golpe no borra un dato con micros por llegar; un dato vale 10 min mostrando su edad (destacada pasados 2 min); "sin datos en vivo · pasa cada N" cuando la fuente avisa que la línea no transmite GPS. Consulta cada 30 s, 60 s tras una falla y 5 min tras tres seguidas, solo con la pestaña visible.
 - En local, `npm run dev` monta el mismo handler (plugin en `vite.config.ts`); los smoke tests interceptan `/api/stop-arrivals` con respuestas de ejemplo y nunca consultan la fuente real.
 

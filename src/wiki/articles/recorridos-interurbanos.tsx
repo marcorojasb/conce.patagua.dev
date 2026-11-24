@@ -49,8 +49,8 @@ export default function RecorridosInterurbanos() {
         autorizaciones puntuales) es la{' '}
         <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
           SEREMITT Biobío
-        </a>{' '}, sucesión vigente Silva → Fierro → Cautivo (desde 28-nov-2025) , , y
-        los financiamientos se estructuran sobre el{' '}
+        </a>{' '}(sucesión Silva → Fierro → Cautivo, este último desde el
+        28-nov-2025), y los financiamientos se estructuran sobre el{' '}
         <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
           Subsidio Nacional al Transporte Público
         </a>.
@@ -97,7 +97,7 @@ export default function RecorridosInterurbanos() {
           extra={<MapLink terminal="osm-way-597586612">Terminal Collao en el mapa →</MapLink>}
         />
         <ServiceRow
-          code=", "
+          code="s/c"
           title="Conexiones a Hualqui rural"
           notes="Más allá de la estación Biotrén Hualqui, sectores rurales hacia el interior. Talcamávida, Unihue y Quilacoya conectan principalmente por ferrocarril, no bus."
         />
@@ -113,15 +113,22 @@ export default function RecorridosInterurbanos() {
         </p>
         <p>
           Hasta noviembre de 2026 el visor usaba el feed 2019 de la
-          Subsecretaría de Transportes, que no traía ninguno de estos
-          servicios. Por eso la 201 y las 401/411/421 se dibujaban desde
-          OpenStreetMap con ventanas horarias estimadas. Eso quedó atrás:
-          hoy todo sale de la fuente oficial.
+          Subsecretaría de Transportes, que no traía la 201 ni las
+          401/411/421. Por eso esos servicios se dibujaban desde trazados
+          OpenStreetMap digitalizados a mano, con ventanas horarias
+          estimadas. Eso quedó atrás: hoy trazado, paraderos y horario
+          salen de la fuente oficial.
         </p>
         <p>
           Florida y Yumbel siguen fuera: son operadores privados que no
           publican GTFS. En el mapa aparecen solo como un pin del corredor
           que enlaza a su artículo.
+        </p>
+        <p>
+          Las llegadas en vivo del visor vienen de una fuente no oficial
+          (la de la app de Transapp) y no siguen la 302 ni la 304. La capa
+          Servicios en curso, en cambio, es una estimación según el horario
+          programado y nunca GPS.
         </p>
       </Section>
 

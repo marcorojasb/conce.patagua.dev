@@ -42,9 +42,11 @@ export default function ConcepcionTome() {
         <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
           Perímetro de Exclusión de Tomé
         </a>
-        . <strong>Pendientes operacionales</strong>: tabla horaria
-        oficial lun-vie / sáb / dom / festivos, composición de flota
-        verificada, refuerzos contractuales de temporada alta.
+        . Trazado, paraderos y horario programado de 401, 401Y, 411 y 421:
+        GTFS oficial de la DTPR (programa del 28-feb-2025, verificado el
+        24-nov-2026). <strong>Pendientes operacionales</strong>: horario
+        vigente 2026 y de festivos, composición de flota verificada,
+        refuerzos contractuales de temporada alta.
       </VerifiedBanner>
 
       <Section title="Resumen ejecutivo">
@@ -68,9 +70,9 @@ export default function ConcepcionTome() {
             <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
               Perímetro de Exclusión del Gran Concepción
             </a>
-            . Las líneas 17M, 30B/C/E, 31F, 57Y, 62H del GTFS urbano
-            llegan hasta este tramo y aparecen en el visor (tarifa
-            $580).
+            . Los recorridos 17MC, 30MB, 30NC, 30QE, 31DF, 50YP y 62HM
+            del GTFS oficial llegan hasta este tramo y aparecen en el
+            visor (tarifa $580).
           </li>
           <li>
             <strong>Tramo interurbano</strong> Concepción ↔ Tomé ↔
@@ -81,12 +83,13 @@ export default function ConcepcionTome() {
             </a>
             , operados por Transportes Tomé. Tarifas vigentes:
             <strong> $780</strong> a Tomé / <strong>$830</strong> a
-            Dichato (desde 23-feb-2025). Estos servicios{' '}
-            <strong>no están</strong> en el{' '}
+            Dichato (desde 23-feb-2025). Estos servicios, junto con la{' '}
+            <strong>401Y</strong>, vienen en el{' '}
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-              feed GTFS Gran Concepción
-            </a>
-            .
+              GTFS oficial de la DTPR
+            </a>{' '}
+            y el visor los muestra con trazado, paraderos y horario
+            programado.
           </li>
         </ul>
         <p>
@@ -104,40 +107,46 @@ export default function ConcepcionTome() {
       <Section title="Cobertura del visor (qué sí, qué no)">
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">
-            Sí están en el visor (feed GTFS Gran Concepción)
+            Recorridos urbanos hasta Penco y Lirquén (PE Gran Concepción)
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
             Servicios urbanos que cruzan Concepción → Penco/Lirquén y
-            terminan ahí. Identificables por código en el visor:
+            terminan ahí. El código del GTFS junta las dos variantes del
+            recorrido, una por sentido; entre paréntesis, la que va hacia
+            el norte:
           </p>
           <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px]">
-            <li><strong>17M</strong> · Penco centro (operador Expresos Chiguayante)</li>
-            <li><strong>30B / 30C</strong> · Penco - Lirquén</li>
-            <li><strong>30E</strong> · Penco Chico</li>
-            <li><strong>31F</strong> · Lirquén (línea "Ruta del Mar")</li>
-            <li><strong>57Y</strong> · Cosmito camino a Penco (operador Denavi Sur, San Vicente ↔ Cosmito)</li>
-            <li><strong>62H</strong> · Lirquén (operador Mi Expreso, San Vicente ↔ Lirquén)</li>
+            <li><strong>17MC</strong> (17M) · Montahue, Penco (operador Expresos Chiguayante)</li>
+            <li><strong>30MB / 30NC</strong> (30B, 30C) · Penco - Lirquén (Ruta Las Playas)</li>
+            <li><strong>30QE</strong> (30E) · Penco Chico (Ruta Las Playas)</li>
+            <li><strong>31DF</strong> (31F) · Lirquén (Ruta del Mar)</li>
+            <li><strong>50YP</strong> (50Y) · Cosmito (operador Denavi Sur, San Vicente ↔ Cosmito)</li>
+            <li><strong>62HM</strong> (62H) · Lirquén (operador Mi Expreso, San Vicente ↔ Lirquén)</li>
           </ul>
           <p className="mt-1 text-[12px] text-muted-foreground">
             Estos servicios pasaron al Perímetro de Exclusión del Gran
             Concepción el <strong>1-ene-2024</strong>, reemplazando la
-            licitación 2002 caducada el 31-mar-2024.
+            licitación 2002 caducada el 31-mar-2024. Operadores según el
+            letrero de cada viaje en el GTFS oficial.
           </p>
         </div>
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">
-            Están en el visor, pero fuera del GTFS urbano
+            Interurbanos del PE Tomé (también en el GTFS oficial)
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            Los servicios 401 / 411 / 421 que llegan a Tomé y Dichato
-            operan bajo el Perímetro de Exclusión de Tomé y no
-            comparten el feed GTFS. Una consulta directa al dataset
-            GTFS confirma que no hay ninguna ruta con esos códigos en
-            el feed urbano. El visor los incorpora como rutas nativas
-            digitalizadas y los proyecta en Servicios en curso con
-            fuentes públicas/comunitarias. El por qué institucional vive en{' '}
+            Los servicios <strong>401, 401Y, 411 y 421</strong> operan bajo
+            el Perímetro de Exclusión de Tomé, pero la DTPR los publica en
+            el mismo GTFS de Gran Concepción que usa el visor (versión del
+            28-feb-2025). Aparecen como recorridos normales, rotulados
+            «Interurbano Tomé», con sus dos sentidos (la 401Y, uno solo),
+            sus paraderos y su horario programado. La DTPR publica además
+            un GTFS propio del PE Tomé (versión Tomé20230308) con los
+            mismos cuatro códigos. Hasta nov-2026, cuando el visor usaba
+            el feed 2019, estos servicios se dibujaban desde trazados OSM
+            digitalizados a mano. El contexto institucional vive en{' '}
             <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
-              PE Tomé · Hueco GTFS
+              PE Tomé · GTFS y cobertura del visor
             </a>
             .
           </p>
@@ -149,7 +158,7 @@ export default function ConcepcionTome() {
           </p>
           <p className="mt-2 text-[12px]">
             <MapLink route="401">
-              Ver la 401 Tomé Alto en el mapa →
+              Ver la 401 en el mapa →
             </MapLink>
           </p>
         </div>
@@ -163,34 +172,53 @@ export default function ConcepcionTome() {
         </Sources>
       </Section>
 
-      <Section title="Servicios en curso">
+      <Section title="Horario programado (GTFS oficial)">
         <p>
-          Los servicios <strong>401</strong>, <strong>411</strong> y{' '}
-          <strong>421</strong> se proyectan en la capa Servicios en curso
-          con datos públicos de DTPR, Moovit/Red Regional y PDFs de línea.
-          No es GPS: el marcador indica dónde debería ir un bus si salió
-          según la frecuencia publicada.
+          El programa que publica la DTPR (versión del 28-feb-2025; su
+          calendario declarado venció el 31-dic-2025, pero es la última
+          publicación) trae estas salidas. Son las que usa el visor en la
+          ficha de cada recorrido y en la capa <strong>Servicios en
+          curso</strong>, que estima dónde debería ir cada bus según ese
+          horario: no es GPS.
         </p>
-        <KeyValueList
-          items={[
-            ['401', 'Tomé Alto ↔ Concepción · 05:00-21:00 hacia Concepción; regreso hasta aprox. 23:30'],
-            ['411', 'Dichato ↔ Concepción · ventana regular 06:01-18:31, frecuencia 20-60 min'],
-            ['421', 'Av. Estadio ↔ Concepción · refuerzo laboral punta AM/PM, sin sábado/domingo en PDF Moovit'],
-            ['Trazado', 'Ruta 150, Penco/Lirquén, Bellavista, Tomé centro y variantes a Dichato/Av. Estadio; paths densificados para reducir saltos'],
-          ]}
-        />
+        <DataTable columns={['Servicio', 'Lunes a viernes', 'Sábado', 'Domingo']} bodyClassName="divide-y align-top text-[12px]">
+          <tr>
+            <td className="px-3 py-2 font-medium">401 Tomé</td>
+            <td className="px-3 py-2">100 salidas hacia Concepción (05:25 a 21:58) y 103 hacia Tomé (06:25 a 23:30), cada ~10 min, ~1 h 26 min de viaje</td>
+            <td className="px-3 py-2">99 y 103 salidas</td>
+            <td className="px-3 py-2">99 y 101 salidas</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">401Y Bellavista</td>
+            <td className="px-3 py-2">2 salidas hacia Concepción (06:45 y 07:00); no publica el sentido inverso</td>
+            <td className="px-3 py-2">Sin servicio</td>
+            <td className="px-3 py-2">Sin servicio</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">411 Dichato</td>
+            <td className="px-3 py-2">85 salidas hacia Concepción (05:55 a 19:58) y 78 hacia Dichato (07:12 a 20:08), ~1 h 45 min de viaje</td>
+            <td className="px-3 py-2">73 y 69 salidas</td>
+            <td className="px-3 py-2">67 y 72 salidas</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">421 Av. Estadio</td>
+            <td className="px-3 py-2">4 salidas hacia Concepción (06:05 a 06:35) y 13 hacia Tomé (18:20 a 20:20): refuerzo de punta</td>
+            <td className="px-3 py-2">Sin servicio</td>
+            <td className="px-3 py-2">Sin servicio</td>
+          </tr>
+        </DataTable>
+        <p className="text-[12px] text-muted-foreground">
+          El GTFS no declara festivos: un feriado se muestra con el horario
+          normal de ese día de la semana. Los refuerzos de mayo de 2025
+          (ver más abajo) son posteriores al programa del 28-feb-2025 y
+          pueden no estar reflejados.
+        </p>
         <Sources>
+          <SourceLink href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/">
+            DTPR · GTFS Gran Concepción (versión 20250228)
+          </SourceLink>
           <SourceLink href="https://www.dtpr.cl/pdf/perimetros/tome/resolucionesgenerales/Res_22_2021_Subsecretaria_de_Transportes.pdf">
             DTPR · Perímetro de Exclusión de Tomé
-          </SourceLink>
-          <SourceLink href="https://moovitapp.com/index/es-419/transporte_p%C3%BAblico-line-401-Concepcion-3122-3753673-146991722-0">
-            Moovit · línea 401
-          </SourceLink>
-          <SourceLink href="https://moovitapp.com/index/es-419/transporte_p%25C3%25BAblico-line-411-Concepcion-3122-3753673-146991723-0">
-            Moovit · línea 411
-          </SourceLink>
-          <SourceLink href="https://appassets.mvtdev.com/map/188/l/3122/146991724.pdf">
-            Moovit PDF · línea 421
           </SourceLink>
         </Sources>
       </Section>
@@ -301,6 +329,15 @@ export default function ConcepcionTome() {
                 </td>
               </tr>
               <tr>
+                <td className="px-3 py-2 font-mono font-medium">401Y</td>
+                <td className="px-3 py-2">Tomé (Bellavista) → Concepción</td>
+                <td className="px-3 py-2 text-muted-foreground text-[12px]">
+                  Variante de punta mañana. En el GTFS oficial solo trae el
+                  sentido hacia Concepción: 2 salidas de lunes a viernes
+                  (06:45 y 07:00).
+                </td>
+              </tr>
+              <tr>
                 <td className="px-3 py-2 font-mono font-medium">411</td>
                 <td className="px-3 py-2">Concepción ↔ Dichato (vía Tomé)</td>
                 <td className="px-3 py-2 text-muted-foreground text-[12px]">
@@ -389,7 +426,7 @@ export default function ConcepcionTome() {
               'Mayo 2025 sumó cuarta salida entre 06:00-07:00, cada 15 min.',
             ],
             ['Información en tiempo real', 'App Red Regional de Movilidad, buscar "401" / "411".'],
-            ['GTFS público', 'NO publicado. El servicio no aparece en el feed GTFS Gran Concepción.'],
+            ['GTFS público', 'Sí. 401, 401Y, 411 y 421 vienen en el GTFS oficial de Gran Concepción que publica la DTPR (el que usa el visor) y en un GTFS propio del PE Tomé (versión Tomé20230308).'],
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
@@ -413,11 +450,11 @@ export default function ConcepcionTome() {
           .
         </p>
         <PendingBanner>
-          <strong>Tabla horaria completa pendiente.</strong> Los horarios
-          publicados son anuncios puntuales (mayo 2025, etc.). Falta la
-          ventana operativa formal lun-vie / sáb / dom / festivos para
-          cada uno de los tres servicios. Una foto del cartel en la
-          terminal Manuel Rodríguez cierra este hueco.
+          <strong>Horario vigente 2026 pendiente.</strong> El único
+          programa oficial publicado es el del GTFS (28-feb-2025, ver
+          "Horario programado"), sin festivos. Los anuncios de mayo de
+          2025 son posteriores. Una foto del cartel en la terminal Manuel
+          Rodríguez permitiría contrastarlo.
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html">
@@ -475,7 +512,7 @@ export default function ConcepcionTome() {
             ],
             [
               'GTFS urbano (visor)',
-              'Las micros urbanas 17M/30B/30C/30E/31F/57Y/62H sí aparecen en el visor y conectan los mismos puntos hasta Penco/Lirquén, útil para el tramo corto si el pasajero no necesita continuar a Tomé.',
+              'Los recorridos urbanos 17MC, 30MB, 30NC, 30QE, 31DF, 50YP y 62HM aparecen en el visor y conectan los mismos puntos hasta Penco/Lirquén, útil para el tramo corto si el pasajero no necesita continuar a Tomé.',
             ],
             [
               'BusPay 2026',
@@ -679,6 +716,11 @@ export default function ConcepcionTome() {
               date: 'Q3 2026 (proyectado)',
               event: 'Marcha blanca BusPay sobre la flota de Transportes Tomé. Efectivo y pago electrónico operan en paralelo.',
             },
+            {
+              date: '24-nov-2026',
+              event: 'El visor toma 401, 401Y, 411 y 421 del GTFS oficial de la DTPR (programa del 28-feb-2025) y deja los trazados OSM digitalizados a mano.',
+              source: { href: '""" + GTFS_PAGE + """', label: 'dtpr.gob.cl · GTFS' },
+            },
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
@@ -733,8 +775,8 @@ export default function ConcepcionTome() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">GTFS publicado</td>
-                <td className="px-3 py-2">No (operador no publica feed; servicios 401/411/421 ausentes del feed urbano)</td>
-                <td className="px-3 py-2">No (operador no publica feed). Trazado integrado nativamente al visor desde mayo 2026 vía digitalización OSM, ver artículo Ruta 201.</td>
+                <td className="px-3 py-2">Sí: GTFS oficial DTPR de Gran Concepción (401, 401Y, 411, 421), que usa el visor, y GTFS propio del PE Tomé</td>
+                <td className="px-3 py-2">Sí: 201 y 201-AU en el GTFS oficial DTPR de Gran Concepción. Hasta nov-2026 el visor los digitalizaba desde OSM.</td>
                 <td className="px-3 py-2">No (operador no publica feed)</td>
               </tr>
               <tr>

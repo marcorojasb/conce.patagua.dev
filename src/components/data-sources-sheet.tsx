@@ -13,53 +13,61 @@ interface Source {
   count?: string;
 }
 
+// "2025-12-31" → "31-12-2025", como se escriben las fechas en el resto del visor.
+function dmy(iso: string): string {
+  return iso.split('-').reverse().join('-');
+}
+
 // Los conteos se calculan al renderizar, no al importar: `ROUTES` se muta
 // in-place cuando aterriza el chunk lazy de micros, así que un const de módulo
 // quedaría congelado con los 6 recorridos del primer paint.
 function buildSources(): Source[] {
   const microCount = ROUTES.filter((r) => r.type === 'micro').length;
   const biotrenCount = ROUTES.filter((r) => r.type === 'biotren').length;
+  const gtfs = GTFS_CONCEPCION_SOURCE;
+  const gtfsExpired = new Date().toISOString().slice(0, 10) > gtfs.feedEndDate;
 
   return [
     {
-      title: 'GTFS estático Gran Concepción',
+      title: 'GTFS oficial Gran Concepción · DTPR',
       detail:
-        'Recorridos de micros, paraderos, shapes y calendario programado de los 169 servicios urbanos. Publicado por la Subsecretaría de Transportes de Chile. La app consume un artefacto estático generado a partir del feed; las shapes pasan por una simplificación Douglas–Peucker (~16 m), el resto se sirve tal cual.',
-      count: `${microCount} recorridos · ${GTFS_STOPS.length} paraderos · fuente ${GTFS_CONCEPCION_SOURCE.source}`,
-      link: {
-        href: 'https://busmaps.com/en/chile/Subsecretaria-de-Transporte/gran-concepcion',
-        label: 'busmaps.com (mirror)',
-      },
-      license: { name: 'CC BY 4.0 · Subsecretaría de Transportes (Chile)', href: 'https://creativecommons.org/licenses/by/4.0/' },
+        `Programa oficial de buses que publica la División de Transporte Público Regional (DTPR, Ministerio de Transportes) en dtpr.gob.cl: trazado y paraderos de cada sentido y horario programado por día, para la red urbana y los interurbanos 201/201-AU (Santa Juana), 401/401Y/411/421 (Tomé y Dichato) y 302/304 (Lota). Versión «${gtfs.feedVersion}», calendario declarado del ${dmy(gtfs.feedStartDate)} al ${dmy(gtfs.feedEndDate)}` +
+        (gtfsExpired
+          ? ': ya venció, pero es la última publicación oficial y el visor la usa como el programa más reciente.'
+          : '.') +
+        ' El visor revisa el archivo cada día; las shapes se simplifican (~9 m) y el resto se usa tal cual.',
+      count: `${microCount} recorridos · ${GTFS_STOPS.length} paraderos · ${gtfs.source}`,
+      link: { href: gtfs.url, label: 'granconcepcion.zip (dtpr.gob.cl)' },
+      license: 'La DTPR no declara licencia de datos · información pública del Estado',
     },
     {
-      title: 'Llegadas en vivo · app Transapp/DTPR (no oficial)',
+      title: 'Llegadas en vivo · fuente de la app Transapp (no oficial)',
       detail:
-        'Al abrir un paradero, el visor muestra las micros que vienen a ese paradero con su GPS real: línea, minutos, distancia y patente, y las dibuja en el mapa. Es la misma fuente que usa la app de Transapp para el Gran Concepción; no es un feed oficial ni documentado, así que puede caerse o responder vacío. Se consulta solo el paradero abierto, cada 30 s, a través de una intermediaria con caché de 25 s por paradero y tope de consultas. Un dato vale 10 min mostrando su edad.',
-      count: 'Solo el paradero abierto · hasta ~30 min de anticipación',
-      link: { href: 'https://transformacion.dtpr.cl/', label: 'transformacion.dtpr.cl' },
+        'Al abrir un paradero, el visor consulta solo ese paradero en la fuente que usa la app de Transapp para la DTPR. No es un feed oficial ni documentado: puede caerse o responder vacío. Por cada micro trae línea, sentido, minutos, posición GPS, patente y distancia en línea recta (no por la ruta). Una línea sin GPS aparece como "sin datos en vivo · pasa cada N". La consulta pasa por la intermediaria del visor (/api/stop-arrivals), con caché de 25 s por paradero y un tope de 30 consultas por minuto a la fuente. Un dato vale 10 min mostrando su edad.',
+      count: 'Calce con el GTFS: 2.202 de 2.239 paraderos (código P + stop_id) · 183 de 188 sentidos · sin 302/304',
       license: 'Fuente no oficial · sin licencia de datos publicada',
     },
     {
-      title: 'Servicios en curso (simulación según horario)',
+      title: 'Servicios en curso (estimación según horario)',
       detail:
-        'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus o tren según horarios públicos: GTFS urbano oficial, Biotrén por frecuencia publicada y 201/401/411/421 por ventanas/frecuencias DTPR, operador, Moovit/Red Regional y comunidad. No es GPS real: atrasos, cancelaciones y desvíos no se ven. En el mapa van redondas con borde punteado; las micros con GPS real van cuadradas con anillo verde.',
-      count: 'Calculado en cliente cada 1 s desde GTFS + patrones horarios documentados',
-      license: 'Capa derivada · GTFS CC BY 4.0 + fuentes públicas citadas en wiki',
+        'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus o tren según su horario programado: GTFS oficial DTPR para los buses (interurbanos incluidos) e itinerarios oficiales de EFE para el Biotrén. Es una estimación, no GPS: atrasos, cancelaciones y desvíos no se ven. En el mapa van redondas con borde punteado; las micros con GPS real van cuadradas con anillo verde.',
+      count: 'Calculado en el navegador cada 1 s desde los horarios programados',
+      license: 'Capa derivada · GTFS DTPR + itinerarios EFE',
+    },
+    {
+      title: 'EFE · itinerarios del Biotrén',
+      detail:
+        'Horario de cada tren de L1 (Hualqui ↔ Mercado Talcahuano) y L2 (Coronel ↔ Concepción), transcrito tren por tren desde los itinerarios oficiales vigentes desde el 15-07-2026 (lunes a viernes, sábado y domingo). EFE no publica GTFS. También vienen de EFE el orden y los nombres oficiales de las 26 estaciones.',
+      count: 'Día hábil: L1 37 trenes · L2 104 trenes (de cabecera a cabecera)',
+      link: { href: 'https://www.efe.cl/itinerario-biotren/', label: 'efe.cl/itinerario-biotren' },
     },
     {
       title: 'OpenStreetMap · Overpass API',
       detail:
-        'Estaciones y trazado del Biotrén (railway=station + railway=rail + operator=EFE), terminales (amenity=bus_station) y puntos de interés urbanos.',
+        'Estaciones y vía del Biotrén (railway=station + railway=rail + operator=EFE), terminales (amenity=bus_station), puntos de interés urbanos, ciclovías, áreas verdes y colegios. Los pins de los corredores Florida y Yumbel, que no tienen GTFS, usan coordenadas de OSM.',
       count: `${biotrenCount} líneas Biotrén · ${TERMINALS.length} terminales`,
       link: { href: 'https://www.openstreetmap.org/about', label: 'openstreetmap.org' },
       license: 'Open Database License (ODbL)',
-    },
-    {
-      title: 'EFE Trenes de Chile · Biotrén',
-      detail:
-        'Orden y nombres oficiales de las 26 estaciones del Biotrén L1 (Hualqui ↔ Mercado Talcahuano) y L2 (Coronel ↔ Concepción), más horarios de operación.',
-      link: { href: 'https://www.efe.cl/nuestros-servicios/biotren/', label: 'efe.cl/biotren' },
     },
     {
       title: 'Esri · Gray Canvas basemaps',
@@ -73,16 +81,21 @@ function buildSources(): Source[] {
 
 const PENDING: Source[] = [
   {
+    title: 'GTFS DTPR con programa 2026',
+    detail:
+      'La versión publicada es el programa del 28-02-2025. La red que sigue la app de Transapp en 2026 ya tiene 11 servicios que ese GTFS no trae (02H, 02L, 20F, 20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B, 80V); no aparecen como recorrido en el visor. La sincronización diaria tomará la versión nueva apenas la DTPR la publique.',
+    link: { href: 'https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/', label: 'dtpr.gob.cl · GTFS Gran Concepción' },
+  },
+  {
     title: 'DTPR · GTFS-RT Gran Concepción',
     detail:
-      'Posiciones de toda la flota en tiempo real y alertas de servicio en un feed oficial. Aún no se verificó un feed público autorizado; mientras tanto las llegadas en vivo vienen de la app de Transapp (ver arriba), solo para el paradero abierto.',
+      'Posiciones de toda la flota en tiempo real y alertas de servicio en un feed oficial. No hay uno público; mientras tanto las llegadas en vivo vienen de la fuente de la app de Transapp (ver arriba), solo para el paradero abierto.',
     link: { href: 'https://transformacion.dtpr.cl/', label: 'transformacion.dtpr.cl' },
   },
   {
-    title: 'Servicios interurbanos licitados (Tomé, Santa Juana, Florida)',
+    title: 'Corredores sin GTFS (Florida, Yumbel, resto de Coronel–Lota)',
     detail:
-      'El feed GTFS Gran Concepción cubre el área metropolitana urbana, Concepción, Talcahuano, San Pedro, Hualpén, Chiguayante, Penco/Lirquén, Coronel, Lota. Quedan fuera servicios licitados que conectan con Tomé, Santa Juana, Florida, Yumbel, etc. (incluyendo los 201 / 201 AU a Santa Juana). Pendiente: incorporar estos recorridos cuando estén en un GTFS público o vía Wikidata + OSM.',
-    count: 'Rutas conocidas pendientes: ~12 servicios interurbanos del Biobío',
+      'El GTFS oficial ya trae los interurbanos 201/201-AU, 401/401Y/411/421 y 302/304. Quedan fuera los corredores privados Concepción ↔ Florida y Concepción ↔ Yumbel, que en el mapa son solo un pin con enlace al wiki, y el resto de los troncales Coronel–Lota. Entrarán como recorridos si alguien publica su GTFS.',
   },
   {
     title: 'Tarifa y pago electrónico DTPR',
@@ -122,9 +135,9 @@ export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) 
       <SourceList title="Pendientes (esperando publicación oficial)" sources={PENDING} />
 
       <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-        Si encuentras un error en un paradero o recorrido de micro, corrígelo en la
-        fuente GTFS primaria cuando esté confirmada. Para terminales, POIs o Biotrén,
-        sigue siendo útil{' '}
+        Si encuentras un error en un paradero o recorrido de micro, repórtalo a la
+        DTPR, que publica el GTFS (tt@mtt.gob.cl). Para terminales, POIs o
+        estaciones del Biotrén, sigue siendo útil{' '}
         <a
           className="underline underline-offset-2 hover:text-foreground"
           href="https://www.openstreetmap.org/edit"

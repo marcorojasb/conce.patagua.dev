@@ -6,6 +6,8 @@
 // (2012-2013), "aproximada a un PE". El PE formal está en bases de
 // licitación en Contraloría desde jul-2025 (80 buses proyectados).
 // Coexiste con Biotrén L2 (sin llegar a Lota) y el electrocorredor MOP.
+// En el visor: 302 y 304 (Lota ↔ Concepción) desde el GTFS oficial DTPR
+// (versión 20250228, cotejado el 24-nov-2026); el resto de los troncales no.
 
 import {
   DataTable,
@@ -264,22 +266,24 @@ export default function ConcepcionCoronelLota() {
 
       <Section title="Servicios y frecuencias">
         <p className="text-[12px] text-muted-foreground">
-          El feed{' '}
+          El{' '}
           <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-            GTFS Gran Concepción
+            GTFS oficial de la DTPR
           </a>{' '}
-          <strong>no cubre</strong> el corredor sur (Res. Ex. 457 ≠ PE
-          2024). El visor solo muestra la <em>L2 del Biotrén</em> en este
-          eje.
+          trae solo dos servicios del corredor sur: <strong>302</strong> y{' '}
+          <strong>304</strong>, Lota ↔ Concepción por Coronel y la Ruta 160
+          (cabecera en Av. Collao). El resto de los troncales (Res. Ex. 457)
+          no tiene GTFS publicado. En el visor se ven la 302, la 304 y la{' '}
+          <em>L2 del Biotrén</em>. <MapLink route="302">Ver la 302 en el mapa →</MapLink>
         </p>
         <KeyValueList
           items={[
             ['Codificación', 'Sin numeración unificada publicada. Operadores usan nombres comerciales y números de máquina; troncales se identifican por destino (Lota Bajo/Alto, Coronel terminal, Lagunillas, Maule, San Pedro del Mar).'],
             ['Variantes de trazado', 'Tres familias: troncal a Lota Bajo (eje completo), troncal a Coronel terminal, ramales internos Coronel-Lota Alto + alimentadores Lomas / Boca Sur / Candelaria.'],
             ['Frecuencia punta', 'Pendiente. Prensa local cita saturación punta mañana hacia Concepción y tarde hacia el sur.'],
-            ['Primera/última salida', 'Pendiente verificar en terreno.'],
-            ['Tiempo real', 'No documentado. App Red Regional cubre PE GC y PE Tomé; Coronel-Lota no confirmado.'],
-            ['GTFS público', 'NO publicado. Ausente del visor.'],
+            ['Primera/última salida', 'Troncales Res. Ex. 457: pendiente verificar en terreno. 302 según el GTFS oficial (programa 28-feb-2025): de lunes a viernes, 169 salidas por sentido entre ~07:00 y ~21:00, una cada ~5 min, y ~2 h 5 min a 2 h 15 min de viaje; sábado y domingo, 73 por sentido entre ~08:00 y ~20:00. 304: programa más acotado (de lunes a viernes, 37 salidas hacia Concepción entre 06:03 y 09:03 y 85 hacia Lota entre 09:01 y 16:01).'],
+            ['Tiempo real', 'No documentado. La fuente de llegadas en vivo que usa el visor (app de Transapp, no oficial) no sigue la 302 ni la 304.'],
+            ['GTFS público', 'Solo 302 y 304, dentro del GTFS oficial de Gran Concepción (DTPR). El resto de los troncales, no.'],
           ]}
         />
         <PendingBanner>
@@ -494,12 +498,18 @@ export default function ConcepcionCoronelLota() {
           <div className="text-[12px] font-medium">Lo que sí está</div>
           <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px]">
             <li>
-              <strong>L2 del Biotrén</strong> (Concepción ↔ Coronel), trazado y 14 estaciones desde OSM. No depende del GTFS de
+              <strong>L2 del Biotrén</strong> (Concepción ↔ Coronel), trazado y 14 estaciones desde OSM y horario del itinerario oficial de EFE. No depende del GTFS de
               buses. Ver{' '}
               <a href="/wiki/biotren" className="underline underline-offset-2">
                 Biotrén
               </a>
               .
+            </li>
+            <li>
+              <strong>302 y 304</strong> (Lota ↔ Concepción por Coronel y la
+              Ruta 160), desde el GTFS oficial de la DTPR, rotulados
+              «Interurbano Lota»: trazado de cada sentido, paraderos y
+              horario programado. Sin llegadas en vivo.
             </li>
             <li>
               Algunos servicios del PE Gran Concepción que entran a San
@@ -511,17 +521,17 @@ export default function ConcepcionCoronelLota() {
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">Lo que NO está</div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            Todos los troncales del corredor sur, operan bajo Res. Ex.
-            457, fuera del GTFS PE 2024. A diferencia de Tomé (operador
-            único, 401/411/421), la fragmentación operacional aquí
-            dificulta incluso la digitalización OSM. Cuando se adjudique
-            el PE formal y se publique GTFS, el visor podrá sumar el
-            corredor.
+            El resto de los troncales del corredor sur, que operan bajo la
+            Res. Ex. 457 y no tienen GTFS publicado. A diferencia de Tomé
+            (operador único, todos sus servicios en el GTFS), aquí la
+            fragmentación operacional deja fuera la mayor parte del
+            corredor. Cuando se adjudique el PE formal y la DTPR publique
+            su programa, el visor lo tomará en la sincronización diaria.
           </p>
         </div>
         <Sources>
-          <SourceLink href="https://datos.gob.cl/dataset/gtfs-gran-concepcion">
-            Datos Abiertos · GTFS Gran Concepción (alcance PE 2024)
+          <SourceLink href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/">
+            DTPR · GTFS Gran Concepción (versión 20250228, incluye 302 y 304)
           </SourceLink>
         </Sources>
       </Section>
@@ -610,7 +620,8 @@ export default function ConcepcionCoronelLota() {
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS Gran Concepción
-            </a>{' '}, por qué el visor no muestra los troncales del corredor sur.
+            </a>{' '}, qué trae el feed oficial (302 y 304) y por qué el resto
+            de los troncales del corredor sur no está.
           </li>
           <li>
             <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
@@ -633,7 +644,8 @@ export default function ConcepcionCoronelLota() {
           <li>Tarifa adulto 2026 por operador y tramo (Concepción ↔ Coronel vs ↔ Lota).</li>
           <li>Tabla horaria lun-vie / sáb / dom de las troncales.</li>
           <li>Cronología de paros, huelgas y alzas tarifarias (1997-2025).</li>
-          <li>Digitalización OSM de paraderos clave (San Pedro, Coronel, Lota Bajo/Alto).</li>
+          <li>Paraderos y trazado de los troncales que no están en el GTFS (San Pedro, Coronel, Lota Bajo/Alto).</li>
+          <li>Operador de la 302 y la 304 (el GTFS no lo nombra).</li>
           <li>Integración tarifaria Conecta ↔ BusPay.</li>
           <li>Decreto MTT de adjudicación del PE formal.</li>
         </ul>

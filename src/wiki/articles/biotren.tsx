@@ -167,7 +167,7 @@ export default function Biotren() {
               al mediodía · 05:55 a 23:32
             </td>
             <td className="px-3 py-2">53 trenes (26 desde Coronel, 27 desde Concepción) · cada ~30 min · 06:30 a 22:12</td>
-            <td className="px-3 py-2">32 trenes (16 por sentido) · cada 30–60 min · 08:30 a 21:42</td>
+            <td className="px-3 py-2">32 trenes (16 por sentido) · cada ~45 min en promedio (entre 15 y 80 min) · 08:30 a 21:42</td>
           </tr>
         </DataTable>
         <KeyValueList
@@ -275,7 +275,7 @@ export default function Biotren() {
             ['Línea 1', <><strong>Hualqui ↔ Mercado de Talcahuano</strong> · 12 estaciones · azul claro. <MapLink route="L1">Ver L1 →</MapLink></>],
             ['Línea 2', <><strong>Coronel ↔ Concepción</strong> · ramal del carbón (Lomas Coloradas, San Pedro, Juan Pablo II) · 14 estaciones · azul oscuro. <MapLink route="L2">Ver L2 →</MapLink></>],
             ['Operador', 'EFE Trenes Metropolitanos S.A. (filial EFE Sur), con subsidio operacional MTT.'],
-            ['Frecuencia', 'Lun-Vie: L1 cada ~30 min en punta y con huecos de 1 a 3 h a media jornada; L2 cada ~12 min en punta. Fin de semana: L2 cada ~30 min; L1 8 trenes por sentido el sábado y 4 el domingo. Detalle en "Horario oficial".'],
+            ['Frecuencia', 'Lun-Vie: L1 cada ~30 min en punta y con huecos de hasta 3 h 20 min a media jornada; L2 cada ~12 min en punta. Fin de semana: L2 cada ~30 min el sábado y ~45 min en promedio el domingo; L1 8 trenes por sentido el sábado y 4 el domingo. Detalle en "Horario oficial".'],
             ['Ventana operativa', 'Lun-Vie: L1 06:20 a 22:48, L2 05:55 a 23:32 (primera salida a última llegada, itinerario EFE desde 15-jul-2026). Festivos: consultar a EFE.'],
             ['Material rodante', 'Xtrapolis (Alstom Brasil) y ABe históricas; 3 coches articulados; 3 kV DC catenaria.'],
             ['Estructura tarifaria', 'Zonas Z1-Z10 desde 2-ene-2026 (rango $420-$850 adulto). Ver sección "Tarifas vigentes 2026".'],
@@ -397,8 +397,9 @@ export default function Biotren() {
 
       <Section title="Estaciones">
         <p>
-          26 estaciones (12 en L1, 14 en L2) digitalizadas desde OSM
-          (<code>railway=stop</code> con <code>operator~EFE</code>) en{' '}
+          26 estaciones (12 en L1, 14 en L2) tomadas de OSM
+          (<code>railway=station</code> o <code>halt</code> con{' '}
+          <code>operator~EFE</code>) en{' '}
           <code className="font-mono">src/data/biotren.generated.ts</code>.
           Códigos EFE (<code>HQ</code>, <code>CC</code>, <code>TH</code>)
           provienen de efetrenes.cl.

@@ -11,9 +11,12 @@ export default function SobreEsteWiki() {
         <p>
           El visor principal de <code className="font-mono">conce.patagua.dev</code> es
           un producto técnico que consume fuentes <strong>verificables</strong>
-          {', '}<a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS estático</a>,
-          OpenStreetMap, INE, SINCA. Si un dato no puede
-          citarse a un origen abierto, no entra al visor.
+          {', '}<a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS estático</a>{' '}
+          de la DTPR, itinerarios de EFE, OpenStreetMap, INE, SINCA. Si un
+          dato no puede citarse a un origen abierto, no entra al visor. La
+          excepción declarada son las llegadas en vivo a un paradero: vienen
+          de una fuente no oficial (la de la app de Transapp) y el visor
+          las rotula así.
         </p>
         <p>
           Pero hay una cantidad enorme de información operativa que <em>no</em>
@@ -293,8 +296,9 @@ export default function SobreEsteWiki() {
               <>
                 <strong>División de Transporte Público Regional</strong>{' '}
                 (antes DPRTM). Brazo técnico de la Subsecretaría de
-                Transportes para regiones. El sitio regional Biobío es
-                dprbiobio.dpr.gob.cl.
+                Transportes para regiones. Publica el GTFS oficial del
+                Gran Concepción en dtpr.gob.cl. El sitio regional Biobío
+                es dprbiobio.dpr.gob.cl.
               </>,
             ],
             [
@@ -327,7 +331,8 @@ export default function SobreEsteWiki() {
                 <strong>GTFS Realtime</strong>. Extensión del GTFS para
                 posiciones de vehículos, predicciones y alertas en
                 tiempo real. No publicado para el Gran Concepción al
-                cierre 2026.
+                cierre 2026; las llegadas en vivo del visor vienen de una
+                fuente no oficial (la de la app de Transapp).
               </>,
             ],
             [
@@ -372,8 +377,8 @@ export default function SobreEsteWiki() {
               'OSM',
               <>
                 <strong>OpenStreetMap</strong> (openstreetmap.org). Base
-                cartográfica con la que se digitalizan estaciones,
-                terminales y trazados que el visor muestra.
+                cartográfica de la que salen las estaciones y la vía del
+                Biotrén, las terminales y otras capas del visor.
               </>,
             ],
             [

@@ -221,7 +221,7 @@ export default function SeremittDtprBiobio() {
             ['Sede', 'Concepción. Sitio web: dprbiobio.dpr.gob.cl'],
             ['Funciones centrales', 'Licitaciones DTPR (ej. ELC0007 Santa Juana) · pagos de subsidio Ley 20.378 · fiscalización operativa con apoyo del 3CV y Carabineros · trato directo con operadores en régimen de perímetro · autorización de servicios urbanos e interurbanos'],
             ['Padrón regional', 'Lleva el padrón de operadores autorizados del Registro Nacional de Servicios de Transporte de Pasajeros (RNSTP) en el Biobío.'],
-            ['Datos abiertos', 'Publica el feed GTFS del Gran Concepción a través de datos.gob.cl bajo coordinación con la Subsecretaría de Transportes.'],
+            ['Datos abiertos', 'La DTPR (nivel nacional) publica en dtpr.gob.cl el GTFS oficial del Gran Concepción (versión 20250228, programa del 28-feb-2025) y uno propio del PE Tomé. El feed anterior, de 2019, estaba catalogado en datos.gob.cl por la Subsecretaría de Transportes.'],
             ['Comisión evaluadora', 'En licitaciones grandes (BusPay 2026, Santa Juana 2024) la Comisión Evaluadora de la DTPR puntúa ofertas técnicas y económicas según las bases.'],
           ]}
         />
@@ -321,7 +321,7 @@ export default function SeremittDtprBiobio() {
             ['BusPay 2026', 'Adjudicado al Consorcio Buspay el 28-ene-2026. ~$750 millones/año, 1.800-2.000 validadores en 11 comunas (las 7 del PE GC + Tomé + Coronel + Lota + Santa Juana). Marcha blanca Q3 2026, régimen 100% electrónico fines 2026.'],
             ['Electrocorredores MOP', 'Coordinación con MOP Concesiones en tres proyectos sobre la Ruta 160 (San Pedro-Coronel), Ruta 150 (Concepción-Penco) y Autopista Concepción-Talcahuano Tramo II. Inversión ~USD 250M, plazo concesión 25 años, ofertas únicas Electro-Cointer en 2025, adjudicación 1S 2026.'],
             ['Subsidios Florida', 'Capa zona norte oct-2025, Rahuil, Poñén-Roa y servicio nocturno: nuevas líneas subsidiadas Ley 20.378 anunciadas por la SEREMITT desde 2025 sin licitar todavía el reemplazo del corredor troncal Concepción ↔ Florida.'],
-            ['GTFS Gran Concepción', 'Feed estático publicado en datos.gob.cl bajo coordinación Subtrans / DTPR Biobío. Cubre las 36 unidades de negocio del PE Gran Concepción 2024.'],
+            ['GTFS Gran Concepción', 'Feed estático oficial publicado por la DTPR en dtpr.gob.cl (8-dic-2025, versión 20250228). Cubre la red urbana del PE Gran Concepción 2024 y los interurbanos 201/201-AU, 401/401Y/411/421 y 302/304. Calendario declarado vencido el 31-dic-2025, sin versión posterior al 24-nov-2026.'],
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
@@ -400,7 +400,7 @@ export default function SeremittDtprBiobio() {
           items={[
             ['Transparencia activa', 'Publicación obligatoria de adquisiciones, contratos, viáticos, dotación, organigrama y normativa. Accesible vía transparencia.gob.cl filtrando por MTT.'],
             ['Solicitudes Ley 20.285', 'Vía portal "Solicitud de Acceso a la Información Pública". Plazo de respuesta legal: 20 días hábiles, prorrogables.'],
-            ['Datos abiertos', 'Feed GTFS Gran Concepción publicado en datos.gob.cl bajo licencia CC-BY. Ver artículo dedicado.'],
+            ['Datos abiertos', 'GTFS oficial de Gran Concepción publicado en dtpr.gob.cl, sin licencia de datos declarada (el feed 2019 estaba en datos.gob.cl, cuya licencia por defecto es CC BY 4.0). Ver artículo dedicado.'],
             ['Diario Oficial', 'Publicación de decretos del MTT que crean perímetros, adjudican licitaciones o ajustan tarifas (DO requerido para actos administrativos generales).'],
             ['OIRS regional', 'Oficina de Información, Reclamos y Sugerencias del MTT. Atiende consultas ciudadanas presenciales y telefónicas.'],
             ['Ranking de cumplimiento', 'El PE Gran Concepción 2024 prevé la publicación de un ranking de cumplimiento por unidad de negocio. Su periodicidad y desagregación específica no han sido cotejadas en fuente abierta, pendiente.'],
@@ -409,6 +409,9 @@ export default function SeremittDtprBiobio() {
         <Sources>
           <SourceLink href="https://www.portaltransparencia.cl/PortalPdT/web/ministerio-de-transportes-y-telecomunicaciones">
             Portal de Transparencia · MTT
+          </SourceLink>
+          <SourceLink href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/">
+            dtpr.gob.cl · GTFS Gran Concepción
           </SourceLink>
           <SourceLink href="https://datos.gob.cl/">
             datos.gob.cl · Portal de Datos Abiertos del Estado
@@ -450,7 +453,10 @@ export default function SeremittDtprBiobio() {
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
               El feed es estático. No hay GTFS-Realtime publicado pese a
               que el PE 2024 exige GPS online; el dato existe en la
-              DTPR pero no se abre.
+              DTPR pero no se abre como feed oficial. Lo más cercano es
+              la fuente que usa la app de Transapp para la DTPR, no
+              oficial ni documentada, que el visor consulta paradero por
+              paradero.
             </p>
           </div>
           <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
@@ -587,7 +593,7 @@ export default function SeremittDtprBiobio() {
             ['Diario Oficial', 'diariooficial.interior.gob.cl, texto íntegro de decretos del MTT que crean perímetros, adjudican licitaciones o ajustan tarifas.'],
             ['BCN Ley Chile', 'leychile.cl, texto consolidado de leyes citadas (18.059, 18.696, 20.378, 19.880, 20.285).'],
             ['Subtrans', 'subtrans.gob.cl, comunicados centrales de la Subsecretaría matriz, incluyendo licitaciones grandes que afectan al Biobío.'],
-            ['Datos abiertos', 'datos.gob.cl, feed GTFS Gran Concepción y otros datasets del MTT.'],
+            ['Datos abiertos', 'dtpr.gob.cl, GTFS oficial de Gran Concepción y de Tomé; datos.gob.cl, otros datasets del MTT.'],
           ]}
         />
         <PendingBanner>
@@ -650,8 +656,9 @@ export default function SeremittDtprBiobio() {
           <li>
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Recorridos interurbanos del Gran Concepción
-            </a>{' '}, índice general de servicios autorizados por la DTPR
-            pero que no están en el feed GTFS urbano.
+            </a>{' '}, índice general de los servicios interurbanos, los que
+            vienen en el GTFS oficial (201, 401/411/421, 302/304) y los que
+            no (Florida, Yumbel).
           </li>
           <li>
             <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
@@ -671,9 +678,8 @@ export default function SeremittDtprBiobio() {
           <li>
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS Gran Concepción
-            </a>{' '}, el feed estático que publica la DTPR Biobío vía
-            datos.gob.cl bajo coordinación con la Subsecretaría de
-            Transportes.
+            </a>{' '}, el feed estático oficial que publica la DTPR en
+            dtpr.gob.cl y que usa el visor.
           </li>
           <li>
             <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">

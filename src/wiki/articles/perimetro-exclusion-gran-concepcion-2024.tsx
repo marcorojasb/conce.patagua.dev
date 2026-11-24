@@ -364,7 +364,7 @@ export default function PerimetroExclusionGranConcepcion2024() {
               name: 'Expresos Chiguayante',
               routes: 'Línea 17 · UN17 (servicios 17M / 17S al norte)',
               terminal: 'Chiguayante - Concepción - Penco',
-              notes: 'El 17M aparece en el visor llegando hasta Penco centro.',
+              notes: 'En el visor aparece como 17MC: la variante 17M llega a Montahue (Penco) y la 17C a Leonera.',
               source: { href: 'https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n', label: 'Wikipedia' },
             },
             {
@@ -627,20 +627,23 @@ export default function PerimetroExclusionGranConcepcion2024() {
             Sí están en el visor (líneas dentro del PE Gran Concepción)
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            Todas las líneas urbanas del feed GTFS, códigos como{' '}
-            <strong>10A, 11, 12, 17M, 18, 22, 30B/C/E, 31F, 50YP, 57Y,
-            62H, 80, 81</strong> y todas las demás de las 36 UN
-            adheridas. Tarifa $580 adulto, accesibles vía rutas urbanas
-            del visor.
+            Todas las líneas urbanas del GTFS oficial de la DTPR, con
+            códigos como{' '}
+            <strong>10AN, 11EQ, 12QA, 17MC, 18PY, 22JO, 30MB, 31DF, 50YP,
+            62HM, 80H, 81SC</strong> y todas las demás de las 36 UN
+            adheridas. Cada código junta las dos variantes del recorrido,
+            una por sentido (10AN = 10A en un sentido y 10N en el otro). Tarifa
+            $580 adulto, accesibles vía rutas urbanas del visor.
           </p>
         </div>
         <div className="rounded-md border bg-card p-3">
           <div className="text-[12px] font-medium">
-            Integradas como interurbanos al visor (perímetros vecinos)
+            Interurbanos del mismo feed (otros regímenes)
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            El visor incluye selectivamente algunos servicios
-            interurbanos integrados al ecosistema metropolitano:
+            El GTFS oficial de la DTPR trae también servicios
+            interurbanos de otros regímenes, y el visor los muestra como
+            recorridos normales:
           </p>
           <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px]">
             <li>
@@ -652,18 +655,26 @@ export default function PerimetroExclusionGranConcepcion2024() {
               .
             </li>
             <li>
-              <strong>401 / 411 / 421</strong> Tomé (PE Tomé, NO del PE
-              Gran Concepción), ver{' '}
+              <strong>401 / 401Y / 411 / 421</strong> Tomé (PE Tomé, NO
+              del PE Gran Concepción), ver{' '}
               <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
                 artículo Concepción ↔ Tomé
               </a>
               .
             </li>
+            <li>
+              <strong>302 / 304</strong> Lota ↔ Concepción (corredor sur,
+              Res. Ex. 457), ver{' '}
+              <a href="/wiki/concepcion-coronel-lota" className="underline underline-offset-2">
+                artículo Concepción ↔ Coronel ↔ Lota
+              </a>
+              .
+            </li>
           </ul>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            Estos servicios aparecen en el visor por su relevancia
-            metropolitana aunque <strong>no compartan régimen</strong>{' '}
-            con el PE Gran Concepción. La tarifa difiere ($1.000 la 201,
+            Estos servicios aparecen en el visor porque vienen en el mismo
+            feed, aunque <strong>no compartan régimen</strong> con el PE
+            Gran Concepción. La tarifa difiere ($1.000 la 201,
             $780-$830 las 401/411/421).
           </p>
         </div>
@@ -783,11 +794,13 @@ export default function PerimetroExclusionGranConcepcion2024() {
               GTFS público sin actualizar
             </div>
             <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Cambios en código de servicio (ej. 57YP → 50YP cuando
-              Ruta Las Playas tomó UN50) tardan en propagarse al feed
-              GTFS público. El visor depende del feed, así que cualquier
-              desfase contractual aparece como "ruta inexistente" hasta
-              el siguiente release.
+              El GTFS oficial vigente es el programa del 28-feb-2025, con
+              calendario vencido el 31-dic-2025 y sin versión posterior al
+              24-nov-2026. La red que sigue en vivo la app de Transapp ya
+              tiene 11 servicios que ese feed no trae (02H, 02L, 20F, 20N,
+              30H, 30Z, 50SY, 70FY, 70HY, 80B, 80V). El visor depende del
+              feed, así que esos servicios no aparecen como recorrido
+              hasta que la DTPR publique otra versión.
             </p>
           </div>
         </div>
@@ -834,9 +847,9 @@ export default function PerimetroExclusionGranConcepcion2024() {
           <li>
             <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
               Recorridos interurbanos del Gran Concepción
-            </a>{' '}, índice general de los servicios que <em>no</em> están en
-            el GTFS urbano. Útil para entender qué cae dentro del PE
-            (urbano) vs. qué cae fuera.
+            </a>{' '}, índice general de los servicios interurbanos, con y sin
+            GTFS. Útil para entender qué cae dentro del PE (urbano) vs.
+            qué cae fuera.
           </li>
           <li>
             <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">

@@ -2,7 +2,8 @@
 //
 // Artículo verificado con fuentes primarias (julio 2024 – enero 2026).
 // Servicio inaugurado el 15-jul-2024 bajo la licitación DTPR ELC0007,
-// primera del Biobío en más de 10 años.
+// primera del Biobío en más de 10 años. Trazado y horario programado del
+// visor: GTFS oficial DTPR (versión 20250228), cotejado el 24-nov-2026.
 
 import {
   DataTable,
@@ -46,26 +47,45 @@ export default function Ruta201SantaJuana() {
         </p>
       </Section>
 
-      <Section title="Servicios en curso">
+      <Section title="En el visor (GTFS oficial)">
         <p>
-          La ruta 201 entra a la capa <strong>Servicios en curso</strong>{' '}
-          como simulación programada, no GPS. El visor usa la ventana
-          operacional publicada para lun-vie, Santa Juana → Concepción{' '}
-          <strong>05:30-23:45</strong> y Concepción → Santa Juana{' '}
-          <strong>06:45-23:20</strong>, y la expande con frecuencia
-          estimada para que el ritmo del servicio se vea en el mapa.
+          La 201 y la 201-AU vienen en el{' '}
+          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+            GTFS oficial de la DTPR
+          </a>{' '}
+          para el Gran Concepción (programa del 28-feb-2025; su calendario
+          declarado venció el 31-dic-2025, pero es la última publicación).
+          El visor las muestra con trazado y paraderos de cada sentido y
+          horario programado por día, rotuladas «Interurbano Santa Juana».
+          La capa <strong>Servicios en curso</strong> estima dónde debería
+          ir cada bus según ese horario: no es GPS. Hasta nov-2026 el visor
+          las dibujaba desde un trazado OpenStreetMap digitalizado a mano,
+          con una ventana horaria de prensa y frecuencia estimada.
         </p>
         <KeyValueList
           items={[
-            ['Fuente de horario', 'Sabes.cl + antecedentes DTPR/operador/comunidad'],
-            ['Confianza', 'Ventana horaria publicada; frecuencia estimada por fuentes públicas'],
-            ['Trazado', 'Ruta 156 / Ruta de la Madera + Puente Juan Pablo II, densificado para suavizar saltos'],
-            ['Limitación', 'No reemplaza la app Red Regional ni informa atrasos/cancelaciones'],
+            ['201, lunes a viernes', '220 salidas hacia Concepción (05:38 a 23:53) y 200 hacia Santa Juana (06:54 a 23:29), una cada ~5 min; ~2 h 46 min de viaje programado.'],
+            ['201, fin de semana', 'Sábado 92 salidas por sentido; domingo 82 hacia Concepción y 88 hacia Santa Juana, una cada ~10 min.'],
+            ['201-AU', 'Lunes a viernes 55 salidas hacia Concepción y 29 hacia Santa Juana; sábado 7 y 6; domingo 1 y 2.'],
+            ['Festivos', 'El GTFS no los declara: un feriado se muestra con el horario normal de ese día.'],
           ]}
         />
+        <p className="text-[12px] text-muted-foreground">
+          Una salida cada 5 min con viajes de casi tres horas exigiría
+          bastante más que los 23 buses del contrato. La hipótesis editorial
+          es que el programa declara frecuencias máximas y no salidas
+          reales; está anotado en{' '}
+          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+            GTFS Gran Concepción · Limitaciones
+          </a>
+          .
+        </p>
+        <p className="mt-2 text-[12px]">
+          <MapLink route="201">Ver la 201 en el mapa →</MapLink>
+        </p>
         <Sources>
-          <SourceLink href="https://sabes.cl/2024/07/16/nuevo-transporte-publico-concepcion-santa-juana-operativo-revisa-horarios-valores/">
-            Sabes.cl · horarios 201 Santa Juana
+          <SourceLink href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/">
+            DTPR · GTFS Gran Concepción (versión 20250228)
           </SourceLink>
           <SourceLink href="https://dtpr.mtt.gob.cl/consultalicitaciones/webpage/ConsultaLicitaciones.aspx?id=5927">
             DTPR · Licitación ELC0007
@@ -215,8 +235,8 @@ export default function Ruta201SantaJuana() {
             ['Salidas Santa Juana → Concepción', '05:30 a 23:45 hrs'],
             ['Salidas Concepción → Santa Juana', '06:45 a 23:20 hrs'],
             ['Frecuencia máxima', 'Hasta 10 buses/hora en hora punta (declaración ministro Juan Carlos Muñoz)'],
-            ['Servicios diarios estimados', '> 80 (no publicado como cifra exacta)'],
-            ['Sábado/domingo/festivos', 'Tabla horaria diferenciada, no publicada en fuente abierta'],
+            ['Servicios diarios', 'Prensa: sin cifra exacta (> 80). GTFS oficial: 420 salidas de la 201 y 84 de la 201-AU de lunes a viernes, ver "En el visor".'],
+            ['Sábado/domingo/festivos', 'Tabla horaria diferenciada: el GTFS oficial trae sábado y domingo; festivos no publicados en fuente abierta.'],
             ['Información en tiempo real', 'App Red Regional de Movilidad (buscar servicio "201")'],
           ]}
         />
@@ -397,18 +417,17 @@ export default function Ruta201SantaJuana() {
 
       <Section title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Tabla horaria detallada sábado / domingo / festivos.</li>
-          <li>Tiempo oficial de viaje publicado por DTPR.</li>
-          <li>Cantidad exacta de servicios diarios.</li>
+          <li>Horario de festivos (el GTFS no lo declara).</li>
+          <li>Tiempo de viaje real (el GTFS programa ~2 h 46 min de cabecera a cabecera).</li>
+          <li>Si las ~420 salidas diarias del GTFS son salidas reales o frecuencias máximas.</li>
           <li>Duración exacta del contrato de concesión (decreto N°93/2023 íntegro).</li>
           <li>RUT de Sociedad de Transporte de Pasajeros Santa Juana SpA.</li>
           <li>Tracking del cumplimiento del compromiso de espacio entre asientos.</li>
-          <li><a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS</a> público del servicio, al publicarse, se incorpora al visor principal.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
           Para cerrar estos huecos: solicitar Decreto N°93/2023 al Diario
-          Oficial y consultar a DTPR Biobío por la disponibilidad del feed
-          GTFS del servicio.
+          Oficial y consultar a DTPR Biobío por el programa de operación
+          vigente en 2026.
         </p>
       </Section>
 

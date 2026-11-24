@@ -172,7 +172,7 @@ export default function BiotrenExtensionesProyectos() {
             trazas férreas existentes (algunas en desuso, otras
             compartidas con el ramal de carga al puerto de Lirquén). La
             comuna de Penco (47.367 hab. Censo 2017) hoy depende del bus
-            urbano (líneas 17M, 30B/C/E, 31F, 57Y, 62H del{' '}
+            urbano (recorridos 17MC, 30MB, 30NC, 30QE, 31DF, 50YP y 62HM del{' '}
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               feed GTFS Gran Concepción
             </a>

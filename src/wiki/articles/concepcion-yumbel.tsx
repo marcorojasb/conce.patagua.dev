@@ -584,10 +584,10 @@ export default function ConcepcionYumbel() {
             ❌ El corredor Concepción ↔ Yumbel NO está en el visor
           </div>
           <p className="mt-1 text-[12px] text-muted-foreground">
-            El <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">feed GTFS Gran Concepción</a> que alimenta el visor principal
-            cubre el área metropolitana urbana (Concepción, Talcahuano,
-            Hualpén, San Pedro, Chiguayante, Penco/Lirquén, Coronel,
-            Lota). Una revisión directa del dataset confirma que no
+            El <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS oficial de la DTPR</a> que alimenta el visor principal
+            cubre la red urbana del PE Gran Concepción y los interurbanos
+            201 (Santa Juana), 401/411/421 (Tomé) y 302/304 (Lota). Una
+            revisión directa del dataset confirma que no
             existe ningún servicio con código que represente el corredor
             a Yumbel, porque los servicios Línea Azul, Buses Bío Bío y
             Pullman son interurbanos privados sin GTFS publicado y no

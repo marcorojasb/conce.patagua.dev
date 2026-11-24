@@ -17,6 +17,9 @@
 //     scripts/sync-gtfs-official.ts.
 //   - El feed anterior del visor (Subsecretaría de Transportes, última
 //     actualización 1-may-2019 según el mirror AmeriGEOSS de datos.gob.cl).
+//   - Contraste con la fuente de llegadas en vivo (app Transapp, no oficial):
+//     respuestas reales del 24-nov-2026 en paraderos de Concepción, Tomé,
+//     San Pedro, Talcahuano y Coronel, más el cruce de paraderos y líneas.
 //
 // Ámbar (sin fuente primaria al cierre):
 //   - Licencia de datos: la página de DTPR no declara ninguna.
@@ -54,8 +57,9 @@ export default function GtfsGranConcepcion() {
         publicado por la DTPR en{' '}
         <SourceLink href={DTPR_GTFS_PAGE}>dtpr.gob.cl · Gran Concepción · GTFS</SourceLink>
         : versión «Gran Concepción20250228», calendario declarado del
-        1-ene-2024 al 31-dic-2025. <strong>Pendiente</strong>: licencia de
-        datos (la página no declara ninguna) y cadencia de republicación.
+        1-ene-2024 al 31-dic-2025. Contraste con la red que sigue en vivo
+        la app de Transapp: 24-nov-2026. <strong>Pendiente</strong>: licencia
+        de datos (la página no declara ninguna) y cadencia de republicación.
       </VerifiedBanner>
 
       <FactStrip
@@ -66,7 +70,7 @@ export default function GtfsGranConcepcion() {
           { label: 'Vigencia declarada', value: '1-ene-2024 a 31-dic-2025 (vencida)' },
           { label: 'Recorridos', value: '102 · 188 sentidos' },
           { label: 'Paraderos', value: '2.239' },
-          { label: 'Viajes', value: '57.019 por semana tipo' },
+          { label: 'Viajes', value: '57.019 (día hábil + sábado + domingo)' },
         ]}
       />
 
@@ -116,7 +120,7 @@ export default function GtfsGranConcepcion() {
             date: '24-nov-2026',
             title: 'El visor pasa al GTFS oficial DTPR',
             detail:
-              'Deja el feed 2019 y el procesamiento con sqlite. Recorridos con sus dos sentidos e interurbanos oficiales en vez de trazados digitalizados a mano.',
+              'Deja el feed 2019 de la Subsecretaría y el procesamiento con sqlite. Recorridos con sus dos sentidos e interurbanos oficiales (201, 401, 302 y otros) en vez de trazados digitalizados a mano.',
             source: { href: `${REPO}/scripts/sync-gtfs-official.ts`, label: 'scripts/sync-gtfs-official.ts' },
           },
         ]}
@@ -286,9 +290,12 @@ export default function GtfsGranConcepcion() {
               <>
                 57.019 viajes, con <code className="font-mono">direction_id</code>{' '}
                 0/1, <code className="font-mono">shape_id</code> y letrero
-                (<code className="font-mono">trip_headsign</code>). La
-                primera letra del código es el sentido 0 y la segunda el
-                sentido 1. 16 recorridos traen un solo sentido.
+                (<code className="font-mono">trip_headsign</code>). Cada viaje
+                tiene un solo calendario: 29.240 corren de lunes a viernes,
+                14.405 el sábado y 13.374 el domingo, unas 174 mil salidas
+                en una semana. La primera letra del código es el sentido 0 y
+                la segunda el sentido 1. 16 recorridos traen un solo
+                sentido.
               </>,
             ],
             ['stops.txt', '2.239 paraderos con coordenadas. Respecto del feed 2019 desaparecieron 449 identificadores (por ejemplo 1506365) y aparecieron 578.'],
@@ -334,8 +341,9 @@ export default function GtfsGranConcepcion() {
               secuencia de paraderos más común de cada{' '}
               <code className="font-mono">direction_id</code>, su shape y su
               letrero. Del letrero salen la variante (10A, 10N) y el
-              destino. En tres recorridos (02AD, 02KP, 23BS) el letrero de
-              un sentido viene cruzado en el feed y el script lo corrige.
+              destino. En tres recorridos el letrero viene cruzado entre
+              sentidos y el script lo corrige, solo cuando viene cruzado
+              (ver Limitaciones).
             </li>
             <li>
               Simplifica cada trazado con Ramer-Douglas-Peucker (tolerancia
@@ -427,10 +435,28 @@ export default function GtfsGranConcepcion() {
             reporta en cada sincronización.
           </li>
           <li>
+            <strong>Letreros cruzados.</strong> En 02AD y 02KP el letrero
+            de cada sentido trae la letra de la variante del otro; en 23BS
+            también el destino: el sentido 0 termina en Terminal Collao
+            pero dice «23S - Av. Michaihue». La sincronización los corrige
+            (<code className="font-mono">correctTripHeadsign</code> en{' '}
+            <code className="font-mono">scripts/lib/gtfs-transform.ts</code>)
+            solo cuando vienen cruzados, así que una versión nueva ya
+            corregida pasa tal cual. Evidencia: el orden de letras del
+            código, los paraderos terminales de cada sentido y la red que
+            publica la app de Transapp para la DTPR.
+          </li>
+          <li>
+            <strong>La red de 2026 ya es otra en algunos servicios.</strong>{' '}
+            La fuente en vivo sigue 11 servicios que esta versión no trae
+            (02H, 02L, 20F, 20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B, 80V); el
+            visor no los muestra como recorrido.
+          </li>
+          <li>
             <strong>Sin tiempo real oficial.</strong> El feed es estático.
             Las llegadas en vivo del visor vienen de la fuente que usa la
             app de Transapp, que no es oficial, y solo se consultan para el
-            paradero abierto.
+            paradero abierto (ver la sección siguiente).
           </li>
           <li>
             <strong>Códigos de paradero.</strong> El{' '}
@@ -439,6 +465,35 @@ export default function GtfsGranConcepcion() {
             sigue en curso.
           </li>
         </ul>
+      </Section>
+
+      <Section title="Llegadas en vivo y contraste con la operación 2026">
+        <p>
+          El GTFS dice qué debería pasar; no dice dónde va cada micro. Para
+          eso el visor usa, solo en el paradero que abres, la fuente que
+          consume la app de Transapp para la DTPR. <strong>No es oficial ni
+          está documentada</strong>: puede cambiar, caerse o responder vacía
+          sin aviso. La consulta pasa por una intermediaria del propio visor
+          (<code className="font-mono">/api/stop-arrivals</code>) que guarda
+          cada paradero 25 s y no hace más de 30 consultas por minuto a la
+          fuente.
+        </p>
+        <KeyValueList
+          items={[
+            ['Qué trae', 'Por cada micro: línea, sentido, minutos, posición GPS, patente y distancia al paradero en línea recta (no por la ruta). Una línea sin GPS llega como «sin datos en vivo · pasa cada N».'],
+            ['Paraderos', 'El código de la fuente es «P» más el stop_id oficial: calzan 2.202 de los 2.239 paraderos del GTFS, 6 más tienen otro nombre y 31 no existen en la fuente.'],
+            ['Líneas', 'La fuente nombra cada sentido por separado («20A», «401I»). 183 de los 188 sentidos oficiales tienen su par. La 302 y la 304 (Lota) no se siguen en vivo.'],
+            ['Servicios que el GTFS no trae', '02H, 02L, 20F, 20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B y 80V: los corre la red de 2026, no están en el programa del 28-feb-2025.'],
+            ['Ubicación de paraderos', 'Las coordenadas de la fuente coinciden con las oficiales: mediana 3 m y 97% a menos de 20 m. Es un respaldo independiente de la ubicación de los paraderos del GTFS.'],
+            ['Comprobado', 'Respuestas reales del 24-nov-2026 en paraderos de Concepción, Tomé, San Pedro de la Paz, Talcahuano y Coronel.'],
+          ]}
+        />
+        <p className="text-[12px] text-muted-foreground">
+          Las micros de <strong>Servicios en curso</strong> son otra cosa:
+          una estimación de dónde debería ir cada viaje según el horario
+          programado del GTFS, nunca GPS. El visor las dibuja y rotula como
+          estimación.
+        </p>
       </Section>
 
       <CollapsibleSection title="Comparación con otros feeds chilenos">
@@ -565,7 +620,7 @@ export default function GtfsGranConcepcion() {
             },
             {
               date: '24-nov-2026',
-              event: 'El visor reemplaza el feed 2019 por el GTFS oficial DTPR, con sincronización diaria desde dtpr.gob.cl. Los interurbanos 201, 401, 411 y 421 dejan de dibujarse desde OpenStreetMap.',
+              event: 'El visor reemplaza el feed 2019 por el GTFS oficial DTPR, con sincronización diaria desde dtpr.gob.cl. Los interurbanos 201, 401, 411 y 421 dejan de dibujarse desde OpenStreetMap y se suman 201-AU, 401Y, 302 y 304.',
               source: { href: `${REPO}/scripts/sync-gtfs-official.ts`, label: 'sync-gtfs-official.ts' },
             },
           ]}
