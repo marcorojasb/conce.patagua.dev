@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { ConceMap } from '@/components/conce-map';
+import { MapLegend } from '@/components/map-legend';
 import { Header } from '@/components/header';
 import { MapLayerControl } from '@/components/map-layer-control';
 import { ParaderoDetailSheet } from '@/components/paradero-detail-sheet';
@@ -407,6 +408,12 @@ export default function App() {
       return true;
     });
   }, [visibleRouteIds, typeFilters, onlyOperatingNow, routesVersion]);
+  const legendRoutes = useMemo(() => {
+    void routesVersion;
+    return visibleIdsAfterTypeFilter
+      .map((id) => ROUTES_BY_ID.get(id))
+      .filter((r): r is Route => !!r);
+  }, [visibleIdsAfterTypeFilter, routesVersion]);
 
   const onToggleVisible = useCallback((id: string) => {
     setVisibleRouteIds((cur) =>
@@ -747,13 +754,15 @@ export default function App() {
                     Concepción · Biobío
                   </h2>
                   <CardDescription className="text-[12px] leading-snug text-foreground">
-                    Capas de transporte público y, próximamente, planificación urbana y
-                    servicios para política pública del Gran Concepción.
+                    <span className="hidden sm:inline">
+                      Capas de transporte público y, próximamente, planificación urbana y
+                      servicios para política pública del Gran Concepción.
+                    </span>
                     <span className="hidden md:inline">
                       {' '}
                       Usa <Kbd>⌘</Kbd> <Kbd>K</Kbd> para buscar.
                     </span>
-                    <span className="mt-2 grid grid-cols-3 gap-1.5">
+                    <span className="mt-1.5 grid grid-cols-3 gap-1.5 sm:mt-2">
                       <span className="rounded border bg-background/70 px-1.5 py-1">
                         <span className="block font-mono text-[11px]">
                           {ROUTES.length.toLocaleString('es-CL')}
@@ -786,37 +795,11 @@ export default function App() {
               (sheetKind || sourcesOpen || activeTool || layersOpen) && 'hidden md:block',
             )}
           >
-            <div className="pointer-events-auto max-h-[35vh] overflow-y-auto thin-scroll scroll-fade-y rounded-md border bg-background/90 px-3 py-2 text-[11px] shadow-sm backdrop-blur md:max-h-[40vh]">
-              <div className="mb-1 font-medium uppercase tracking-wider text-muted-foreground">
-                Leyenda · {visibleIdsAfterTypeFilter.length} visible
-                {visibleIdsAfterTypeFilter.length === 1 ? '' : 's'}
-              </div>
-              <div className="flex flex-col gap-1">
-                {visibleIdsAfterTypeFilter
-                  .slice(0, 12)
-                  .map((id) => ROUTES_BY_ID.get(id))
-                  .filter((r): r is Route => !!r)
-                  .map((r) => (
-                    <div key={r.id} className="flex items-center gap-2">
-                      <span
-                        className="inline-block h-[3px] w-5 rounded-full"
-                        style={{ background: r.color }}
-                      />
-                      <span className="font-mono text-[10px] text-muted-foreground">
-                        {r.code}
-                      </span>
-                      <span className="max-w-[160px] truncate">
-                        {ROUTE_TYPES[r.type].short}
-                      </span>
-                    </div>
-                  ))}
-                {visibleIdsAfterTypeFilter.length > 12 && (
-                  <div className="pt-1 text-muted-foreground">
-                    + {visibleIdsAfterTypeFilter.length - 12} más
-                  </div>
-                )}
-              </div>
-            </div>
+            <MapLegend
+              routes={legendRoutes}
+              selectedRouteId={selectedRouteId}
+              onSelectRoute={onSelectRoute}
+            />
           </div>
 
           <FloatingToolsPanel

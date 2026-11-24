@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { Database, ExternalLink } from 'lucide-react';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { ROUTES, useRoutesVersion } from '@/data/routes';
 import { GTFS_CONCEPCION_SOURCE, GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
@@ -91,6 +91,13 @@ const PENDING: Source[] = [
   },
 ];
 
+const SOURCES_EYEBROW = (
+  <>
+    <Database />
+    Proyecto
+  </>
+);
+
 interface DataSourcesSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -108,8 +115,8 @@ export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) 
       open={open}
       onClose={() => onOpenChange(false)}
       title="Fuentes de datos"
-      widthClassName="sm:w-[440px]"
-      description="Todo lo que ves en este visor viene de fuentes abiertas. conce.patagua.dev es un proyecto open source."
+      eyebrow={SOURCES_EYEBROW}
+      description="De dónde sale cada capa del visor y cuánto confiar en ella. conce.patagua.dev es open source."
     >
       <SourceList title="En uso ahora" sources={sources} />
       <SourceList title="Pendientes (esperando publicación oficial)" sources={PENDING} />

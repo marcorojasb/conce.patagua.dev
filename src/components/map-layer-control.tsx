@@ -19,17 +19,23 @@ import {
   School,
   Trees,
   Wind,
-  X,
 } from 'lucide-react';
-import { useEffect, useEffectEvent, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { INTERURBAN_CORRIDORS } from '@/data/interurban-corridors';
 import type { AnalysisTab } from '@/components/floating-tools-panel';
 import type { LayerLoadStatus } from '@/hooks/use-layer-status';
+
+const LAYERS_EYEBROW = (
+  <>
+    <Layers2 />
+    Mapa
+  </>
+);
 
 interface MapLayerControlProps {
   terminalsCount: number;
@@ -183,18 +189,6 @@ export function MapLayerControl({
     showInterurbanCorridors,
   ].filter(Boolean).length;
 
-  // `onCloseLayers` llega como arrow inline desde App, así que cambia de
-  // identidad en cada render; useEffectEvent evita re-suscribir en cada uno.
-  const closeLayers = useEffectEvent(onCloseLayers);
-
-  useEffect(() => {
-    if (!layersOpen) return undefined;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeLayers();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [layersOpen]);
 
   const layers = useMemo<MapLayerRow[]>(
     () => [
@@ -475,204 +469,162 @@ export function MapLayerControl({
       })}
       </div>
 
-      {layersOpen && (
-        <div
-          className={cn(
-            'pointer-events-none absolute z-10',
-            'left-2 right-2 bottom-2 h-[58vh]',
-            'sm:left-auto sm:right-[64px] sm:top-3 sm:bottom-3 sm:w-[380px] sm:h-auto',
-          )}
-          aria-live="polite"
-        >
-          {/* react-doctor-disable-next-line react-doctor/prefer-html-dialog -- Panel no modal y flotante sobre el mapa: ya gestiona foco, Escape y aria; <dialog> no-modal exige show()/close() y su layout propio pelea con el posicionamiento absoluto. */}
-          <aside
-            role="dialog"
-            aria-label="Capas del mapa"
-            className="pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden rounded-lg border bg-background/95 shadow-xl backdrop-blur supports-[backdrop-filter]:bg-background/90 animate-fade-in"
-          >
-            <div className="flex justify-center py-1.5 sm:hidden" aria-hidden>
-              <span className="h-1 w-10 rounded-full bg-muted-foreground/40" />
-            </div>
-
-            <div className="flex items-start justify-between gap-3 border-b px-4 py-3">
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="grid size-7 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
-                    <Layers2 className="size-3.5" />
-                  </span>
-                  <h2 className="truncate text-sm font-semibold tracking-tight">
-                    Capas del mapa
-                  </h2>
-                </div>
-                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
-                  Overlays visibles sobre los recorridos
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="-mr-1 -mt-1 size-8 shrink-0"
-                onClick={onCloseLayers}
-                aria-label="Cerrar capas"
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-
-            <ScrollArea className="min-h-0 flex-1 scroll-fade-y">
-              <div className="space-y-1 p-3">
-                {layers.map((layer) => {
-                  const Icon = layer.icon;
-                  return (
-                    <div key={layer.id}>
-                      <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-accent/50">
-                        <span className="grid size-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
-                          <Icon className={cn('size-4', layer.loading && 'animate-spin')} />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate font-medium leading-tight">
-                            {layer.label}
-                          </span>
-                          <span className="block truncate text-[11px] text-muted-foreground">
-                            {layer.detail}
-                          </span>
-                          {layer.error && layer.checked && (
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                layer.onRetry?.();
-                              }}
-                              className="mt-1 inline-flex items-center gap-1 rounded border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground focus-ring"
-                            >
-                              <RotateCcw className="size-3" />
-                              Reintentar
-                            </button>
-                          )}
-                        </span>
-                        {layer.ready && layer.checked && !layer.loading && !layer.error && (
-                          <CheckCircle2 className="size-3.5 shrink-0 text-emerald-500" />
+      <FloatingInfoPanel
+        open={layersOpen}
+        onClose={onCloseLayers}
+        title="Capas del mapa"
+        eyebrow={LAYERS_EYEBROW}
+        description="Lo que se dibuja sobre los recorridos."
+        closeLabel="Cerrar capas"
+        contentClassName="space-y-1 px-3 py-3"
+      >
+            {layers.map((layer) => {
+              const Icon = layer.icon;
+              return (
+                <div key={layer.id}>
+                  <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-accent/50">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
+                      <Icon className={cn('size-4', layer.loading && 'animate-spin')} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium leading-tight">
+                        {layer.label}
+                      </span>
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {layer.detail}
+                      </span>
+                      {layer.error && layer.checked && (
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            layer.onRetry?.();
+                          }}
+                          className="mt-1 inline-flex items-center gap-1 rounded border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground focus-ring"
+                        >
+                          <RotateCcw className="size-3" />
+                          Reintentar
+                        </button>
+                      )}
+                    </span>
+                    {layer.ready && layer.checked && !layer.loading && !layer.error && (
+                      <CheckCircle2 className="size-3.5 shrink-0 text-emerald-500" />
+                    )}
+                    <Switch
+                      checked={layer.checked}
+                      onCheckedChange={layer.onToggle}
+                      aria-label={layer.label}
+                    />
+                  </label>
+                  {layer.id === 'coverage' && layer.checked && (
+                    <div className="ml-10 flex flex-wrap gap-1 pb-1 pl-2">
+                      <button
+                        type="button"
+                        onClick={() => onSetCoverageThreshold('all')}
+                        className={cn(
+                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                          coverageThreshold === 'all'
+                            ? 'bg-foreground text-background'
+                            : 'border bg-background text-muted-foreground hover:text-foreground',
                         )}
-                        <Switch
-                          checked={layer.checked}
-                          onCheckedChange={layer.onToggle}
-                          aria-label={layer.label}
-                        />
-                      </label>
-                      {layer.id === 'coverage' && layer.checked && (
-                        <div className="ml-10 flex flex-wrap gap-1 pb-1 pl-2">
-                          <button
-                            type="button"
-                            onClick={() => onSetCoverageThreshold('all')}
-                            className={cn(
-                              'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                              coverageThreshold === 'all'
-                                ? 'bg-foreground text-background'
-                                : 'border bg-background text-muted-foreground hover:text-foreground',
-                            )}
-                          >
-                            Heatmap completo
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onSetCoverageThreshold('underserved')}
-                            className={cn(
-                              'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                              coverageThreshold === 'underserved'
-                                ? 'bg-foreground text-background'
-                                : 'border bg-background text-muted-foreground hover:text-foreground',
-                            )}
-                          >
-                            Solo zonas mal servidas
-                          </button>
-                        </div>
-                      )}
-                      {layer.id === 'simulated' && layer.checked && (
-                        <div className="ml-10 flex flex-wrap gap-1 pb-1 pl-2">
-                          <button
-                            type="button"
-                            onClick={() => onSetSimulationScope('visible')}
-                            className={cn(
-                              'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                              simulationScope === 'visible'
-                                ? 'bg-foreground text-background'
-                                : 'border bg-background text-muted-foreground hover:text-foreground',
-                            )}
-                          >
-                            Solo visibles
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onSetSimulationScope('all')}
-                            className={cn(
-                              'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                              simulationScope === 'all'
-                                ? 'bg-foreground text-background'
-                                : 'border bg-background text-muted-foreground hover:text-foreground',
-                            )}
-                          >
-                            Toda la red
-                          </button>
-                        </div>
-                      )}
+                      >
+                        Heatmap completo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onSetCoverageThreshold('underserved')}
+                        className={cn(
+                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                          coverageThreshold === 'underserved'
+                            ? 'bg-foreground text-background'
+                            : 'border bg-background text-muted-foreground hover:text-foreground',
+                        )}
+                      >
+                        Solo zonas mal servidas
+                      </button>
                     </div>
-                  );
-                })}
+                  )}
+                  {layer.id === 'simulated' && layer.checked && (
+                    <div className="ml-10 flex flex-wrap gap-1 pb-1 pl-2">
+                      <button
+                        type="button"
+                        onClick={() => onSetSimulationScope('visible')}
+                        className={cn(
+                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                          simulationScope === 'visible'
+                            ? 'bg-foreground text-background'
+                            : 'border bg-background text-muted-foreground hover:text-foreground',
+                        )}
+                      >
+                        Solo visibles
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onSetSimulationScope('all')}
+                        className={cn(
+                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                          simulationScope === 'all'
+                            ? 'bg-foreground text-background'
+                            : 'border bg-background text-muted-foreground hover:text-foreground',
+                        )}
+                      >
+                        Toda la red
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
-                {showCoverage && (
-                  <div className="mt-2 rounded-md border bg-muted/30 p-2">
-                    <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                      Distancia al paradero
-                    </div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-                      {[
-                        { color: '#15803d', label: '≤200 m' },
-                        { color: '#65a30d', label: '200–400' },
-                        { color: '#facc15', label: '400–600' },
-                        { color: '#f97316', label: '600–1000' },
-                        { color: '#dc2626', label: '>1 km' },
-                      ].map((b) => (
-                        <span key={b.label} className="inline-flex items-center gap-1">
-                          <span
-                            aria-hidden
-                            className="inline-block h-2.5 w-3 rounded-sm"
-                            style={{ background: b.color }}
-                          />
-                          {b.label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {showCycleways && (
-                  <div className="mt-2 rounded-md border bg-muted/30 p-2">
-                    <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                      Infraestructura ciclista
-                    </div>
-                    <div className="flex flex-col gap-1 text-[10px] text-muted-foreground">
-                      <span className="inline-flex items-center gap-1.5">
-                        <span aria-hidden className="inline-block h-[3px] w-5 rounded-full" style={{ background: '#2563eb' }} />
-                        Ciclovía segregada
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span aria-hidden className="inline-block h-[3px] w-5 rounded-full" style={{ background: '#06b6d4' }} />
-                        Ciclobanda en calzada
-                      </span>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span aria-hidden className="inline-block h-[3px] w-5 border-t-2 border-dashed" style={{ borderColor: '#6366f1' }} />
-                        Ruta compartida (peatón)
-                      </span>
-                    </div>
-                  </div>
-                )}
+            {showCoverage && (
+              <div className="mt-2 rounded-md border bg-muted/30 p-2">
+                <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Distancia al paradero
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
+                  {[
+                    { color: '#15803d', label: '≤200 m' },
+                    { color: '#65a30d', label: '200–400' },
+                    { color: '#facc15', label: '400–600' },
+                    { color: '#f97316', label: '600–1000' },
+                    { color: '#dc2626', label: '>1 km' },
+                  ].map((b) => (
+                    <span key={b.label} className="inline-flex items-center gap-1">
+                      <span
+                        aria-hidden
+                        className="inline-block h-2.5 w-3 rounded-sm"
+                        style={{ background: b.color }}
+                      />
+                      {b.label}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </ScrollArea>
-          </aside>
-        </div>
-      )}
+            )}
+
+            {showCycleways && (
+              <div className="mt-2 rounded-md border bg-muted/30 p-2">
+                <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Infraestructura ciclista
+                </div>
+                <div className="flex flex-col gap-1 text-[10px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden className="inline-block h-[3px] w-5 rounded-full" style={{ background: '#2563eb' }} />
+                    Ciclovía segregada
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden className="inline-block h-[3px] w-5 rounded-full" style={{ background: '#06b6d4' }} />
+                    Ciclobanda en calzada
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden className="inline-block h-[3px] w-5 border-t-2 border-dashed" style={{ borderColor: '#6366f1' }} />
+                    Ruta compartida (peatón)
+                  </span>
+                </div>
+              </div>
+            )}
+      </FloatingInfoPanel>
     </>
   );
 }
