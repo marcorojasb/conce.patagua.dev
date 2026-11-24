@@ -635,7 +635,10 @@ function ScheduleTab({
           >
             {g.label}
             {groupOfDay(clock.day) === g.id && (
-              <span className="ml-1 text-[10px] font-normal text-muted-foreground">hoy</span>
+              <>
+                {' '}
+                <span className="text-[10px] font-normal text-muted-foreground">hoy</span>
+              </>
             )}
           </button>
         ))}
@@ -722,7 +725,9 @@ function HourlyChart({
   dayName: string;
 }) {
   const max = Math.max(...hourly, 1);
-  const peak = hourly.indexOf(Math.max(...hourly));
+  const peak = hourly.indexOf(max);
+  // Con frecuencia pareja (patrones estimados) no hay una "hora con más salidas".
+  const even = hourly.every((count) => count === 0 || count === max);
   const hh = (h: number) => `${String(h).padStart(2, '0')}:00`;
   const plural = (n: number) => `${n} ${n === 1 ? 'salida' : 'salidas'}`;
 
@@ -770,9 +775,15 @@ function HourlyChart({
         ))}
       </div>
       <p className="mt-2 text-[11px] text-muted-foreground">
-        Hora con más salidas: <span className="font-medium text-foreground">{hh(peak)}</span>{' '}
-        ({plural(hourly[peak])})
-        {currentHour !== null && currentHour !== peak && (
+        {even ? (
+          <>Ritmo parejo: {plural(max)} por hora.</>
+        ) : (
+          <>
+            Hora con más salidas:{' '}
+            <span className="font-medium text-foreground">{hh(peak)}</span> ({plural(max)})
+          </>
+        )}
+        {currentHour !== null && (even || currentHour !== peak) && (
           <>
             {' · '}ahora ({hh(currentHour)}): {plural(hourly[currentHour])}
           </>
