@@ -8,7 +8,7 @@ import { LazyBoundary } from '@/components/lazy-boundary';
 import type { AnalysisTab } from '@/components/floating-tools-panel';
 import { useSimulationControl, useSimulationStatus } from '@/realtime/use-simulated-vehicles';
 import { useLiveArrivals } from '@/hooks/use-live-arrivals';
-import { liveStopCode, liveView } from '@/realtime/live-arrivals';
+import { indexLiveServices, liveServiceLabel, liveStopCode, liveView } from '@/realtime/live-arrivals';
 import type { LiveVehicleMarker } from '@/components/conce-map';
 import { buildSimulationRoutes, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
 import { WelcomeCard } from '@/components/welcome-card';
@@ -272,24 +272,29 @@ export default function App() {
   });
   const simulationStatus = useSimulationStatus();
 
-  const liveVehicles = useMemo<LiveVehicleMarker[]>(() => {
+  // La fuente en vivo nombra cada sentido por separado ("62H", "401I"): el
+  // índice lo lleva al recorrido y sentido del visor.
+  const liveServices = useMemo(() => {
     void routesVersion;
+    return indexLiveServices(ROUTES);
+  }, [routesVersion]);
+  const liveVehicles = useMemo<LiveVehicleMarker[]>(() => {
     const snapshot = liveArrivals.state.snapshot;
     if (!snapshot) return [];
     const now = Date.now();
-    // La fuente en vivo nombra la variante del letrero ("62H"), no el código
-    // del recorrido GTFS ("62HM").
-    return liveView(liveArrivals.state, now, false).arrivals.flatMap((arrival) =>
-      arrival.position
-        ? [{
-            arrival: { ...arrival, position: arrival.position },
-            color: findRoute(arrival.route)?.route.color ?? '#334155',
-            fetchedAt: snapshot.fetchedAt,
-            now,
-          }]
-        : [],
-    );
-  }, [liveArrivals, routesVersion]);
+    return liveView(liveArrivals.state, now, false).arrivals.flatMap((arrival) => {
+      if (!arrival.position || !arrival.realtime) return [];
+      const match = liveServices.get(arrival.route);
+      return [{
+        arrival: { ...arrival, position: arrival.position },
+        color: match?.route.color ?? '#334155',
+        label: liveServiceLabel(arrival.route, match),
+        destination: match?.direction.destination,
+        fetchedAt: snapshot.fetchedAt,
+        now,
+      }];
+    });
+  }, [liveArrivals, liveServices]);
 
 
 

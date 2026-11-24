@@ -65,7 +65,7 @@ function serviceDetail(service: NextStopService, route: Route | undefined): stri
       return passes > 1 ? `primera de ${passes} pasadas del día` : 'única pasada del día';
     }
     if (service.windowEdge === 'last') return 'última pasada del día';
-    return service.headwayMin ? `aprox. · intervalo típico ~${service.headwayMin} min` : 'aprox.';
+    return service.headwayMin ? 'en servicio · intervalo según el programa' : 'aprox.';
   }
   const published = service.source === 'static-trips';
   if (service.origin) {
@@ -134,6 +134,10 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
         <ul className="space-y-1.5">
           {services.map((service) => {
             const route = routeById.get(service.routeId);
+            // Dentro de una ventana la hora exacta sería una proyección
+            // (primera + k × intervalo): se muestra el intervalo, no una hora inventada.
+            const projected =
+              service.source === 'gtfs-window' && !service.windowEdge && service.headwayMin != null;
             return (
               <li
                 key={`${service.routeId}-${service.destination}-${service.scheduledMin}`}
@@ -153,12 +157,21 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-mono text-sm font-semibold">
-                    {formatServiceClock(service.scheduledMin)}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {formatWait(service.minutesUntil, service.scheduledMin)}
-                  </div>
+                  {projected ? (
+                    <>
+                      <div className="font-mono text-sm font-semibold">~{service.headwayMin} min</div>
+                      <div className="text-[11px] text-muted-foreground">entre pasadas</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="font-mono text-sm font-semibold">
+                        {formatServiceClock(service.scheduledMin)}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {formatWait(service.minutesUntil, service.scheduledMin)}
+                      </div>
+                    </>
+                  )}
                 </div>
               </li>
             );
@@ -166,8 +179,9 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
         </ul>
         <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
           Hora de Chile según el programa publicado (GTFS oficial DTPR en micros, itinerario EFE
-          en Biotrén); no vienen del GPS. Una fila por línea y sentido; las marcadas aprox. se
-          proyectan desde el intervalo típico del paradero o la distancia a la cabecera.
+          en Biotrén); no vienen del GPS. Una fila por línea y sentido. Si la línea está en servicio
+          se muestra cada cuánto pasa según el programa, no una hora exacta; las marcadas aprox. o
+          estimado se calculan desde la distancia a la cabecera.
         </p>
       </>
     );

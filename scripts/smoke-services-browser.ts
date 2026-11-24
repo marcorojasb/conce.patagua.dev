@@ -174,7 +174,8 @@ try {
   await waitForBody(page, /Próximas pasadas|Cargando próximas pasadas programadas/, 'stop next services');
   await waitForBody(page, /GTFS oficial DTPR|programa publicado/, 'programmed stop services source copy');
   await page.locator('[data-live-state="live"]').waitFor({ timeout: 10_000 });
-  await waitForBody(page, /Llegadas en vivo[\s\S]*62H[\s\S]*regreso[\s\S]*1 min/, 'live arrivals block');
+  // Fixture: la 62H (sentido 0 de 62HM) llega en 40 s, a 211 m, patente de mentira PRUE20.
+  await waitForBody(page, /Llegadas en vivo[\s\S]*62H[\s\S]*hacia [\s\S]*patente PRUE20[\s\S]*1 min/, 'live arrivals block');
   await waitForBody(page, /fuente no oficial/, 'live arrivals source disclaimer');
   await page.getByRole('dialog').filter({ hasText: /Ruta 160|Próximas pasadas/ }).first().waitFor({ timeout: 5_000 });
   const modalDetailCount = await page.locator('[role="dialog"][aria-modal="true"]').count();
