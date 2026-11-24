@@ -1,17 +1,16 @@
 // Resumen legible del horario de un recorrido (ficha de recorrido).
 //
 // Un RouteSchedule trae, por día (0=lunes), la lista de viajes
-// [salidaMin, duraciónMin] en hora de Chile. Un recorrido puede tener varios
-// (un patrón por sentido en Biotrén e interurbanos): se suman para contar
-// salidas, pero el intervalo se mide dentro de cada uno, porque mezclar
-// sentidos que salen a la misma hora desde cada extremo partiría el intervalo
-// a la mitad (o a cero).
+// [salidaMin, duraciónMin] en hora de Chile. Un recorrido tiene uno por
+// sentido (ROUTE_DIRECTION_SCHEDULES en micros, un patrón EFE por sentido y
+// tipo de día en Biotrén): se suman para contar salidas, pero el intervalo se
+// mide dentro de cada uno, porque mezclar sentidos que salen a la misma hora
+// desde cada extremo partiría el intervalo a la mitad (o a cero).
 //
 // Las salidas después de medianoche (>= 1440) pertenecen al día de servicio
 // anterior: cuentan en las cifras de ese día y, de madrugada, como servicio
 // "de ayer" todavía en curso.
 
-import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import { chileClock } from '@/lib/chile-time';
 import type { RouteSchedule } from '@/types/transport';
 
@@ -150,66 +149,6 @@ function earliestStartFrom(
   return { minutes: next - dayOffset * DAY_MIN, dayOffset };
 }
 
-// Respaldo para recorridos GTFS que no están en ROUTE_SCHEDULES (el extractor
-// descarta sus viajes): la ventana de paso por su primer paradero
-// (STOP_SERVICE_WINDOWS) trae primera y última pasada, cantidad e intervalo
-// mediano por día, pero no cada salida. Por eso no se inventa la próxima
-// salida dentro de la ventana; solo se da la primera de la ventana siguiente.
-// Las ventanas 00:00–00:00 son viajes del feed sin horas reales: se ignoran.
-function realWindows(windows: readonly StopServiceWindow[]): StopServiceWindow[] {
-  return windows.filter(([, , , first, last, , count]) => count > 0 && !(first === 0 && last === 0));
-}
-
-export function summarizeWindowsDay(
-  windows: readonly StopServiceWindow[],
-  day: number,
-): DayServiceSummary {
-  let first: number | null = null;
-  let last: number | null = null;
-  let departures = 0;
-  const headways: number[] = [];
-  for (const [, , d, f, l, headway, count] of realWindows(windows)) {
-    if (d !== day) continue;
-    departures += count;
-    if (first === null || f < first) first = f;
-    if (last === null || l > last) last = l;
-    if (headway > 0) headways.push(headway);
-  }
-  return { first, last, departures, medianHeadway: median(headways) };
-}
-
-export function summarizeWindowsToday(
-  windows: readonly StopServiceWindow[],
-  now: Date,
-): RouteTodaySummary {
-  const { day, minutes: nowMin } = chileClock(now);
-  const usable = realWindows(windows);
-
-  let operatingNow = false;
-  const headways: number[] = [];
-  for (const [, , d, first, last, headway] of usable) {
-    for (const offset of [-1, 0]) {
-      if (d !== (day + offset + 7) % 7) continue;
-      if (first + offset * DAY_MIN <= nowMin && nowMin <= last + offset * DAY_MIN) {
-        operatingNow = true;
-        if (headway > 0) headways.push(headway);
-      }
-    }
-  }
-
-  return {
-    ...summarizeWindowsDay(usable, day),
-    day,
-    operatingNow,
-    headwayNow: median(headways),
-    nextDeparture: operatingNow
-      ? null
-      : earliestStartFrom(day, nowMin, (d) =>
-          usable.filter((w) => w[2] === d).map((w) => w[3]),
-        ),
-  };
-}
-
 /**
  * Salidas por hora de reloj (24 valores) para un día de servicio. Las
  * nocturnas (>= 24:00) se cuentan en su hora de madrugada del mismo gráfico.
@@ -222,4 +161,16 @@ export function departuresByHour(schedules: readonly RouteSchedule[], day: numbe
     }
   }
   return hours;
+}
+
+/**
+ * Todos los sentidos salen a intervalo fijo ese día (±1 min de redondeo),
+ * como pasa con los horarios armados desde una frecuencia. Ahí la "hora con
+ * más salidas" solo refleja dónde cae el borde de cada hora, no una punta.
+ */
+export function isEvenlySpaced(schedules: readonly RouteSchedule[], day: number): boolean {
+  return schedules.every((schedule) => {
+    const dayGaps = gaps(schedule[day].map(([start]) => start));
+    return dayGaps.length === 0 || Math.max(...dayGaps) - Math.min(...dayGaps) <= 1;
+  });
 }
