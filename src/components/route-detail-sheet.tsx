@@ -50,22 +50,15 @@ export function RouteDetailSheet({
     const TypeIcon = ROUTE_TYPES[route.type].Icon;
     return {
       eyebrow: (
-        <div className="flex flex-wrap items-center gap-2">
-          <span
-            className="inline-flex size-8 items-center justify-center rounded-md text-white"
-            style={{ background: route.color }}
-          >
-            <TypeIcon className="size-4" />
-          </span>
+        <div className="flex flex-wrap items-center gap-1.5">
           <Badge
             className="border-transparent font-mono"
             style={{ background: route.color, color: readableTextOn(route.color) }}
           >
             {route.code}
           </Badge>
-          <span className="text-xs text-muted-foreground">
-            {ROUTE_TYPES[route.type].label}
-          </span>
+          <TypeIcon />
+          <span>{ROUTE_TYPES[route.type].label}</span>
           {route.network === 'Interurbano Biobío' && (
             <Badge
               variant="outline"

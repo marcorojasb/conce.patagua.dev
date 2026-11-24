@@ -91,28 +91,36 @@
     background: hsl(var(--muted-foreground) / 0.4);
   }
 
-  /* Custom equivalent of shadcn/ui's `scroll-fade` utility (see
-     https://ui.shadcn.com/docs/utils/scroll-fade). That utility ships as
-     part of the `shadcn` npm package's `tailwind.css` (scroll-aware, via
-     CSS scroll-driven animations) — this project doesn't consume that
-     package, so this is a hand-rolled, static approximation: a mask-image
-     that fades the top/bottom edges of a scrolling container to hint at
-     more content, without JS scroll listeners. */
-  .scroll-fade-y {
-    mask-image: linear-gradient(
-      to bottom,
-      transparent,
-      black 16px,
-      black calc(100% - 16px),
-      transparent
-    );
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      transparent,
-      black 16px,
-      black calc(100% - 16px),
-      transparent
-    );
+  /* Difuminado de bordes en zonas con scroll (equivalente al `scroll-fade`
+     de shadcn). Va sobre la raíz de un ScrollArea de Radix y usa una
+     animación ligada al scroll de su viewport: arriba solo se difumina cuando
+     ya se bajó, abajo solo cuando queda contenido, y si no hay scroll no se
+     difumina nada. La versión anterior era una máscara fija que tapaba los
+     primeros 16 px aunque no hubiera nada que desplazar. Navegadores sin
+     scroll-driven animations quedan sin difuminado. */
+  @supports (animation-timeline: scroll()) {
+    .scroll-fade-y {
+      timeline-scope: --scroll-fade-y;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 var(--scroll-fade-top),
+        #000 calc(100% - var(--scroll-fade-bottom)),
+        transparent
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        #000 var(--scroll-fade-top),
+        #000 calc(100% - var(--scroll-fade-bottom)),
+        transparent
+      );
+      animation: scroll-fade-y linear both;
+      animation-timeline: --scroll-fade-y;
+    }
+    .scroll-fade-y > [data-radix-scroll-area-viewport] {
+      scroll-timeline: --scroll-fade-y y;
+    }
   }
 }
 
@@ -459,4 +467,30 @@
 }
 .prose-wiki :where(p) + :where(p, ul, ol) {
   margin-top: 0.75rem;
+}
+
+@property --scroll-fade-top {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --scroll-fade-bottom {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@keyframes scroll-fade-y {
+  0% {
+    --scroll-fade-top: 0px;
+    --scroll-fade-bottom: 20px;
+  }
+  8%,
+  92% {
+    --scroll-fade-top: 20px;
+    --scroll-fade-bottom: 20px;
+  }
+  100% {
+    --scroll-fade-top: 20px;
+    --scroll-fade-bottom: 0px;
+  }
 }
