@@ -240,7 +240,7 @@ export function MapLayerControl({
       },
       {
         id: 'simulated',
-        label: 'Servicios en curso',
+        label: 'Servicios en curso (estimación)',
         detail: showSimulatedVehicles
           ? simulationStatus.loading
             ? 'Cargando horario…'
@@ -249,7 +249,7 @@ export function MapLayerControl({
               : simulationStatus.count > 0
                 ? `${simulationStatus.count.toLocaleString('es-CL')} en curso · ${simulationScope === 'visible' ? 'rutas visibles' : 'toda la red'}`
                 : 'Sin servicios programados activos ahora'
-          : 'GTFS urbano + Biotrén/interurbanos',
+          : 'Según horario, no es GPS',
         icon: simulationStatus.error ? AlertTriangle : simulationStatus.loading ? Loader2 : Bus,
         checked: showSimulatedVehicles,
         onToggle: onToggleSimulatedVehicles,

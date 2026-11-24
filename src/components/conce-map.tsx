@@ -32,6 +32,12 @@ import { InterurbanCorridorsLayer } from '@/components/interurban-corridors-laye
 import { ParaderosLayer } from '@/components/paraderos-layer';
 import { SchoolsLayer } from '@/components/schools-layer';
 import type { LayerStatusControls } from '@/hooks/use-layer-status';
+import {
+  DIRECTION_LABEL,
+  formatAge,
+  minutesUntil,
+  type LiveArrival,
+} from '@/realtime/live-arrivals';
 
 interface ConceMapProps {
   theme: Theme;
@@ -61,6 +67,8 @@ interface ConceMapProps {
   routeColorById: Map<string, string>;
   routeLabelById: Map<string, string>;
   onSelectSimulatedVehicle: (id: string) => void;
+  /** Micros con GPS real que vienen al paradero abierto (fuente Transapp). */
+  liveVehicles: LiveVehicleMarker[];
   coverageThreshold: 'all' | 'underserved';
   coverageRetryKey: number;
   coverageLoadStatus: LayerStatusControls;
@@ -79,6 +87,14 @@ interface ConceMapProps {
   // no están en el GTFS urbano (Santa Juana, Florida, etc.). Click → popup
   // con link al artículo del wiki.
   onSelectInterurbanCorridor?: (corridorId: string) => void;
+}
+
+export interface LiveVehicleMarker {
+  arrival: LiveArrival & { position: { lat: number; lng: number } };
+  color: string;
+  /** Momento de la consulta que trajo la posición. */
+  fetchedAt: number;
+  now: number;
 }
 
 interface ConceMapLayerVisibility {
@@ -231,9 +247,21 @@ function vehicleIcon(color: string, bearing: number, vehicle: SimulatedVehicle):
   const sourceToken = safeToken(vehicle.sourceKind);
   return L.divIcon({
     className: `vehicle-marker-wrap route-${routeToken} source-${sourceToken}`,
-    html: `<div class="vehicle-marker" data-route-id="${vehicle.routeId}" data-source-kind="${vehicle.sourceKind}" style="--vehicle-bg:${color};--vehicle-rotation:${rotation.toFixed(1)}deg" aria-hidden="true"><svg class="vehicle-marker-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 19 21 12 17 5 21 12 3Z"/></svg></div>`,
+    html: `<div class="vehicle-marker is-estimate" data-route-id="${vehicle.routeId}" data-source-kind="${vehicle.sourceKind}" style="--vehicle-bg:${color};--vehicle-rotation:${rotation.toFixed(1)}deg" aria-hidden="true"><svg class="vehicle-marker-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 3 19 21 12 17 5 21 12 3Z"/></svg></div>`,
     iconSize: [26, 26],
     iconAnchor: [13, 13],
+  });
+}
+
+// Micro con GPS real: cuadrada y con anillo, para que nunca se confunda con
+// las estimadas (redondas, borde punteado).
+function liveVehicleIcon(color: string, route: string): L.DivIcon {
+  const label = route.replace(/[^0-9A-Za-z]/g, '').slice(0, 5);
+  return L.divIcon({
+    className: 'live-vehicle-wrap',
+    html: `<div class="live-vehicle-marker" style="--vehicle-bg:${color}" data-live-route="${label}"><span>${label}</span></div>`,
+    iconSize: [34, 22],
+    iconAnchor: [17, 11],
   });
 }
 
@@ -383,6 +411,7 @@ export function ConceMap({
   routeColorById,
   routeLabelById,
   onSelectSimulatedVehicle,
+  liveVehicles,
   coverageThreshold,
   coverageRetryKey,
   coverageLoadStatus,
@@ -658,7 +687,9 @@ export function ConceMap({
               >
                 <span className="font-medium">{label}</span>
                 <br />
-                Servicio en curso · {Math.round(v.progress * 100)}% del trayecto
+                <span className="font-semibold">Estimación según horario · no es GPS</span>
+                <br />
+                {Math.round(v.progress * 100)}% del trayecto programado
                 {v.directionLabel && (
                   <>
                     <br />
@@ -678,6 +709,39 @@ export function ConceMap({
             </Marker>
           );
         })}
+
+      {liveVehicles.map(({ arrival, color, fetchedAt, now }) => {
+        const minutes = minutesUntil(arrival, now);
+        return (
+          <Marker
+            key={`live-${arrival.tripId ?? arrival.plate ?? `${arrival.route}-${arrival.arrivalAt}`}`}
+            position={[arrival.position.lat, arrival.position.lng]}
+            icon={liveVehicleIcon(color, arrival.route)}
+            keyboard={false}
+            zIndexOffset={1000}
+          >
+            <LeafletTooltip direction="top" offset={[0, -12]} opacity={0.95} className="!text-[11px]">
+              <span className="font-medium">
+                {arrival.route}
+                {arrival.direction ? ` ${DIRECTION_LABEL[arrival.direction]}` : ''}
+              </span>
+              <br />
+              <span className="font-semibold">GPS en vivo</span> · posición {formatAge(now - fetchedAt)}
+              <br />
+              {minutes === 0 ? 'Llegando al paradero' : `Llega en ${minutes} min`}
+              {arrival.distanceM != null && ` · a ${Math.round(arrival.distanceM)} m`}
+              {arrival.plate && (
+                <>
+                  <br />
+                  Patente {arrival.plate}
+                </>
+              )}
+              <br />
+              Transapp/DTPR · fuente no oficial
+            </LeafletTooltip>
+          </Marker>
+        );
+      })}
 
       <MapClickCapture enabled={pickerMode !== null} onPick={onPickPoint} />
       <FlyToOnToken token={flyToToken} />

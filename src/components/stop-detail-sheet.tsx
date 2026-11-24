@@ -2,12 +2,15 @@ import { useMemo } from 'react';
 import { Accessibility, ChevronRight, ExternalLink, Footprints, MapPin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
+import { LiveArrivalsBlock } from '@/components/live-arrivals-block';
+import type { LiveArrivalsSnapshot } from '@/hooks/use-live-arrivals';
 import { NextStopServicesBlock } from '@/components/next-stop-services';
 import { Skeleton } from '@/components/ui/skeleton';
 import { WikiLinkButton } from '@/components/wiki-link';
 import { ROUTES_BY_ID, ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
 import { BIOTREN_WIKIDATA } from '@/data/wikidata.generated';
 import { isoDayOfWeek, useStopFrequency } from '@/hooks/use-stop-frequency';
+import { chileClock } from '@/lib/chile-time';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
 import { cn, readableTextOn } from '@/lib/utils';
 import type { StopWithRoutes } from '@/types/transport';
@@ -15,12 +18,13 @@ import type { StopWithRoutes } from '@/types/transport';
 interface StopDetailSheetProps {
   open: boolean;
   stop: StopWithRoutes | null;
+  live: LiveArrivalsSnapshot;
   onOpenChange: (open: boolean) => void;
   onSelectRoute: (id: string) => void;
 }
 
 // react-doctor-disable-next-line react-doctor/no-high-complexity-react-function -- El sheet encadena condicionales de datos (rutas, frecuencia, Biotrén) sobre un solo stop; extraerlos a un hook no reduce las ramas, solo las mueve.
-export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: StopDetailSheetProps) {
+export function StopDetailSheet({ open, stop, live, onOpenChange, onSelectRoute }: StopDetailSheetProps) {
   // `ROUTES_BY_ID` se muta in-place al llegar el chunk de micros: sin la versión
   // en las deps, un deep link abierto antes de esa carga se queda con la lista
   // de recorridos incompleta.
@@ -138,6 +142,8 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
         </div>
       )}
 
+      {live.stopCode && <LiveArrivalsBlock live={live} routes={routes} />}
+
       <div className="mb-2 flex items-center justify-between gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         <span>Recorridos que pasan</span>
         <span className="font-mono normal-case tracking-normal text-muted-foreground">
@@ -166,7 +172,7 @@ export function StopDetailSheet({ open, stop, onOpenChange, onSelectRoute }: Sto
                 <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                   <Icon className="size-[11px]" />
                   {ROUTE_TYPES[r.type].short}
-                  {r.headway !== 'No informado' && ` · cada ${r.headway}`}
+                  {/^\d/.test(r.headway) ? ` · cada ${r.headway}` : ` · ${r.headway}`}
                 </div>
               </div>
               <span
@@ -210,7 +216,7 @@ function FrequencyBlock({
 }) {
   const now = new Date();
   const today = isoDayOfWeek(now);
-  const hourNow = now.getHours();
+  const hourNow = Math.floor(chileClock(now).minutes / 60);
 
   const stats = useMemo(() => {
     if (!hourly) return null;

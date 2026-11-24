@@ -24,7 +24,8 @@ Son dos productos distintos que comparten build, estilos (Tailwind/shadcn) y des
 - `src/data/*.generated.ts` — datasets generados por los scripts `sync:*` (no editar a mano).
 - `src/data/*.ts` (sin `.generated`) — datos curados a mano (`routes.ts`, `interurban-corridors.ts`, `static-service-patterns.ts`).
 - `src/lib/` — lógica de dominio (planner, routing, horarios de operación, exportación GeoJSON, calidad de datos).
-- `src/hooks/` — hooks de datos en vivo (ej. calidad del aire vía SINCA).
+- `src/hooks/` — hooks de datos en vivo (calidad del aire vía SINCA, llegadas en vivo al paradero abierto).
+- `api/` — funciones de Vercel (hoy solo `stop-arrivals.ts`, intermediaria de las llegadas en vivo).
 - `scripts/` — scripts de sync/generación de datos y de verificación (`check`).
 
 ## Correr en local
@@ -104,6 +105,15 @@ Los scripts `sync:gtfs-*` y `sync:stop-*` dependen de un binario `sqlite3` dispo
 
 El resto de los scripts (Overpass, Wikidata) no requieren credenciales: usan endpoints públicos con un User-Agent identificándose como este proyecto.
 
+## Llegadas en vivo (fuente no oficial)
+
+Al abrir un paradero GTFS, la ficha muestra las micros que vienen a ese paradero con su GPS real (línea, sentido, minutos, distancia y patente) y el mapa las dibuja como marcadores cuadrados con anillo verde. Las micros de "Servicios en curso" siguen siendo una **estimación según horario** (redondas, borde punteado) y así se rotulan.
+
+- Fuente: `phone.dtpr.transapp.cl/v7/phone/<id>/stopInfo`, la que usa la app de Transapp. No es oficial ni documentada y no manda CORS, así que el navegador consulta `api/stop-arrivals.ts` (función de Vercel): caché de 25 s por paradero en la CDN y en memoria, consultas en vuelo compartidas y tope de 30 consultas por minuto por instancia.
+- Variable de entorno: `TRANSAPP_PHONE_ID` (ver `.env.example`). Sin ella la función responde 503 y la ficha dice que las llegadas en vivo no están activadas.
+- Reglas (en `src/realtime/live-arrivals.ts`, con pruebas): respuesta ilegible = falla; minutos desde `epochTime` o `timeLabel`; se descarta la micro que debía pasar hace más de 2 min; una respuesta vacía de golpe no borra un dato con micros por llegar; un dato vale 10 min mostrando su edad (destacada pasados 2 min); "sin datos en vivo · pasa cada N" cuando la fuente avisa que la línea no transmite GPS. Consulta cada 30 s, 60 s tras una falla y 5 min tras tres seguidas, solo con la pestaña visible.
+- En local, `npm run dev` monta el mismo handler (plugin en `vite.config.ts`); los smoke tests interceptan `/api/stop-arrivals` con respuestas de ejemplo y nunca consultan la fuente real.
+
 ## Despliegue
 
-Configurado para Vercel (`vercel.json`). Único ajuste no default: rewrites de `/wiki` y `/wiki/:slug*` hacia `/index.html`, para que el router basado en `pathname` de `src/main.tsx` reciba la ruta y monte la wiki en el cliente (SPA).
+Configurado para Vercel (`vercel.json`). Ajustes no default: rewrites de `/wiki` y `/wiki/:slug*` hacia `/index.html`, para que el router basado en `pathname` de `src/main.tsx` reciba la ruta y monte la wiki en el cliente (SPA); la función `api/stop-arrivals.ts` (requiere `TRANSAPP_PHONE_ID` en las variables de entorno del proyecto); y `.vercelignore` para que las pruebas de `api/` no se publiquen como funciones.

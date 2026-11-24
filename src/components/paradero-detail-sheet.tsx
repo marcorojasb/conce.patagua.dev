@@ -3,6 +3,8 @@ import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
+import { LiveArrivalsBlock } from '@/components/live-arrivals-block';
+import type { LiveArrivalsSnapshot } from '@/hooks/use-live-arrivals';
 import { NextStopServicesBlock } from '@/components/next-stop-services';
 import { ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
 import { readableTextOn } from '@/lib/utils';
@@ -11,6 +13,7 @@ import type { Paradero } from '@/types/transport';
 interface ParaderoDetailSheetProps {
   open: boolean;
   paradero: Paradero | null;
+  live: LiveArrivalsSnapshot;
   onOpenChange: (open: boolean) => void;
   onSelectRoute: (id: string) => void;
   onUseAsOrigin: (point: { lat: number; lng: number }) => void;
@@ -27,6 +30,7 @@ const PARADERO_EYEBROW = (
 export function ParaderoDetailSheet({
   open,
   paradero,
+  live,
   onOpenChange,
   onSelectRoute,
   onUseAsOrigin,
@@ -101,6 +105,8 @@ export function ParaderoDetailSheet({
       description={panelChrome.description}
       actions={panelChrome.actions}
     >
+      {live.stopCode && <LiveArrivalsBlock live={live} routes={routes} />}
+
       <div className="mb-2 flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         <span>Recorridos vinculados</span>
         <span className="font-mono normal-case tracking-normal">

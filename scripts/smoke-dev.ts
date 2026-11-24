@@ -33,7 +33,9 @@ async function assertPage(path: string, expected: string): Promise<void> {
 const child = spawn(
   process.platform === 'win32' ? 'npm.cmd' : 'npm',
   ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'],
-  { stdio: ['ignore', 'pipe', 'pipe'] },
+  // Grupo de procesos propio: `npm run dev` lanza vite como nieto, y matar
+  // solo a npm deja vite vivo con las tuberías abiertas (el smoke no termina).
+  { stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' },
 );
 
 let output = '';
@@ -54,5 +56,6 @@ try {
   console.error(err);
   process.exitCode = 1;
 } finally {
-  child.kill('SIGTERM');
+  if (process.platform !== 'win32' && child.pid) process.kill(-child.pid, 'SIGTERM');
+  else child.kill('SIGTERM');
 }

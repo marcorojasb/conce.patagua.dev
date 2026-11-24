@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { chromium, type Browser, type Page } from 'playwright';
+import { stopInfoFixtures } from '../src/realtime/live-arrivals.fixtures.ts';
 
 const PORT = 5175;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
@@ -48,7 +49,9 @@ async function waitForBody(page: Page, pattern: RegExp, label: string): Promise<
 const child = spawn(
   process.platform === 'win32' ? 'npm.cmd' : 'npm',
   ['run', 'dev', '--', '--host', '127.0.0.1', '--port', String(PORT), '--strictPort'],
-  { stdio: ['ignore', 'pipe', 'pipe'] },
+  // Grupo de procesos propio: `npm run dev` lanza vite como nieto, y matar
+  // solo a npm deja vite vivo con las tuberías abiertas (el smoke no termina).
+  { stdio: ['ignore', 'pipe', 'pipe'], detached: process.platform !== 'win32' },
 );
 
 let serverOutput = '';
@@ -65,6 +68,17 @@ try {
   await waitForServer();
   browser = await launchBrowser();
   const page = await browser.newPage({ viewport: { width: 1440, height: 980 } });
+  // Las llegadas en vivo salen de respuestas de ejemplo: el smoke nunca
+  // consulta la fuente real (ni la intermediaria la tiene configurada aquí).
+  const fixedNowMs = new Date('2026-05-18T08:30:00-04:00').valueOf();
+  const liveFixtures = stopInfoFixtures(fixedNowMs / 1000);
+  await page.route('**/api/stop-arrivals**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ fetchedAt: fixedNowMs, data: liveFixtures.withBuses }),
+    }),
+  );
   await page.addInitScript(() => {
     const fixedNow = new Date('2026-05-18T08:30:00-04:00').valueOf();
     const RealDate = Date;
@@ -102,6 +116,9 @@ try {
   await page.goto(`${BASE_URL}/?stop=gtfs-stop-1506365`, { waitUntil: 'load' });
   await waitForBody(page, /Próximos servicios|Cargando próximos servicios programados/, 'stop next services');
   await waitForBody(page, /GTFS estático|Horarios estimados|Horas estimadas/, 'programmed stop services source copy');
+  await page.locator('[data-live-state="live"]').waitFor({ timeout: 10_000 });
+  await waitForBody(page, /Llegadas en vivo[\s\S]*62H[\s\S]*regreso[\s\S]*1 min/, 'live arrivals block');
+  await waitForBody(page, /fuente no oficial/, 'live arrivals source disclaimer');
   await page.getByRole('dialog').filter({ hasText: /Ruta 160|Próximos servicios/ }).first().waitFor({ timeout: 5_000 });
   const modalDetailCount = await page.locator('[role="dialog"][aria-modal="true"]').count();
   if (modalDetailCount > 0) {
@@ -151,6 +168,10 @@ try {
     throw new Error('Expected Servicios en curso to be enabled by default.');
   }
   await page.waitForSelector('.vehicle-marker', { timeout: 15_000 });
+  const unlabeledEstimates = await page.locator('.vehicle-marker:not(.is-estimate)').count();
+  if (unlabeledEstimates > 0) {
+    throw new Error(`Expected every simulated vehicle to be marked as estimate, got ${unlabeledEstimates} without it.`);
+  }
 
   const bodyText = await page.locator('body').innerText();
   const match = bodyText.match(/([\d.]+)\s+en curso\s+·\s+rutas visibles/);
@@ -265,5 +286,6 @@ try {
   process.exitCode = 1;
 } finally {
   await browser?.close();
-  child.kill('SIGTERM');
+  if (process.platform !== 'win32' && child.pid) process.kill(-child.pid, 'SIGTERM');
+  else child.kill('SIGTERM');
 }

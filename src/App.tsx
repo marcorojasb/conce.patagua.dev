@@ -13,6 +13,9 @@ import { DataSourcesSheet } from '@/components/data-sources-sheet';
 import { FloatingToolsPanel, type AnalysisTab } from '@/components/floating-tools-panel';
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { useSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
+import { useLiveArrivals } from '@/hooks/use-live-arrivals';
+import { liveStopCode, liveView, normalizeRouteCode } from '@/realtime/live-arrivals';
+import type { LiveVehicleMarker } from '@/components/conce-map';
 import type { SimulationRouteInput } from '@/realtime/simulated-vehicles';
 import { Card, CardDescription, CardHeader } from '@/components/ui/card';
 import { Kbd } from '@/components/ui/kbd';
@@ -154,6 +157,11 @@ export default function App() {
   const selectedPoiId = selectedDetail?.kind === 'poi' ? selectedDetail.id : null;
   const sheetKind = selectedDetail?.kind ?? null;
 
+  // Llegadas reales solo para el paradero abierto (ficha de paradero GTFS o
+  // parada de un recorrido): una consulta por vez, nunca para toda la red.
+  const liveStopId = sheetKind === 'paradero' || sheetKind === 'stop' ? selectedDetail?.id ?? null : null;
+  const liveArrivals = useLiveArrivals(liveStopId ? liveStopCode(liveStopId) : null);
+
   // Deep-links de terminal/poi (URL durable o ?focus=) encienden la capa
   // para que el pin sea visible al aterrizar desde el wiki.
   const [showTerminals, setShowTerminals] = useState(
@@ -266,6 +274,24 @@ export default function App() {
     retryKey: simulationRetryKey,
     intervalMs: 1000,
   });
+  const liveVehicles = useMemo<LiveVehicleMarker[]>(() => {
+    void routesVersion;
+    const snapshot = liveArrivals.state.snapshot;
+    if (!snapshot) return [];
+    const now = Date.now();
+    const colorByCode = new Map(ROUTES.map((r) => [normalizeRouteCode(r.code), r.color]));
+    return liveView(liveArrivals.state, now, false).arrivals.flatMap((arrival) =>
+      arrival.position
+        ? [{
+            arrival: { ...arrival, position: arrival.position },
+            color: colorByCode.get(normalizeRouteCode(arrival.route)) ?? '#334155',
+            fetchedAt: snapshot.fetchedAt,
+            now,
+          }]
+        : [],
+    );
+  }, [liveArrivals, routesVersion]);
+
   const simulatedNonGtfsCount = useMemo(
     () => simulatedVehicles.filter((v) => v.sourceKind !== 'gtfs').length,
     [simulatedVehicles],
@@ -642,6 +668,7 @@ export default function App() {
             routeColorById={routeColorById}
             routeLabelById={routeLabelById}
             onSelectSimulatedVehicle={onSelectSimulatedVehicle}
+            liveVehicles={liveVehicles}
             coverageThreshold={coverageThreshold}
             coverageRetryKey={coverageRetryKey}
             coverageLoadStatus={coverageLayer.controls}
@@ -840,12 +867,14 @@ export default function App() {
       <StopDetailSheet
         open={sheetKind === 'stop'}
         stop={selectedStop}
+        live={liveArrivals}
         onOpenChange={(o) => (!o ? closeSheet() : undefined)}
         onSelectRoute={onSelectRoute}
       />
       <ParaderoDetailSheet
         open={sheetKind === 'paradero'}
         paradero={selectedParadero}
+        live={liveArrivals}
         onOpenChange={(o) => (!o ? closeSheet() : undefined)}
         onSelectRoute={onSelectRoute}
         onUseAsOrigin={onUsePointAsOrigin}

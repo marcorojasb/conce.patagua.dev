@@ -33,9 +33,17 @@ function buildSources(): Source[] {
       license: { name: 'CC BY 4.0 · Subsecretaría de Transportes (Chile)', href: 'https://creativecommons.org/licenses/by/4.0/' },
     },
     {
+      title: 'Llegadas en vivo · app Transapp/DTPR (no oficial)',
+      detail:
+        'Al abrir un paradero, el visor muestra las micros que vienen a ese paradero con su GPS real: línea, minutos, distancia y patente, y las dibuja en el mapa. Es la misma fuente que usa la app de Transapp para el Gran Concepción; no es un feed oficial ni documentado, así que puede caerse o responder vacío. Se consulta solo el paradero abierto, cada 30 s, a través de una intermediaria con caché de 25 s por paradero y tope de consultas. Un dato vale 10 min mostrando su edad.',
+      count: 'Solo el paradero abierto · hasta ~30 min de anticipación',
+      link: { href: 'https://transformacion.dtpr.cl/', label: 'transformacion.dtpr.cl' },
+      license: 'Fuente no oficial · sin licencia de datos publicada',
+    },
+    {
       title: 'Servicios en curso (simulación según horario)',
       detail:
-        'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus o tren según horarios públicos: GTFS urbano oficial, Biotrén por frecuencia publicada y 201/401/411/421 por ventanas/frecuencias DTPR, operador, Moovit/Red Regional y comunidad. No es GPS real: atrasos, cancelaciones y desvíos no se ven.',
+        'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus o tren según horarios públicos: GTFS urbano oficial, Biotrén por frecuencia publicada y 201/401/411/421 por ventanas/frecuencias DTPR, operador, Moovit/Red Regional y comunidad. No es GPS real: atrasos, cancelaciones y desvíos no se ven. En el mapa van redondas con borde punteado; las micros con GPS real van cuadradas con anillo verde.',
       count: 'Calculado en cliente cada 1 s desde GTFS + patrones horarios documentados',
       license: 'Capa derivada · GTFS CC BY 4.0 + fuentes públicas citadas en wiki',
     },
@@ -67,7 +75,7 @@ const PENDING: Source[] = [
   {
     title: 'DTPR · GTFS-RT Gran Concepción',
     detail:
-      'Posiciones de buses en tiempo real, próximas llegadas a paradero y alertas de servicio. Aún no se verificó un feed público autorizado para producción.',
+      'Posiciones de toda la flota en tiempo real y alertas de servicio en un feed oficial. Aún no se verificó un feed público autorizado; mientras tanto las llegadas en vivo vienen de la app de Transapp (ver arriba), solo para el paradero abierto.',
     link: { href: 'https://transformacion.dtpr.cl/', label: 'transformacion.dtpr.cl' },
   },
   {

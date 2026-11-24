@@ -1,5 +1,6 @@
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
+import { chileClock } from '@/lib/chile-time';
 import type { Route } from '@/types/transport';
 
 export interface NextStopService {
@@ -17,11 +18,6 @@ export interface StopServiceSnapshot {
   hasGtfsWindows: boolean;
   hasStaticEstimates: boolean;
   generatedAt: Date;
-}
-
-function isoDayOfWeek(date: Date): number {
-  const js = date.getDay();
-  return js === 0 ? 6 : js - 1;
 }
 
 export function formatServiceClock(totalMin: number): string {
@@ -61,11 +57,7 @@ export function getNextStopServices(input: {
 }): StopServiceSnapshot {
   const limit = input.limit ?? 8;
   const routeFilter = new Set(input.routeIds);
-  const day = isoDayOfWeek(input.now);
-  const nowMin =
-    input.now.getHours() * 60 +
-    input.now.getMinutes() +
-    input.now.getSeconds() / 60;
+  const { day, minutes: nowMin } = chileClock(input.now);
   const services: NextStopService[] = [];
   const windows = input.windows ?? [];
 
@@ -119,9 +111,8 @@ function getStaticFrequencyServices({
   const staticRoutes = routes.filter((route) => routeSet.has(route.id) && routeIdsWithStaticPattern.has(route.id));
   if (staticRoutes.length === 0) return [];
 
-  const day = isoDayOfWeek(now);
+  const { day, minutes: nowMin } = chileClock(now);
   const dayKind = day < 5 ? 'weekday' : day === 5 ? 'saturday' : 'sunday';
-  const nowMin = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
   const out: NextStopService[] = [];
   const patternsByRoute = new Map<string, typeof STATIC_SERVICE_PATTERNS>();
   for (const pattern of STATIC_SERVICE_PATTERNS) {

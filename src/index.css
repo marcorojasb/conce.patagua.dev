@@ -319,10 +319,60 @@
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
+/* Estimadas desde el horario: borde punteado y algo translúcidas, para no
+   confundirlas con las micros con GPS real (.live-vehicle-marker). */
+.vehicle-marker.is-estimate {
+  border-style: dashed;
+  opacity: 0.82;
+}
+
+.live-vehicle-wrap {
+  background: transparent;
+  border: 0;
+}
+.live-vehicle-marker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 22px;
+  border-radius: 5px;
+  background: var(--vehicle-bg, #334155);
+  color: #fff;
+  border: 2px solid #fff;
+  font: 700 10px/1 ui-monospace, monospace;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 2px 7px rgba(0, 0, 0, 0.45),
+    0 0 0 2px #059669;
+}
+.live-vehicle-marker::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 8px;
+  border: 2px solid #059669;
+  animation: live-vehicle-pulse 1.8s ease-out infinite;
+}
+@keyframes live-vehicle-pulse {
+  from {
+    opacity: 0.9;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .vehicle-marker-wrap,
   .vehicle-marker {
     transition: none;
+  }
+  .live-vehicle-marker::after {
+    animation: none;
   }
 }
 
