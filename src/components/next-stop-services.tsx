@@ -179,8 +179,8 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
           })}
         </ul>
         <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-          Horas estimadas con el horario publicado (GTFS) o la frecuencia anunciada; no
-          vienen del GPS.
+          Horas estimadas, en hora de Chile, con el horario publicado (GTFS) o la frecuencia
+          anunciada; no vienen del GPS.
         </p>
       </>
     );
@@ -192,7 +192,7 @@ export function NextStopServicesBlock({ stopId, routeIds, enabled }: Props) {
     <section aria-label="Próximas pasadas según el horario">
       <SectionLabel
         icon={<CalendarClock />}
-        aside={clock && !state.loading ? `${clock} hora de Chile` : undefined}
+        aside={clock && !state.loading ? <span title="Hora de Chile">{clock}</span> : undefined}
       >
         Próximas pasadas · horario
       </SectionLabel>

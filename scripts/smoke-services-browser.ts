@@ -114,12 +114,12 @@ try {
   await page.goto(`${BASE_URL}/?route=gtfs-route-2991`, { waitUntil: 'load' });
   await waitForBody(page, /02A|Centinela/, 'GTFS route deep link');
   await page.goto(`${BASE_URL}/?stop=gtfs-stop-1506365`, { waitUntil: 'load' });
-  await waitForBody(page, /Próximos servicios|Cargando próximos servicios programados/, 'stop next services');
+  await waitForBody(page, /Próximas pasadas|Cargando próximas pasadas programadas/, 'stop next services');
   await waitForBody(page, /GTFS estático|Horarios estimados|Horas estimadas/, 'programmed stop services source copy');
   await page.locator('[data-live-state="live"]').waitFor({ timeout: 10_000 });
   await waitForBody(page, /Llegadas en vivo[\s\S]*62H[\s\S]*regreso[\s\S]*1 min/, 'live arrivals block');
   await waitForBody(page, /fuente no oficial/, 'live arrivals source disclaimer');
-  await page.getByRole('dialog').filter({ hasText: /Ruta 160|Próximos servicios/ }).first().waitFor({ timeout: 5_000 });
+  await page.getByRole('dialog').filter({ hasText: /Ruta 160|Próximas pasadas/ }).first().waitFor({ timeout: 5_000 });
   const modalDetailCount = await page.locator('[role="dialog"][aria-modal="true"]').count();
   if (modalDetailCount > 0) {
     throw new Error('Expected detail panels to be non-modal.');
@@ -234,9 +234,9 @@ try {
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${BASE_URL}/?stop=gtfs-stop-1506365`, { waitUntil: 'load' });
-  await waitForBody(page, /Próximos servicios|Cargando próximos servicios programados/, 'mobile stop panel');
+  await waitForBody(page, /Próximas pasadas|Cargando próximas pasadas programadas/, 'mobile stop panel');
   await page.mouse.wheel(0, 1400);
-  await waitForBody(page, /GPS ni GTFS-RT|Sin próximos servicios programados/, 'mobile detail scroll');
+  await waitForBody(page, /no vienen del GPS|Sin próximas pasadas/, 'mobile detail scroll');
   await page.getByRole('button', { name: 'Cerrar' }).first().waitFor({ timeout: 5_000 });
   await page.getByRole('button', { name: 'Expandir panel' }).click();
   await page.getByRole('button', { name: 'Reducir panel', expanded: true }).waitFor({ timeout: 5_000 });
