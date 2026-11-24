@@ -29,7 +29,7 @@ import {
 import { isRouteOperatingNow } from '@/lib/operating-hours';
 import { cn } from '@/lib/utils';
 import { CORRIDOR_BY_ID } from '@/data/interurban-corridors';
-import type { FlyToToken, Route, SheetKind } from '@/types/transport';
+import type { FlyToToken, Route, SheetKind, StopWithRoutes } from '@/types/transport';
 
 // Fichas y herramientas se cargan recién al abrirse: no hacen falta para el
 // primer dibujo del mapa y sacarlas del chunk principal lo mantiene dentro del
@@ -39,9 +39,6 @@ const RouteDetailSheet = lazy(() =>
 );
 const StopDetailSheet = lazy(() =>
   import('@/components/stop-detail-sheet').then((m) => ({ default: m.StopDetailSheet })),
-);
-const ParaderoDetailSheet = lazy(() =>
-  import('@/components/paradero-detail-sheet').then((m) => ({ default: m.ParaderoDetailSheet })),
 );
 const TerminalDetailSheet = lazy(() =>
   import('@/components/terminal-detail-sheet').then((m) => ({ default: m.TerminalDetailSheet })),
@@ -401,10 +398,24 @@ export default function App() {
     },
     [selectedStopId, routesVersion],
   );
-  const selectedParadero = useMemo(
-    () => GTFS_STOPS.find((p) => p.id === selectedParaderoId) ?? null,
-    [selectedParaderoId],
-  );
+  // Un paradero de la capa GTFS abre la misma ficha que una parada de
+  // recorrido; si no aparece en ningún recorrido dibujado, va sin recorridos.
+  const selectedParaderoStop = useMemo<StopWithRoutes | null>(() => {
+    void routesVersion;
+    if (!selectedParaderoId) return null;
+    const onRoute = STOPS.find((s) => s.id === selectedParaderoId);
+    if (onRoute) return onRoute;
+    const p = GTFS_STOPS.find((x) => x.id === selectedParaderoId);
+    if (!p) return null;
+    return {
+      id: p.id,
+      name: p.name ?? `Paradero ${p.sourceId ?? ''}`.trim(),
+      lat: p.lat,
+      lng: p.lng,
+      ref: p.ref,
+      routes: [],
+    };
+  }, [selectedParaderoId, routesVersion]);
   const selectedTerminal = useMemo(
     () => TERMINALS.find((t) => t.id === selectedTerminalId) ?? null,
     [selectedTerminalId],
@@ -796,19 +807,10 @@ export default function App() {
             onSelectStop={onSelectStop}
           />
         )}
-        {sheetKind === 'stop' && (
+        {(sheetKind === 'stop' || sheetKind === 'paradero') && (
           <StopDetailSheet
-            open={sheetKind === 'stop'}
-            stop={selectedStop}
-            live={liveArrivals}
-            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-            onSelectRoute={onSelectRoute}
-          />
-        )}
-        {sheetKind === 'paradero' && (
-          <ParaderoDetailSheet
-            open={sheetKind === 'paradero'}
-            paradero={selectedParadero}
+            open
+            stop={sheetKind === 'stop' ? selectedStop : selectedParaderoStop}
             live={liveArrivals}
             onOpenChange={(o) => (!o ? closeSheet() : undefined)}
             onSelectRoute={onSelectRoute}
