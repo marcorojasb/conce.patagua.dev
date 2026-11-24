@@ -19,6 +19,12 @@ import { resolve } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { simplify } from './lib/simplify.ts';
 import {
+  compareStopServiceWindows,
+  renderScheduleModule,
+  renderStopServicesModule,
+  type StopServiceWindow,
+} from './lib/gtfs-encode.ts';
+import {
   DEFAULT_GTFS_URL,
   downloadGtfsZip,
   listZipEntries,
@@ -431,7 +437,6 @@ for (let stopIdx = 0; stopIdx < stopCount; stopIdx++) {
   if (total > 0) stopFrequency.set(paraderos[stopIdx].id, counts);
 }
 
-type StopServiceWindow = [string, string, number, number, number, number, number];
 const stopWindows = new Map<string, StopServiceWindow[]>();
 // Agrupa las pasadas por (ruta/headsign, paradero) uniendo los servicios de cada día.
 const passGroups = new Map<number, Array<number[] | undefined>>();
@@ -457,11 +462,7 @@ for (const [group, perService] of passGroups) {
     stopWindows.set(stopId, list);
   }
 }
-for (const list of stopWindows.values()) {
-  list.sort(
-    (a, b) => a[2] - b[2] || a[3] - b[3] || byText(a[0], b[0]) || byText(a[1], b[1]) || a[4] - b[4],
-  );
-}
+for (const list of stopWindows.values()) list.sort(compareStopServiceWindows);
 
 // ---------------------------------------------------------------------------
 // 7. Archivos generados
@@ -590,36 +591,21 @@ export const STOP_FREQUENCY_META = {
 } as const;
 `;
 
-const servicesEntries = Array.from(stopWindows.entries()).sort((a, b) => byText(a[0], b[0]));
-const totalWindows = servicesEntries.reduce((acc, [, list]) => acc + list.length, 0);
-const servicesBody = servicesEntries
-  .map(([stopId, list]) => `  ${JSON.stringify(stopId)}: [${list.map((t) => JSON.stringify(t)).join(',')}]`)
-  .join(',\n');
-const servicesFile = `${banner(`// Compact programmed service windows by GTFS stop.
+const totalWindows = Array.from(stopWindows.values()).reduce((acc, list) => acc + list.length, 0);
+const servicesFile = renderStopServicesModule({
+  banner: banner(`// Compact programmed service windows by GTFS stop.
 // Tuple: [routeId, headsign, day, firstMin, lastMin, medianHeadwayMin, count].
-// Day index: 0=Monday..6=Sunday. Minutos de llegada (o salida si falta); las
-// filas sin hora se omiten.`)}
-export type StopServiceWindow = [
-  routeId: string,
-  headsign: string,
-  day: number,
-  firstMin: number,
-  lastMin: number,
-  medianHeadwayMin: number,
-  count: number,
-];
-
-export const STOP_SERVICE_WINDOWS: Record<string, StopServiceWindow[]> = {
-${servicesBody},
-};
-
-export const STOP_SERVICE_WINDOWS_META = {
-  generatedAt: ${JSON.stringify(generatedAt)},
-  paraderos: ${servicesEntries.length},
-  windows: ${totalWindows},
-  rawVisits: ${stopTimeRows - orphanStopTimes - unknownStopTimes - untimedStopTimes},
-} as const;
-`;
+// Day index: 0=Monday..6=Sunday. Minutos de llegada (o salida si falta) desde
+// la medianoche del día de servicio; las filas sin hora se omiten.
+// Formato compacto decodificado al cargar: ver scripts/lib/gtfs-encode.ts.`),
+  windowsByStop: stopWindows,
+  meta: {
+    generatedAt,
+    paraderos: stopWindows.size,
+    windows: totalWindows,
+    rawVisits: stopTimeRows - orphanStopTimes - unknownStopTimes - untimedStopTimes,
+  },
+});
 
 // Las marcas de tiempo cambian en cada corrida; si es lo único distinto no se
 // reescribe el archivo, así el sync diario no abre PRs vacíos.
