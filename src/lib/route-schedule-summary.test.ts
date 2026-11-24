@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import {
   departuresByHour,
+  isEvenlySpaced,
   summarizeDay,
   summarizeToday,
-  summarizeWindowsDay,
-  summarizeWindowsToday,
 } from '@/lib/route-schedule-summary';
 import type { RouteSchedule, ScheduledTrip } from '@/types/transport';
 
@@ -150,40 +148,25 @@ describe('departuresByHour', () => {
   });
 });
 
-describe('ventanas de paso (respaldo sin viajes)', () => {
-  // Lunes a viernes 06:00–23:30 cada 20 min (57 pasadas); el sábado solo
-  // trae una ventana 00:00–00:00 sin horas reales.
-  const WINDOWS: StopServiceWindow[] = [
-    ...[0, 1, 2, 3, 4].map(
-      (day): StopServiceWindow => ['gtfs-route-1', 'Centro', day, 360, 1410, 20, 57],
-    ),
-    ['gtfs-route-1', 'Centro', 5, 0, 0, 0, 1],
-  ];
-
-  it('resume el día con la ventana e ignora las de 00:00 sin horas', () => {
-    expect(summarizeWindowsDay(WINDOWS, 0)).toEqual({
-      first: 360,
-      last: 1410,
-      departures: 57,
-      medianHeadway: 20,
-    });
-    expect(summarizeWindowsDay(WINDOWS, 5).departures).toBe(0);
+describe('isEvenlySpaced', () => {
+  it('reconoce un día a intervalo fijo en cada sentido aunque los sentidos difieran', () => {
+    const forward = weekdaysOnly(every(360, 1320, 15));
+    const reverse = weekdaysOnly(every(370, 1300, 20));
+    expect(isEvenlySpaced([forward, reverse], 0)).toBe(true);
   });
 
-  it('dentro de la ventana opera con su intervalo y no inventa la próxima salida', () => {
-    const summary = summarizeWindowsToday(WINDOWS, MONDAY_0830);
-    expect(summary.operatingNow).toBe(true);
-    expect(summary.headwayNow).toBe(20);
-    expect(summary.nextDeparture).toBeNull();
+  it('tolera 1 min de redondeo entre salidas', () => {
+    const rounded: RouteSchedule = [[[360, 60], [367, 60], [375, 60], [382, 60]], [], [], [], [], [], []];
+    expect(isEvenlySpaced([rounded], 0)).toBe(true);
   });
 
-  it('fuera de la ventana da la primera pasada siguiente', () => {
-    const early = summarizeWindowsToday(WINDOWS, new Date('2026-05-18T04:00:00-04:00'));
-    expect(early.operatingNow).toBe(false);
-    expect(early.headwayNow).toBeNull();
-    expect(early.nextDeparture).toEqual({ minutes: 360, dayOffset: 0 });
+  it('no es parejo si la frecuencia cambia en el día', () => {
+    expect(isEvenlySpaced([URBAN], 0)).toBe(false);
+  });
 
-    const friday = summarizeWindowsToday(WINDOWS, new Date('2026-05-22T23:45:00-04:00'));
-    expect(friday.nextDeparture).toEqual({ minutes: 360, dayOffset: 3 });
+  it('un día con una sola salida o sin salidas cuenta como parejo', () => {
+    const single: RouteSchedule = [[[480, 30]], [], [], [], [], [], []];
+    expect(isEvenlySpaced([single], 0)).toBe(true);
+    expect(isEvenlySpaced([single], 6)).toBe(true);
   });
 });
