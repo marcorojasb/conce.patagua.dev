@@ -48,8 +48,9 @@ interface RouteDetailSheetProps {
   onSelectStop: (id: string) => void;
 }
 
-// Mismo import() que la simulación de servicios en curso: el navegador ya
-// tiene el chunk (~700 KB) en caché cuando se abre la ficha.
+// Mismo import() que la capa de servicios en curso (activa al iniciar): el
+// chunk de horarios (~700 KB) suele estar ya en caché al abrir la ficha y no
+// pesa en la carga inicial.
 let schedulesPromise: Promise<Record<string, RouteSchedule>> | null = null;
 function loadSchedules(): Promise<Record<string, RouteSchedule>> {
   schedulesPromise ??= Promise.all([
@@ -79,7 +80,8 @@ interface RouteScheduleData {
   all: RouteSchedule[];
   /** Solo en patrones estáticos: el GTFS no separa sentidos en este dataset. */
   directions: ScheduleDirection[];
-  patterns: StaticServicePattern[];
+  /** Reconstruido desde una frecuencia publicada, no viajes programados uno a uno. */
+  estimated: boolean;
 }
 
 function scheduleForRoute(
@@ -101,10 +103,10 @@ function scheduleForRoute(
     }
     const directions = [...byDirection.values()];
     if (directions.length === 0) return null;
-    return { all: directions.flatMap((d) => d.schedules), directions, patterns };
+    return { all: directions.flatMap((d) => d.schedules), directions, estimated: true };
   }
   const schedule = index[routeId];
-  return schedule ? { all: [schedule], directions: [], patterns: [] } : null;
+  return schedule ? { all: [schedule], directions: [], estimated: false } : null;
 }
 
 type ScheduleState =
@@ -463,7 +465,6 @@ function TodayCards({
   const summary = summarizeToday(data.all, now);
   const range = formatRange(summary.first, summary.last);
   const next = summary.nextDeparture ? formatNext(summary.nextDeparture, summary.day) : null;
-  const estimated = data.patterns.length > 0;
 
   let nowValue: string;
   let nowDetail: string;
@@ -491,8 +492,8 @@ function TodayCards({
         value={summary.departures}
         detail={
           data.directions.length > 1
-            ? `${estimated ? 'estimadas' : 'programadas'} · ambos sentidos`
-            : estimated
+            ? `${data.estimated ? 'estimadas' : 'programadas'} · ambos sentidos`
+            : data.estimated
               ? 'estimadas hoy'
               : 'programadas hoy'
         }
