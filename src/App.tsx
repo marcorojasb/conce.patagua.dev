@@ -6,14 +6,21 @@ import { MapLayerControl } from '@/components/map-layer-control';
 import { Sidebar } from '@/components/sidebar';
 import { LazyBoundary } from '@/components/lazy-boundary';
 import type { AnalysisTab } from '@/components/floating-tools-panel';
-import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { useSimulationControl, useSimulationStatus } from '@/realtime/use-simulated-vehicles';
 import { useLiveArrivals } from '@/hooks/use-live-arrivals';
-import { liveStopCode, liveView, normalizeRouteCode } from '@/realtime/live-arrivals';
+import { liveStopCode, liveView } from '@/realtime/live-arrivals';
 import type { LiveVehicleMarker } from '@/components/conce-map';
-import type { SimulationRouteInput } from '@/realtime/simulated-vehicles';
+import { buildSimulationRoutes, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
 import { WelcomeCard } from '@/components/welcome-card';
-import { CONCE_CENTER, DEFAULT_VISIBLE_ROUTE_IDS, ROUTES, ROUTES_BY_ID, STOPS, useRoutesVersion } from '@/data/routes';
+import {
+  CONCE_CENTER,
+  DEFAULT_VISIBLE_ROUTE_IDS,
+  ROUTES,
+  ROUTES_BY_ID,
+  STOPS,
+  findRoute,
+  useRoutesVersion,
+} from '@/data/routes';
 import { TERMINALS } from '@/data/terminals.generated';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
@@ -28,6 +35,7 @@ import {
   useSyncUrlState,
 } from '@/hooks/use-url-state';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
+import { routeShortName } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
 import { CORRIDOR_BY_ID } from '@/data/interurban-corridors';
 import type { FlyToToken, Route, SheetKind, StopWithRoutes } from '@/types/transport';
@@ -68,22 +76,28 @@ interface SelectedDetailState {
   id: string;
 }
 
-const INITIAL_FOCUS_ROUTE =
-  INITIAL_FOCUS?.kind === 'route'
-    ? ROUTES_BY_ID.get(INITIAL_FOCUS.id) ?? ROUTES.find((x) => x.code === INITIAL_FOCUS.id) ?? null
-    : null;
+// Recorrido pedido por la URL: `?route=` (id, o también código/variante) o
+// `?focus=route:` desde el wiki ("201", "10A"). Los recorridos GTFS llegan en
+// un chunk diferido; si todavía no está, App lo aplica cuando carga.
+const INITIAL_ROUTE_REF =
+  INITIAL_URL.route ??
+  (!INITIAL_URL.stop && !INITIAL_URL.terminal && !INITIAL_URL.poi && INITIAL_FOCUS?.kind === 'route'
+    ? INITIAL_FOCUS.id
+    : null);
+const INITIAL_ROUTE = INITIAL_ROUTE_REF ? findRoute(INITIAL_ROUTE_REF)?.route ?? null : null;
+let pendingRouteRef = INITIAL_ROUTE_REF && !INITIAL_ROUTE ? INITIAL_ROUTE_REF : null;
+// Visibles por defecto que ya existen al montar (Biotrén); los interurbanos
+// oficiales llegan con el chunk GTFS y se suman a lo visible en ese momento.
+const EAGER_DEFAULT_ROUTE_IDS = new Set(DEFAULT_VISIBLE_ROUTE_IDS);
 const INITIAL_FOCUS_CORRIDOR =
   INITIAL_FOCUS?.kind === 'corridor' ? CORRIDOR_BY_ID.get(INITIAL_FOCUS.id) ?? null : null;
 
 function initialSelectedDetail(): SelectedDetailState | null {
-  if (INITIAL_URL.route) return { kind: 'route', id: INITIAL_URL.route };
+  if (INITIAL_ROUTE_REF) return INITIAL_ROUTE ? { kind: 'route', id: INITIAL_ROUTE.id } : null;
   if (INITIAL_URL.stop) return { kind: 'stop', id: INITIAL_URL.stop };
   if (INITIAL_URL.terminal) return { kind: 'terminal', id: INITIAL_URL.terminal };
   if (INITIAL_URL.poi) return { kind: 'poi', id: INITIAL_URL.poi };
   if (!INITIAL_FOCUS) return null;
-  if (INITIAL_FOCUS.kind === 'route' && INITIAL_FOCUS_ROUTE) {
-    return { kind: 'route', id: INITIAL_FOCUS_ROUTE.id };
-  }
   if (INITIAL_FOCUS.kind === 'stop') return { kind: 'stop', id: INITIAL_FOCUS.id };
   if (INITIAL_FOCUS.kind === 'terminal') return { kind: 'terminal', id: INITIAL_FOCUS.id };
   if (INITIAL_FOCUS.kind === 'poi') return { kind: 'poi', id: INITIAL_FOCUS.id };
@@ -94,13 +108,18 @@ function pointFlyToToken(lat: number, lng: number, zoom: number): FlyToToken {
   return { key: 0, target: { kind: 'point', lat, lng, zoom } };
 }
 
+// Los paraderos GTFS entran a STOPS recién con el chunk de recorridos; para
+// centrar el mapa basta su posición, que ya está en GTFS_STOPS.
+function stopPosition(id: string): { lat: number; lng: number } | null {
+  return STOPS.find((x) => x.id === id) ?? GTFS_STOPS.find((x) => x.id === id) ?? null;
+}
+
 function initialFlyToToken(): FlyToToken | null {
-  if (INITIAL_URL.route) {
-    const route = ROUTES_BY_ID.get(INITIAL_URL.route);
-    return route ? { key: 0, target: { kind: 'bounds', path: route.path } } : null;
+  if (INITIAL_ROUTE_REF) {
+    return INITIAL_ROUTE ? { key: 0, target: { kind: 'bounds', path: INITIAL_ROUTE.path } } : null;
   }
   if (INITIAL_URL.stop) {
-    const stop = STOPS.find((x) => x.id === INITIAL_URL.stop);
+    const stop = stopPosition(INITIAL_URL.stop);
     return stop ? pointFlyToToken(stop.lat, stop.lng, 16) : null;
   }
   if (INITIAL_URL.terminal) {
@@ -112,9 +131,6 @@ function initialFlyToToken(): FlyToToken | null {
     return poi ? pointFlyToToken(poi.lat, poi.lng, 16) : null;
   }
   if (!INITIAL_FOCUS) return null;
-  if (INITIAL_FOCUS.kind === 'route' && INITIAL_FOCUS_ROUTE) {
-    return { key: 0, target: { kind: 'bounds', path: INITIAL_FOCUS_ROUTE.path } };
-  }
   if (INITIAL_FOCUS.kind === 'corridor' && INITIAL_FOCUS_CORRIDOR) {
     const { anchor, terminal } = INITIAL_FOCUS_CORRIDOR;
     return terminal
@@ -122,7 +138,7 @@ function initialFlyToToken(): FlyToToken | null {
       : pointFlyToToken(anchor[0], anchor[1], 11);
   }
   if (INITIAL_FOCUS.kind === 'stop') {
-    const stop = STOPS.find((x) => x.id === INITIAL_FOCUS.id);
+    const stop = stopPosition(INITIAL_FOCUS.id);
     return stop ? pointFlyToToken(stop.lat, stop.lng, 16) : null;
   }
   if (INITIAL_FOCUS.kind === 'terminal') {
@@ -151,13 +167,10 @@ export default function App() {
 
   const [visibleRouteIds, setVisibleRouteIds] = useState<string[]>(() => {
     // If a deep link selects a route, make sure it's visible too.
-    if (INITIAL_URL.route && !DEFAULT_VISIBLE_ROUTE_IDS.includes(INITIAL_URL.route)) {
-      return [...DEFAULT_VISIBLE_ROUTE_IDS, INITIAL_URL.route];
+    if (INITIAL_ROUTE && !DEFAULT_VISIBLE_ROUTE_IDS.includes(INITIAL_ROUTE.id)) {
+      return [...DEFAULT_VISIBLE_ROUTE_IDS, INITIAL_ROUTE.id];
     }
-    if (INITIAL_FOCUS_ROUTE && !DEFAULT_VISIBLE_ROUTE_IDS.includes(INITIAL_FOCUS_ROUTE.id)) {
-      return [...DEFAULT_VISIBLE_ROUTE_IDS, INITIAL_FOCUS_ROUTE.id];
-    }
-    return DEFAULT_VISIBLE_ROUTE_IDS;
+    return [...DEFAULT_VISIBLE_ROUTE_IDS];
   });
 
 
@@ -223,53 +236,13 @@ export default function App() {
   const [simulationScope, setSimulationScope] = useState<SimulationScope>('visible');
   const [simulationRetryKey, setSimulationRetryKey] = useState(0);
 
-  // Pool of routes the simulator can project vehicles for. GTFS urban
-  // services keep their original route id; Biotrén/interurban services use
-  // directional static patterns with explicit source/confidence metadata.
+  // Pool of routes the simulator can project vehicles for: one input per GTFS
+  // direction and per Biotrén EFE pattern (see buildSimulationRoutes).
   const simulationRoutes = useMemo<SimulationRouteInput[]>(() => {
     void routesVersion;
-    const visibleSimulationRouteIds = new Set(visibleRouteIds);
-    const gtfsRoutes: SimulationRouteInput[] = [];
-    for (const r of ROUTES) {
-      if (
-        r.type !== 'micro' ||
-        !r.id.startsWith('gtfs-route-') ||
-        (simulationScope === 'visible' && !visibleSimulationRouteIds.has(r.id))
-      ) {
-        continue;
-      }
-      gtfsRoutes.push({
-        id: r.id,
-        routeId: r.id,
-        color: r.color,
-        path: r.path,
-        sourceKind: 'gtfs',
-        confidence: 'official',
-        sourceLabel: 'GTFS Gran Concepción',
-      });
-    }
-    const staticRoutes: SimulationRouteInput[] = STATIC_SERVICE_PATTERNS.flatMap((pattern) => {
-      if (simulationScope === 'visible' && !visibleSimulationRouteIds.has(pattern.routeId)) {
-        return [];
-      }
-      const route = ROUTES_BY_ID.get(pattern.routeId);
-      if (!route) return [];
-      return [
-        {
-          id: pattern.id,
-          routeId: pattern.routeId,
-          color: route.color,
-          path: pattern.direction === 'reverse' ? [...route.path].reverse() : route.path,
-          directionLabel: pattern.directionLabel,
-          sourceKind: pattern.sourceKind,
-          confidence: pattern.confidence,
-          sourceLabel: pattern.sourceLabel,
-          sourceUrl: pattern.sourceUrl,
-          note: pattern.note,
-        },
-      ];
-    });
-    return [...gtfsRoutes, ...staticRoutes];
+    if (simulationScope === 'all') return buildSimulationRoutes(ROUTES);
+    const visible = new Set(visibleRouteIds);
+    return buildSimulationRoutes(ROUTES.filter((r) => visible.has(r.id)));
   }, [routesVersion, simulationScope, visibleRouteIds]);
   const routeColorById = useMemo(
     () => {
@@ -281,7 +254,7 @@ export default function App() {
   const routeLabelById = useMemo(
     () => {
       void routesVersion;
-      return new Map(ROUTES.map((r) => [r.id, `${r.code} · ${r.name}`]));
+      return new Map(ROUTES.map((r) => [r.id, `${r.code} · ${routeShortName(r)}`]));
     },
     [routesVersion],
   );
@@ -297,12 +270,13 @@ export default function App() {
     const snapshot = liveArrivals.state.snapshot;
     if (!snapshot) return [];
     const now = Date.now();
-    const colorByCode = new Map(ROUTES.map((r) => [normalizeRouteCode(r.code), r.color]));
+    // La fuente en vivo nombra la variante del letrero ("62H"), no el código
+    // del recorrido GTFS ("62HM").
     return liveView(liveArrivals.state, now, false).arrivals.flatMap((arrival) =>
       arrival.position
         ? [{
             arrival: { ...arrival, position: arrival.position },
-            color: colorByCode.get(normalizeRouteCode(arrival.route)) ?? '#334155',
+            color: findRoute(arrival.route)?.route.color ?? '#334155',
             fetchedAt: snapshot.fetchedAt,
             now,
           }]
@@ -336,6 +310,24 @@ export default function App() {
   const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
 
   const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(initialFlyToToken);
+
+  // Al llegar el chunk GTFS: los interurbanos por defecto pasan a visibles y
+  // un deep link a un recorrido que aún no estaba cargado se aplica (una vez).
+  useEffect(() => {
+    if (routesVersion === 0) return;
+    const pending = pendingRouteRef ? findRoute(pendingRouteRef)?.route ?? null : null;
+    pendingRouteRef = null;
+    const add = DEFAULT_VISIBLE_ROUTE_IDS.filter((id) => !EAGER_DEFAULT_ROUTE_IDS.has(id));
+    if (pending) add.push(pending.id);
+    setVisibleRouteIds((cur) => {
+      const missing = add.filter((id) => !cur.includes(id));
+      return missing.length > 0 ? [...cur, ...missing] : cur;
+    });
+    if (pending) {
+      setSelectedDetail({ kind: 'route', id: pending.id });
+      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: pending.path } });
+    }
+  }, [routesVersion]);
 
   const [sourcesOpen, setSourcesOpen] = useState(false);
   // Single active tool, null means no panel is open. Floating, non-modal:
