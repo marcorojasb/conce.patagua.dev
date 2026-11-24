@@ -582,7 +582,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
   let cursor = height - padY;
   ctx.fillStyle = renderTheme === 'dark' ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.5)';
   ctx.font = `400 ${attrSize}px Inter, system-ui, sans-serif`;
-  ctx.fillText('OSM contributors © Esri · GTFS Gran Concepción CC BY 4.0', padX, cursor);
+  ctx.fillText('OSM contributors © Esri · GTFS oficial DTPR · itinerarios EFE', padX, cursor);
   cursor -= attrSize + 4;
 
   ctx.fillStyle = renderTheme === 'dark' ? 'rgba(255,255,255,0.88)' : 'rgba(0,0,0,0.78)';

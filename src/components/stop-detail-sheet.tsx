@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import {
   Accessibility,
   ArrowDownToDot,
+  ArrowRight,
   ArrowUpFromDot,
   ChartColumn,
   ChevronRight,
@@ -30,7 +31,7 @@ import { chileClock } from '@/lib/chile-time';
 import { routeShortName } from '@/lib/route-labels';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
 import { cn } from '@/lib/utils';
-import type { Route, StopWithRoutes } from '@/types/transport';
+import type { Route, RouteDirection, StopWithRoutes } from '@/types/transport';
 
 type PlannerPoint = { lat: number; lng: number };
 
@@ -150,8 +151,8 @@ export function StopDetailSheet({
 
       {hasRoutes ? (
         <>
-          <NextStopServicesBlock stopId={stop.id} routeIds={stop.routes} enabled={open} />
-          <RoutesSection routes={routes} onSelectRoute={onSelectRoute} />
+          <NextStopServicesBlock stopId={stop.id} routes={routes} enabled={open} />
+          <RoutesSection stopId={stop.id} routes={routes} onSelectRoute={onSelectRoute} />
         </>
       ) : (
         <Notice icon={<Info />}>
@@ -232,10 +233,17 @@ function AccessibilityBadges({ stop }: { stop: StopWithRoutes }) {
   );
 }
 
+/** Sentidos del recorrido que se detienen en el paradero (los dos en cabeceras y tramos compartidos). */
+function directionsServing(route: Route, stopId: string): RouteDirection[] {
+  return route.directions?.filter((d) => d.stops.some((stop) => stop.id === stopId)) ?? [];
+}
+
 function RoutesSection({
+  stopId,
   routes,
   onSelectRoute,
 }: {
+  stopId: string;
   routes: Route[];
   onSelectRoute: (id: string) => void;
 }) {
@@ -257,9 +265,7 @@ function RoutesSection({
         {routes.map((r) => {
           const Icon = ROUTE_TYPES[r.type].Icon;
           const active = isRouteOperatingNow(r);
-          const details = [r.operator, /^\d/.test(r.headway) ? `cada ${r.headway}` : null]
-            .filter(Boolean)
-            .join(' · ');
+          const here = directionsServing(r, stopId);
           return (
             <li key={r.id}>
               <button
@@ -269,10 +275,27 @@ function RoutesSection({
               >
                 <RouteBadge code={r.code} color={r.color} />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium">{routeShortName(r)}</div>
+                  {here.length > 0 ? (
+                    here.map((d) => (
+                      <div
+                        key={d.directionId}
+                        className="flex min-w-0 items-center gap-1 text-sm font-medium"
+                      >
+                        {d.variant && d.variant !== r.code && (
+                          <span className="shrink-0 font-mono text-[12px] text-muted-foreground">
+                            {d.variant}
+                          </span>
+                        )}
+                        <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" aria-label="hacia" />
+                        <span className="truncate">{d.destination ?? d.headsign}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="truncate text-sm font-medium">{routeShortName(r)}</div>
+                  )}
                   <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
                     <Icon className="size-[11px] shrink-0" aria-label={ROUTE_TYPES[r.type].short} />
-                    <span className="truncate">{details}</span>
+                    <span className="truncate">{r.operator}</span>
                   </div>
                 </div>
                 <span
@@ -359,8 +382,8 @@ function FrequencyBlock({
       <section aria-label="Frecuencia programada">
         {label}
         <Notice>
-          Sin frecuencia por hora: los recorridos de este paradero no publican horario en el GTFS
-          del Gran Concepción.
+          Sin frecuencia por hora: los recorridos de este paradero no traen horario en el GTFS
+          oficial de la DTPR.
         </Notice>
       </section>
     );
@@ -378,8 +401,8 @@ function FrequencyBlock({
       </div>
       <HourlyBars hourly={stats.todaySlice} max={max} currentHour={hourNow} />
       <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-        Pasadas por hora según el horario publicado (GTFS Gran Concepción); la barra resaltada es
-        la hora actual.
+        Pasadas por hora según el programa oficial de la DTPR (GTFS); la barra resaltada es la
+        hora actual.
       </p>
     </section>
   );

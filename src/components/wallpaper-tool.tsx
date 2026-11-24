@@ -6,11 +6,10 @@ import { ROUTES } from '@/data/routes';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
 import { TERMINALS } from '@/data/terminals.generated';
-import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
-import { computeActiveVehicles, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
-import { getSimulatedVehicles } from '@/realtime/use-simulated-vehicles';
+import { buildSimulationRoutes, computeActiveVehicles } from '@/realtime/simulated-vehicles';
+import { getSimulatedVehicles, loadSimulationSchedules } from '@/realtime/use-simulated-vehicles';
 import { buildWallpaper, buildWallpaperLegend, CURATED_VIEWS, downloadBlob, padBbox, selectWallpaperRoutes, WALLPAPER_SIZES, WALLPAPER_STYLES, type WallpaperRouteMode, type WallpaperSizePreset, type WallpaperStyle } from '@/lib/wallpaper';
-import type { CoverageCell, RouteSchedule, SimulatedVehicle, Theme } from '@/types/transport';
+import type { CoverageCell, SimulatedVehicle, Theme } from '@/types/transport';
 import type { RoutingResult } from '@/lib/routing';
 
 interface WallpaperTabProps {
@@ -553,8 +552,8 @@ export default function WallpaperTool({
       )}
 
       <div className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
-        El PNG incluye atribución obligatoria embebida (OSM · Esri · GTFS Gran
-        Concepción CC BY 4.0). Si lo publicas, mantén esa franja visible.
+        El PNG incluye la atribución embebida (OSM · Esri · GTFS oficial DTPR ·
+        itinerarios EFE). Si lo publicas, mantén esa franja visible.
       </div>
     </div>
   );
@@ -751,50 +750,8 @@ async function loadWallpaperVehicles(
     return currentVehicles.filter((vehicle) => visible.has(vehicle.routeId));
   }
 
-  const [gtfs, staticSchedules] = await Promise.all([
-    import('@/data/gtfs-schedule.generated'),
-    import('@/realtime/static-service-schedules'),
-  ]);
-  const schedules: Record<string, RouteSchedule> = {
-    ...gtfs.ROUTE_SCHEDULES,
-    ...staticSchedules.STATIC_ROUTE_SCHEDULES,
-  };
-  return computeActiveVehicles(new Date(), buildSimulationRoutesForWallpaper(), schedules);
-}
-
-function buildSimulationRoutesForWallpaper(): SimulationRouteInput[] {
-  const gtfsRoutes: SimulationRouteInput[] = [];
-  for (const r of ROUTES) {
-    if (r.type !== 'micro' || !r.id.startsWith('gtfs-route-')) continue;
-    gtfsRoutes.push({
-      id: r.id,
-      routeId: r.id,
-      color: r.color,
-      path: r.path,
-      sourceKind: 'gtfs',
-      confidence: 'official',
-      sourceLabel: 'GTFS Gran Concepción',
-    });
-  }
-  const staticRoutes = STATIC_SERVICE_PATTERNS.flatMap((pattern) => {
-    const route = ROUTES.find((r) => r.id === pattern.routeId);
-    if (!route) return [];
-    return [
-      {
-        id: pattern.id,
-        routeId: pattern.routeId,
-        color: route.color,
-        path: pattern.direction === 'reverse' ? [...route.path].reverse() : route.path,
-        directionLabel: pattern.directionLabel,
-        sourceKind: pattern.sourceKind,
-        confidence: pattern.confidence,
-        sourceLabel: pattern.sourceLabel,
-        sourceUrl: pattern.sourceUrl,
-        note: pattern.note,
-      },
-    ];
-  });
-  return [...gtfsRoutes, ...staticRoutes];
+  const schedules = await loadSimulationSchedules();
+  return computeActiveVehicles(new Date(), buildSimulationRoutes(ROUTES), schedules);
 }
 
 function pointInBbox(lat: number, lng: number, bbox: [[number, number], [number, number]]) {
