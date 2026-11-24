@@ -151,20 +151,21 @@ export async function downloadGtfsZip(url: string, cacheDir: string): Promise<Gt
   const partPath = `${zipPath}.part`;
   const hash = createHash('sha256');
   let size = 0;
-  await pipeline(
-    Readable.fromWeb(res.body as NodeReadableStream<Uint8Array>),
-    async function* (source: AsyncIterable<Buffer>) {
-      for await (const chunk of source) {
-        hash.update(chunk);
-        size += chunk.length;
-        yield chunk;
-      }
-    },
-    createWriteStream(partPath),
-  );
   // Se valida antes de tocar la caché: una página de error servida con HTTP
   // 200 quedaría guardada y el HEAD de la corrida siguiente la daría por buena.
+  // En CI la caché se guarda aunque este sync falle (el paso no bloquea el job).
   try {
+    await pipeline(
+      Readable.fromWeb(res.body as NodeReadableStream<Uint8Array>),
+      async function* (source: AsyncIterable<Buffer>) {
+        for await (const chunk of source) {
+          hash.update(chunk);
+          size += chunk.length;
+          yield chunk;
+        }
+      },
+      createWriteStream(partPath),
+    );
     const expected = res.headers.get('content-length');
     if (expected !== null && Number(expected) !== size) {
       throw new Error(`descarga incompleta, ${size} de ${expected} bytes`);
