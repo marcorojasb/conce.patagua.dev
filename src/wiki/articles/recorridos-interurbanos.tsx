@@ -147,6 +147,26 @@ export default function RecorridosInterurbanos() {
         <ul className="ml-5 list-disc space-y-1">
           <li>
             <a
+              href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              DTPR · GTFS Gran Concepción
+            </a>{' '}, el zip oficial que usa el visor (incluye 201, 201-AU, 401, 401Y, 411, 421, 302 y 304).
+          </li>
+          <li>
+            <a
+              href="https://dtpr.gob.cl/pe/tome/gtfs/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              DTPR · GTFS Tomé
+            </a>{' '}, feed propio del Perímetro de Exclusión de Tomé (versión Tomé20230308).
+          </li>
+          <li>
+            <a
               href="https://transformacion.dtpr.cl/"
               target="_blank"
               rel="noopener noreferrer"
@@ -163,9 +183,9 @@ export default function RecorridosInterurbanos() {
               className="underline underline-offset-2"
             >
               Subsecretaría de Transportes
-            </a>{' '}, feed GTFS Gran Concepción y otros documentos normativos.
+            </a>{' '}, documentos normativos del sector.
           </li>
-          <li>OSM Overpass, relaciones <code className="font-mono">route=bus</code> taggeadas con el ID del servicio cuando existen.</li>
+          <li>OSM Overpass, para terminales y corredores sin GTFS (Florida, Yumbel).</li>
         </ul>
       </Section>
     </div>
