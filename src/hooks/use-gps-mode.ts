@@ -87,10 +87,10 @@ export function useGpsMode({ enabled, routes, selectedRouteId, stopLive }: GpsMo
       if (vehicle.stale) stale += 1;
       drawnByRoute.set(vehicle.routeId, (drawnByRoute.get(vehicle.routeId) ?? 0) + 1);
     }
-    const statusByRoute = new Map<string, { status: RouteGpsStatus; vehicles: number }>();
+    const statusByRoute = new Map<string, { status: RouteGpsStatus; vehicles: number; lastSignalAgeMs?: number }>();
     for (const [routeId, entry] of gpsStatusByRoute(selection.routeByPair, state, sourceNow)) {
       const drawn = drawnByRoute.get(routeId) ?? 0;
-      statusByRoute.set(routeId, drawn > 0 ? { status: 'live', vehicles: drawn } : { status: entry.status, vehicles: 0 });
+      statusByRoute.set(routeId, drawn > 0 ? { status: 'live', vehicles: drawn } : { ...entry, vehicles: 0 });
     }
     return {
       active: true,

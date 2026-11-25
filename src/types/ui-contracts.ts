@@ -217,6 +217,8 @@ export interface GpsLineStatus {
   /** 'untracked': la fuente no la sigue (Biotrén, 302/304); 'omitted': quedó fuera del tope de 16 sentidos. */
   status: RouteGpsStatus | 'untracked' | 'omitted';
   vehicles: number;
+  /** 'no-gps' con micros listadas cuyo GPS pasó de 5 min: edad de la señal más reciente. */
+  lastSignalAgeMs?: number;
 }
 
 export interface GpsModeView {

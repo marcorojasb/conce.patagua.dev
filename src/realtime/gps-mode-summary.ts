@@ -10,8 +10,29 @@ import type { GpsLineStatus, GpsModeView } from '@/types/ui-contracts';
 
 type LineInfo = Pick<Route, 'id' | 'code' | 'color'>;
 
-function row(route: LineInfo, status: GpsLineStatus['status'], vehicles = 0): GpsLineStatus {
-  return { routeId: route.id, code: route.code, color: route.color, status, vehicles };
+function row(
+  route: LineInfo,
+  status: GpsLineStatus['status'],
+  vehicles = 0,
+  lastSignalAgeMs?: number,
+): GpsLineStatus {
+  return {
+    routeId: route.id,
+    code: route.code,
+    color: route.color,
+    status,
+    vehicles,
+    ...(lastSignalAgeMs != null ? { lastSignalAgeMs } : {}),
+  };
+}
+
+/** "sin GPS ahora" o, si la fuente lista micros con señal vieja, "última señal hace 22 min". */
+export function noGpsText(line: Pick<GpsLineStatus, 'lastSignalAgeMs'>): string {
+  if (line.lastSignalAgeMs == null) return 'sin GPS ahora';
+  const minutes = Math.floor(line.lastSignalAgeMs / 60_000);
+  if (minutes < 60) return `sin GPS ahora · última señal hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  return `sin GPS ahora · última señal hace ${hours} h`;
 }
 
 /**
@@ -22,7 +43,7 @@ function row(route: LineInfo, status: GpsLineStatus['status'], vehicles = 0): Gp
 export function summarizeGpsLines(
   selection: Pick<GpsSelection, 'routeByPair' | 'untracked' | 'omittedRoutes'>,
   routesById: ReadonlyMap<string, LineInfo>,
-  statusByRoute: ReadonlyMap<string, { status: RouteGpsStatus; vehicles: number }>,
+  statusByRoute: ReadonlyMap<string, { status: RouteGpsStatus; vehicles: number; lastSignalAgeMs?: number }>,
 ): GpsLineStatus[] {
   const rows: GpsLineStatus[] = [];
   const seen = new Set<string>();
@@ -32,7 +53,7 @@ export function summarizeGpsLines(
     const route = routesById.get(routeId);
     if (!route) continue;
     const entry = statusByRoute.get(routeId);
-    rows.push(row(route, entry?.status ?? 'pending', entry?.vehicles ?? 0));
+    rows.push(row(route, entry?.status ?? 'pending', entry?.vehicles ?? 0, entry?.lastSignalAgeMs));
   }
   for (const route of selection.untracked) rows.push(row(route, 'untracked'));
   for (const route of selection.omittedRoutes) rows.push(row(route, 'omitted'));
@@ -49,7 +70,9 @@ export function queriedLines(lines: readonly GpsLineStatus[]): GpsLineStatus[] {
  * conteos, hora de la consulta, carga o falla), no con cada tic del reloj.
  */
 export function gpsViewKey(view: GpsModeView): string {
-  const lines = view.lines.map((l) => `${l.routeId}:${l.status}:${l.vehicles}`).join(',');
+  const lines = view.lines
+    .map((l) => `${l.routeId}:${l.status}:${l.vehicles}:${l.lastSignalAgeMs == null ? '' : Math.floor(l.lastSignalAgeMs / 60_000)}`)
+    .join(',');
   return [view.active, view.loading, view.failure, view.fetchedAt, view.vehicles, view.stale, lines].join('|');
 }
 
@@ -103,7 +126,7 @@ export function selectedLineNotice(
   labelOf: (line: GpsLineStatus) => string,
 ): string | null {
   const selected = selectedRouteId ? lines.find((l) => l.routeId === selectedRouteId) : undefined;
-  const text = selected ? COMPACT_ROW_TEXT[selected.status] : undefined;
+  const text = selected?.status === 'no-gps' ? noGpsText(selected) : selected ? COMPACT_ROW_TEXT[selected.status] : undefined;
   return selected && text ? `${labelOf(selected)}: ${text}` : null;
 }
 

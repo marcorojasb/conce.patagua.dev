@@ -390,8 +390,8 @@ describe('edad y mapa', () => {
       '24MF': { status: 'live', vehicles: 5 },
       // La fuente respondió sin micros en ambos sentidos.
       '401': { status: 'no-gps', vehicles: 0 },
-      // Solo una posición vencida: tampoco hay GPS ahora.
-      '411': { status: 'no-gps', vehicles: 0 },
+      // Solo una posición vencida: tampoco hay GPS ahora, pero se dice cuándo fue su última señal.
+      '411': { status: 'no-gps', vehicles: 0, lastSignalAgeMs: 7 * 60_000 },
       '421': { status: 'unavailable', vehicles: 0 },
       '201-AU': { status: 'live', vehicles: 1 },
     });

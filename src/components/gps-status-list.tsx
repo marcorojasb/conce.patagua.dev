@@ -7,6 +7,7 @@
 import { RouteBadge } from '@/components/route-badge';
 import { ROUTES_BY_ID } from '@/data/routes';
 import { routePillCode } from '@/lib/route-labels';
+import { noGpsText } from '@/realtime/gps-mode-summary';
 import { MAX_GPS_PAIRS } from '@/realtime/route-vehicles';
 import { cn } from '@/lib/utils';
 import type { GpsLineStatus } from '@/types/ui-contracts';
@@ -16,7 +17,7 @@ function statusText(line: GpsLineStatus, isBiotren: boolean): string {
     case 'live':
       return line.vehicles === 1 ? '1 micro' : `${line.vehicles} micros`;
     case 'no-gps':
-      return 'sin GPS ahora';
+      return noGpsText(line);
     case 'untracked':
       return isBiotren ? 'Biotrén: sin GPS (la fuente no la sigue)' : 'sin GPS (la fuente no la sigue)';
     case 'unavailable':

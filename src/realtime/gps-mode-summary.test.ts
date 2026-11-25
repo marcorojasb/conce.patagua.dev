@@ -4,6 +4,7 @@ import {
   compactGpsNotice,
   gpsHeadline,
   gpsViewKey,
+  noGpsText,
   queriedLines,
   selectedLineNotice,
   summarizeGpsLines,
@@ -186,5 +187,18 @@ describe('gpsHeadline y compactGpsNotice', () => {
     expect(compactGpsNotice(view(lines, 5), null, label)).toBeNull();
     expect(selectedLineNotice([line('L1', 'untracked')], 'id-L1', label)).toBe('L1: sin GPS (la fuente no la sigue)');
     expect(selectedLineNotice(lines, 'id-24MF', label)).toBeNull();
+  });
+});
+
+describe('noGpsText', () => {
+  it('dice la última señal cuando la fuente lista micros con GPS viejo', () => {
+    expect(noGpsText({})).toBe('sin GPS ahora');
+    expect(noGpsText({ lastSignalAgeMs: 22 * 60_000 + 30_000 })).toBe('sin GPS ahora · última señal hace 22 min');
+    expect(noGpsText({ lastSignalAgeMs: 3 * 60 * 60_000 })).toBe('sin GPS ahora · última señal hace 3 h');
+  });
+
+  it('la línea elegida usa el mismo texto en el aviso compacto', () => {
+    const line: GpsLineStatus = { routeId: 'r', code: '24MF', color: '#123456', status: 'no-gps', vehicles: 0, lastSignalAgeMs: 22 * 60_000 };
+    expect(selectedLineNotice([line], 'r', (l) => l.code)).toBe('24MF: sin GPS ahora · última señal hace 22 min');
   });
 });

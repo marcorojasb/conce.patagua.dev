@@ -438,10 +438,10 @@ export function gpsStatusByRoute(
   routeByPair: GpsSelection['routeByPair'],
   state: RouteVehiclesState,
   now: number,
-): Map<string, { status: RouteGpsStatus; vehicles: number }> {
+): Map<string, { status: RouteGpsStatus; vehicles: number; lastSignalAgeMs?: number }> {
   const byRoute = new Map<
     string,
-    { vehicles: number; plates: Set<string>; ok: number; missing: number; failed: number }
+    { vehicles: number; plates: Set<string>; ok: number; missing: number; failed: number; lastSignalAgeMs?: number }
   >();
   for (const [pair, { routeId }] of routeByPair) {
     const entry = byRoute.get(routeId) ?? { vehicles: 0, plates: new Set<string>(), ok: 0, missing: 0, failed: 0 };
@@ -452,6 +452,14 @@ export function gpsStatusByRoute(
     else if (!freshOk(service, now)) entry.missing += 1;
     else {
       entry.ok += 1;
+      // La fuente puede listar micros cuyo último GPS es de hace mucho (viaje
+      // terminado): no se dibujan, pero se dice cuándo fue su última señal.
+      for (const vehicle of service.vehicles) {
+        const age = vehicleAge(vehicle, now);
+        if (age != null && age > GPS_MAX_AGE_MS && (entry.lastSignalAgeMs == null || age < entry.lastSignalAgeMs)) {
+          entry.lastSignalAgeMs = age;
+        }
+      }
       // Una patente listada en los dos sentidos es una micro, como en el mapa.
       for (const vehicle of gpsVehiclesForMap({ [pair]: service }, now)) {
         if (!vehicle.plate) entry.vehicles += 1;
@@ -462,14 +470,18 @@ export function gpsStatusByRoute(
       }
     }
   }
-  const out = new Map<string, { status: RouteGpsStatus; vehicles: number }>();
+  const out = new Map<string, { status: RouteGpsStatus; vehicles: number; lastSignalAgeMs?: number }>();
   for (const [routeId, entry] of byRoute) {
     let status: RouteGpsStatus;
     if (entry.vehicles > 0) status = 'live';
     else if (entry.missing === 0 && entry.failed === 0) status = 'no-gps';
     else if (entry.failed === 0 && !state.lastFailure) status = 'pending';
     else status = 'unavailable';
-    out.set(routeId, { status, vehicles: entry.vehicles });
+    out.set(routeId, {
+      status,
+      vehicles: entry.vehicles,
+      ...(status === 'no-gps' && entry.lastSignalAgeMs != null ? { lastSignalAgeMs: entry.lastSignalAgeMs } : {}),
+    });
   }
   return out;
 }
