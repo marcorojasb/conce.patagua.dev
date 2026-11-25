@@ -24,7 +24,8 @@
 //   interpolarlas dejaba una animación que nunca paraba (CPU y batería) y las
 //   hacía parecer GPS.
 // - El canvas no recibe eventos (pointer-events: none): clic y puntero los
-//   resuelve map-interaction.ts con hitTest sobre una grilla de 32 px.
+//   resuelve map-interaction.ts con hitTest sobre una grilla de 32 px que el
+//   dibujo llena con lo que ocupa cada micro (insignia y lengüeta).
 // - Tras cada dibujo deja conteos en atributos data-* del canvas (pruebas y
 //   benchmark): data-mode, data-vehicles, data-estimated, data-gps,
 //   data-stale, data-drawn.
@@ -261,7 +262,7 @@ export class VehicleCanvasLayer extends L.Canvas {
     this.drawNow();
   }
 
-  /** La micro dibujada más cercana a un punto del contenedor del mapa, con el radio de toque de lo dibujado. */
+  /** La micro dibujada bajo un punto del contenedor del mapa (insignia o lengüeta) o, si no, la más cercana dentro del radio de toque. */
   hitTest(containerPoint: L.Point, touch: boolean): MapVehicle | null {
     const map = this.internals._map;
     if (!map || this.isInteracting()) return null;
@@ -393,8 +394,7 @@ export class VehicleCanvasLayer extends L.Canvas {
     this.drawnAt = drawnAt;
     const sorted = sortForDraw(items);
     this.drawnLod = lodForZoom(zoom, this.dense);
-    drawVehicleItems(ctx, sorted, { lod: this.drawnLod, diameter: vehicleDiameterForZoom(zoom), theme: this.theme });
-    for (const item of sorted) this.grid.insert(item.x, item.y, item.vehicle);
+    drawVehicleItems(ctx, sorted, { lod: this.drawnLod, diameter: vehicleDiameterForZoom(zoom), theme: this.theme }, this.grid);
 
     const mode = this.feed ? (this.feed.kind === 'gps' ? 'gps' : 'schedule') : 'off';
     const stats = `${mode}|${this.vehicles.length}|${estimated}|${gps}|${stale}|${sorted.length}`;

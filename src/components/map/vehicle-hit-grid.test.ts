@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { vehicleDiameterForZoom, vehicleSymbolRadius } from '@/components/map/map-paint';
+import { VEHICLE_TAB_HEIGHT, vehicleDiameterForZoom, vehicleSymbolRadius } from '@/components/map/map-paint';
 import {
   HIT_RADIUS_DOT_MOUSE_PX,
   HIT_RADIUS_DOT_TOUCH_PX,
@@ -7,7 +7,12 @@ import {
   HIT_RADIUS_TOUCH_PX,
   hitRadiusPx,
   VehicleHitGrid,
+  type HitShape,
 } from '@/components/map/vehicle-hit-grid';
+
+const D = vehicleDiameterForZoom(15);
+const ESTIMATE: HitShape = { kind: 'circle', radius: vehicleSymbolRadius('estimate', D) };
+const GPS: HitShape = { kind: 'square', radius: vehicleSymbolRadius('gps', D) };
 
 describe('VehicleHitGrid', () => {
   it('devuelve lo más cercano dentro del radio', () => {
@@ -64,6 +69,74 @@ describe('VehicleHitGrid', () => {
   });
 });
 
+describe('VehicleHitGrid con lo dibujado', () => {
+  it('a zoom 15 un clic sobre la lengüeta elige su micro, aunque esté a 30–60 px del centro', () => {
+    const grid = new VehicleHitGrid<string>(32);
+    grid.insert(100, 100, 'micro', ESTIMATE, 60);
+    expect(grid.nearest(130, 100, HIT_RADIUS_MOUSE_PX)).toBe('micro');
+    // Otra celda (la micro está en la columna 3; el punto, en la 4).
+    expect(grid.nearest(159, 100 + VEHICLE_TAB_HEIGHT / 2, HIT_RADIUS_MOUSE_PX)).toBe('micro');
+    // Fuera de la lengüeta: más allá del extremo, encima o debajo, o a la izquierda de la insignia.
+    expect(grid.nearest(161, 100, HIT_RADIUS_MOUSE_PX)).toBeNull();
+    expect(grid.nearest(130, 100 + VEHICLE_TAB_HEIGHT / 2 + 1, HIT_RADIUS_MOUSE_PX)).toBeNull();
+    expect(grid.nearest(100 - 15, 100, HIT_RADIUS_MOUSE_PX)).toBeNull();
+  });
+
+  it('sin lengüeta, un punto a la derecha fuera del radio no elige nada', () => {
+    const grid = new VehicleHitGrid<string>(32);
+    grid.insert(100, 100, 'tenue', ESTIMATE);
+    grid.insert(100, 100 + 200, 'punto');
+    expect(grid.nearest(130, 100, HIT_RADIUS_MOUSE_PX)).toBeNull();
+    // Sin lengüeta no hay franja de su alto bajo el centro.
+    expect(grid.nearest(100, 100 + 200 + 5, 0)).toBeNull();
+  });
+
+  it('el cuadrado GPS con su anillo: la esquina cuenta con el mouse aunque pase de 13 px', () => {
+    const grid = new VehicleHitGrid<string>(32);
+    grid.insert(100, 100, 'gps', GPS);
+    const diagonal = (r: number) => r / Math.SQRT2;
+    expect(grid.nearest(100 - diagonal(15), 100 - diagonal(15), HIT_RADIUS_MOUSE_PX)).toBe('gps');
+    // El anillo a Ø26 llega a ~19,4 px en diagonal.
+    expect(grid.nearest(100 + diagonal(19), 100 - diagonal(19), HIT_RADIUS_MOUSE_PX)).toBe('gps');
+    expect(grid.nearest(100 + GPS.radius, 100, HIT_RADIUS_MOUSE_PX)).toBe('gps');
+    expect(grid.nearest(100 + GPS.radius + 1, 100, HIT_RADIUS_MOUSE_PX)).toBeNull();
+    expect(grid.nearest(100, 100 + 40, HIT_RADIUS_MOUSE_PX)).toBeNull();
+    // El cuadrado alcanza la celda vecina aunque el radio de toque no llegue.
+    const edge = new VehicleHitGrid<string>(32);
+    edge.insert(127.5, 100, 'gps', GPS);
+    expect(edge.nearest(142.5, 100, HIT_RADIUS_MOUSE_PX)).toBe('gps');
+  });
+
+  it('sobre lo dibujado gana lo último dibujado (lo que queda encima), no el centro más cercano', () => {
+    // Dos insignias que se pisan: el punto está más cerca del centro de la de abajo.
+    const badges = new VehicleHitGrid<string>(32);
+    badges.insert(0, 0, 'abajo', ESTIMATE);
+    badges.insert(20, 0, 'encima', ESTIMATE);
+    expect(badges.nearest(8, 0, HIT_RADIUS_MOUSE_PX)).toBe('encima');
+    // La lengüeta de una micro dibujada después tapa la insignia de otra.
+    const tab = new VehicleHitGrid<string>(32);
+    tab.insert(40, 12, 'insignia', ESTIMATE);
+    tab.insert(0, 0, 'lengüeta', ESTIMATE, 60);
+    expect(tab.nearest(40, 5, HIT_RADIUS_MOUSE_PX)).toBe('lengüeta');
+    // Una insignia encima de un punto cercano (lejos, las del foco van sobre los puntos).
+    const focus = new VehicleHitGrid<string>(32);
+    focus.insert(3, 0, 'punto');
+    focus.insert(13, 0, 'foco', { kind: 'square', radius: vehicleSymbolRadius('gps', 20) });
+    expect(focus.nearest(0, 0, HIT_RADIUS_DOT_MOUSE_PX)).toBe('foco');
+    // Fuera de lo dibujado sigue mandando el más cercano dentro del radio.
+    expect(focus.nearest(-5, 0, HIT_RADIUS_DOT_MOUSE_PX)).toBe('punto');
+  });
+
+  it('limpiar borra las entradas, también las que tenían lengüeta', () => {
+    const grid = new VehicleHitGrid<string>(32);
+    grid.insert(0, 0, 'a', ESTIMATE, 70);
+    grid.clear();
+    grid.insert(0, 0, 'b');
+    expect(grid.nearest(50, 0, HIT_RADIUS_MOUSE_PX)).toBeNull();
+    expect(grid.nearest(5, 0, HIT_RADIUS_MOUSE_PX)).toBe('b');
+  });
+});
+
 describe('radios de toque', () => {
   it('con el dedo, 40 px de diámetro y más que la insignia más grande con su anillo', () => {
     expect(2 * HIT_RADIUS_TOUCH_PX).toBeGreaterThanOrEqual(40);
@@ -81,7 +154,6 @@ describe('radios de toque', () => {
     expect(hitRadiusPx(true, true)).toBe(HIT_RADIUS_DOT_TOUCH_PX);
     expect(hitRadiusPx(false, true)).toBe(HIT_RADIUS_TOUCH_PX);
     expect(HIT_RADIUS_DOT_TOUCH_PX).toBeLessThan(HIT_RADIUS_TOUCH_PX);
-    // La del foco va como insignia de zoom 13 también lejos: el radio la cubre.
-    expect(HIT_RADIUS_DOT_MOUSE_PX).toBeGreaterThanOrEqual(vehicleDiameterForZoom(13) / 2);
+    // La del foco va como insignia Ø20 también lejos: la cubre su forma (vehicle-draw.test.ts).
   });
 });

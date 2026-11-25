@@ -15,10 +15,12 @@ import {
   type VehicleDotStyle,
   vehicleDiameterForZoom,
   vehicleSpriteHalf,
+  vehicleSymbolRadius,
   vehicleTabLayout,
   VEHICLE_TAB_FONT,
   VEHICLE_TAB_HEIGHT,
 } from '@/components/map/map-paint';
+import type { HitShape, VehicleHitGrid } from '@/components/map/vehicle-hit-grid';
 import { inkRouteColor } from '@/lib/route-colors';
 import { VEHICLE_STYLE, type DirectionId, type MapFocus, type MapVehicle } from '@/types/ui-contracts';
 import type { Theme } from '@/types/transport';
@@ -285,7 +287,7 @@ function dotSprite(style: VehicleDotStyle): Sprite {
  * puntos, trazarlos como arcos con borde llevaba el commit de cada redibujo
  * (uno por segundo con las estimadas) a ~70 ms a 4x; los sprites lo bajan.
  */
-function drawDots(ctx: CanvasRenderingContext2D, items: readonly DrawItem[], theme: Theme): void {
+function drawDots(ctx: CanvasRenderingContext2D, items: readonly DrawItem[], theme: Theme, hits: VehicleHitGrid<MapVehicle>): void {
   let alpha = -1;
   let s: Sprite | null = null;
   let last: MapVehicle | null = null;
@@ -300,6 +302,8 @@ function drawDots(ctx: CanvasRenderingContext2D, items: readonly DrawItem[], the
     }
     last = v;
     ctx.drawImage(s.image, Math.round(item.x) - s.ax, Math.round(item.y) - s.ay, s.w, s.h);
+    // El punto (Ø7) queda dentro del radio de toque: sin forma propia.
+    hits.insert(item.x, item.y, v);
   }
 }
 
@@ -313,27 +317,52 @@ export interface VehicleDrawOptions {
 /**
  * Pinta los ítems ya recortados, proyectados y ordenados con sortForDraw. Las
  * atenuadas nunca llevan lengüeta; lejos, las del foco van como insignia Ø20.
+ * Cada micro queda en `hits` (vaciada antes por quien llama) en el orden en
+ * que se pinta, con lo que ocupa lo dibujado: así el toque sigue al dibujo.
  */
-export function drawVehicleItems(ctx: CanvasRenderingContext2D, items: readonly DrawItem[], o: VehicleDrawOptions): void {
+export function drawVehicleItems(
+  ctx: CanvasRenderingContext2D,
+  items: readonly DrawItem[],
+  o: VehicleDrawOptions,
+  hits: VehicleHitGrid<MapVehicle>,
+): void {
   ctx.save();
   const { dots, sprites: badges } = splitForLod(items, o.lod);
-  if (dots.length > 0) drawDots(ctx, dots, o.theme);
+  if (dots.length > 0) drawDots(ctx, dots, o.theme, hits);
   if (badges.length > 0) {
-    drawBadges(ctx, badges, o.lod === 'dot' ? FOCUS_DOT_DIAMETER : o.diameter, o.lod === 'pill', o.theme);
+    drawBadges(ctx, badges, o.lod === 'dot' ? FOCUS_DOT_DIAMETER : o.diameter, o.lod === 'pill', o.theme, hits);
   }
   ctx.restore();
 }
 
-function drawBadges(ctx: CanvasRenderingContext2D, items: readonly DrawItem[], diameter: number, tabs: boolean, theme: Theme): void {
+function drawBadges(
+  ctx: CanvasRenderingContext2D,
+  items: readonly DrawItem[],
+  diameter: number,
+  tabs: boolean,
+  theme: Theme,
+  hits: VehicleHitGrid<MapVehicle>,
+): void {
+  // Para el toque: la estimada es un círculo con su contorno; la GPS, el
+  // cuadrado que encierra su anillo (en diagonal, ~19 px a Ø26).
+  const shapes: Record<MapVehicle['kind'], HitShape> = {
+    estimate: { kind: 'circle', radius: vehicleSymbolRadius('estimate', diameter) },
+    gps: { kind: 'square', radius: vehicleSymbolRadius('gps', diameter) },
+  };
   let alpha = -1;
   for (const item of items) {
     const a = vehicleAlpha(item);
     if (a !== alpha) ctx.globalAlpha = alpha = a;
+    let tabEnd = 0;
     if (tabs && item.emphasis !== 'dimmed') {
       const tab = tabSprite(item.vehicle, theme);
       ctx.drawImage(tab.image, Math.round(item.x + diameter / 2 - tab.ax), Math.round(item.y - tab.ay), tab.w, tab.h);
+      // Donde termina, desde el centro, el sprite recién copiado (sin su
+      // borde transparente de 1 px).
+      tabEnd = diameter / 2 - tab.ax + tab.w - 1;
     }
     const s = badgeSprite(item, diameter, theme);
     ctx.drawImage(s.image, Math.round(item.x - s.ax), Math.round(item.y - s.ay), s.w, s.h);
+    hits.insert(item.x, item.y, item.vehicle, shapes[item.vehicle.kind], tabEnd);
   }
 }

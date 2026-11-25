@@ -13,7 +13,7 @@ import { POIS } from '@/data/pois.generated';
 import { TERMINALS } from '@/data/terminals.generated';
 import { useStickyState } from '@/hooks/use-sticky-state';
 import { getMapViewport, type MapBounds } from '@/lib/map-viewport';
-import { POI_COLOR, SCHOOL_COLOR } from '@/lib/map-theme';
+import { SCHOOL_COLOR } from '@/lib/map-theme';
 import { buildSimulationRoutes, computeActiveVehicles } from '@/realtime/simulated-vehicles';
 import { loadSimulationSchedules } from '@/realtime/use-simulated-vehicles';
 import { buildWallpaper, buildWallpaperLegend, CURATED_VIEWS, downloadBlob, padBbox, selectWallpaperRoutes, wallpaperRenderTheme, WALLPAPER_SIZES, WALLPAPER_STYLES, type WallpaperRouteMode, type WallpaperSizePreset, type WallpaperStyle } from '@/lib/wallpaper';
@@ -190,12 +190,7 @@ export default function WallpaperTool({
     const poisLayer = layers.centros
       ? POIS.flatMap((p) =>
           pointInBbox(p.lat, p.lng, bbox)
-            ? [{
-                lat: p.lat,
-                lng: p.lng,
-                color: POI_COLOR[p.category],
-                radius: p.category === 'hospital' ? 3.6 : 3,
-              }]
+            ? [{ lat: p.lat, lng: p.lng, category: p.category }]
             : [],
         )
       : undefined;
