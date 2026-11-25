@@ -367,8 +367,8 @@ export default function GtfsGranConcepcion() {
             </li>
             <li>
               Escribe paraderos (carga inmediata), recorridos (carga
-              diferida) y horarios (se cargan al abrir una ficha o encender
-              Servicios en curso), y después recalcula la grilla de
+              diferida) y horarios (se cargan al abrir una ficha o mostrar
+              las micros según horario), y después recalcula la grilla de
               cobertura.
             </li>
           </ol>
@@ -495,7 +495,7 @@ export default function GtfsGranConcepcion() {
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
-          Las micros de <strong>Servicios en curso</strong> son otra cosa:
+          Las micros del modo <strong>Horario</strong> son otra cosa:
           una estimación de dónde debería ir cada viaje según el horario
           programado del GTFS, nunca GPS. El visor las dibuja y rotula como
           estimación.

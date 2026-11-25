@@ -57,7 +57,7 @@ export default function Ruta201SantaJuana() {
           declarado venció el 31-dic-2025, pero es la última publicación).
           El visor las muestra con trazado y paraderos de cada sentido y
           horario programado por día, rotuladas «Interurbano Santa Juana».
-          La capa <strong>Servicios en curso</strong> estima dónde debería
+          El modo <strong>Micros en el mapa · Horario</strong> estima dónde debería
           ir cada bus según ese horario: no es GPS. Hasta nov-2026 el visor
           las dibujaba desde un trazado OpenStreetMap digitalizado a mano,
           con una ventana horaria de prensa y frecuencia estimada.

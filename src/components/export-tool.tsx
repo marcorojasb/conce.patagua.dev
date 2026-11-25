@@ -6,6 +6,7 @@ import { ROUTES } from '@/data/routes';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
 import { TERMINALS } from '@/data/terminals.generated';
+import { useStickyState } from '@/hooks/use-sticky-state';
 import { buildExport, downloadGeoJSON, type ExportLayer } from '@/lib/geojson-export';
 import type { CoverageCell } from '@/types/transport';
 
@@ -60,15 +61,10 @@ const EXPORT_ROWS: ExportRow[] = [
   },
 ];
 
-export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: string[] }) {
-  const [selected, setSelected] = useState<Set<ExportLayer>>(
-    () => {
-      const initial = new Set<ExportLayer>();
-      for (const row of EXPORT_ROWS) {
-        if (row.defaultChecked) initial.add(row.key);
-      }
-      return initial;
-    },
+export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: readonly string[] }) {
+  const [selected, setSelected] = useStickyState<ReadonlySet<ExportLayer>>(
+    'export.selected',
+    () => new Set(EXPORT_ROWS.filter((row) => row.defaultChecked).map((row) => row.key)),
   );
   const [busy, setBusy] = useState(false);
 
@@ -96,7 +92,7 @@ export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: strin
         const mod = await import('@/data/coverage.generated');
         coverageCells = mod.COVERAGE_CELLS;
       }
-      const fc = buildExport(selected, { visibleRouteIds, coverageCells });
+      const fc = buildExport(new Set(selected), { visibleRouteIds: [...visibleRouteIds], coverageCells });
       const stamp = new Date()
         .toISOString()
         .replace(/[:.]/g, '-')

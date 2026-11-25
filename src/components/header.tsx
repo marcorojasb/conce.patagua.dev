@@ -1,34 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import { BookOpen, Github, MapPin, Moon, PanelLeft, Search, Sun } from 'lucide-react';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { Github, Moon, PanelLeft, Search, Sun } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip } from '@/components/ui/tooltip';
-import {
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
-} from '@/components/ui/command';
-import { ROUTES, ROUTES_BY_ID, ROUTE_TYPES, STOPS, useRoutesVersion } from '@/data/routes';
-import { fold, matchesRouteQuery, routeShortName } from '@/lib/route-labels';
-import { ARTICLES } from '@/wiki/articles';
-import type { Theme } from '@/types/transport';
+import { ROUTE_TYPES } from '@/data/routes';
+import type { HeaderProps } from '@/types/ui-contracts';
 
-interface HeaderProps {
-  theme: Theme;
-  onToggleTheme: () => void;
-  onToggleSidebar: () => void;
-  onSelectRoute: (id: string) => void;
-  onSelectStop: (id: string) => void;
-  /** El buscador también se abre desde la tarjeta de inicio, por eso vive en App. */
-  commandOpen: boolean;
-  onCommandOpenChange: (open: boolean) => void;
-}
+// El buscador (cmdk + diálogo) se descarga la primera vez que se abre.
+const CommandPalette = lazy(() => import('@/components/command-palette'));
 
 export function Header({
   theme,
@@ -39,8 +20,10 @@ export function Header({
   commandOpen,
   onCommandOpenChange,
 }: HeaderProps) {
-  const [query, setQuery] = useState('');
   const setCommandOpen = onCommandOpenChange;
+  // Montado desde la primera apertura: conserva lo escrito entre aperturas.
+  const [paletteLoaded, setPaletteLoaded] = useState(commandOpen);
+  if (commandOpen && !paletteLoaded) setPaletteLoaded(true);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -52,39 +35,6 @@ export function Header({
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [commandOpen, onCommandOpenChange]);
-
-  // Todo se compara sin tildes ("Lirquén" = "lirquen") y la lista ya filtrada
-  // es la que se muestra: cmdk no vuelve a filtrar (shouldFilter={false}).
-  const q = fold(query.trim());
-  // `ROUTES` y `STOPS` se mutan in-place cuando llega el chunk lazy de micros,
-  // así que sin la versión en las deps el buscador queda indexando solo los
-  // recorridos y paraderos del primer paint.
-  const routesVersion = useRoutesVersion();
-  const routeMatches = useMemo(
-    () => {
-      void routesVersion;
-      return ROUTES.filter(
-        (r) => matchesRouteQuery(r, q) || fold(ROUTE_TYPES[r.type].label).includes(q),
-      );
-    },
-    [q, routesVersion],
-  );
-  const stopMatches = useMemo(() => {
-    void routesVersion;
-    if (!q) return STOPS.slice(0, 6);
-    return STOPS.filter((s) => fold(s.name).includes(q)).slice(0, 10);
-  }, [q, routesVersion]);
-  const wikiMatches = useMemo(
-    () =>
-      ARTICLES.filter(
-        (a) =>
-          !q ||
-          fold(a.title).includes(q) ||
-          fold(a.summary).includes(q) ||
-          fold(a.slug).includes(q),
-      ),
-    [q],
-  );
 
   const BrandIcon = ROUTE_TYPES.micro.Icon;
 
@@ -176,104 +126,16 @@ export function Header({
         </Button>
       </Tooltip>
 
-      <CommandDialog open={commandOpen} onOpenChange={setCommandOpen} shouldFilter={false}>
-        <CommandInput
-          value={query}
-          onValueChange={setQuery}
-          placeholder="Buscar recorridos, paraderos…"
-        />
-        <CommandList>
-          {routeMatches.length === 0 &&
-            stopMatches.length === 0 &&
-            wikiMatches.length === 0 && (
-              <CommandEmpty>Sin resultados.</CommandEmpty>
-            )}
-          {routeMatches.length > 0 && (
-            <CommandGroup heading="Recorridos">
-              {routeMatches.map((r) => {
-                const Icon = ROUTE_TYPES[r.type].Icon;
-                return (
-                  <CommandItem
-                    key={r.id}
-                    value={r.id}
-                    onSelect={() => {
-                      setCommandOpen(false);
-                      setQuery('');
-                      onSelectRoute(r.id);
-                    }}
-                  >
-                    <span
-                      className="flex size-6 items-center justify-center rounded-md text-white"
-                      style={{ background: r.color }}
-                    >
-                      <Icon className="size-[13px]" />
-                    </span>
-                    <span className="font-medium">{r.code}</span>
-                    <span className="truncate text-muted-foreground">{routeShortName(r)}</span>
-                    <CommandShortcut>{ROUTE_TYPES[r.type].short}</CommandShortcut>
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          )}
-          {stopMatches.length > 0 && (
-            <CommandGroup heading="Paraderos">
-              {stopMatches.map((s) => (
-                <CommandItem
-                  key={s.id}
-                  value={s.id}
-                  onSelect={() => {
-                    setCommandOpen(false);
-                    setQuery('');
-                    onSelectStop(s.id);
-                  }}
-                >
-                  <MapPin className="size-[15px] text-muted-foreground" />
-                  <span className="font-medium">{s.name}</span>
-                  <CommandShortcut>
-                    {s.routes
-                      .flatMap((rid) => {
-                        const code = ROUTES_BY_ID.get(rid)?.code;
-                        return code ? [code] : [];
-                      })
-                      .join(' · ')}
-                  </CommandShortcut>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-          {wikiMatches.length > 0 && (
-            <CommandGroup heading="Wiki">
-              {wikiMatches.map((a) => (
-                <CommandItem
-                  key={a.slug}
-                  value={`wiki-${a.slug}`}
-                  onSelect={() => {
-                    setCommandOpen(false);
-                    setQuery('');
-                    // Navegación interna al wiki: usar mismo patrón que
-                    // WikiLinkButton (anchor href) para que respete history
-                    // y service worker / preloading del browser.
-                    window.location.assign(`/wiki/${a.slug}`);
-                  }}
-                >
-                  <BookOpen className="size-[15px] text-muted-foreground" />
-                  <span className="font-medium">{a.title}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          )}
-        </CommandList>
-        <div className="flex items-center justify-between border-t px-3 py-2 text-[11px] text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Kbd>↑↓</Kbd> navegar
-            <Kbd>↵</Kbd> abrir
-          </div>
-          <div className="flex items-center gap-2">
-            <Kbd>esc</Kbd> cerrar
-          </div>
-        </div>
-      </CommandDialog>
+      {paletteLoaded && (
+        <Suspense fallback={null}>
+          <CommandPalette
+            open={commandOpen}
+            onOpenChange={setCommandOpen}
+            onSelectRoute={onSelectRoute}
+            onSelectStop={onSelectStop}
+          />
+        </Suspense>
+      )}
     </header>
   );
 }

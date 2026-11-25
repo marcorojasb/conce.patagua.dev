@@ -245,7 +245,10 @@ export interface AirQualityStation {
 
 export type FlyToTarget =
   | { kind: 'bounds'; path: LatLngTuple[] }
-  | { kind: 'point'; lat: number; lng: number; zoom?: number };
+  /** Punto que queda al centro de la parte del mapa que no tapa la ficha. */
+  | { kind: 'point'; lat: number; lng: number; zoom?: number }
+  /** Encuadre exacto (centro del mapa entero): volver a uno guardado. */
+  | { kind: 'view'; lat: number; lng: number; zoom: number };
 
 export interface FlyToToken {
   key: number;
@@ -253,5 +256,3 @@ export interface FlyToToken {
 }
 
 export type Theme = 'light' | 'dark';
-
-export type SheetKind = 'route' | 'stop' | 'terminal' | 'poi' | 'paradero' | null;

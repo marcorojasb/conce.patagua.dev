@@ -139,13 +139,14 @@ export default function Biotren() {
         </Sources>
       </Section>
 
-      <Section title="Horario oficial y Servicios en curso">
+      <Section title="Horario oficial y trenes en el mapa">
         <p>
           EFE publica los itinerarios del Biotrén como imágenes en su sitio,
           por línea, sentido y día, vigentes desde el{' '}
           <strong>15-jul-2026</strong>. El visor los transcribe salida por
-          salida y con ellos arma la ficha de cada línea y la capa{' '}
-          <strong>Servicios en curso</strong>. La posición no viene de GPS:
+          salida y con ellos arma la ficha de cada línea y el modo{' '}
+          <strong>Micros en el mapa · Horario</strong>. La posición no viene
+          de GPS:
           cada tren se proyecta sobre el trazado OSM entre su salida y su
           llegada publicadas.
         </p>

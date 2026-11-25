@@ -1,11 +1,17 @@
+// Columna de botones a la derecha del mapa: centrar, Capas, la guía de inicio
+// ("?") y las herramientas. Capas es una ventanita no modal junto a la
+// columna (en móvil, un panel abajo): no es una superficie, no toca la ficha
+// abierta y se cierra con Escape, Atrás, "×" o tocando fuera. Las micros ya
+// no están aquí: tienen su propio control sobre el mapa ("Micros en el mapa"),
+// y las claves de cobertura y ciclovías pasaron a la leyenda.
+
 import {
   AlertTriangle,
   Bike,
   BookOpen,
-  Bus,
   Building2,
   CheckCircle2,
-  Compass,
+  CircleHelp,
   Crosshair,
   Download,
   Ellipsis,
@@ -16,143 +22,228 @@ import {
   Layers2,
   Loader2,
   MapPin,
+  Route as RouteIcon,
   RotateCcw,
   School,
   Trees,
   Wind,
+  X,
 } from 'lucide-react';
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { useWelcomeCard } from '@/components/welcome-card';
 import { INTERURBAN_CORRIDORS } from '@/data/interurban-corridors';
-import type { AnalysisTab } from '@/components/floating-tools-panel';
+import { cn } from '@/lib/utils';
 import type { LayerLoadStatus } from '@/hooks/use-layer-status';
+import type { LoadableLayer, MapLayerControlProps, MapLayersState, ToolId } from '@/types/ui-contracts';
 
-const LAYERS_EYEBROW = (
-  <>
-    <Layers2 />
-    Mapa
-  </>
-);
-
-interface MapLayerControlProps {
-  terminalsCount: number;
-  paraderosCount: number;
-  poisCount: number;
-  visibility: MapLayerControlVisibility;
-  simulationScope: 'visible' | 'all';
-  coverageThreshold: 'all' | 'underserved';
-  onToggleTerminals: () => void;
-  onToggleParaderos: () => void;
-  onTogglePois: () => void;
-  onToggleAirQuality: () => void;
-  onToggleSimulatedVehicles: () => void;
-  onSetSimulationScope: (scope: 'visible' | 'all') => void;
-  onToggleCoverage: () => void;
-  onSetCoverageThreshold: (t: 'all' | 'underserved') => void;
-  onToggleCycleways: () => void;
-  onToggleGreenspace: () => void;
-  onToggleSchools: () => void;
-  onToggleInterurbanCorridors: () => void;
-  airQualityStatus: { stations: { id: string }[]; loading: boolean; error: string | null };
-  simulationStatus: {
-    count: number;
-    nonGtfsCount: number;
-    loading: boolean;
-    error: string | null;
-  };
-  coverageStatus: LayerLoadStatus;
-  cyclewaysStatus: LayerLoadStatus;
-  greenspaceStatus: LayerLoadStatus;
-  schoolsStatus: LayerLoadStatus;
-  onRetryCoverage: () => void;
-  onRetryCycleways: () => void;
-  onRetryGreenspace: () => void;
-  onRetrySchools: () => void;
-  onRetryAirQuality: () => void;
-  onRetrySimulation: () => void;
-  layersOpen: boolean;
-  onToggleLayers: () => void;
-  onCloseLayers: () => void;
-  onRecenter: () => void;
-  // Toggle the analysis tool panel. Click same = close, different = switch.
-  onOpenTool: (tab: AnalysisTab) => void;
-  /** Active tool, drives the pressed state on toolbar buttons. */
-  activeTool: AnalysisTab | null;
-}
-
-interface MapLayerControlVisibility {
-  terminals: boolean;
-  paraderos: boolean;
-  pois: boolean;
-  airQuality: boolean;
-  simulatedVehicles: boolean;
-  coverage: boolean;
-  cycleways: boolean;
-  greenspace: boolean;
-  schools: boolean;
-  interurbanCorridors: boolean;
-}
-
-interface ToolBtn {
-  id: AnalysisTab;
+interface ToolButton {
+  id: ToolId;
   label: string;
-  Icon: typeof Compass;
+  Icon: typeof Crosshair;
 }
 
-interface MapLayerRow {
-  id: string;
-  label: string;
-  detail: string;
-  icon: typeof Compass;
-  checked: boolean;
-  onToggle: () => void;
-  loading?: boolean;
-  error?: string | null;
-  ready?: boolean;
-  onRetry?: () => void;
-}
-
-const TOOLS: ToolBtn[] = [
-  { id: 'cobertura', label: 'Planificador (cobertura OD)', Icon: Compass },
-  { id: 'operadores', label: 'Operadores', Icon: Building2 },
-  { id: 'calidad', label: 'Calidad de datos', Icon: Gauge },
+const TOOLS: ToolButton[] = [
+  { id: 'planner', label: 'Planificador', Icon: RouteIcon },
+  { id: 'operators', label: 'Operadores', Icon: Building2 },
+  { id: 'quality', label: 'Calidad de datos', Icon: Gauge },
   { id: 'export', label: 'Exportar GeoJSON', Icon: Download },
   { id: 'wallpaper', label: 'Fondo de pantalla', Icon: ImageDown },
 ];
 
 // En móvil la columna solo muestra el planificador; el resto de las
 // herramientas va al menú "Más herramientas" para no tapar el mapa.
-const MOBILE_TOOL: AnalysisTab = 'cobertura';
+const MOBILE_TOOL: ToolId = 'planner';
 const OVERFLOW_TOOLS = TOOLS.filter((t) => t.id !== MOBILE_TOOL);
 
-// Sized smaller in mobile so the stacked buttons fit comfortably without
-// dominating the right edge of the map.
 const BTN_CLASS =
   'pointer-events-auto size-9 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85 md:h-10 md:w-10';
 
-interface ToolsOverflowMenuProps {
-  activeTool: AnalysisTab | null;
-  onSelect: (tab: AnalysisTab) => void;
+interface LayerRow {
+  key: keyof MapLayersState;
+  label: string;
+  detail: string;
+  Icon: typeof Crosshair;
+  /** Capa que se descarga al prenderla: muestra carga, error y "Reintentar". */
+  load?: LoadableLayer | 'airQuality';
 }
 
-/** Menú de herramientas secundarias, solo bajo `md`. */
-function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
+function loadState(
+  row: LayerRow,
+  status: MapLayerControlProps['status'],
+): (LayerLoadStatus & { detail?: string }) | null {
+  if (!row.load) return null;
+  if (row.load === 'airQuality') {
+    const air = status.airQuality;
+    return {
+      loading: air.loading,
+      error: air.error,
+      ready: !air.loading && !air.error && air.stations > 0,
+      detail: air.stations > 0 ? `${air.stations.toLocaleString('es-CL')} estaciones SINCA` : undefined,
+    };
+  }
+  return status[row.load];
+}
+
+const LOADING_TEXT: Record<LoadableLayer | 'airQuality', string> = {
+  coverage: 'Cargando grilla…',
+  cycleways: 'Cargando trazados…',
+  greenspace: 'Cargando polígonos…',
+  schools: 'Cargando establecimientos…',
+  airQuality: 'Cargando estaciones…',
+};
+
+function layerRows(counts: MapLayerControlProps['counts']): LayerRow[] {
+  const rows: LayerRow[] = [
+    {
+      key: 'paraderos',
+      label: 'Paraderos GTFS',
+      detail: `${counts.paraderos.toLocaleString('es-CL')} paraderos con llegadas en vivo · desde zoom 14`,
+      Icon: MapPin,
+    },
+    { key: 'terminals', label: 'Terminales', detail: `${counts.terminals.toLocaleString('es-CL')} terminales`, Icon: Building2 },
+    {
+      key: 'pois',
+      label: 'Centros de atracción',
+      detail: `${counts.pois.toLocaleString('es-CL')} lugares (universidades, hospitales…)`,
+      Icon: GraduationCap,
+    },
+    { key: 'airQuality', label: 'Calidad del aire', detail: 'Estaciones SINCA', Icon: Wind, load: 'airQuality' },
+    {
+      key: 'coverage',
+      label: 'Cobertura territorial',
+      detail: 'Distancia caminando al paradero más cercano',
+      Icon: Grid3x3,
+      load: 'coverage',
+    },
+    {
+      key: 'cycleways',
+      label: 'Ciclovías',
+      detail: 'Segregadas, ciclobandas y rutas compartidas (OSM)',
+      Icon: Bike,
+      load: 'cycleways',
+    },
+    { key: 'greenspace', label: 'Áreas verdes', detail: 'Parques, plazas y reservas (OSM)', Icon: Trees, load: 'greenspace' },
+    { key: 'schools', label: 'Educación', detail: 'Jardines, colegios y universidades (OSM)', Icon: School, load: 'schools' },
+  ];
+  // Solo si hay corredores sin GTFS en el dataset (hoy Florida y Yumbel).
+  if (INTERURBAN_CORRIDORS.length > 0) {
+    rows.push({
+      key: 'corridors',
+      label: 'Corredores interurbanos',
+      detail: 'Servicios privados sin GTFS (Florida, Yumbel)',
+      Icon: BookOpen,
+    });
+  }
+  return rows;
+}
+
+function LayersPopover({
+  counts,
+  layers,
+  onLayersChange,
+  status,
+  onRetry,
+}: Pick<MapLayerControlProps, 'counts' | 'layers' | 'onLayersChange' | 'status' | 'onRetry'>) {
+  const rows = layerRows(counts);
+  return (
+    <div className="space-y-0.5 p-2">
+      {rows.map((row) => {
+        const checked = layers[row.key] === true;
+        const load = loadState(row, status);
+        const loading = checked && !!load?.loading;
+        const error = checked ? (load?.error ?? null) : null;
+        const Icon = error ? AlertTriangle : loading ? Loader2 : row.Icon;
+        const detail = error
+          ? 'No se pudo cargar'
+          : loading && row.load
+            ? LOADING_TEXT[row.load]
+            : checked && load?.detail
+              ? load.detail
+              : row.detail;
+        return (
+          <div key={row.key}>
+            <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-accent/50">
+              <span className="grid size-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
+                <Icon className={cn('size-4', loading && 'animate-spin', error && 'text-amber-600')} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium leading-tight">{row.label}</span>
+                <span className="block text-[11px] leading-snug text-muted-foreground">{detail}</span>
+                {error && row.load && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onRetry(row.load!);
+                    }}
+                    className="mt-1 inline-flex items-center gap-1 rounded border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground focus-ring"
+                  >
+                    <RotateCcw className="size-3" />
+                    Reintentar
+                  </button>
+                )}
+              </span>
+              {checked && load?.ready && !loading && !error && (
+                <CheckCircle2 className="size-3.5 shrink-0 text-emerald-500" />
+              )}
+              <Switch
+                checked={checked}
+                onCheckedChange={(value) => onLayersChange({ [row.key]: value })}
+                aria-label={row.label}
+              />
+            </label>
+            {row.key === 'coverage' && checked && (
+              <div role="group" aria-label="Qué zonas mostrar" className="ml-12 flex flex-wrap gap-1 pb-1">
+                {(
+                  [
+                    ['all', 'Todas las zonas'],
+                    ['underserved', 'Solo zonas mal servidas'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={layers.coverageThreshold === value}
+                    onClick={() => onLayersChange({ coverageThreshold: value })}
+                    className={cn(
+                      'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
+                      layers.coverageThreshold === value
+                        ? 'bg-foreground text-background'
+                        : 'border bg-background text-muted-foreground hover:text-foreground',
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      <p className="px-2 pt-1 text-[11px] text-muted-foreground">
+        Las claves de color de las capas encendidas están en la leyenda del mapa.
+      </p>
+    </div>
+  );
+}
+
+/** Menú de herramientas secundarias, solo en móvil. */
+function ToolsOverflowMenu({ activePanel, onSelect }: { activePanel: MapLayerControlProps['activePanel']; onSelect: (tool: ToolId) => void }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
-  const activeInMenu = OVERFLOW_TOOLS.some((t) => t.id === activeTool);
+  const activeInMenu = OVERFLOW_TOOLS.some((t) => t.id === activePanel);
 
   useEffect(() => {
     if (!open) return undefined;
     menuRef.current?.querySelector<HTMLElement>('[role="menuitemradio"]')?.focus();
-    // En fase de captura: ningún stopPropagation del mapa o de otro panel
-    // impide que el "clic fuera" cierre el menú.
+    // En fase de captura: ningún stopPropagation del mapa impide que tocar fuera lo cierre.
     const onPointerDown = (event: PointerEvent) => {
       if (!wrapperRef.current?.contains(event.target as Node)) setOpen(false);
     };
@@ -169,9 +260,8 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
       return;
     }
     if (event.key === 'Escape') {
-      // Sin esto el Escape también cerraría el panel de herramienta abierto.
+      // El Escape es del menú: no cierra la superficie de abajo.
       event.preventDefault();
-      event.stopPropagation();
       setOpen(false);
       buttonRef.current?.focus();
       return;
@@ -180,9 +270,7 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
       setOpen(false);
       return;
     }
-    const items = Array.from(
-      menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitemradio"]') ?? [],
-    );
+    const items = Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitemradio"]') ?? []);
     if (items.length === 0) return;
     const current = items.indexOf(document.activeElement as HTMLElement);
     const next =
@@ -201,8 +289,6 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
   };
 
   return (
-    // El menú se ancla a la columna completa (no a este botón) para abrir
-    // desde arriba y no quedar bajo la hoja inferior de un panel abierto.
     <div ref={wrapperRef} className="sm:hidden" onKeyDown={onKeyDown}>
       <Button
         ref={buttonRef}
@@ -214,11 +300,7 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
-        className={cn(
-          BTN_CLASS,
-          (open || activeInMenu) && 'bg-accent text-accent-foreground',
-          activeInMenu && 'border-foreground/40',
-        )}
+        className={cn(BTN_CLASS, (open || activeInMenu) && 'bg-accent text-accent-foreground', activeInMenu && 'border-foreground/40')}
       >
         <Ellipsis className="size-4" />
       </Button>
@@ -228,11 +310,10 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
           id={menuId}
           role="menu"
           aria-label="Más herramientas"
-          className="pointer-events-auto absolute right-full top-0 mr-2 w-56 rounded-lg border bg-popover/95 p-1 text-popover-foreground shadow-xl backdrop-blur supports-[backdrop-filter]:bg-popover/90 animate-fade-in"
+          className="pointer-events-auto absolute right-full top-0 mr-2 w-56 rounded-lg border bg-popover/95 p-1 text-popover-foreground shadow-xl backdrop-blur animate-fade-in supports-[backdrop-filter]:bg-popover/90"
         >
           {OVERFLOW_TOOLS.map((t) => {
-            const Icon = t.Icon;
-            const isActive = activeTool === t.id;
+            const isActive = activePanel === t.id;
             return (
               <button
                 key={t.id}
@@ -241,8 +322,6 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
                 aria-checked={isActive}
                 tabIndex={-1}
                 onClick={() => {
-                  // El menú se desmonta: el foco vuelve a su botón y desde ahí
-                  // el panel que se abre lo toma.
                   buttonRef.current?.focus();
                   setOpen(false);
                   onSelect(t.id);
@@ -252,11 +331,9 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
                   isActive && 'bg-accent font-medium text-accent-foreground',
                 )}
               >
-                <Icon className="size-4 shrink-0 text-muted-foreground" />
+                <t.Icon className="size-4 shrink-0 text-muted-foreground" />
                 <span className="min-w-0 flex-1 truncate">{t.label}</span>
-                {isActive && (
-                  <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-foreground" />
-                )}
+                {isActive && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-foreground" />}
               </button>
             );
           })}
@@ -266,510 +343,211 @@ function ToolsOverflowMenu({ activeTool, onSelect }: ToolsOverflowMenuProps) {
   );
 }
 
-// react-doctor-disable-next-line react-doctor/no-giant-component -- Data-driven layer rows keep the floating toolbar and its layer popover in one cohesive control surface.
 export function MapLayerControl({
-  terminalsCount,
-  paraderosCount,
-  poisCount,
-  visibility,
-  simulationScope,
-  coverageThreshold,
-  onToggleTerminals,
-  onToggleParaderos,
-  onTogglePois,
-  onToggleAirQuality,
-  onToggleSimulatedVehicles,
-  onSetSimulationScope,
-  onToggleCoverage,
-  onSetCoverageThreshold,
-  onToggleCycleways,
-  onToggleGreenspace,
-  onToggleSchools,
-  onToggleInterurbanCorridors,
-  airQualityStatus,
-  simulationStatus,
-  coverageStatus,
-  cyclewaysStatus,
-  greenspaceStatus,
-  schoolsStatus,
-  onRetryCoverage,
-  onRetryCycleways,
-  onRetryGreenspace,
-  onRetrySchools,
-  onRetryAirQuality,
-  onRetrySimulation,
+  counts,
+  layers,
+  onLayersChange,
+  status,
+  onRetry,
   layersOpen,
-  onToggleLayers,
-  onCloseLayers,
+  onLayersOpenChange,
   onRecenter,
-  onOpenTool,
-  activeTool,
+  activePanel,
+  onToggleTool,
 }: MapLayerControlProps) {
-  const {
-    terminals: showTerminals,
-    paraderos: showParaderos,
-    pois: showPois,
-    airQuality: showAirQuality,
-    simulatedVehicles: showSimulatedVehicles,
-    coverage: showCoverage,
-    cycleways: showCycleways,
-    greenspace: showGreenspace,
-    schools: showSchools,
-    interurbanCorridors: showInterurbanCorridors,
-  } = visibility;
+  const welcome = useWelcomeCard();
+  const popoverId = useId();
+  const layersButtonRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  // El foco estaba dentro de Capas: al cerrarla (Escape, ×, Atrás) vuelve al
+  // botón que la abrió. Se anota al moverse el foco, porque al cerrar el nodo
+  // ya salió del DOM y el foco quedó en <body>.
+  const focusInsideRef = useRef(false);
+  const closeRef = useRef(onLayersOpenChange);
+  useEffect(() => {
+    closeRef.current = onLayersOpenChange;
+  }, [onLayersOpenChange]);
+  // En escritorio, con una ficha abierta a la derecha, Capas se abre a su
+  // izquierda en vez de taparla (si cabe); px desde el borde derecho del mapa.
+  const [anchorRight, setAnchorRight] = useState<number | null>(null);
 
-  const enabledCount = [
-    showTerminals,
-    showParaderos,
-    showPois,
-    showAirQuality,
-    showSimulatedVehicles,
-    showCoverage,
-    showCycleways,
-    showGreenspace,
-    showSchools,
-    showInterurbanCorridors,
-  ].filter(Boolean).length;
+  const enabledCount = (
+    ['paraderos', 'terminals', 'pois', 'airQuality', 'coverage', 'cycleways', 'greenspace', 'schools', 'corridors'] as const
+  ).filter((key) => layers[key]).length;
 
+  useLayoutEffect(() => {
+    if (!layersOpen) return undefined;
+    const place = () => {
+      const popover = popoverRef.current;
+      const parent = popover?.offsetParent?.getBoundingClientRect();
+      const surface = document.querySelector('[data-surface]')?.getBoundingClientRect();
+      if (!popover || !parent || !surface || surface.width === 0 || !window.matchMedia('(min-width: 640px)').matches) {
+        setAnchorRight(null);
+        return;
+      }
+      const right = parent.right - surface.left + 8;
+      const fits = surface.left > parent.left + parent.width / 2 && parent.width - right - 8 >= popover.offsetWidth;
+      setAnchorRight(fits ? Math.round(right) : null);
+    };
+    place();
+    window.addEventListener('resize', place);
+    return () => window.removeEventListener('resize', place);
+  }, [layersOpen]);
 
-  const layers = useMemo<MapLayerRow[]>(
-    () => [
-      {
-        id: 'paraderos',
-        label: 'Paraderos GTFS',
-        detail: `${paraderosCount.toLocaleString('es-CL')} puntos · zoom 14+`,
-        icon: MapPin,
-        checked: showParaderos,
-        onToggle: onToggleParaderos,
-      },
-      {
-        id: 'terminales',
-        label: 'Terminales',
-        detail: `${terminalsCount.toLocaleString('es-CL')} puntos`,
-        icon: Building2,
-        checked: showTerminals,
-        onToggle: onToggleTerminals,
-      },
-      {
-        id: 'destinos',
-        label: 'Centros de atracción',
-        detail: `${poisCount.toLocaleString('es-CL')} puntos`,
-        icon: GraduationCap,
-        checked: showPois,
-        onToggle: onTogglePois,
-      },
-      {
-        id: 'aire',
-        label: 'Calidad del aire',
-        detail: airQualityStatus.error
-          ? 'Error al cargar estaciones'
-          : showAirQuality
-          ? `${airQualityStatus.stations.length.toLocaleString('es-CL')} estaciones`
-          : 'Estaciones SINCA',
-        icon: airQualityStatus.error ? AlertTriangle : airQualityStatus.loading ? Loader2 : Wind,
-        checked: showAirQuality,
-        onToggle: onToggleAirQuality,
-        loading: airQualityStatus.loading,
-        error: airQualityStatus.error,
-        ready: showAirQuality && !airQualityStatus.loading && airQualityStatus.stations.length > 0,
-        onRetry: onRetryAirQuality,
-      },
-      {
-        id: 'simulated',
-        label: 'Servicios en curso (estimación)',
-        detail: showSimulatedVehicles
-          ? simulationStatus.loading
-            ? 'Cargando horario…'
-              : simulationStatus.error
-              ? 'No se pudo cargar el horario'
-              : simulationStatus.count > 0
-                ? `${simulationStatus.count.toLocaleString('es-CL')} en curso · ${simulationScope === 'visible' ? 'rutas visibles' : 'toda la red'}`
-                : 'Sin servicios programados activos ahora'
-          : 'Según horario, no es GPS',
-        icon: simulationStatus.error ? AlertTriangle : simulationStatus.loading ? Loader2 : Bus,
-        checked: showSimulatedVehicles,
-        onToggle: onToggleSimulatedVehicles,
-        loading: simulationStatus.loading,
-        error: simulationStatus.error,
-        ready: showSimulatedVehicles && !simulationStatus.loading && simulationStatus.count > 0,
-        onRetry: onRetrySimulation,
-      },
-      {
-        id: 'coverage',
-        label: 'Cobertura territorial',
-        detail: showCoverage
-          ? coverageStatus.error
-            ? 'Error al cargar grilla'
-            : coverageStatus.loading
-            ? 'Cargando grilla…'
-            : coverageThreshold === 'underserved'
-              ? 'Solo zonas > 600 m del paradero'
-              : 'Distancia al paradero más cercano'
-          : 'Heatmap por distancia',
-        icon: coverageStatus.error ? AlertTriangle : coverageStatus.loading ? Loader2 : Grid3x3,
-        checked: showCoverage,
-        onToggle: onToggleCoverage,
-        loading: coverageStatus.loading,
-        error: coverageStatus.error,
-        ready: coverageStatus.ready,
-        onRetry: onRetryCoverage,
-      },
-      {
-        id: 'cycleways',
-        label: 'Infraestructura ciclista',
-        detail: showCycleways
-          ? cyclewaysStatus.error
-            ? 'Error al cargar trazados'
-            : cyclewaysStatus.loading
-            ? 'Cargando trazados…'
-            : 'Ciclovías, ciclobandas y rutas compartidas (OSM)'
-          : 'Red ciclista del Gran Concepción',
-        icon: cyclewaysStatus.error ? AlertTriangle : cyclewaysStatus.loading ? Loader2 : Bike,
-        checked: showCycleways,
-        onToggle: onToggleCycleways,
-        loading: cyclewaysStatus.loading,
-        error: cyclewaysStatus.error,
-        ready: cyclewaysStatus.ready,
-        onRetry: onRetryCycleways,
-      },
-      {
-        id: 'greenspace',
-        label: 'Áreas verdes',
-        detail: showGreenspace
-          ? greenspaceStatus.error
-            ? 'Error al cargar polígonos'
-            : greenspaceStatus.loading
-            ? 'Cargando polígonos…'
-            : 'Parques, plazas, bosques y reservas (OSM)'
-          : 'Espacios verdes públicos',
-        icon: greenspaceStatus.error ? AlertTriangle : greenspaceStatus.loading ? Loader2 : Trees,
-        checked: showGreenspace,
-        onToggle: onToggleGreenspace,
-        loading: greenspaceStatus.loading,
-        error: greenspaceStatus.error,
-        ready: greenspaceStatus.ready,
-        onRetry: onRetryGreenspace,
-      },
-      {
-        id: 'schools',
-        label: 'Educación',
-        detail: showSchools
-          ? schoolsStatus.error
-            ? 'Error al cargar educación'
-            : schoolsStatus.loading
-            ? 'Cargando establecimientos…'
-            : 'Jardines, colegios, liceos, universidades'
-          : 'Establecimientos educacionales (OSM)',
-        icon: schoolsStatus.error ? AlertTriangle : schoolsStatus.loading ? Loader2 : School,
-        checked: showSchools,
-        onToggle: onToggleSchools,
-        loading: schoolsStatus.loading,
-        error: schoolsStatus.error,
-        ready: schoolsStatus.ready,
-        onRetry: onRetrySchools,
-      },
-      // Toggle de corredores interurbanos, solo aparece si hay corredores
-      // sin GTFS en el dataset (hoy Florida y Yumbel, ambos privados; la 201
-      // y los de Tomé vienen como recorridos del GTFS oficial).
-      ...(INTERURBAN_CORRIDORS.length > 0
-        ? [
-            {
-              id: 'interurban',
-              label: 'Corredores interurbanos',
-              detail: showInterurbanCorridors
-                ? 'Corredores privados sin GTFS (Florida, Yumbel) · enlace al wiki'
-                : 'Pines a comunas rurales/satélite',
-              icon: BookOpen,
-              checked: showInterurbanCorridors,
-              onToggle: onToggleInterurbanCorridors,
-            },
-          ]
-        : []),
-    ],
-    [
-      airQualityStatus.loading,
-      airQualityStatus.stations.length,
-      airQualityStatus.error,
-      onRetryAirQuality,
-      onToggleAirQuality,
-      onToggleParaderos,
-      onTogglePois,
-      onToggleSimulatedVehicles,
-      onToggleTerminals,
-      onToggleCoverage,
-      paraderosCount,
-      poisCount,
-      showAirQuality,
-      showCoverage,
-      showParaderos,
-      showPois,
-      showSimulatedVehicles,
-      simulationScope,
-      showTerminals,
-      simulationStatus.count,
-      simulationStatus.error,
-      simulationStatus.loading,
-      onRetrySimulation,
-      coverageThreshold,
-      coverageStatus.loading,
-      coverageStatus.error,
-      coverageStatus.ready,
-      onRetryCoverage,
-      terminalsCount,
-      showCycleways,
-      onToggleCycleways,
-      cyclewaysStatus.loading,
-      cyclewaysStatus.error,
-      cyclewaysStatus.ready,
-      onRetryCycleways,
-      showGreenspace,
-      onToggleGreenspace,
-      greenspaceStatus.loading,
-      greenspaceStatus.error,
-      greenspaceStatus.ready,
-      onRetryGreenspace,
-      showSchools,
-      onToggleSchools,
-      schoolsStatus.loading,
-      schoolsStatus.error,
-      schoolsStatus.ready,
-      onRetrySchools,
-      showInterurbanCorridors,
-      onToggleInterurbanCorridors,
-    ],
-  );
+  useEffect(() => {
+    if (!layersOpen) return undefined;
+    const popover = popoverRef.current;
+    popover?.focus({ preventScroll: true });
+    focusInsideRef.current = true;
+    // Tocar fuera la cierra (en captura, antes que el mapa); el botón Capas se maneja solo.
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (popover?.contains(target) || layersButtonRef.current?.contains(target)) return;
+      focusInsideRef.current = false;
+      closeRef.current(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      if (focusInsideRef.current) layersButtonRef.current?.focus({ preventScroll: true });
+      focusInsideRef.current = false;
+    };
+  }, [layersOpen]);
+
+  const closeLayers = () => {
+    layersButtonRef.current?.focus({ preventScroll: true });
+    onLayersOpenChange(false);
+  };
+
+  const onPopoverKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Escape' || event.defaultPrevented) return;
+    // El Escape es de Capas: no cierra la ficha de abajo.
+    event.preventDefault();
+    closeLayers();
+  };
 
   return (
     <>
       <div className="pointer-events-none absolute right-2 top-2 z-20 flex flex-col items-end gap-1.5 md:right-3 md:top-3 md:gap-2">
-      <Tooltip content="Centrar Gran Concepción" side="left">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={onRecenter}
-          aria-label="Centrar Gran Concepción"
-          className={BTN_CLASS}
-        >
-          <Crosshair className="size-4" />
-        </Button>
-      </Tooltip>
+        <Tooltip content="Centrar Gran Concepción" side="left">
+          <Button type="button" variant="outline" size="icon" onClick={onRecenter} aria-label="Centrar Gran Concepción" className={BTN_CLASS}>
+            <Crosshair className="size-4" />
+          </Button>
+        </Tooltip>
 
-      <Tooltip content="Capas del mapa" side="left">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-              onClick={onToggleLayers}
-              aria-expanded={layersOpen}
-              aria-label="Abrir capas del mapa"
-              className={cn(BTN_CLASS, layersOpen && 'bg-accent text-accent-foreground')}
-        >
-          <Layers2 className="size-4" />
-          {enabledCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium leading-none text-background">
-              {enabledCount}
-            </span>
-          )}
-        </Button>
-      </Tooltip>
+        <Tooltip content="Capas del mapa" side="left">
+          <Button
+            ref={layersButtonRef}
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => onLayersOpenChange(!layersOpen)}
+            aria-expanded={layersOpen}
+            aria-controls={layersOpen ? popoverId : undefined}
+            aria-label="Capas del mapa"
+            className={cn(BTN_CLASS, 'relative', layersOpen && 'bg-accent text-accent-foreground')}
+          >
+            <Layers2 className="size-4" />
+            {enabledCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium leading-none text-background">
+                {enabledCount}
+              </span>
+            )}
+          </Button>
+        </Tooltip>
 
-      {/* Visual separator between view controls (recenter, layers) and
-          analysis tools (planner, operators, export, wallpaper). */}
-      <div aria-hidden className="pointer-events-none h-px w-5 bg-border/60 md:w-6" />
+        <Tooltip content="Cómo usar el mapa" side="left">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={welcome.show}
+            aria-label="Cómo usar el mapa"
+            className={BTN_CLASS}
+          >
+            <CircleHelp className="size-4" />
+          </Button>
+        </Tooltip>
 
-      {TOOLS.map((t) => {
-        const Icon = t.Icon;
-        const isActive = activeTool === t.id;
-        return (
-          <Tooltip key={t.id} content={t.label} side="left">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => {
-                onCloseLayers();
-                onOpenTool(t.id);
-              }}
-              aria-label={t.label}
-              aria-pressed={isActive}
-              className={cn(
-                BTN_CLASS,
-                t.id !== MOBILE_TOOL && 'hidden sm:inline-flex',
-                isActive && 'bg-accent text-accent-foreground border-foreground/40',
-              )}
-            >
-              <Icon className="size-4" />
-            </Button>
-          </Tooltip>
-        );
-      })}
+        <div aria-hidden className="pointer-events-none h-px w-5 bg-border/60 md:w-6" />
 
-      <ToolsOverflowMenu
-        activeTool={activeTool}
-        onSelect={(tab) => {
-          onCloseLayers();
-          onOpenTool(tab);
-        }}
-      />
+        {TOOLS.map((t) => {
+          const isActive = activePanel === t.id;
+          return (
+            <Tooltip key={t.id} content={t.label} side="left">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={() => onToggleTool(t.id)}
+                aria-label={t.label}
+                aria-pressed={isActive}
+                className={cn(
+                  BTN_CLASS,
+                  t.id !== MOBILE_TOOL && 'hidden sm:inline-flex',
+                  isActive && 'border-foreground/40 bg-accent text-accent-foreground',
+                )}
+              >
+                <t.Icon className="size-4" />
+              </Button>
+            </Tooltip>
+          );
+        })}
+
+        <ToolsOverflowMenu activePanel={activePanel} onSelect={onToggleTool} />
       </div>
 
-      <FloatingInfoPanel
-        open={layersOpen}
-        onClose={onCloseLayers}
-        title="Capas del mapa"
-        eyebrow={LAYERS_EYEBROW}
-        description="Lo que se dibuja sobre los recorridos."
-        closeLabel="Cerrar capas"
-        contentClassName="space-y-1 px-3 py-3"
-      >
-            {layers.map((layer) => {
-              const Icon = layer.icon;
-              return (
-                <div key={layer.id}>
-                  <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-accent/50">
-                    <span className="grid size-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
-                      <Icon className={cn('size-4', layer.loading && 'animate-spin')} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium leading-tight">
-                        {layer.label}
-                      </span>
-                      <span className="block truncate text-[11px] text-muted-foreground">
-                        {layer.detail}
-                      </span>
-                      {layer.error && layer.checked && (
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            layer.onRetry?.();
-                          }}
-                          className="mt-1 inline-flex items-center gap-1 rounded border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground focus-ring"
-                        >
-                          <RotateCcw className="size-3" />
-                          Reintentar
-                        </button>
-                      )}
-                    </span>
-                    {layer.ready && layer.checked && !layer.loading && !layer.error && (
-                      <CheckCircle2 className="size-3.5 shrink-0 text-emerald-500" />
-                    )}
-                    <Switch
-                      checked={layer.checked}
-                      onCheckedChange={layer.onToggle}
-                      aria-label={layer.label}
-                    />
-                  </label>
-                  {layer.id === 'coverage' && layer.checked && (
-                    <div className="ml-10 flex flex-wrap gap-1 pb-1 pl-2">
-                      <button
-                        type="button"
-                        onClick={() => onSetCoverageThreshold('all')}
-                        className={cn(
-                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                          coverageThreshold === 'all'
-                            ? 'bg-foreground text-background'
-                            : 'border bg-background text-muted-foreground hover:text-foreground',
-                        )}
-                      >
-                        Heatmap completo
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onSetCoverageThreshold('underserved')}
-                        className={cn(
-                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                          coverageThreshold === 'underserved'
-                            ? 'bg-foreground text-background'
-                            : 'border bg-background text-muted-foreground hover:text-foreground',
-                        )}
-                      >
-                        Solo zonas mal servidas
-                      </button>
-                    </div>
-                  )}
-                  {layer.id === 'simulated' && layer.checked && (
-                    <div className="ml-10 flex flex-wrap gap-1 pb-1 pl-2">
-                      <button
-                        type="button"
-                        onClick={() => onSetSimulationScope('visible')}
-                        className={cn(
-                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                          simulationScope === 'visible'
-                            ? 'bg-foreground text-background'
-                            : 'border bg-background text-muted-foreground hover:text-foreground',
-                        )}
-                      >
-                        Solo visibles
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onSetSimulationScope('all')}
-                        className={cn(
-                          'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                          simulationScope === 'all'
-                            ? 'bg-foreground text-background'
-                            : 'border bg-background text-muted-foreground hover:text-foreground',
-                        )}
-                      >
-                        Toda la red
-                      </button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {showCoverage && (
-              <div className="mt-2 rounded-md border bg-muted/30 p-2">
-                <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Distancia al paradero
-                </div>
-                <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted-foreground">
-                  {[
-                    { color: '#15803d', label: '≤200 m' },
-                    { color: '#65a30d', label: '200–400' },
-                    { color: '#facc15', label: '400–600' },
-                    { color: '#f97316', label: '600–1000' },
-                    { color: '#dc2626', label: '>1 km' },
-                  ].map((b) => (
-                    <span key={b.label} className="inline-flex items-center gap-1">
-                      <span
-                        aria-hidden
-                        className="inline-block h-2.5 w-3 rounded-sm"
-                        style={{ background: b.color }}
-                      />
-                      {b.label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {showCycleways && (
-              <div className="mt-2 rounded-md border bg-muted/30 p-2">
-                <div className="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                  Infraestructura ciclista
-                </div>
-                <div className="flex flex-col gap-1 text-[10px] text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <span aria-hidden className="inline-block h-[3px] w-5 rounded-full" style={{ background: '#2563eb' }} />
-                    Ciclovía segregada
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span aria-hidden className="inline-block h-[3px] w-5 rounded-full" style={{ background: '#06b6d4' }} />
-                    Ciclobanda en calzada
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span aria-hidden className="inline-block h-[3px] w-5 border-t-2 border-dashed" style={{ borderColor: '#6366f1' }} />
-                    Ruta compartida (peatón)
-                  </span>
-                </div>
-              </div>
-            )}
-      </FloatingInfoPanel>
+      {layersOpen && (
+        // Fuera de la columna (z-20) para quedar sobre la ficha (z-30): en
+        // escritorio junto a la columna (a la izquierda de la ficha si hay una
+        // y cabe); en móvil, un panel abajo que no tapa la columna.
+        <div
+          ref={popoverRef}
+          id={popoverId}
+          role="dialog"
+          aria-label="Capas del mapa"
+          tabIndex={-1}
+          onKeyDown={onPopoverKeyDown}
+          onFocus={() => {
+            focusInsideRef.current = true;
+          }}
+          onBlur={(event) => {
+            focusInsideRef.current = event.currentTarget.contains(event.relatedTarget as Node | null);
+          }}
+          style={anchorRight != null ? { right: anchorRight } : undefined}
+          className={cn(
+            // En móvil deja libre la columna de botones de la derecha.
+            'fixed bottom-2 left-2 right-[3.25rem] z-[36] flex max-h-[min(70dvh,36rem)] flex-col overflow-hidden rounded-xl border bg-popover/95 text-popover-foreground shadow-2xl outline-none backdrop-blur animate-fade-in supports-[backdrop-filter]:bg-popover/90',
+            'sm:absolute sm:bottom-auto sm:left-auto sm:top-2 sm:max-h-[calc(100%-1rem)] sm:w-80 md:right-16 md:top-3 md:max-h-[calc(100%-1.5rem)]',
+          )}
+        >
+          <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+              <Layers2 className="size-4 text-muted-foreground" />
+              Capas del mapa
+            </h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={closeLayers}
+              aria-label="Cerrar capas"
+              className="-mr-1 size-8 text-muted-foreground"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+          <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
+            <LayersPopover
+              counts={counts}
+              layers={layers}
+              onLayersChange={onLayersChange}
+              status={status}
+              onRetry={onRetry}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -1,23 +1,54 @@
-import { useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { MapPin, Radio, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Kbd } from '@/components/ui/kbd';
+import type { WelcomeCardProps } from '@/types/ui-contracts';
 
-interface Props {
-  routesCount: number;
-  stopsCount: number;
-  onSearch: () => void;
-  onShowStops: () => void;
-}
-
+// Si la tarjeta de inicio está a la vista. Se guarda en localStorage
+// ('conce.welcome' = 'hidden') para no volver a mostrarla tras el primer uso;
+// el botón "?" de la columna del mapa la vuelve a mostrar. Sin almacenamiento
+// (modo privado) vale solo para la visita. `requested` marca que la pidió el
+// "?": entonces se muestra aunque haya una ficha abierta (si no, el botón
+// parecería no hacer nada).
 const STORAGE_KEY = 'conce.welcome';
 
-function readHidden(): boolean {
+function readVisible(): boolean {
   try {
-    return window.localStorage.getItem(STORAGE_KEY) === 'hidden';
+    return window.localStorage.getItem(STORAGE_KEY) !== 'hidden';
   } catch {
-    return false;
+    return true;
   }
+}
+
+let state = { visible: typeof window === 'undefined' ? false : readVisible(), requested: false };
+const listeners = new Set<() => void>();
+
+function setVisible(next: boolean, requested = false): void {
+  if (next === state.visible && requested === state.requested) return;
+  state = { visible: next, requested };
+  try {
+    if (next) window.localStorage.removeItem(STORAGE_KEY);
+    else window.localStorage.setItem(STORAGE_KEY, 'hidden');
+  } catch {
+    // Sin almacenamiento: queda solo en memoria.
+  }
+  for (const listener of listeners) listener();
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+const getState = () => state;
+const hide = () => setVisible(false);
+const show = () => setVisible(true, true);
+
+export function useWelcomeCard(): { visible: boolean; requested: boolean; hide: () => void; show: () => void } {
+  const { visible, requested } = useSyncExternalStore(subscribe, getState, getState);
+  return { visible, requested, hide, show };
 }
 
 /**
@@ -25,25 +56,17 @@ function readHidden(): boolean {
  * Las llegadas en vivo solo aparecen en paraderos GTFS, que no se ven en la
  * vista por defecto (Biotrén + interurbanos), así que hay un atajo directo.
  */
-export function WelcomeCard({ routesCount, stopsCount, onSearch, onShowStops }: Props) {
-  const [hidden, setHidden] = useState(readHidden);
-  if (hidden) return null;
-
+export function WelcomeCard({ routesCount, stopsCount, onSearch, onShowStops, onDismiss }: WelcomeCardProps) {
   const dismiss = () => {
     // La tarjeta se desmonta con el botón pulsado: el foco pasa al mapa.
     document.querySelector<HTMLElement>('.leaflet-container')?.focus();
-    setHidden(true);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, 'hidden');
-    } catch {
-      // Sin almacenamiento (modo privado): se oculta solo en esta visita.
-    }
+    onDismiss();
   };
 
   return (
     <section
       aria-label="Cómo empezar"
-      className="pointer-events-auto w-[min(300px,calc(100vw-4.5rem))] rounded-lg border bg-background/90 p-3 shadow-md backdrop-blur animate-fade-in supports-[backdrop-filter]:bg-background/80"
+      className="w-[min(20rem,calc(100vw-5rem))] rounded-lg border bg-background/90 p-3 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/80"
     >
       <div className="flex items-start justify-between gap-2">
         <div>
@@ -82,7 +105,17 @@ export function WelcomeCard({ routesCount, stopsCount, onSearch, onShowStops }: 
         </Button>
       </div>
 
-      <p className="mt-2.5 font-mono text-[10px] text-muted-foreground">
+      {/* En móvil solo lo primero: el mapa es lo que importa. */}
+      <ul className="mt-2.5 space-y-1 text-[12px] leading-snug text-muted-foreground">
+        <li>Toca una línea, un paradero o una micro para ver su ficha.</li>
+        <li className="hidden sm:list-item">
+          Arriba eliges las micros: <span className="text-foreground">Horario</span> las estima;{' '}
+          <span className="text-foreground">GPS en vivo</span> muestra solo las que transmiten.
+        </li>
+        <li className="hidden sm:list-item">Atrás deshace el último paso.</li>
+      </ul>
+
+      <p className="mt-2.5 hidden font-mono text-[10px] text-muted-foreground sm:block">
         {routesCount.toLocaleString('es-CL')} recorridos · {stopsCount.toLocaleString('es-CL')} paraderos
       </p>
     </section>

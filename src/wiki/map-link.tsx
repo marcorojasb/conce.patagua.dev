@@ -1,7 +1,7 @@
 // Componente <MapLink>, disponible para artículos del wiki que quieran
 // enlazar a una vista enfocada del visor. Renderiza un anchor con la URL
 // `/` + `?focus=<kind>:<id>` que el visor reconoce en su primer render
-// (ver `src/hooks/use-url-state.ts` y `src/App.tsx`).
+// (ver `parseView` en `src/lib/view-state.ts`).
 //
 // Uso típico desde un artículo:
 //

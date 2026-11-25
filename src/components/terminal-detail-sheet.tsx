@@ -1,17 +1,9 @@
-import { useMemo } from 'react';
-import { Building2, Map as MapIcon, ExternalLink } from 'lucide-react';
+import { Building2, Crosshair, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { WikiLinkButton } from '@/components/wiki-link';
-import type { Terminal } from '@/types/transport';
-
-interface TerminalDetailSheetProps {
-  open: boolean;
-  terminal: Terminal | null;
-  onOpenChange: (open: boolean) => void;
-  onFocus: () => void;
-}
+import type { TerminalDetailSheetProps } from '@/types/ui-contracts';
 
 const TERMINAL_EYEBROW = (
   <>
@@ -20,49 +12,35 @@ const TERMINAL_EYEBROW = (
   </>
 );
 
-export function TerminalDetailSheet({ open, terminal, onOpenChange, onFocus }: TerminalDetailSheetProps) {
-  const panelChrome = useMemo(() => {
-    if (!terminal) return null;
-    // IDs del dataset son `osm-node-…` o `osm-way-…`; el deep-link OSM
-    // debe respetar el tipo del elemento, no asumir siempre node.
-    const osmElement = terminal.id.startsWith('osm-way-') ? 'way' : 'node';
-    const osmUrl = `https://www.openstreetmap.org/${osmElement}/${terminal.osmId}`;
-    return {
-      description: (
+export function TerminalDetailSheet({ chrome, terminal, onFocus }: TerminalDetailSheetProps) {
+  // IDs del dataset son `osm-node-…` o `osm-way-…`; el deep-link OSM
+  // debe respetar el tipo del elemento, no asumir siempre node.
+  const osmElement = terminal.id.startsWith('osm-way-') ? 'way' : 'node';
+  const osmUrl = `https://www.openstreetmap.org/${osmElement}/${terminal.osmId}`;
+
+  return (
+    <FloatingInfoPanel
+      chrome={chrome}
+      title={terminal.name}
+      eyebrow={TERMINAL_EYEBROW}
+      description={
         <span className="font-mono text-xs">
           {terminal.lat.toFixed(5)}, {terminal.lng.toFixed(5)}
         </span>
-      ),
-      actions: (
+      }
+      actions={
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="outline" onClick={onFocus}>
-            <MapIcon className="size-3.5" />
-            Centrar en mapa
+            <Crosshair className="size-3.5" />
+            Centrar en el mapa
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => window.open(osmUrl, '_blank', 'noopener')}
-          >
+          <Button size="sm" variant="outline" onClick={() => window.open(osmUrl, '_blank', 'noopener')}>
             <ExternalLink className="size-3.5" />
             Ver en OSM
           </Button>
           <WikiLinkButton kind="terminal" terminalId={terminal.id} />
         </div>
-      ),
-    };
-  }, [onFocus, terminal]);
-
-  if (!terminal || !panelChrome) return null;
-
-  return (
-    <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
-      title={terminal.name}
-      eyebrow={TERMINAL_EYEBROW}
-      description={panelChrome.description}
-      actions={panelChrome.actions}
+      }
     >
       <div className="space-y-2 rounded-md border bg-card p-3 text-sm">
         <Row label="Red">

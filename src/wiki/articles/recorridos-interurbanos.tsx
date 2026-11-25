@@ -127,9 +127,9 @@ export default function RecorridosInterurbanos() {
         </p>
         <p>
           Las llegadas en vivo del visor vienen de una fuente no oficial
-          (la de la app de Transapp) y no siguen la 302 ni la 304. La capa
-          Servicios en curso, en cambio, es una estimación según el horario
-          programado y nunca GPS.
+          (la de la app de Transapp) y no siguen la 302 ni la 304. El modo
+          Horario de «Micros en el mapa», en cambio, es una estimación según
+          el horario programado y nunca GPS.
         </p>
       </Section>
 

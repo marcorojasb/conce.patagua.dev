@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { AlertTriangle, CheckCircle2, Info, Route as RouteIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useStickyState } from '@/hooks/use-sticky-state';
 import { buildDataQualityReport, type DataQualityIssue, type DataQualitySeverity } from '@/lib/data-quality';
 
 interface Props {
@@ -16,7 +17,8 @@ const SEVERITY_LABEL: Record<DataQualitySeverity, string> = {
 
 export default function DataQualityTool({ onSelectRoute }: Props) {
   const report = useMemo(() => buildDataQualityReport(), []);
-  const [filter, setFilter] = useState<DataQualitySeverity | 'all'>('all');
+  // El filtro sigue igual al volver con Atrás desde un recorrido abierto aquí.
+  const [filter, setFilter] = useStickyState<DataQualitySeverity | 'all'>('quality.filter', 'all');
   const visible = report.issues.filter((issue) => filter === 'all' || issue.severity === filter);
 
   return (
@@ -41,6 +43,7 @@ export default function DataQualityTool({ onSelectRoute }: Props) {
             variant={filter === id ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter(id)}
+            aria-pressed={filter === id}
             className="h-8 px-2 text-[11px]"
           >
             {id === 'all' ? 'Todo' : SEVERITY_LABEL[id]}
@@ -144,7 +147,7 @@ function IssueRow({
             size="icon"
             className="size-7 shrink-0"
             onClick={() => onSelectRoute(issue.routeId!)}
-            aria-label={`Ver ruta ${issue.routeId}`}
+            aria-label={`Ver la ficha del recorrido de «${issue.title}»`}
           >
             <RouteIcon className="size-3.5" />
           </Button>

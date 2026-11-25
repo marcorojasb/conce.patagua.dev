@@ -1,19 +1,20 @@
 import { useMemo } from 'react';
 import {
+  Crosshair,
   ExternalLink,
   GraduationCap,
   HeartPulse,
-  Map as MapIcon,
   Route as RouteIcon,
   ShoppingBag,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
+import { RouteBadge } from '@/components/route-badge';
 import { ROUTES, ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
 import { distanceMeters } from '@/lib/geo';
-import { readableTextOn } from '@/lib/utils';
+import { routePillCode, routeShortName } from '@/lib/route-labels';
 import type { Poi, PoiCategory, Route } from '@/types/transport';
+import type { PoiDetailSheetProps } from '@/types/ui-contracts';
 
 const CATEGORY_LABEL: Record<PoiCategory, string> = {
   hospital: 'Hospital',
@@ -48,74 +49,44 @@ function nearbyRoutes(poi: Poi): Array<{ route: Route; minDistance: number }> {
   return matches;
 }
 
-interface PoiDetailSheetProps {
-  open: boolean;
-  poi: Poi | null;
-  onOpenChange: (open: boolean) => void;
-  onFocus: () => void;
-  onSelectRoute: (id: string) => void;
-}
-
-export function PoiDetailSheet({
-  open,
-  poi,
-  onOpenChange,
-  onFocus,
-  onSelectRoute,
-}: PoiDetailSheetProps) {
+export function PoiDetailSheet({ chrome, poi, onFocus, onSelectRoute }: PoiDetailSheetProps) {
   // `ROUTES` se muta in-place al llegar el chunk de micros: sin la versión en
   // las deps, la lista de recorridos cercanos se queda con lo del primer paint.
   const routesVersion = useRoutesVersion();
   const nearby = useMemo(() => {
     void routesVersion;
-    return poi ? nearbyRoutes(poi) : [];
+    return nearbyRoutes(poi);
   }, [poi, routesVersion]);
-  const panelChrome = useMemo(() => {
-    if (!poi) return null;
-    const CategoryIcon = CATEGORY_ICON[poi.category];
-    const osmUrl = `https://www.openstreetmap.org/${poi.osmType}/${poi.osmId}`;
-    return {
-      eyebrow: (
+  const CategoryIcon = CATEGORY_ICON[poi.category];
+  const osmUrl = `https://www.openstreetmap.org/${poi.osmType}/${poi.osmId}`;
+
+  return (
+    <FloatingInfoPanel
+      chrome={chrome}
+      title={poi.name}
+      eyebrow={
         <>
           <CategoryIcon className="size-3.5" />
           <span>Centro de atracción · {CATEGORY_LABEL[poi.category]}</span>
         </>
-      ),
-      description: (
+      }
+      description={
         <span className="font-mono text-xs">
           {poi.lat.toFixed(5)}, {poi.lng.toFixed(5)}
         </span>
-      ),
-      actions: (
+      }
+      actions={
         <div className="flex flex-wrap gap-1.5">
           <Button size="sm" variant="outline" onClick={onFocus}>
-            <MapIcon className="size-3.5" />
-            Centrar en mapa
+            <Crosshair className="size-3.5" />
+            Centrar en el mapa
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => window.open(osmUrl, '_blank', 'noopener')}
-          >
+          <Button size="sm" variant="outline" onClick={() => window.open(osmUrl, '_blank', 'noopener')}>
             <ExternalLink className="size-3.5" />
             Ver en OSM
           </Button>
         </div>
-      ),
-    };
-  }, [onFocus, poi]);
-
-  if (!poi || !panelChrome) return null;
-
-  return (
-    <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
-      title={poi.name}
-      widthClassName="sm:w-[440px]"
-      eyebrow={panelChrome.eyebrow}
-      description={panelChrome.description}
-      actions={panelChrome.actions}
+      }
     >
       <div>
         <div className="mb-2 flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -127,9 +98,8 @@ export function PoiDetailSheet({
         </div>
         {nearby.length === 0 ? (
           <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
-            Ningún recorrido cargado pasa a menos de {NEARBY_RADIUS_M} m. Activa más
-            micros en la sidebar para extender la búsqueda, el cálculo se hace contra
-            los recorridos cargados, no contra los activos en el mapa.
+            Ningún recorrido del visor pasa a menos de {NEARBY_RADIUS_M} m. Se buscó en
+            todas las líneas, no solo en las que tienes en el mapa.
           </div>
         ) : (
           <div className="space-y-1.5">
@@ -142,14 +112,9 @@ export function PoiDetailSheet({
                   onClick={() => onSelectRoute(route.id)}
                   className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
                 >
-                  <Badge
-                    className="border-transparent font-mono"
-                    style={{ background: route.color, color: readableTextOn(route.color) }}
-                  >
-                    {route.code}
-                  </Badge>
+                  <RouteBadge code={routePillCode(route)} color={route.color} className="min-w-[2.75rem] justify-center" />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{route.name}</div>
+                    <div className="truncate text-sm font-medium">{routeShortName(route)}</div>
                     <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                       <Icon className="size-[11px]" />
                       {ROUTE_TYPES[route.type].short}

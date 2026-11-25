@@ -1,11 +1,13 @@
 // Establecimientos educacionales (kindergarten / school / college /
-// university), puntos con marcador. Capa lazy, render imperativo.
+// university), puntos en el único canvas del mapa con el tooltip compartido.
+// Capa lazy, render imperativo.
 
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { School, SchoolKind } from '@/data/schools.generated';
 import type { LayerStatusControls } from '@/hooks/use-layer-status';
+import { bindMapTooltip } from '@/components/map/map-tooltip';
 
 const KIND_COLOR: Record<SchoolKind, string> = {
   kindergarten: '#f59e0b', // amber
@@ -34,14 +36,12 @@ function loadSchools(): Promise<readonly School[]> {
 
 interface Props {
   enabled: boolean;
-  canvasRenderer: L.Canvas;
   retryKey: number;
   loadStatus: LayerStatusControls;
 }
 
 export function SchoolsLayer({
   enabled,
-  canvasRenderer,
   retryKey,
   loadStatus,
 }: Props) {
@@ -56,18 +56,17 @@ export function SchoolsLayer({
       if (cancelled) return;
       for (const s of items) {
         const color = KIND_COLOR[s.kind];
-        const tooltip = `${s.name} · ${KIND_LABEL[s.kind]}${
-          s.operator ? ` · ${s.operator}` : ''
-        }${s.religion && s.religion !== 'none' ? ` · ${s.religion}` : ''}`;
+        const secondary = `${KIND_LABEL[s.kind]}${s.operator ? ` · ${s.operator}` : ''}${
+          s.religion && s.religion !== 'none' ? ` · ${s.religion}` : ''
+        }`;
         const marker = L.circleMarker([s.lat, s.lng], {
           radius: s.kind === 'university' ? 6 : s.kind === 'school' ? 4.5 : 3.5,
           color: '#ffffff',
           weight: 1.2,
           fillColor: color,
           fillOpacity: 0.92,
-          renderer: canvasRenderer,
         });
-        marker.bindTooltip(tooltip, { direction: 'top', offset: [0, -4], opacity: 0.95 });
+        bindMapTooltip(marker, map, () => ({ primary: s.name, secondary, at: [s.lat, s.lng] }));
         group.addLayer(marker);
       }
       group.addTo(map);
@@ -90,9 +89,12 @@ export function SchoolsLayer({
 
     return () => {
       cancelled = true;
+      group.eachLayer((layer) => {
+        layer.off();
+      });
       group.remove();
     };
-  }, [enabled, canvasRenderer, map, loadStatus, retryKey]);
+  }, [enabled, map, loadStatus, retryKey]);
 
   return null;
 }
