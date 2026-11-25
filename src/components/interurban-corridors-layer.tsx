@@ -1,124 +1,83 @@
-// Corredores interurbanos, overlay opcional que dibuja un pin grande
-// por cada corredor documentado en el wiki que NO está en el GTFS oficial
-// (hoy Florida y Yumbel, operados por privados sin licitación DTPR).
+// Corredores interurbanos que NO están en el GTFS oficial (hoy Florida y
+// Yumbel, operados por privados sin licitación DTPR): un pin por corredor y,
+// si se conoce su terminal urbano, una línea discontinua hasta él que sugiere
+// el servicio sin afirmar un trazado real.
 //
-// Cada pin abre un tooltip persistente con título, operador/estado y un
-// link "Ver en el wiki →". Si el corredor tiene también un terminal
-// urbano conocido, dibujamos una línea discontinua entre ambos para
-// sugerir que existe servicio en el corredor, NO un trazado real del
-// GTFS (eso lo aclara el tooltip).
-//
-// Render imperativo (Leaflet plano) por consistencia con coverage/
-// cycleways/paraderos y para que el popup pueda contener HTML/links que
-// react-leaflet's <Popup> requeriría montar fuera del tree del mapa.
+// El pin no abre un popup: el clic elige el corredor y su ficha (enlace al
+// wiki incluido) se abre en la superficie de siempre, como cualquier otra
+// selección; así Atrás la cierra. El corredor elegido se dibuja aunque la capa
+// esté apagada.
 
-import { useEffect, useRef } from 'react';
-import { useMap } from 'react-leaflet';
+import { memo, useMemo, type RefObject } from 'react';
+import { Polyline } from 'react-leaflet';
 import L from 'leaflet';
-import { INTERURBAN_CORRIDORS } from '@/data/interurban-corridors';
-import { wikiUrl } from '@/wiki/map-links';
+import { INTERURBAN_CORRIDORS, type InterurbanCorridor } from '@/data/interurban-corridors';
+import { PointMarker, cachedIcon, type MapActions } from '@/components/map/map-markers';
 
 interface Props {
   enabled: boolean;
-  /** Notifica al padre cuando el usuario clickea un corredor, para que
-   * el visor pueda centrar el mapa en ese par origen-destino. */
-  onSelectCorridor?: (corridorId: string) => void;
+  selectedId: string | null;
+  actions: RefObject<MapActions>;
 }
 
-function corridorIcon(color: string, code: string): L.DivIcon {
-  return L.divIcon({
-    className: 'interurban-pin-wrap',
-    html: `<div class="interurban-pin" style="--pin-bg:${color}" title="${code}">${escapeHtml(code)}</div>`,
-    iconSize: [36, 36],
-    iconAnchor: [18, 36],
-  });
+function corridorLabel(corridor: InterurbanCorridor): string {
+  // Número de ruta del título ("Ruta 146") o el destino del id: todos salen de
+  // Concepción ("concepcion-florida" → "FLO"), así cada pin dice a dónde va.
+  const destination = corridor.id.split('-').at(-1) ?? corridor.id;
+  return corridor.title.match(/Ruta\s+(\w+)/i)?.[1] ?? destination.slice(0, 3).toUpperCase();
 }
 
-function escapeHtml(s: string): string {
-  return s.replace(/[&<>"']/g, (c) => {
-    const map: Record<string, string> = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-    };
-    return map[c]!;
-  });
+function corridorIcon(corridor: InterurbanCorridor, active: boolean): L.DivIcon {
+  const label = corridorLabel(corridor).replace(/[^\w-]/g, '');
+  const color = /^#[0-9a-f]{3,8}$/i.test(corridor.color) ? corridor.color : '#0f766e';
+  return cachedIcon(`corridor|${corridor.id}|${active}`, () =>
+    L.divIcon({
+      className: 'interurban-pin-wrap',
+      html: `<div class="interurban-pin${active ? ' is-active' : ''}" style="--pin-bg:${color}">${label}</div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 36],
+    }),
+  );
 }
 
-export function InterurbanCorridorsLayer({ enabled, onSelectCorridor }: Props) {
-  const map = useMap();
-  // Cache the callback in a ref so we can rebuild markers only when
-  // `enabled` flips, not on every parent re-render.
-  const onSelectRef = useRef(onSelectCorridor);
-  useEffect(() => {
-    onSelectRef.current = onSelectCorridor;
-  }, [onSelectCorridor]);
-
-  // react-doctor-disable-next-line react-doctor/effect-needs-cleanup -- False positive: cleanup removes Leaflet handlers and detaches the feature group.
-  useEffect(() => {
-    if (!enabled) return;
-    const group = L.featureGroup();
-
-    for (const c of INTERURBAN_CORRIDORS) {
-      // Short label for the pin glyph (route number or first 3 chars).
-      const labelMatch = c.title.match(/Ruta\s+(\w+)/i);
-      const label = labelMatch?.[1] ?? c.id.slice(0, 3).toUpperCase();
-
-      // Dashed connector when we know the urban end of the corridor.
-      if (c.terminal) {
-        const connector = L.polyline([c.terminal, c.anchor], {
-          color: c.color,
-          weight: 3,
-          opacity: 0.55,
-          dashArray: '8 8',
-          lineCap: 'round',
-          interactive: false,
-        });
-        group.addLayer(connector);
-      }
-
-      const marker = L.marker(c.anchor, {
-        icon: corridorIcon(c.color, label),
-        keyboard: false,
-      });
-
-      const slugUrl = wikiUrl(c.wikiSlug);
-      const popupHtml = `
-        <div class="interurban-popup">
-          <div class="text-[11px] uppercase tracking-wider text-muted-foreground">Corredor interurbano</div>
-          <div class="text-sm font-semibold leading-tight" style="margin-top:2px">${escapeHtml(c.title)}</div>
-          <div class="text-[12px] text-muted-foreground" style="margin-top:4px">${escapeHtml(c.subtitle)}</div>
-          <div style="margin-top:8px">
-            <a href="${slugUrl}" class="interurban-popup-link">Ver en el wiki →</a>
-          </div>
-          <div class="text-[10px] text-muted-foreground" style="margin-top:6px;line-height:1.4">
-            Fuera del GTFS urbano · pin sobre coordenada referencial de OSM
-          </div>
-        </div>
-      `;
-      marker.bindPopup(popupHtml, {
-        maxWidth: 260,
-        className: 'interurban-popup-wrap',
-      });
-      marker.bindTooltip(c.title, { direction: 'top', offset: [0, -34], opacity: 0.95 });
-      const onMarkerClick = () => {
-        marker.openPopup();
-        onSelectRef.current?.(c.id);
-      };
-      marker.on('click', onMarkerClick);
-      group.addLayer(marker);
-    }
-
-    group.addTo(map);
-    return () => {
-      group.eachLayer((layer) => {
-        layer.off();
-      });
-      group.remove();
-    };
-  }, [enabled, map]);
-
-  return null;
+function connectorOptions(color: string): L.PathOptions {
+  return { color, weight: 3, opacity: 0.55, dashArray: '8 8', lineCap: 'round', interactive: false };
 }
+
+const CorridorConnector = memo(function CorridorConnector({ corridor }: { corridor: InterurbanCorridor }) {
+  const positions = useMemo<L.LatLngTuple[] | null>(
+    () => (corridor.terminal ? [corridor.terminal, corridor.anchor] : null),
+    [corridor],
+  );
+  const options = useMemo(() => connectorOptions(corridor.color), [corridor.color]);
+  if (!positions) return null;
+  return <Polyline positions={positions} pathOptions={options} />;
+});
+
+export const InterurbanCorridorsLayer = memo(function InterurbanCorridorsLayer({ enabled, selectedId, actions }: Props) {
+  const corridors = useMemo(
+    () => (enabled ? INTERURBAN_CORRIDORS : INTERURBAN_CORRIDORS.filter((c) => c.id === selectedId)),
+    [enabled, selectedId],
+  );
+  return (
+    <>
+      {corridors.map((c) => (
+        <CorridorConnector key={`connector-${c.id}`} corridor={c} />
+      ))}
+      {corridors.map((c) => (
+        <PointMarker
+          key={c.id}
+          lat={c.anchor[0]}
+          lng={c.anchor[1]}
+          icon={corridorIcon(c, c.id === selectedId)}
+          title={c.title}
+          subtitle={`${c.subtitle} · toca para ver el corredor`}
+          kind="corridor"
+          id={c.id}
+          actions={actions}
+          zIndexOffset={300}
+        />
+      ))}
+    </>
+  );
+});

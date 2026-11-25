@@ -19,7 +19,8 @@ Son dos productos distintos que comparten build, estilos (Tailwind/shadcn) y des
 
 ## Estructura
 
-- `src/App.tsx` — visor principal (mapa, capas, filtros).
+- `src/App.tsx` — cascarón del visor: une la navegación, el mapa, los controles sobre el mapa y la superficie de fichas (`src/components/surface-host.tsx`).
+- `src/lib/view-state.ts` + `src/hooks/use-view-state.ts` — qué hay en pantalla, leído y escrito en la URL y el historial (ver "Navegación" más abajo).
 - `src/wiki/` — segunda app (`wiki-app.tsx`), montada en `/wiki`. `src/main.tsx` decide cuál renderizar según `window.location.pathname`; ambas se cargan como chunks lazy independientes (`lazy(() => import(...))`), así que un usuario que solo visita `/` nunca descarga el código del wiki y viceversa.
 - `src/data/*.generated.ts` — datasets generados por los scripts `sync:*` (no editar a mano).
 - `src/data/*.ts` (sin `.generated`) — datos curados a mano (`routes.ts`, `interurban-corridors.ts`, `static-service-patterns.ts`).
@@ -36,7 +37,7 @@ Son dos productos distintos que comparten build, estilos (Tailwind/shadcn) y des
 - **Florida y Yumbel**: no tienen GTFS; en el mapa son solo un pin de corredor con enlace al wiki (`src/data/interurban-corridors.ts`).
 - **Llegadas en vivo**: fuente no oficial de la app de Transapp, solo para el paradero abierto (ver más abajo).
 - **Micros con GPS por línea**: la misma fuente, consultada por servicio y sentido a través de `/api/route-vehicles`; nunca se mezcla con la estimación de abajo (ver más abajo).
-- **Servicios en curso**: estimación según el horario programado (GTFS y EFE), nunca GPS; la UI la rotula como estimación.
+- **Micros estimadas (modo Horario)**: estimación según el horario programado (GTFS y EFE), nunca GPS; la UI la rotula como estimación.
 
 ## Correr en local
 
@@ -55,7 +56,34 @@ npm run check
 
 Esto corre en orden: `typecheck` → `test` (Vitest) → `data:validate` (valida los `*.generated.ts`) → `maplinks:validate` (MapLinks del wiki + índice reverso) → `build` → `bundle:budget` (chequea tamaño del bundle) → `smoke` (smoke test del dev server).
 
-`npm run check:full` agrega además `smoke:services`, que usa Playwright para probar el visor en un browser real — más lento, útil antes de mergear cambios que tocan capas de datos o UI del mapa.
+`npm run check:full` agrega además `smoke:services`, que usa Playwright para probar el visor en un browser real — más lento, útil antes de mergear cambios que tocan capas de datos o UI del mapa. Recorre la navegación (Atrás/Adelante, Escape, enlaces, elegir puntos del planificador, móvil), el modo GPS y las capas, con `/api/*` interceptado: falla si una consulta a `/api` se escapa. `SMOKE_PORT=5285 SMOKE_ONLY=N1,G3 npm run smoke:services` corre solo esos pasos en otro puerto.
+
+`npm run bench:map` (fuera de `check`) mide el mapa en el build de producción con Playwright: tiempo bloqueado en reposo (también a zoom 16, donde las micros llevan letrero), al arrastrar (con el evento de soltar, que redibuja el mapa) y al hacer zoom, eventos al prender líneas, nodos del DOM, capas y memoria, con 20 líneas, toda la red, GPS y toda la red con las capas temáticas (`--scenario default,f20,all,gps-f20,layers --throttle 1|4 --assert`). Correrlo después de `npm run build` cuando un cambio toca el mapa; los umbrales están en `scripts/bench-map.ts`.
+
+## Navegación del visor
+
+La URL más `history.state` son la única fuente de verdad de lo que hay en pantalla (`src/lib/view-state.ts`, puro y con pruebas; el store que lo aplica al navegador es `src/hooks/use-view-state.ts`).
+
+- **Navegación** (propia de cada entrada del historial): la selección (`route` + `dir` + `tab`, `stop`, `terminal`, `poi`, `corredor`) y el panel (`panel=planificador|operadores|calidad|exportar|fondo|fuentes`). Abrir una ficha o un panel es una entrada nueva; pestaña, sentido y pasar de una herramienta a otra ajustan la misma. Elegir lo que ya está abierto no lo cierra.
+- **Preferencias** (van en la URL con replace y Atrás no las deshace): `lineas=30QE,10AN,L1` (líneas en el mapa en orden de agregado; sin el parámetro, las por defecto; `lineas=` vacío, ninguna), `activos=1`, `micros=gps|off`, `red=1`, las capas (`paraderos`, `terminales`, `pois`, `aire`, `cobertura=1|mal`, `ciclovias`, `verdes`, `educacion`, `corredores`) y los puntos del planificador (`a=lat,lng`, `b=lat,lng`).
+- **Capas transitorias** (solo en `history.state`, nunca en la URL): la barra lateral en móvil, el popover de Capas y elegir un punto del planificador. Atrás y Escape las cierran; una recarga o un enlace nunca vuelven "eligiendo un punto". Elegir un punto existe solo sobre el planificador: cerrarlo termina la elección.
+- Fichas, herramientas y fuentes comparten un único espacio (panel derecho en escritorio, hoja inferior en móvil) con "← anterior" y "×". Atrás y Adelante vuelven a cada superficie con el encuadre del mapa que tenía (cada entrada guarda el suyo mientras se mira).
+- Un enlace con algo abierto (`/?route=30QE`) agrega una entrada base debajo: el primer Atrás cierra la ficha y deja al usuario en el visor. Desde un `<MapLink>` del wiki no: ahí el primer Atrás vuelve al artículo. Un recorrido, paradero o línea del enlace que no existe se avisa sobre el mapa, sale de la URL y no deja una entrada muerta en el historial (la de un recorrido se agrega recién cuando llega el chunk GTFS y se sabe si existe).
+- Una recarga con una capa transitoria abierta no la trae de vuelta y retrocede a la entrada de abajo (la misma pantalla sin la capa), así ningún Atrás cae en una pantalla idéntica.
+- Escape se maneja en un solo lugar y no hace nada con ⌘K abierto ni con el foco en un campo de texto. Un tooltip de ayuda abierto no se lo queda: el mismo Escape cierra la ficha.
+- Los puntos A/B del planificador siguen en el mapa (y en el enlace) con el planificador cerrado: un aviso sobre el mapa ("Puntos A/B del planificador · Ver · Quitar") los explica y los quita, y tocar un pin abre el planificador.
+- La selección no cambia lo visible: el recorrido abierto se dibuja destacado aunque no esté "En el mapa" o lo oculte "Operando ahora", y abrirlo no lo agrega.
+
+## Micros en el mapa
+
+Un control siempre visible sobre el mapa, "Micros en el mapa: Horario | GPS en vivo" (más "Ocultar micros"), elige la única fuente que dibuja el mapa; nunca se mezclan.
+
+- **Horario** (por defecto): micros estimadas según el horario programado, redondas con borde punteado y rotuladas "según horario, no es GPS". Pueden ser las de mis líneas o las de toda la red (`red=1`); sin líneas en el mapa lo dice ("No hay líneas en tu mapa"). Avanzan a saltos de 1 s, sin animación (no parecen GPS y no gastan CPU en reposo).
+- **GPS en vivo** (`micros=gps`): solo posiciones GPS de la fuente no oficial, cuadradas con anillo verde (anillo ámbar y relleno desteñido pasados 2 min; desaparecen a los 5). Las edades se miden en el reloj del servidor cuando el del equipo está corrido más de 1 min. Se consultan las líneas en el mapa, primero la abierta y luego las agregadas más recientemente, hasta 16 sentidos por consulta; el estado dice cuántas quedaron sin consultar y el detalle por línea cuáles tienen micros (contadas como en el mapa, sin repetir patente), cuáles no transmiten ("sin GPS ahora"), cuáles la fuente no sigue (Biotrén, 302/304) y cuáles quedaron fuera del tope. El modo GPS nunca se rellena con estimaciones. En un teléfono con una ficha abierta el control queda en el selector más una línea cuando algo falta (servidor sin GPS, consulta fallida, la línea abierta sin GPS).
+- Las micros con GPS del paradero abierto se suman al mapa **solo en modo GPS** y con la misma regla con que la ficha lo dice (dato de hasta 5 min). En Horario la ficha del paradero las lista y ofrece "Ver en el mapa con GPS en vivo", que cambia el modo.
+- Las píldoras de código (sidebar, buscador, fichas y letreros de micros a zoom 15+) llevan texto blanco o negro según el contraste WCAG con el color de la línea, siempre opacas; "30Q/E" se puede buscar tal cual.
+
+Cómo se dibuja (`src/components/conce-map.tsx` y `src/components/map/`): trazados, paradas de recorrido, paraderos y capas temáticas comparten el único canvas por defecto de Leaflet (un solo canvas recibe los clics), salvo la cobertura, que es una sola imagen de la grilla en un panel sin eventos (Leaflet solo la escala); las micros van en un canvas propio sin eventos, con su propia detección de toques; quedan como marcadores DOM solo los pines (paradero abierto, A/B, terminales, lugares, aire, corredores). Zoom y encuadre no pasan por React. Con la pestaña oculta no se calcula la simulación de Horario ni avanzan los relojes de la interfaz; al volver se ponen al día en el acto. Las paradas de la red se ven desde zoom 13, o desde 14 cuando hay más de 800 a la vista (con muchas líneas, a zoom 13 son una alfombra de puntos); las del recorrido abierto, desde 11.
 
 ## El wiki (`/wiki`)
 
@@ -85,7 +113,8 @@ El wiki es la segunda mini-app del proyecto: un conjunto de artículos sobre el 
 Ambas apps viven en el mismo build de Vite y el mismo despliegue de Vercel, pero no comparten componentes de UI ni estado entre sí (el wiki no importa `src/App.tsx`). El único acoplamiento es el puente de enlaces:
 
 1. Un artículo puede apuntar al mapa con `<MapLink>` (`/?focus=…`).
-2. Una entidad del mapa puede apuntar a su artículo con el índice de `map-links.ts` + `WikiLinkButton` (o el popup de corredores interurbanos).
+2. Una entidad del mapa puede apuntar a su artículo con el índice de `map-links.ts` + `WikiLinkButton` (también la ficha de corredor interurbano).
+3. La flecha "Volver al visor" del wiki vuelve con `history.back()` a la misma entrada del visor (con la ficha que estaba abierta) cuando se llegó desde el visor; si se entró directo al wiki es un enlace a `/`.
 
 Para agregar un enlace mapa→wiki: crear o identificar el artículo, añadir la entrada en `MAP_WIKI_LINKS` (`byRouteCode` / `byCorridorId` / `byTerminalId`), y —si es un corredor sin GTFS— la entrada en `src/data/interurban-corridors.ts`.
 
@@ -120,14 +149,14 @@ El resto de los scripts (Overpass, Wikidata) no requieren credenciales: usan end
 
 ## Llegadas en vivo (fuente no oficial)
 
-Al abrir un paradero GTFS, la ficha muestra las micros que vienen a ese paradero con su GPS real (línea, sentido, minutos, distancia y patente) y el mapa las dibuja como marcadores cuadrados con anillo verde. Las micros de "Servicios en curso" siguen siendo una **estimación según horario** (redondas, borde punteado) y así se rotulan.
+Al abrir un paradero GTFS, la ficha muestra las micros que vienen a ese paradero con su GPS real (línea, sentido, minutos, distancia y patente). El mapa las dibuja (cuadradas, con anillo verde) solo en el modo "GPS en vivo"; en Horario la ficha ofrece "Ver en el mapa con GPS en vivo" y el mapa sigue mostrando solo la **estimación según horario** (redondas, borde punteado), así rotulada (ver "Micros en el mapa").
 
 - Fuente: `phone.dtpr.transapp.cl`, la que usa la app de Transapp para la DTPR. No es oficial ni documentada y no manda CORS, así que el navegador consulta `api/stop-arrivals.ts` (función de Vercel): caché de 25 s por paradero en la CDN y en memoria, consultas en vuelo compartidas, tope de 30 consultas por minuto por instancia y un nombre de cliente genérico. De la respuesta reenvía solo los campos que lee el visor (por predicción: línea, sentido, hora, minutos, distancia, `realtime`, posición, patente y viaje; de `routeInfo`, servicio y mensaje; de cada alerta, el texto), con valores simples: el identificador del equipo GPS y el resto no salen. Solo acepta códigos con la forma de los paraderos del GTFS (`P` + `stop_id`, más los `PF…` que la fuente renombró), en mayúsculas, y descarta lo guardado a los 10 min. Un paradero que solo recorren líneas que la fuente no sigue (302/304) no se consulta.
 - Variable de entorno: `TRANSAPP_PHONE_ID`, el identificador de cliente que pide la fuente (configurado en Vercel; nunca va en el repo). Sin ella la función responde 503 y la ficha dice que las llegadas en vivo no están activadas.
 - Qué trae (comprobado con respuestas reales el 24-11-2026 en paraderos de Concepción, Tomé, San Pedro, Talcahuano y Coronel): por micro, línea, sentido, minutos, posición GPS, patente y distancia en línea recta al paradero (no por la ruta). Las líneas sin GPS llegan como "sin datos en vivo · pasa cada N".
 - Calce con el GTFS: el código de paradero de la fuente es `P` + el `stop_id` oficial (2.202 de 2.239 paraderos; 6 más con otro nombre; 31 no existen en la fuente). La fuente nombra las líneas por sentido (`20A`, `401I`): 183 de los 188 sentidos oficiales tienen par. Sigue 11 servicios de 2026 sin par en el GTFS 2025 (02H 02L 20F 20N 30H 30Z 50SY 70FY 70HY 80B 80V; la 02L solo está como la variante 02L-Y, 2 viajes en día hábil, que la fuente no nombra así) y no sigue en vivo la 302 ni la 304. Sus coordenadas de paradero coinciden con las oficiales (mediana 3 m, 97% a menos de 20 m), lo que respalda la ubicación oficial de los paraderos.
-- Reglas (en `src/realtime/live-arrivals.ts`, con pruebas): respuesta ilegible = falla; minutos desde `epochTime` o `timeLabel`; se descarta la micro que debía pasar hace más de 2 min; una respuesta vacía de golpe no borra un dato con micros por llegar; un dato vale 10 min mostrando su edad (destacada pasados 2 min); sin un dato vigente (vencido, o micros ya pasadas y la consulta siguiente fallida) nunca se dice "sin micros"; "sin datos en vivo · pasa cada N" cuando la fuente avisa que la línea no transmite GPS. Solo `realtime: true` cuenta como GPS: el resto se rotula "estimado, sin GPS" y no va al mapa. Los marcadores del mapa usan las mismas reglas con su propio reloj (se atenúan pasados 2 min y desaparecen con el dato). Consulta cada 30 s, 60 s tras una falla y 5 min tras tres seguidas, solo con la pestaña visible.
-- En local, `npm run dev` monta los mismos handlers de `api/` (plugin en `vite.config.ts`); los smoke tests interceptan `/api/stop-arrivals` con respuestas de ejemplo y nunca consultan la fuente real.
+- Reglas (en `src/realtime/live-arrivals.ts`, con pruebas): respuesta ilegible = falla; minutos desde `epochTime` o `timeLabel`; se descarta la micro que debía pasar hace más de 2 min; una respuesta vacía de golpe no borra un dato con micros por llegar; un dato vale 10 min mostrando su edad (destacada pasados 2 min); sin un dato vigente (vencido, o micros ya pasadas y la consulta siguiente fallida) nunca se dice "sin micros"; "sin datos en vivo · pasa cada N" cuando la fuente avisa que la línea no transmite GPS. Solo `realtime: true` cuenta como GPS: el resto se rotula "estimado, sin GPS" y no va al mapa. En modo GPS, las micros del paradero en el mapa siguen la regla del mapa con su propio reloj: se atenúan pasados 2 min y salen del mapa a los 5, aunque la ficha las siga listando (con su edad) hasta los 10. Consulta cada 30 s, 60 s tras una falla y 5 min tras tres seguidas, solo con la pestaña visible.
+- En local, `npm run dev` monta los mismos handlers de `api/` (plugin en `vite.config.ts`); los smoke tests interceptan `/api/stop-arrivals` y `/api/route-vehicles` con respuestas de ejemplo y nunca consultan la fuente real.
 
 ### Micros con GPS por línea (`/api/route-vehicles`)
 

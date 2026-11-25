@@ -1,24 +1,26 @@
 // Cycling infrastructure layer for the visor, segregated cycleways,
 // shared paths, and on-road bike lanes from OSM.
 //
-// Uses imperative Leaflet (L.featureGroup + L.polyline on a shared canvas
-// renderer) instead of react-leaflet so the 460+ polylines don't pay
+// Uses imperative Leaflet (L.featureGroup + L.polyline on the map's single
+// default canvas) instead of react-leaflet so the 460+ polylines don't pay
 // reconciliation cost on every parent render. Same pattern as
 // coverage-layer.tsx. The dataset is lazy-loaded, chunk only downloads
-// the first time the layer is enabled.
+// the first time the layer is enabled. Hover uses the map's shared tooltip.
 
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { Cycleway, CyclewayKind } from '@/data/cycleways.generated';
 import type { LayerStatusControls } from '@/hooks/use-layer-status';
+import { bindMapTooltip } from '@/components/map/map-tooltip';
 
 // Color encoding by kind, segregated stands out (the gold standard for
-// safety), shared is muted (less reliable infra), lane is in-between.
-const KIND_STYLE: Record<CyclewayKind, { color: string; weight: number; dash?: string }> = {
-  segregated: { color: '#2563eb', weight: 3 }, // blue-600
-  shared: { color: '#6366f1', weight: 2.5, dash: '4 4' }, // indigo-500 dashed
-  lane: { color: '#06b6d4', weight: 2 }, // cyan-500
+// safety), shared is muted (less reliable infra), lane is in-between. The
+// map legend draws its key from this same table.
+export const CYCLEWAY_KIND_STYLE: Record<CyclewayKind, { color: string; weight: number; dash?: string; label: string }> = {
+  segregated: { color: '#2563eb', weight: 3, label: 'Ciclovía segregada' }, // blue-600
+  lane: { color: '#06b6d4', weight: 2, label: 'Ciclobanda en calzada' }, // cyan-500
+  shared: { color: '#6366f1', weight: 2.5, dash: '4 4', label: 'Ruta compartida' }, // indigo-500 dashed
 };
 
 let dataCache: readonly Cycleway[] | null = null;
@@ -34,14 +36,12 @@ function loadCycleways(): Promise<readonly Cycleway[]> {
 
 interface Props {
   enabled: boolean;
-  canvasRenderer: L.Canvas;
   retryKey: number;
   loadStatus: LayerStatusControls;
 }
 
 export function CyclewaysLayer({
   enabled,
-  canvasRenderer,
   retryKey,
   loadStatus,
 }: Props) {
@@ -55,10 +55,10 @@ export function CyclewaysLayer({
     const draw = (items: readonly Cycleway[]) => {
       if (cancelled) return;
       for (const c of items) {
-        const style = KIND_STYLE[c.kind];
-        const tooltip = c.name
-          ? `${c.name} · ${KIND_LABEL[c.kind]}${c.surface ? ` · ${c.surface}` : ''}`
-          : `${KIND_LABEL[c.kind]}${c.surface ? ` · ${c.surface}` : ''}`;
+        const style = CYCLEWAY_KIND_STYLE[c.kind];
+        const detail = `${style.label}${c.surface ? ` · ${c.surface}` : ''}`;
+        const primary = c.name ?? style.label;
+        const secondary = c.name ? detail : c.surface ?? undefined;
         const line = L.polyline(c.path, {
           color: style.color,
           weight: style.weight,
@@ -66,13 +66,13 @@ export function CyclewaysLayer({
           dashArray: style.dash,
           lineCap: 'round',
           lineJoin: 'round',
-          renderer: canvasRenderer,
           interactive: true,
         });
-        line.bindTooltip(tooltip, { sticky: true, direction: 'top', opacity: 0.9 });
+        bindMapTooltip(line, map, () => ({ primary, secondary }), { sticky: true });
         group.addLayer(line);
       }
       group.addTo(map);
+      group.bringToBack();
       loadStatus.succeed();
     };
 
@@ -92,15 +92,12 @@ export function CyclewaysLayer({
 
     return () => {
       cancelled = true;
+      group.eachLayer((layer) => {
+        layer.off();
+      });
       group.remove();
     };
-  }, [enabled, canvasRenderer, map, loadStatus, retryKey]);
+  }, [enabled, map, loadStatus, retryKey]);
 
   return null;
 }
-
-const KIND_LABEL: Record<CyclewayKind, string> = {
-  segregated: 'Ciclovía segregada',
-  shared: 'Ruta compartida',
-  lane: 'Ciclobanda en calzada',
-};

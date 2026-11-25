@@ -3,7 +3,7 @@
 // a routing library yet. State changes via history.pushState; back/forward
 // works because we listen to popstate.
 
-import { Suspense, useSyncExternalStore } from 'react';
+import { Suspense, useSyncExternalStore, type MouseEvent } from 'react';
 import { ArrowLeft, BookOpen, ExternalLink, Github, Moon, Pencil, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,11 +18,37 @@ function getSlugFromPath(path: string): string | null {
   return match[1] ?? null;
 }
 
+/** Artículos abiertos dentro del wiki desde que se entró (en `history.state`). */
+function wikiDepth(): number {
+  const state: unknown = window.history.state;
+  const depth = state && typeof state === 'object' ? (state as { wikiDepth?: unknown }).wikiDepth : undefined;
+  return typeof depth === 'number' && depth > 0 ? depth : 0;
+}
+
 function navigateTo(slug: string | null): void {
   const url = slug ? `/wiki/${slug}` : '/wiki';
   if (window.location.pathname === url) return;
-  window.history.pushState({}, '', url);
+  window.history.pushState({ wikiDepth: wikiDepth() + 1 }, '', url);
   window.dispatchEvent(new PopStateEvent('popstate'));
+}
+
+// Si se llegó desde el visor (misma web, fuera de /wiki), la flecha vuelve a
+// esa misma entrada del historial, con la ficha que estaba abierta, aunque se
+// hayan leído otros artículos entremedio; si no (enlace directo al wiki), es
+// un enlace normal al visor.
+function backToVisor(event: MouseEvent<HTMLAnchorElement>): void {
+  if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  let referrer: URL;
+  try {
+    referrer = new URL(document.referrer);
+  } catch {
+    return;
+  }
+  if (referrer.origin !== window.location.origin || referrer.pathname.startsWith('/wiki')) return;
+  const steps = wikiDepth() + 1;
+  if (window.history.length <= steps) return;
+  event.preventDefault();
+  window.history.go(-steps);
 }
 
 export default function WikiApp() {
@@ -36,6 +62,7 @@ export default function WikiApp() {
       <header className="relative z-10 flex h-12 items-center gap-1.5 border-b bg-background/95 px-2 backdrop-blur md:h-14 md:gap-3 md:px-4">
         <a
           href="/"
+          onClick={backToVisor}
           className="flex size-10 shrink-0 items-center justify-center rounded-md hover:bg-accent md:h-9 md:w-9"
           aria-label="Volver al visor"
         >

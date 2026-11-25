@@ -1,137 +1,176 @@
+// Planificador: A y B viven en las preferencias (URL `a=`/`b=`, replace) y
+// elegir un punto es la capa transitoria `pick-a`/`pick-b` sobre el panel, así
+// cerrar el planificador o volver con Atrás termina la elección sin dejar el
+// mapa "pegado" capturando toques. El trazado por calles (punto medio) es
+// estado local y se descarta solo si cambian A o B.
+
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { ROUTES, ROUTES_BY_ID } from '@/data/routes';
+import {
+  closeOverlay,
+  getNavState,
+  openOverlay,
+  openPanel,
+  setPrefs,
+} from '@/hooks/use-view-state';
 import { findRoutes } from '@/lib/planner';
 import { routeBetween, type RoutingResult } from '@/lib/routing';
+import { pickStep } from '@/lib/view-state';
 import type { Route } from '@/types/transport';
-
-type PlannerPoint = { lat: number; lng: number };
-type PickerMode = 'origin' | 'destination' | null;
+import type { LatLng, Overlay, PlannerPanelProps } from '@/types/ui-contracts';
 
 interface Options {
-  visibleRouteIds: string[];
+  a: LatLng | null;
+  b: LatLng | null;
+  overlay: Overlay;
+  /** Líneas en el mapa (ya con el filtro de horario): donde se buscan coincidencias. */
+  networkIds: readonly string[];
   routesVersion: number;
+  onSelectRoute: (id: string) => void;
 }
 
-export function usePlannerState({ visibleRouteIds, routesVersion }: Options) {
-  const [plannerOrigin, setPlannerOrigin] = useState<PlannerPoint | null>(null);
-  const [plannerDestination, setPlannerDestination] = useState<PlannerPoint | null>(null);
-  const [pickerMode, setPickerMode] = useState<PickerMode>(null);
-  const [plannerMidpoint, setPlannerMidpoint] = useState<RoutingResult | null>(null);
-  const [plannerMidpointLoading, setPlannerMidpointLoading] = useState(false);
-  const [plannerMidpointError, setPlannerMidpointError] = useState<string | null>(null);
+interface MidpointState {
+  key: string;
+  result: RoutingResult | null;
+  loading: boolean;
+  error: string | null;
+}
+
+function pointsKey(a: LatLng | null, b: LatLng | null): string | null {
+  return a && b ? `${a.lat},${a.lng};${b.lat},${b.lng}` : null;
+}
+
+export interface PlannerState {
+  panel: PlannerPanelProps;
+  pick: 'a' | 'b' | null;
+  midpoint: RoutingResult | null;
+  /** Toque en el mapa eligiendo un punto. */
+  onMapPick: (point: LatLng) => void;
+  /** "Salir desde aquí": A en el paradero, abre el planificador y pide B si falta. */
+  onPlanFrom: (point: LatLng) => void;
+  /** "Ir hasta aquí": lo mismo con B. */
+  onPlanTo: (point: LatLng) => void;
+}
+
+export function usePlannerState({ a, b, overlay, networkIds, routesVersion, onSelectRoute }: Options): PlannerState {
+  const [searchAll, setSearchAll] = useState(false);
+  const [midpointState, setMidpointState] = useState<MidpointState | null>(null);
   const midpointAbortRef = useRef<AbortController | null>(null);
+  const key = pointsKey(a, b);
+  const midpoint = midpointState && midpointState.key === key ? midpointState : null;
+  const pick = overlay === 'pick-a' ? 'a' : overlay === 'pick-b' ? 'b' : null;
 
-  const plannerMatches = useMemo(() => {
-    if (!plannerOrigin || !plannerDestination) return [];
-    // ROUTES_BY_ID is extended when the lazy route chunk loads; routesVersion
-    // intentionally invalidates this memo even if visibleRouteIds is unchanged.
+  const matches = useMemo(() => {
+    if (!a || !b) return [];
+    // ROUTES crece al llegar el chunk GTFS: routesVersion invalida el cálculo.
     void routesVersion;
-    const visible: Route[] = [];
-    for (const id of visibleRouteIds) {
-      const route = ROUTES_BY_ID.get(id);
-      if (route) visible.push(route);
+    const pool: Route[] = [];
+    if (searchAll) pool.push(...ROUTES);
+    else {
+      for (const id of networkIds) {
+        const route = ROUTES_BY_ID.get(id);
+        if (route) pool.push(route);
+      }
     }
-    const pool = visible.length > 0 ? visible : ROUTES;
-    return findRoutes(
-      [plannerOrigin.lat, plannerOrigin.lng],
-      [plannerDestination.lat, plannerDestination.lng],
-      pool,
-    );
-  }, [plannerOrigin, plannerDestination, visibleRouteIds, routesVersion]);
+    return findRoutes([a.lat, a.lng], [b.lat, b.lng], pool);
+  }, [a, b, searchAll, networkIds, routesVersion]);
 
-  const clearMidpointState = useCallback(() => {
+  const abortMidpoint = useCallback(() => {
     midpointAbortRef.current?.abort();
     midpointAbortRef.current = null;
-    setPlannerMidpoint(null);
-    setPlannerMidpointLoading(false);
-    setPlannerMidpointError(null);
   }, []);
 
-  const onPickPoint = useCallback(
-    (latlng: PlannerPoint) => {
-      if (pickerMode === 'origin') {
-        clearMidpointState();
-        setPlannerOrigin(latlng);
-        setPickerMode(plannerDestination ? null : 'destination');
-      } else if (pickerMode === 'destination') {
-        clearMidpointState();
-        setPlannerDestination(latlng);
-        setPickerMode(null);
-      }
-    },
-    [clearMidpointState, pickerMode, plannerDestination],
-  );
-
-  const onClearPlanner = useCallback(() => {
-    setPlannerOrigin(null);
-    setPlannerDestination(null);
-    setPickerMode(null);
-    clearMidpointState();
-  }, [clearMidpointState]);
+  const onClearMidpoint = useCallback(() => {
+    abortMidpoint();
+    setMidpointState(null);
+  }, [abortMidpoint]);
 
   const onComputeMidpoint = useCallback(async () => {
-    if (!plannerOrigin || !plannerDestination) return;
-    midpointAbortRef.current?.abort();
+    if (!a || !b || !key) return;
+    abortMidpoint();
     const ctrl = new AbortController();
     midpointAbortRef.current = ctrl;
-    setPlannerMidpointLoading(true);
-    setPlannerMidpointError(null);
+    setMidpointState({ key, result: null, loading: true, error: null });
     try {
-      const result = await routeBetween(
-        [plannerOrigin.lat, plannerOrigin.lng],
-        [plannerDestination.lat, plannerDestination.lng],
-        { signal: ctrl.signal },
-      );
-      if (!ctrl.signal.aborted) setPlannerMidpoint(result);
+      const result = await routeBetween([a.lat, a.lng], [b.lat, b.lng], { signal: ctrl.signal });
+      if (!ctrl.signal.aborted) setMidpointState({ key, result, loading: false, error: null });
     } catch (err) {
       if (!ctrl.signal.aborted) {
-        setPlannerMidpointError(
-          err instanceof Error
-            ? `No se pudo calcular: ${err.message}`
-            : 'No se pudo calcular el trazado',
-        );
+        setMidpointState({
+          key,
+          result: null,
+          loading: false,
+          error: err instanceof Error ? `No se pudo calcular: ${err.message}` : 'No se pudo calcular el trazado',
+        });
       }
-    } finally {
-      // El reset va en finally para que el spinner no quede pegado si algo
-      // lanza antes de tiempo, pero con guarda: si este request fue abortado
-      // por uno más nuevo, el loading vigente lo maneja ese otro.
-      // react-doctor-disable-next-line react-doctor/no-loading-flag-reset-outside-finally, react-doctor/no-unowned-async-error-clear -- El reset sí está en finally y la guarda `!ctrl.signal.aborted` establece la propiedad del request; el detector no modela la guarda.
-      if (!ctrl.signal.aborted) setPlannerMidpointLoading(false);
     }
-  }, [plannerOrigin, plannerDestination]);
+  }, [a, b, key, abortMidpoint]);
 
-  const onUsePointAsOrigin = useCallback(
-    (point: PlannerPoint) => {
-      clearMidpointState();
-      setPlannerOrigin(point);
-      setPickerMode(plannerDestination ? null : 'destination');
+  const onPick = useCallback((target: 'a' | 'b') => {
+    openOverlay(target === 'a' ? 'pick-a' : 'pick-b');
+  }, []);
+
+  const onCancelPick = useCallback(() => {
+    const current = getNavState().overlay;
+    if (current === 'pick-a' || current === 'pick-b') closeOverlay();
+  }, []);
+
+  const onClear = useCallback(() => {
+    abortMidpoint();
+    setPrefs({ planner: { a: null, b: null } });
+    const current = getNavState().overlay;
+    if (current === 'pick-a' || current === 'pick-b') closeOverlay();
+  }, [abortMidpoint]);
+
+  const onMapPick = useCallback(
+    (point: LatLng) => {
+      const { overlay: current, prefs } = getNavState();
+      if (current !== 'pick-a' && current !== 'pick-b') return;
+      abortMidpoint();
+      const step = pickStep(current, point, prefs.planner);
+      setPrefs({ planner: step.planner });
+      if (step.done) closeOverlay();
+      else if (step.overlay) openOverlay(step.overlay);
     },
-    [clearMidpointState, plannerDestination],
+    [abortMidpoint],
   );
 
-  const onUsePointAsDestination = useCallback(
-    (point: PlannerPoint) => {
-      clearMidpointState();
-      setPlannerDestination(point);
-      setPickerMode(plannerOrigin ? null : 'origin');
+  const planWith = useCallback(
+    (target: 'a' | 'b', point: LatLng) => {
+      abortMidpoint();
+      const { planner } = getNavState().prefs;
+      const next = target === 'a' ? { ...planner, a: point } : { ...planner, b: point };
+      setPrefs({ planner: next });
+      openPanel('planner');
+      if (target === 'a' && !next.b) openOverlay('pick-b');
+      if (target === 'b' && !next.a) openOverlay('pick-a');
     },
-    [clearMidpointState, plannerOrigin],
+    [abortMidpoint],
+  );
+  const onPlanFrom = useCallback((point: LatLng) => planWith('a', point), [planWith]);
+  const onPlanTo = useCallback((point: LatLng) => planWith('b', point), [planWith]);
+
+  const panel = useMemo<PlannerPanelProps>(
+    () => ({
+      a,
+      b,
+      pick,
+      matches,
+      searchAll,
+      onSearchAllChange: setSearchAll,
+      linesOnMap: networkIds.length,
+      onPick,
+      onCancelPick,
+      onClear,
+      onSelectRoute,
+      midpoint: midpoint?.result ?? null,
+      midpointLoading: midpoint?.loading ?? false,
+      midpointError: midpoint?.error ?? null,
+      onComputeMidpoint: () => void onComputeMidpoint(),
+      onClearMidpoint,
+    }),
+    [a, b, pick, matches, searchAll, networkIds.length, onPick, onCancelPick, onClear, onSelectRoute, midpoint, onComputeMidpoint, onClearMidpoint],
   );
 
-  return {
-    plannerOrigin,
-    plannerDestination,
-    pickerMode,
-    setPickerMode,
-    plannerMatches,
-    plannerMidpoint,
-    plannerMidpointLoading,
-    plannerMidpointError,
-    onPickPoint,
-    onClearPlanner,
-    onComputeMidpoint,
-    clearMidpointState,
-    onUsePointAsOrigin,
-    onUsePointAsDestination,
-  };
+  return { panel, pick, midpoint: midpoint?.result ?? null, onMapPick, onPlanFrom, onPlanTo };
 }

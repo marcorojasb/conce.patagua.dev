@@ -1,11 +1,11 @@
-// Store de la capa "Servicios en curso" (vehículos estimados desde horarios).
+// Store de las micros estimadas desde horarios (modo "Horario" del mapa).
 //
 // Antes era un useState dentro de App: cada tick (1 s) re-renderizaba toda la
-// app —barra lateral con 175 recorridos incluida— y react-leaflet reemplazaba
-// el DOM de cada marcador, lo que además cortaba la transición CSS que los
-// hace avanzar suave. Ahora el tick vive fuera de React:
-// - la capa del mapa se suscribe con `subscribeSimulatedVehicles` y mueve
-//   marcadores existentes (setLatLng), sin pasar por React;
+// app —barra lateral con 175 recorridos incluida—. Ahora el tick vive fuera
+// de React:
+// - el mapa se suscribe a través de `scheduleVehicleFeed`
+//   (schedule-vehicle-feed.ts), que las pasa a MapVehicle, y las dibuja en su
+//   canvas de micros sin pasar por React;
 // - quien solo necesita el conteo usa `useSimulationStatus`, que cambia
 //   únicamente cuando entra o sale un viaje.
 //
@@ -75,11 +75,6 @@ export function subscribeSimulatedVehicles(listener: (vehicles: SimulatedVehicle
   };
 }
 
-/** Lectura puntual (p. ej. al generar un fondo de pantalla). */
-export function getSimulatedVehicles(): SimulatedVehicle[] {
-  return vehicles;
-}
-
 function subscribeStatus(listener: () => void): () => void {
   statusListeners.add(listener);
   return () => {
@@ -101,7 +96,11 @@ interface Options {
   retryKey?: number;
 }
 
-/** Enciende/apaga la simulación para el conjunto de rutas dado. Lo usa App, una vez. */
+/**
+ * Enciende/apaga la simulación para el conjunto de rutas dado. Lo usa App, una
+ * vez. Con la pestaña oculta no calcula: al volver a la vista calcula en el
+ * acto y retoma el tic.
+ */
 export function useSimulationControl({ enabled, routes, retryKey = 0 }: Options): void {
   useEffect(() => {
     if (!enabled) {
@@ -113,14 +112,26 @@ export function useSimulationControl({ enabled, routes, retryKey = 0 }: Options)
     const tick = () => {
       if (schedules) publish(computeActiveVehicles(new Date(), routes, schedules));
     };
+    const startTicking = () => {
+      if (cancelled || !schedules || timer != null || document.hidden) return;
+      tick();
+      timer = window.setInterval(tick, TICK_MS);
+    };
+    const stopTicking = () => {
+      if (timer != null) window.clearInterval(timer);
+      timer = null;
+    };
+    const onVisibility = () => (document.hidden ? stopTicking() : startTicking());
+    document.addEventListener('visibilitychange', onVisibility);
 
     if (!schedules) setStatus({ ...status, loading: true, error: null });
     loadSimulationSchedules()
       .then((loaded) => {
         if (cancelled) return;
         schedules = loaded;
-        tick();
-        timer = window.setInterval(tick, TICK_MS);
+        // Oculta al cargar: igual se calcula una vez, así al volver hay micros y conteo.
+        if (document.hidden) tick();
+        startTicking();
       })
       .catch((err: unknown) => {
         schedulePromise = null;
@@ -135,7 +146,8 @@ export function useSimulationControl({ enabled, routes, retryKey = 0 }: Options)
 
     return () => {
       cancelled = true;
-      if (timer != null) window.clearInterval(timer);
+      stopTicking();
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [enabled, routes, retryKey]);
 }

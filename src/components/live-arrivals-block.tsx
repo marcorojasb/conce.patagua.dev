@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { AlertTriangle, Radio, WifiOff } from 'lucide-react';
+import { AlertTriangle, MapPinned, Radio, WifiOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { RouteBadge } from '@/components/route-badge';
 import { Notice } from '@/components/ui/notice';
 import { SectionLabel } from '@/components/ui/section-label';
@@ -22,13 +23,18 @@ import {
   type LiveDirection,
   type LiveServiceMatch,
 } from '@/realtime/live-arrivals';
+import { stopGpsOnMap } from '@/realtime/gps-vehicle-feed';
 import { cn } from '@/lib/utils';
 import type { Route } from '@/types/transport';
+import type { MicrosMode } from '@/types/ui-contracts';
 
 interface Props {
   live: LiveArrivalsSnapshot;
   /** Recorridos del visor que pasan por el paradero. */
   routes: Route[];
+  /** Fuera del modo GPS el mapa no dibuja estas micros: se ofrece cambiarlo. */
+  micros: MicrosMode;
+  onShowGpsOnMap: () => void;
 }
 
 const NEUTRAL_COLOR = '#334155';
@@ -44,7 +50,7 @@ function towards(match: LiveServiceMatch | undefined, direction: LiveDirection |
   return direction ? `Sentido ${DIRECTION_LABEL[direction]}` : 'Sentido no informado';
 }
 
-export function LiveArrivalsBlock({ live, routes }: Props) {
+export function LiveArrivalsBlock({ live, routes, micros, onShowGpsOnMap }: Props) {
   // Paradero solo con líneas que la fuente no sigue (Coronel–Lota): App no
   // la consulta y aquí solo se avisa.
   if (onlyUntrackedLines(routes)) {
@@ -61,10 +67,18 @@ export function LiveArrivalsBlock({ live, routes }: Props) {
       </section>
     );
   }
-  return <TrackedLiveArrivals live={live} />;
+  return <TrackedLiveArrivals live={live} micros={micros} onShowGpsOnMap={onShowGpsOnMap} />;
 }
 
-function TrackedLiveArrivals({ live }: { live: LiveArrivalsSnapshot }) {
+function TrackedLiveArrivals({
+  live,
+  micros,
+  onShowGpsOnMap,
+}: {
+  live: LiveArrivalsSnapshot;
+  micros: MicrosMode;
+  onShowGpsOnMap: () => void;
+}) {
   const now = useClock(LIVE_CLOCK_TICK_MS);
   // Sin paradero en consulta todavía (App espera a conocer sus recorridos): se
   // muestra como cargando, nunca como "sin micros".
@@ -80,6 +94,11 @@ function TrackedLiveArrivals({ live }: { live: LiveArrivalsSnapshot }) {
   // Las alertas "Servicio X no está enviando información en tiempo real" ya
   // quedan como nota "sin datos en vivo" en su línea: no se repiten.
   const otherAlerts = view.alerts.filter((alert) => servicesWithoutGps([alert]).size === 0);
+  // Micros de esta lista que el mapa dibuja en modo GPS (estimadas y GPS nunca
+  // se mezclan): con GPS y posición, de un dato de hasta 5 min. Es la misma
+  // regla del mapa; pasado eso la lista las sigue mostrando, el mapa no.
+  const onMap = stopGpsOnMap(view);
+  const withPosition = onMap?.arrivals.length ?? 0;
 
   return (
     <section aria-label="Llegadas en vivo" data-live-state={view.kind}>
@@ -130,6 +149,27 @@ function TrackedLiveArrivals({ live }: { live: LiveArrivalsSnapshot }) {
             minutos se descuentan desde entonces.
           </Notice>
         )}
+
+        {withPosition > 0 &&
+          (micros === 'gps' ? (
+            <p className="flex items-start gap-1.5 text-[11px] leading-snug text-muted-foreground" data-gps-on-map>
+              <MapPinned className="mt-px size-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
+              El mapa dibuja {withPosition === 1 ? 'esta micro' : `estas ${withPosition} micros`} con su
+              posición GPS (cuadradas,{' '}
+              {onMap?.stale ? 'anillo ámbar: dato de hace más de 2 min' : 'anillo verde'}).
+            </p>
+          ) : (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="w-full justify-center border-emerald-600/40 text-emerald-800 hover:bg-emerald-50 dark:text-emerald-300 dark:hover:bg-emerald-500/10"
+              onClick={onShowGpsOnMap}
+            >
+              <MapPinned className="size-3.5" />
+              Ver en el mapa con GPS en vivo
+            </Button>
+          ))}
 
         {view.lastFailure && view.lastFailure !== 'unconfigured' && view.ageMs != null && (
           <p className="text-[11px] text-muted-foreground">

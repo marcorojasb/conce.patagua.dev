@@ -1,610 +1,427 @@
-import { lazy, useCallback, useEffect, useMemo, useState } from 'react';
+// Cascarón del visor: une la navegación (URL + historial, `useNavigation`),
+// el mapa, los controles sobre el mapa y la superficie de fichas y
+// herramientas. El estado de pantalla vive en el store de navegación; aquí
+// solo se derivan las líneas del mapa, el foco y la fuente de micros.
+
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { ConceMap } from '@/components/conce-map';
-import { MapLegend } from '@/components/map-legend';
 import { Header } from '@/components/header';
+import { MapHints } from '@/components/map-hints';
 import { MapLayerControl } from '@/components/map-layer-control';
+import { MapLegend } from '@/components/map-legend';
+import { MicrosSlot } from '@/components/micros-slot';
 import { Sidebar } from '@/components/sidebar';
-import { LazyBoundary } from '@/components/lazy-boundary';
-import type { AnalysisTab } from '@/components/floating-tools-panel';
-import { useSimulationControl, useSimulationStatus } from '@/realtime/use-simulated-vehicles';
-import { useLiveArrivals } from '@/hooks/use-live-arrivals';
-import { indexLiveServices, liveStopCode, onlyUntrackedLines } from '@/realtime/live-arrivals';
-import { buildSimulationRoutes, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
-import { WelcomeCard } from '@/components/welcome-card';
-import {
-  CONCE_CENTER,
-  DEFAULT_VISIBLE_ROUTE_IDS,
-  ROUTES,
-  ROUTES_BY_ID,
-  STOPS,
-  findRoute,
-  useRoutesVersion,
-} from '@/data/routes';
-import { TERMINALS } from '@/data/terminals.generated';
-import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
+import { SurfaceHost } from '@/components/surface-host';
+import { WelcomeCard, useWelcomeCard } from '@/components/welcome-card';
+import { CONCE_CENTER, ROUTES, ROUTES_BY_ID, useRoutesVersion } from '@/data/routes';
+import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
 import { POIS } from '@/data/pois.generated';
+import { TERMINALS } from '@/data/terminals.generated';
 import { useAirQuality } from '@/hooks/use-air-quality';
+import { useClock } from '@/hooks/use-clock';
 import { useLayerStatus } from '@/hooks/use-layer-status';
+import { useLiveArrivals } from '@/hooks/use-live-arrivals';
 import { usePlannerState } from '@/hooks/use-planner-state';
 import { useTheme } from '@/hooks/use-theme';
 import {
-  clearFocusParam,
-  readFocusParam,
-  readUrlState,
-  useSyncUrlState,
-} from '@/hooks/use-url-state';
+  LINES_CATALOG,
+  findStop,
+  flyMapTo,
+  getNavState,
+  isPendingRoute,
+  useNavigation,
+} from '@/hooks/use-view-state';
+import { getMapViewport } from '@/lib/map-viewport';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
-import { routeShortName } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
-import { CORRIDOR_BY_ID } from '@/data/interurban-corridors';
-import type { FlyToToken, Route, SheetKind, StopWithRoutes } from '@/types/transport';
+import type { InvalidRef } from '@/lib/view-state';
+import { hiddenByFilter, linesEqualDefault, resolveLines, setLinesVisible, toggleLine } from '@/lib/visible-lines';
+import { liveStopCode, onlyUntrackedLines } from '@/realtime/live-arrivals';
+import { gpsVehicleFeed } from '@/realtime/gps-vehicle-feed';
+import { scheduleVehicleFeed } from '@/realtime/schedule-vehicle-feed';
+import { buildSimulationRoutes } from '@/realtime/simulated-vehicles';
+import { useSimulationControl } from '@/realtime/use-simulated-vehicles';
+import type {
+  DirectionId,
+  LoadableLayer,
+  MapFocus,
+  MapLayersState,
+  MapNotice,
+  MapTarget,
+  MicrosMode,
+  Selection,
+  SelectOrigin,
+  SimulationScope,
+  SurfaceChrome,
+  ToolId,
+} from '@/types/ui-contracts';
 
-// Fichas y herramientas se cargan recién al abrirse: no hacen falta para el
-// primer dibujo del mapa y sacarlas del chunk principal lo mantiene dentro del
-// presupuesto (scripts/check-bundle-budget.ts).
-const RouteDetailSheet = lazy(() =>
-  import('@/components/route-detail-sheet').then((m) => ({ default: m.RouteDetailSheet })),
-);
-const StopDetailSheet = lazy(() =>
-  import('@/components/stop-detail-sheet').then((m) => ({ default: m.StopDetailSheet })),
-);
-const TerminalDetailSheet = lazy(() =>
-  import('@/components/terminal-detail-sheet').then((m) => ({ default: m.TerminalDetailSheet })),
-);
-const PoiDetailSheet = lazy(() =>
-  import('@/components/poi-detail-sheet').then((m) => ({ default: m.PoiDetailSheet })),
-);
-const DataSourcesSheet = lazy(() =>
-  import('@/components/data-sources-sheet').then((m) => ({ default: m.DataSourcesSheet })),
-);
-const FloatingToolsPanel = lazy(() =>
-  import('@/components/floating-tools-panel').then((m) => ({ default: m.FloatingToolsPanel })),
-);
+const DESKTOP_QUERY = '(min-width: 768px)';
+const NOTICE_MS = 8_000;
+const EMPTY_IDS = new Set<string>();
+const LAYER_COUNTS = { terminals: TERMINALS.length, paraderos: GTFS_STOPS.length, pois: POIS.length };
+const NO_RETRIES: Record<LoadableLayer, number> = { coverage: 0, cycleways: 0, greenspace: 0, schools: 0 };
 
-const INITIAL_URL = readUrlState();
-// `?focus=<kind>:<id>` puede venir desde el wiki (`<MapLink>`). Lo leemos
-// una sola vez al iniciar; el visor lo aplica como un flyTo + activación
-// de capas, y `clearFocusParam` lo retira del query string para que la
-// URL siga limpia mientras el usuario navega.
-const INITIAL_FOCUS = readFocusParam();
-type SimulationScope = 'visible' | 'all';
-type SelectedDetail = Exclude<SheetKind, null>;
-
-interface SelectedDetailState {
-  kind: SelectedDetail;
-  id: string;
-  /** Sentido pedido cuando el recorrido llegó por la variante de un letrero ("10A"). */
-  directionId?: 0 | 1;
+function subscribeDesktop(listener: () => void): () => void {
+  const query = window.matchMedia(DESKTOP_QUERY);
+  query.addEventListener('change', listener);
+  return () => query.removeEventListener('change', listener);
 }
 
-// Recorrido pedido por la URL: `?route=` (id, o también código/variante) o
-// `?focus=route:` desde el wiki ("201", "10A"). Los recorridos GTFS llegan en
-// un chunk diferido; si todavía no está, App lo aplica cuando carga.
-const INITIAL_ROUTE_REF =
-  INITIAL_URL.route ??
-  (!INITIAL_URL.stop && !INITIAL_URL.terminal && !INITIAL_URL.poi && INITIAL_FOCUS?.kind === 'route'
-    ? INITIAL_FOCUS.id
-    : null);
-const INITIAL_ROUTE_MATCH = INITIAL_ROUTE_REF ? findRoute(INITIAL_ROUTE_REF) : null;
-const INITIAL_ROUTE = INITIAL_ROUTE_MATCH?.route ?? null;
-let pendingRouteRef = INITIAL_ROUTE_REF && !INITIAL_ROUTE ? INITIAL_ROUTE_REF : null;
-// Visibles por defecto que ya existen al montar (Biotrén); los interurbanos
-// oficiales llegan con el chunk GTFS y se suman a lo visible en ese momento.
-const EAGER_DEFAULT_ROUTE_IDS = new Set(DEFAULT_VISIBLE_ROUTE_IDS);
-const INITIAL_FOCUS_CORRIDOR =
-  INITIAL_FOCUS?.kind === 'corridor' ? CORRIDOR_BY_ID.get(INITIAL_FOCUS.id) ?? null : null;
-
-function initialSelectedDetail(): SelectedDetailState | null {
-  if (INITIAL_ROUTE_REF) {
-    return INITIAL_ROUTE_MATCH
-      ? {
-          kind: 'route',
-          id: INITIAL_ROUTE_MATCH.route.id,
-          directionId: INITIAL_ROUTE_MATCH.directionId ?? INITIAL_URL.dir ?? undefined,
-        }
-      : null;
-  }
-  if (INITIAL_URL.stop) return { kind: 'stop', id: INITIAL_URL.stop };
-  if (INITIAL_URL.terminal) return { kind: 'terminal', id: INITIAL_URL.terminal };
-  if (INITIAL_URL.poi) return { kind: 'poi', id: INITIAL_URL.poi };
-  if (!INITIAL_FOCUS) return null;
-  if (INITIAL_FOCUS.kind === 'stop') return { kind: 'stop', id: INITIAL_FOCUS.id };
-  if (INITIAL_FOCUS.kind === 'terminal') return { kind: 'terminal', id: INITIAL_FOCUS.id };
-  if (INITIAL_FOCUS.kind === 'poi') return { kind: 'poi', id: INITIAL_FOCUS.id };
-  return null;
+/** Escritorio (barra lateral acoplada) o móvil (barra lateral como capa sobre el mapa). */
+function useIsDesktop(): boolean {
+  return useSyncExternalStore(
+    subscribeDesktop,
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+    () => true,
+  );
 }
 
-function pointFlyToToken(lat: number, lng: number, zoom: number): FlyToToken {
-  return { key: 0, target: { kind: 'point', lat, lng, zoom } };
+const INVALID_NOUN: Record<InvalidRef['kind'], string> = {
+  route: 'el recorrido',
+  stop: 'el paradero',
+  terminal: 'el terminal',
+  poi: 'el lugar',
+  corridor: 'el corredor',
+  lines: '',
+};
+
+function invalidNoticeText(ref: InvalidRef): string {
+  if (ref.kind !== 'lines') return `No encontramos ${INVALID_NOUN[ref.kind]} «${ref.ref}»`;
+  const count = ref.ref.split(',').length;
+  return count === 1 ? `1 línea del enlace no existe («${ref.ref}»)` : `${count} líneas del enlace no existen`;
 }
 
-// Los paraderos GTFS entran a STOPS recién con el chunk de recorridos; para
-// centrar el mapa basta su posición, que ya está en GTFS_STOPS.
-function stopPosition(id: string): { lat: number; lng: number } | null {
-  return STOPS.find((x) => x.id === id) ?? GTFS_STOPS.find((x) => x.id === id) ?? null;
+/**
+ * Avisos sobre el mapa, uno a la vez y por 8 s. Un aviso con "Deshacer"
+ * reemplaza a los otros con acción, así nunca queda a la vista un deshacer
+ * de un estado que ya cambió.
+ */
+function useNotices() {
+  const [queue, setQueue] = useState<MapNotice[]>([]);
+  const nextId = useRef(0);
+  const push = useCallback((text: string, action?: MapNotice['action']) => {
+    nextId.current += 1;
+    const notice: MapNotice = { id: nextId.current, text, action };
+    setQueue((q) => [...(action ? q.filter((n) => !n.action) : q), notice]);
+  }, []);
+  const dismiss = useCallback(() => setQueue((q) => q.slice(1)), []);
+  const current = queue[0] ?? null;
+  useEffect(() => {
+    if (!current) return undefined;
+    const id = window.setTimeout(() => setQueue((q) => (q[0]?.id === current.id ? q.slice(1) : q)), NOTICE_MS);
+    return () => window.clearTimeout(id);
+  }, [current]);
+  return { notice: current, push, dismiss };
 }
 
-function initialFlyToToken(): FlyToToken | null {
-  if (INITIAL_ROUTE_REF) {
-    return INITIAL_ROUTE ? { key: 0, target: { kind: 'bounds', path: INITIAL_ROUTE.path } } : null;
-  }
-  if (INITIAL_URL.stop) {
-    const stop = stopPosition(INITIAL_URL.stop);
-    return stop ? pointFlyToToken(stop.lat, stop.lng, 16) : null;
-  }
-  if (INITIAL_URL.terminal) {
-    const terminal = TERMINALS.find((x) => x.id === INITIAL_URL.terminal);
-    return terminal ? pointFlyToToken(terminal.lat, terminal.lng, 16) : null;
-  }
-  if (INITIAL_URL.poi) {
-    const poi = POIS.find((x) => x.id === INITIAL_URL.poi);
-    return poi ? pointFlyToToken(poi.lat, poi.lng, 16) : null;
-  }
-  if (!INITIAL_FOCUS) return null;
-  if (INITIAL_FOCUS.kind === 'corridor' && INITIAL_FOCUS_CORRIDOR) {
-    const { anchor, terminal } = INITIAL_FOCUS_CORRIDOR;
-    return terminal
-      ? { key: 0, target: { kind: 'bounds', path: [terminal, anchor] } }
-      : pointFlyToToken(anchor[0], anchor[1], 11);
-  }
-  if (INITIAL_FOCUS.kind === 'stop') {
-    const stop = stopPosition(INITIAL_FOCUS.id);
-    return stop ? pointFlyToToken(stop.lat, stop.lng, 16) : null;
-  }
-  if (INITIAL_FOCUS.kind === 'terminal') {
-    const terminal = TERMINALS.find((x) => x.id === INITIAL_FOCUS.id);
-    return terminal ? pointFlyToToken(terminal.lat, terminal.lng, 16) : null;
-  }
-  if (INITIAL_FOCUS.kind === 'poi') {
-    const poi = POIS.find((x) => x.id === INITIAL_FOCUS.id);
-    return poi ? pointFlyToToken(poi.lat, poi.lng, 16) : null;
-  }
-  return null;
-}
-
-// react-doctor-disable-next-line react-doctor/no-giant-component, react-doctor/prefer-useReducer, react-doctor/no-high-complexity-react-function -- App is the route/map shell; coupled state was consolidated, remaining state slices are independent UI controls.
 export default function App() {
-  // Subscribes to the micros-loaded event so the sidebar/search/etc.
-  // re-render the moment the bus-routes lazy chunk lands.
   const routesVersion = useRoutesVersion();
   const [theme, toggleTheme] = useTheme();
-  // Default closed on mobile (sidebar overlays the map below md:), open on
-  // desktop where it docks alongside.
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return window.matchMedia('(min-width: 768px)').matches;
-  });
-
-  const [visibleRouteIds, setVisibleRouteIds] = useState<string[]>(() => {
-    // If a deep link selects a route, make sure it's visible too.
-    if (INITIAL_ROUTE && !DEFAULT_VISIBLE_ROUTE_IDS.includes(INITIAL_ROUTE.id)) {
-      return [...DEFAULT_VISIBLE_ROUTE_IDS, INITIAL_ROUTE.id];
-    }
-    return [...DEFAULT_VISIBLE_ROUTE_IDS];
-  });
-
-
-  const [selectedDetail, setSelectedDetail] = useState<SelectedDetailState | null>(initialSelectedDetail);
-  const selectedRouteId = selectedDetail?.kind === 'route' ? selectedDetail.id : null;
-  const selectedStopId = selectedDetail?.kind === 'stop' ? selectedDetail.id : null;
-  const selectedParaderoId = selectedDetail?.kind === 'paradero' ? selectedDetail.id : null;
-  const selectedTerminalId = selectedDetail?.kind === 'terminal' ? selectedDetail.id : null;
-  const selectedPoiId = selectedDetail?.kind === 'poi' ? selectedDetail.id : null;
-  const sheetKind = selectedDetail?.kind ?? null;
-
-  // Deep-links de terminal/poi (URL durable o ?focus=) encienden la capa
-  // para que el pin sea visible al aterrizar desde el wiki.
-  const [showTerminals, setShowTerminals] = useState(
-    () =>
-      !!INITIAL_URL.terminal ||
-      INITIAL_FOCUS?.kind === 'terminal' ||
-      false,
-  );
-  const [showParaderos, setShowParaderos] = useState(INITIAL_URL.paraderos);
+  const nav = useNavigation();
+  const { state, select, refineRoute, togglePanel, openPanel, backSurface, closeSurface, setPrefs, openOverlay, closeOverlay } = nav;
+  const { selection, panel, overlay, prefs, backLabel } = state;
+  const isDesktop = useIsDesktop();
+  const [dockedOpen, setDockedOpen] = useState(true);
   const [commandOpen, setCommandOpen] = useState(false);
-  // Los paraderos se dibujan desde zoom 14: el atajo los enciende y acerca al
-  // centro de Concepción para que se vean de inmediato.
-  const onShowStopsNearCenter = useCallback(() => {
-    setShowParaderos(true);
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'point', lat: CONCE_CENTER.lat, lng: CONCE_CENTER.lng, zoom: 16 },
+  const welcome = useWelcomeCard();
+  const hideWelcome = welcome.hide;
+  const notices = useNotices();
+  const pushNotice = notices.push;
+
+  // ── Líneas en el mapa ─────────────────────────────────────────────────────
+  const visibleIds = useMemo(() => {
+    void routesVersion;
+    return resolveLines(prefs.lines, LINES_CATALOG).ids;
+  }, [prefs.lines, routesVersion]);
+  const isDefaultLines = linesEqualDefault(prefs.lines, LINES_CATALOG, routesVersion > 0);
+  // "Operando ahora" se recalcula cada minuto, solo con el filtro puesto.
+  const minute = useClock(60_000, prefs.onlyOperating);
+  const hiddenIds = useMemo(() => {
+    void minute;
+    if (!prefs.onlyOperating) return EMPTY_IDS;
+    return hiddenByFilter(visibleIds, (id) => {
+      const route = ROUTES_BY_ID.get(id);
+      return !!route && isRouteOperatingNow(route);
     });
-  }, []);
-  const [showPois, setShowPois] = useState(
-    () => !!INITIAL_URL.poi || INITIAL_FOCUS?.kind === 'poi' || false,
+  }, [visibleIds, prefs.onlyOperating, minute]);
+  const networkIds = useMemo(
+    () => (hiddenIds.size > 0 ? visibleIds.filter((id) => !hiddenIds.has(id)) : visibleIds),
+    [visibleIds, hiddenIds],
   );
-  const [showAirQuality, setShowAirQuality] = useState(INITIAL_URL.aire);
-  const [onlyOperatingNow, setOnlyOperatingNow] = useState(INITIAL_URL.activos);
-  const [airQualityRetryKey, setAirQualityRetryKey] = useState(0);
 
-  const airQuality = useAirQuality(showAirQuality, airQualityRetryKey);
-
-  const {
-    plannerOrigin,
-    plannerDestination,
-    pickerMode,
-    setPickerMode,
-    plannerMatches,
-    plannerMidpoint,
-    plannerMidpointLoading,
-    plannerMidpointError,
-    onPickPoint,
-    onClearPlanner,
-    onComputeMidpoint,
-    clearMidpointState,
-    onUsePointAsOrigin,
-    onUsePointAsDestination,
-  } = usePlannerState({ visibleRouteIds, routesVersion });
-
-  const [showSimulatedVehicles, setShowSimulatedVehicles] = useState(true);
-  const [simulationScope, setSimulationScope] = useState<SimulationScope>('visible');
-  const [simulationRetryKey, setSimulationRetryKey] = useState(0);
-
-  // Pool of routes the simulator can project vehicles for: one input per GTFS
-  // direction and per Biotrén EFE pattern (see buildSimulationRoutes).
-  const simulationRoutes = useMemo<SimulationRouteInput[]>(() => {
+  // ── Selección y foco ──────────────────────────────────────────────────────
+  const routePending = isPendingRoute(selection);
+  const shownSelection = routePending ? null : selection;
+  const selectedRouteId = shownSelection?.kind === 'route' ? shownSelection.id : null;
+  const focus = useMemo<MapFocus | null>(() => {
     void routesVersion;
-    if (simulationScope === 'all') return buildSimulationRoutes(ROUTES);
-    const visible = new Set(visibleRouteIds);
-    return buildSimulationRoutes(ROUTES.filter((r) => visible.has(r.id)));
-  }, [routesVersion, simulationScope, visibleRouteIds]);
-  const routeColorById = useMemo(
-    () => {
-      void routesVersion;
-      return new Map(ROUTES.map((r) => [r.id, r.color]));
-    },
-    [routesVersion],
-  );
-  const routeLabelById = useMemo(
-    () => {
-      void routesVersion;
-      return new Map(ROUTES.map((r) => [r.id, `${r.code} · ${routeShortName(r)}`]));
-    },
-    [routesVersion],
-  );
-  useSimulationControl({
-    enabled: showSimulatedVehicles,
-    routes: simulationRoutes,
-    retryKey: simulationRetryKey,
-  });
-  const simulationStatus = useSimulationStatus();
-
-  // La fuente en vivo nombra cada sentido por separado ("62H", "401I"): el
-  // índice lo lleva al recorrido y sentido del visor.
-  const liveServices = useMemo(() => {
-    void routesVersion;
-    return indexLiveServices(ROUTES);
-  }, [routesVersion]);
-
-
-  const [showCoverage, setShowCoverage] = useState(false);
-  const [coverageThreshold, setCoverageThreshold] = useState<'all' | 'underserved'>('all');
-  const coverageLayer = useLayerStatus();
-  const [coverageRetryKey, setCoverageRetryKey] = useState(0);
-  const [showCycleways, setShowCycleways] = useState(false);
-  const cyclewaysLayer = useLayerStatus();
-  const [cyclewaysRetryKey, setCyclewaysRetryKey] = useState(0);
-  const [showGreenspace, setShowGreenspace] = useState(false);
-  const greenspaceLayer = useLayerStatus();
-  const [greenspaceRetryKey, setGreenspaceRetryKey] = useState(0);
-  const [showSchools, setShowSchools] = useState(false);
-  const schoolsLayer = useLayerStatus();
-  const [schoolsRetryKey, setSchoolsRetryKey] = useState(0);
-  // Si la URL trae `?focus=corridor:…` activamos la capa de corredores
-  // inmediatamente, el usuario llegó desde el wiki y espera ver el pin.
-  const [showInterurbanCorridors, setShowInterurbanCorridors] = useState(
-    INITIAL_FOCUS?.kind === 'corridor',
-  );
-
-  // Last viewport reported by the map. Used by the wallpaper exporter so the
-  // "vista actual" mode captures exactly what the user is looking at.
-  const [mapBounds, setMapBounds] = useState<[[number, number], [number, number]] | null>(null);
-
-  const [flyToToken, setFlyToToken] = useState<FlyToToken | null>(initialFlyToToken);
-
-  // Al llegar el chunk GTFS: los interurbanos por defecto pasan a visibles y
-  // un deep link a un recorrido que aún no estaba cargado se aplica (una vez).
-  useEffect(() => {
-    if (routesVersion === 0) return;
-    const pending = pendingRouteRef ? findRoute(pendingRouteRef) : null;
-    pendingRouteRef = null;
-    const add = DEFAULT_VISIBLE_ROUTE_IDS.filter((id) => !EAGER_DEFAULT_ROUTE_IDS.has(id));
-    if (pending) add.push(pending.route.id);
-    setVisibleRouteIds((cur) => {
-      const missing = add.filter((id) => !cur.includes(id));
-      return missing.length > 0 ? [...cur, ...missing] : cur;
-    });
-    if (pending) {
-      setSelectedDetail({
-        kind: 'route',
-        id: pending.route.id,
-        directionId: pending.directionId ?? INITIAL_URL.dir ?? undefined,
-      });
-      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: pending.route.path } });
+    if (shownSelection?.kind === 'route') return { routeIds: [shownSelection.id], directionId: shownSelection.dir };
+    if (shownSelection?.kind === 'stop') {
+      const network = new Set(networkIds);
+      const routeIds = (findStop(shownSelection.id)?.routes ?? []).filter((id) => network.has(id));
+      return routeIds.length > 0 ? { routeIds, directionId: null } : null;
     }
-  }, [routesVersion]);
+    return null;
+  }, [shownSelection, networkIds, routesVersion]);
+  const surfaceOpen = !!panel || !!shownSelection;
 
-  const [sourcesOpen, setSourcesOpen] = useState(false);
-  // Single active tool, null means no panel is open. Floating, non-modal:
-  // the user can keep interacting with the map while a tool is on screen.
-  const [activeTool, setActiveTool] = useState<AnalysisTab | null>(null);
-  const [layersOpen, setLayersOpen] = useState(false);
-
-  const closeDetailPanels = useCallback(() => {
-    setSelectedDetail(null);
-  }, []);
-
-  const closeSidebarOnMobile = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    if (!window.matchMedia('(min-width: 768px)').matches) {
-      setSidebarOpen(false);
-    }
-  }, []);
-
-  // Toolbar button behavior: click same tool = close; different = switch.
-  const toggleTool = useCallback((t: AnalysisTab) => {
-    closeDetailPanels();
-    setSourcesOpen(false);
-    setLayersOpen(false);
-    closeSidebarOnMobile();
-    setActiveTool((cur) => (cur === t ? null : t));
-  }, [closeDetailPanels, closeSidebarOnMobile]);
-
-  const toggleLayers = useCallback(() => {
-    const next = !layersOpen;
-    setLayersOpen(next);
-    if (next) {
-      closeDetailPanels();
-      setSourcesOpen(false);
-      setActiveTool(null);
-      closeSidebarOnMobile();
-    }
-  }, [layersOpen, closeDetailPanels, closeSidebarOnMobile]);
-
-  useSyncUrlState({
-    route: selectedRouteId,
-    dir: selectedDetail?.kind === 'route' ? selectedDetail.directionId ?? null : null,
-    stop: selectedStopId,
-    terminal: selectedTerminalId,
-    poi: selectedPoiId,
-    paraderos: showParaderos,
-    activos: onlyOperatingNow,
-    pois: showPois,
-    aire: showAirQuality,
-  });
-
-  const selectedRoute = useMemo(
-    () => {
-      void routesVersion;
-      return selectedRouteId ? ROUTES_BY_ID.get(selectedRouteId) ?? null : null;
-    },
-    [selectedRouteId, routesVersion],
-  );
-  const selectedStop = useMemo(
-    () => {
-      void routesVersion;
-      return STOPS.find((s) => s.id === selectedStopId) ?? null;
-    },
-    [selectedStopId, routesVersion],
-  );
-  // Un paradero de la capa GTFS abre la misma ficha que una parada de
-  // recorrido; si no aparece en ningún recorrido dibujado, va sin recorridos.
-  const selectedParaderoStop = useMemo<StopWithRoutes | null>(() => {
+  // ── Micros: una sola fuente a la vez ──────────────────────────────────────
+  const vehicleFeed = prefs.micros === 'gps' ? gpsVehicleFeed : prefs.micros === 'schedule' ? scheduleVehicleFeed : null;
+  const simulationKey =
+    prefs.scope === 'all' ? 'all' : [...new Set([...networkIds, ...(focus?.routeIds ?? [])])].sort().join(',');
+  const simulationRoutes = useMemo(() => {
     void routesVersion;
-    if (!selectedParaderoId) return null;
-    const onRoute = STOPS.find((s) => s.id === selectedParaderoId);
-    if (onRoute) return onRoute;
-    const p = GTFS_STOPS.find((x) => x.id === selectedParaderoId);
-    if (!p) return null;
-    return {
-      id: p.id,
-      name: p.name ?? `Paradero ${p.sourceId ?? ''}`.trim(),
-      lat: p.lat,
-      lng: p.lng,
-      ref: p.ref,
-      routes: [],
-    };
-  }, [selectedParaderoId, routesVersion]);
-  // Llegadas reales solo para el paradero abierto (ficha de paradero GTFS o
-  // parada de un recorrido): una consulta por vez, nunca para toda la red. Se
-  // espera a conocer sus recorridos (chunk GTFS): un paradero con solo líneas
-  // que la fuente no sigue (302/304) no se consulta, así no gasta el tope de
-  // la intermediaria, y la ficha lo avisa.
-  const liveStop = sheetKind === 'stop' ? selectedStop : sheetKind === 'paradero' ? selectedParaderoStop : null;
-  const liveStopRoutes = useMemo(() => {
+    if (simulationKey === 'all') return buildSimulationRoutes(ROUTES);
+    const ids = new Set(simulationKey.split(','));
+    return buildSimulationRoutes(ROUTES.filter((r) => ids.has(r.id)));
+  }, [simulationKey, routesVersion]);
+  const [scheduleRetryKey, setScheduleRetryKey] = useState(0);
+  const onRetrySchedule = useCallback(() => setScheduleRetryKey((k) => k + 1), []);
+  useSimulationControl({ enabled: prefs.micros === 'schedule', routes: simulationRoutes, retryKey: scheduleRetryKey });
+  // GPS: primero el foco, luego las líneas agregadas más recientemente (el
+  // tope de 16 sentidos deja fuera las más antiguas).
+  const gpsRoutes = useMemo(() => {
     void routesVersion;
-    return (liveStop?.routes ?? []).flatMap((id) => ROUTES_BY_ID.get(id) ?? []);
+    const ids = [...(focus?.routeIds ?? []), ...[...networkIds].reverse()];
+    return [...new Set(ids)].flatMap((id) => ROUTES_BY_ID.get(id) ?? []);
+  }, [focus, networkIds, routesVersion]);
+
+  // Llegadas en vivo solo del paradero con la ficha a la vista, y no de los
+  // que solo tocan líneas que la fuente no sigue (302/304).
+  const liveStop = shownSelection?.kind === 'stop' && !panel ? findStop(shownSelection.id) : null;
+  const liveStopTracked = useMemo(() => {
+    if (!liveStop || routesVersion === 0) return false;
+    return !onlyUntrackedLines(liveStop.routes.flatMap((id) => ROUTES_BY_ID.get(id) ?? []));
   }, [liveStop, routesVersion]);
-  const liveArrivals = useLiveArrivals(
-    liveStop && routesVersion > 0 && !onlyUntrackedLines(liveStopRoutes) ? liveStopCode(liveStop.id) : null,
-  );
+  const live = useLiveArrivals(liveStop && liveStopTracked ? liveStopCode(liveStop.id) : null);
 
-  const selectedTerminal = useMemo(
-    () => TERMINALS.find((t) => t.id === selectedTerminalId) ?? null,
-    [selectedTerminalId],
+  // ── Capas ─────────────────────────────────────────────────────────────────
+  const coverage = useLayerStatus();
+  const cycleways = useLayerStatus();
+  const greenspace = useLayerStatus();
+  const schools = useLayerStatus();
+  const [retryKeys, setRetryKeys] = useState(NO_RETRIES);
+  const [airRetryKey, setAirRetryKey] = useState(0);
+  const airQuality = useAirQuality(prefs.layers.airQuality, airRetryKey);
+  const layerLoad = useMemo(
+    () => ({
+      coverage: coverage.controls,
+      cycleways: cycleways.controls,
+      greenspace: greenspace.controls,
+      schools: schools.controls,
+    }),
+    [coverage.controls, cycleways.controls, greenspace.controls, schools.controls],
   );
-  const selectedPoi = useMemo(
-    () => POIS.find((p) => p.id === selectedPoiId) ?? null,
-    [selectedPoiId],
+  const layerStatus = useMemo(
+    () => ({
+      coverage: coverage.status,
+      cycleways: cycleways.status,
+      greenspace: greenspace.status,
+      schools: schools.status,
+      airQuality: { stations: airQuality.stations.length, loading: airQuality.loading, error: airQuality.error },
+    }),
+    [coverage.status, cycleways.status, greenspace.status, schools.status, airQuality],
   );
-
-  const visibleIdsAfterTypeFilter = useMemo(() => {
-    void routesVersion;
-    return visibleRouteIds.filter((id) => {
-      const r = ROUTES_BY_ID.get(id);
-      if (!r) return false;
-      if (onlyOperatingNow && !isRouteOperatingNow(r)) return false;
-      return true;
-    });
-  }, [visibleRouteIds, onlyOperatingNow, routesVersion]);
-  const legendRoutes = useMemo(() => {
-    void routesVersion;
-    return visibleIdsAfterTypeFilter
-      .map((id) => ROUTES_BY_ID.get(id))
-      .filter((r): r is Route => !!r);
-  }, [visibleIdsAfterTypeFilter, routesVersion]);
-
-  const onToggleVisible = useCallback((id: string) => {
-    setVisibleRouteIds((cur) =>
-      cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id],
-    );
+  const onRetryLayer = useCallback((layer: LoadableLayer | 'airQuality') => {
+    if (layer === 'airQuality') setAirRetryKey((k) => k + 1);
+    else setRetryKeys((keys) => ({ ...keys, [layer]: keys[layer] + 1 }));
   }, []);
+  const onLayersChange = useCallback(
+    (patch: Partial<MapLayersState>) => setPrefs((p) => ({ layers: { ...p.layers, ...patch } })),
+    [setPrefs],
+  );
+  const onLayersOpenChange = useCallback(
+    (open: boolean) => (open ? openOverlay('layers') : closeOverlay()),
+    [openOverlay, closeOverlay],
+  );
 
-  const onSetVisible = useCallback((ids: string[], visible: boolean) => {
-    const target = new Set(ids);
-    setVisibleRouteIds((cur) => {
-      if (!visible) return cur.filter((id) => !target.has(id));
-      const next = new Set(cur);
-      for (const id of ids) next.add(id);
-      return Array.from(next);
+  // ── Acciones ──────────────────────────────────────────────────────────────
+  const selectAndHideWelcome = useCallback(
+    (next: Selection, origin: SelectOrigin) => {
+      hideWelcome();
+      select(next, origin);
+    },
+    [hideWelcome, select],
+  );
+  const onSelectRouteFromList = useCallback(
+    (id: string, dir?: DirectionId) => selectAndHideWelcome({ kind: 'route', id, dir: dir ?? null, tab: 'info' }, 'list'),
+    [selectAndHideWelcome],
+  );
+  const onSelectStopFromList = useCallback(
+    (id: string) => selectAndHideWelcome({ kind: 'stop', id }, 'list'),
+    [selectAndHideWelcome],
+  );
+  const onMapSelect = useCallback(
+    (target: MapTarget) => {
+      if (target.kind === 'planner') {
+        openPanel('planner');
+      } else if (target.kind === 'vehicle') {
+        selectAndHideWelcome({ kind: 'route', id: target.routeId, dir: target.directionId, tab: 'info' }, 'map');
+      } else if (target.kind === 'route') {
+        selectAndHideWelcome({ kind: 'route', id: target.id, dir: null, tab: 'info' }, 'map');
+      } else {
+        selectAndHideWelcome({ kind: target.kind, id: target.id }, 'map');
+      }
+    },
+    [selectAndHideWelcome, openPanel],
+  );
+
+  const planner = usePlannerState({
+    a: prefs.planner.a,
+    b: prefs.planner.b,
+    overlay,
+    networkIds,
+    routesVersion,
+    onSelectRoute: onSelectRouteFromList,
+  });
+  const plannerOnMap = useMemo(
+    () => ({ a: prefs.planner.a, b: prefs.planner.b, midpoint: planner.midpoint }),
+    [prefs.planner.a, prefs.planner.b, planner.midpoint],
+  );
+
+  const onToggleVisible = useCallback(
+    (id: string) => {
+      hideWelcome();
+      setPrefs((p) => ({ lines: toggleLine(p.lines, id, LINES_CATALOG) }));
+    },
+    [hideWelcome, setPrefs],
+  );
+  const onSetVisible = useCallback(
+    (ids: readonly string[], visible: boolean) => {
+      hideWelcome();
+      setPrefs((p) => ({ lines: setLinesVisible(p.lines, ids, visible, LINES_CATALOG) }));
+    },
+    [hideWelcome, setPrefs],
+  );
+  const onSetLineVisible = useCallback((id: string, visible: boolean) => onSetVisible([id], visible), [onSetVisible]);
+  const onRestoreDefault = useCallback(() => setPrefs({ lines: null }), [setPrefs]);
+  const onClearAll = useCallback(() => {
+    const before = getNavState().prefs.lines;
+    const count = resolveLines(before, LINES_CATALOG).ids.length;
+    if (count === 0) return;
+    setPrefs({ lines: [] });
+    pushNotice(`Quitadas ${count} ${count === 1 ? 'línea' : 'líneas'}`, {
+      label: 'Deshacer',
+      run: () => setPrefs({ lines: before }),
     });
-  }, []);
-
+  }, [setPrefs, pushNotice]);
   const onShowOperatorRoutes = useCallback(
     (operator: string) => {
-      void routesVersion;
-      onSetVisible(ROUTES.filter((r) => r.operator === operator).map((r) => r.id), true);
-      setActiveTool(null);
-    },
-    [onSetVisible, routesVersion],
-  );
-
-  const clearSelection = closeDetailPanels;
-
-  const onSelectRoute = useCallback(
-    (id: string) => {
-      if (selectedRouteId === id && sheetKind === 'route') {
-        clearSelection();
+      const before = getNavState().prefs.lines;
+      const current = new Set(resolveLines(before, LINES_CATALOG).ids);
+      const ids = ROUTES.filter((r) => r.operator === operator).map((r) => r.id);
+      const added = ids.filter((id) => !current.has(id)).length;
+      if (added === 0) {
+        pushNotice('Esos recorridos ya están en el mapa');
         return;
       }
-      const r = ROUTES_BY_ID.get(id);
-      if (!r) return;
-      setVisibleRouteIds((cur) => (cur.includes(id) ? cur : [...cur, id]));
-      setSelectedDetail({ kind: 'route', id });
-      setSourcesOpen(false);
-      setLayersOpen(false);
-      setActiveTool(null);
-      setFlyToToken({ key: Date.now(), target: { kind: 'bounds', path: r.path } });
-      closeSidebarOnMobile();
+      hideWelcome();
+      setPrefs({ lines: setLinesVisible(before, ids, true, LINES_CATALOG) });
+      pushNotice(`Agregados ${added} ${added === 1 ? 'recorrido' : 'recorridos'}`, {
+        label: 'Deshacer',
+        run: () => setPrefs({ lines: before }),
+      });
     },
-    [clearSelection, closeSidebarOnMobile, selectedRouteId, sheetKind],
+    [hideWelcome, setPrefs, pushNotice],
   );
-
-  // El sentido elegido en la ficha va a la URL (`&dir=`), para que recargar o
-  // compartir abra el mismo.
-  const onPickRouteDirection = useCallback((directionId: 0 | 1) => {
-    setSelectedDetail((cur) => (cur?.kind === 'route' ? { ...cur, directionId } : cur));
-  }, []);
-
-  // Clicking a simulated vehicle pops the underlying route's detail sheet, // saves us building a parallel "vehicle sheet" UI when the natural thing
-  // to know is which route the projected bus belongs to.
-  const onSelectSimulatedVehicle = useCallback(
-    (routeId: string) => {
-      if (routeId) onSelectRoute(routeId);
-    },
-    [onSelectRoute],
+  const onToggleOnlyOperating = useCallback(() => setPrefs((p) => ({ onlyOperating: !p.onlyOperating })), [setPrefs]);
+  const onClearOperatingFilter = useCallback(() => setPrefs({ onlyOperating: false }), [setPrefs]);
+  const onModeChange = useCallback((micros: MicrosMode) => setPrefs({ micros }), [setPrefs]);
+  const onScopeChange = useCallback((scope: SimulationScope) => setPrefs({ scope }), [setPrefs]);
+  const onShowGpsOnMap = useCallback(() => setPrefs({ micros: 'gps' }), [setPrefs]);
+  const onToggleTool = useCallback((tool: ToolId) => togglePanel(tool), [togglePanel]);
+  const onOpenPlanner = useCallback(() => openPanel('planner'), [openPanel]);
+  const onOpenSources = useCallback(() => openPanel('sources'), [openPanel]);
+  const onRecenter = useCallback(
+    () => flyMapTo({ kind: 'point', lat: CONCE_CENTER.lat, lng: CONCE_CENTER.lng, zoom: 12 }),
+    [],
   );
-
-  const onSelectStop = useCallback((id: string) => {
-    const s = STOPS.find((x) => x.id === id);
-    if (!s) return;
-    setSelectedDetail({ kind: 'stop', id });
-    setSourcesOpen(false);
-    setLayersOpen(false);
-    setActiveTool(null);
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'point', lat: s.lat, lng: s.lng, zoom: 16 },
-    });
+  const onParaderosZoomIn = useCallback(() => {
+    // Acerca sin correr el centro: lo que se mira sigue en el mismo lugar.
+    const viewport = getMapViewport();
+    const center = viewport?.center ?? CONCE_CENTER;
+    flyMapTo({ kind: 'view', lat: center.lat, lng: center.lng, zoom: 15 });
   }, []);
+  // Atajo de la tarjeta de inicio: paraderos encendidos y el mapa acercado al
+  // centro, donde se ven (desde zoom 14).
+  const onShowStops = useCallback(() => {
+    hideWelcome();
+    setPrefs((p) => ({ layers: { ...p.layers, paraderos: true } }));
+    flyMapTo({ kind: 'point', lat: CONCE_CENTER.lat, lng: CONCE_CENTER.lng, zoom: 16 });
+    pushNotice('Toca un paradero para ver sus llegadas en vivo');
+  }, [hideWelcome, setPrefs, pushNotice]);
+  const onSearch = useCallback(() => setCommandOpen(true), []);
 
-  const onSelectTerminal = useCallback((id: string) => {
-    const t = TERMINALS.find((x) => x.id === id);
-    if (!t) return;
-    setSelectedDetail({ kind: 'terminal', id });
-    setSourcesOpen(false);
-    setLayersOpen(false);
-    setActiveTool(null);
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'point', lat: t.lat, lng: t.lng, zoom: 16 },
-    });
-  }, []);
+  // Barra lateral: acoplada en escritorio (estado local); en móvil es una
+  // capa transitoria del historial, así Atrás y Escape la cierran.
+  const sidebarOpen = isDesktop ? dockedOpen : overlay === 'sidebar';
+  const onToggleSidebar = useCallback(() => {
+    if (isDesktop) setDockedOpen((open) => !open);
+    else if (getNavState().overlay === 'sidebar') closeOverlay();
+    else openOverlay('sidebar');
+  }, [isDesktop, openOverlay, closeOverlay]);
+  const onCloseSidebar = useCallback(() => {
+    if (isDesktop) setDockedOpen(false);
+    else closeOverlay();
+  }, [isDesktop, closeOverlay]);
+  const onOpenLines = useCallback(() => {
+    if (isDesktop) setDockedOpen(true);
+    else openOverlay('sidebar');
+  }, [isDesktop, openOverlay]);
 
-  const onSelectPoi = useCallback((id: string) => {
-    const p = POIS.find((x) => x.id === id);
-    if (!p) return;
-    setSelectedDetail({ kind: 'poi', id });
-    setSourcesOpen(false);
-    setLayersOpen(false);
-    setActiveTool(null);
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 16 },
-    });
-  }, []);
-
-  const onSelectParadero = useCallback((id: string) => {
-    const p = GTFS_STOPS.find((x) => x.id === id);
-    if (!p) return;
-    setSelectedDetail({ kind: 'paradero', id });
-    setSourcesOpen(false);
-    setLayersOpen(false);
-    setActiveTool(null);
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'point', lat: p.lat, lng: p.lng, zoom: 17 },
-    });
-  }, []);
-
-  // `focus` is a one-shot handoff from the wiki; selectedDetail/flyToToken
-  // already captured it during initial state creation, so keep the URL tidy.
+  // Avisos de enlaces con referencias que no existen (cada una una vez).
+  const shownInvalid = useRef(0);
   useEffect(() => {
-    if (INITIAL_FOCUS) clearFocusParam();
-  }, []);
+    const fresh = nav.invalid.slice(shownInvalid.current);
+    shownInvalid.current = nav.invalid.length;
+    for (const ref of fresh) pushNotice(invalidNoticeText(ref));
+  }, [nav.invalid, pushNotice]);
 
-  const closeSheet = clearSelection;
+  const chrome = useMemo<SurfaceChrome>(
+    () => ({
+      onClose: closeSurface,
+      back: backLabel ? { label: backLabel, onBack: () => backSurface() } : null,
+      collapsed: overlay === 'pick-a' || overlay === 'pick-b' || overlay === 'sidebar',
+    }),
+    [closeSurface, backSurface, backLabel, overlay],
+  );
 
-  const onFocusRoute = useCallback(() => {
-    if (!selectedRoute) return;
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'bounds', path: selectedRoute.path },
-    });
-  }, [selectedRoute]);
-
-  const onFocusTerminal = useCallback(() => {
-    if (!selectedTerminal) return;
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'point', lat: selectedTerminal.lat, lng: selectedTerminal.lng, zoom: 16 },
-    });
-  }, [selectedTerminal]);
-
-  const onFocusPoi = useCallback(() => {
-    if (!selectedPoi) return;
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'point', lat: selectedPoi.lat, lng: selectedPoi.lng, zoom: 16 },
-    });
-  }, [selectedPoi]);
-
-  const onRecenterMap = useCallback(() => {
-    setFlyToToken({
-      key: Date.now(),
-      target: { kind: 'point', lat: -36.8201, lng: -73.0444, zoom: 12 },
-    });
-  }, []);
+  const pickHint = useMemo(
+    () => (planner.pick ? { target: planner.pick, onCancel: planner.panel.onCancelPick } : null),
+    [planner.pick, planner.panel.onCancelPick],
+  );
+  const operatingHint = useMemo(
+    () => (prefs.onlyOperating ? { hiddenCount: hiddenIds.size, onClear: onClearOperatingFilter } : null),
+    [prefs.onlyOperating, hiddenIds.size, onClearOperatingFilter],
+  );
+  const paraderosHint = useMemo(
+    () => (prefs.layers.paraderos ? { onZoomIn: onParaderosZoomIn } : null),
+    [prefs.layers.paraderos, onParaderosZoomIn],
+  );
+  // A/B del planificador con el planificador cerrado: los pines siguen en el
+  // mapa (y en el enlace) hasta que se quitan; el aviso dice de qué son.
+  const hasPlannerPoints = !!(prefs.planner.a || prefs.planner.b);
+  const onClearPlannerPoints = useCallback(() => setPrefs({ planner: { a: null, b: null } }), [setPrefs]);
+  const plannerPointsHint = useMemo(
+    () => (hasPlannerPoints && panel !== 'planner' ? { onOpen: onOpenPlanner, onClear: onClearPlannerPoints } : null),
+    [hasPlannerPoints, panel, onOpenPlanner, onClearPlannerPoints],
+  );
+  // Sola aparece sin nada abierto; pedida con "?" aparece igual sobre una ficha.
+  const showWelcome = welcome.visible && !overlay && (welcome.requested || !surfaceOpen);
+  // El detalle GPS por línea (largo) se pliega si debajo hay avisos o la
+  // tarjeta de inicio, o si una ficha ocupa la derecha: taparía lo encuadrado.
+  const gpsDetailCollapsed =
+    surfaceOpen || showWelcome || !!notices.notice || !!pickHint || !!operatingHint || !!plannerPointsHint;
 
   return (
     <div className="flex h-full w-full flex-col bg-background text-foreground">
       <Header
         theme={theme}
         onToggleTheme={toggleTheme}
-        onToggleSidebar={() => setSidebarOpen((o) => !o)}
-        onSelectRoute={onSelectRoute}
-        onSelectStop={onSelectStop}
+        onToggleSidebar={onToggleSidebar}
+        onSelectRoute={onSelectRouteFromList}
+        onSelectStop={onSelectStopFromList}
         commandOpen={commandOpen}
         onCommandOpenChange={setCommandOpen}
       />
@@ -612,245 +429,131 @@ export default function App() {
       <div className="relative flex min-h-0 flex-1">
         <Sidebar
           open={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
+          onClose={onCloseSidebar}
           routes={ROUTES}
-          visibleRouteIds={visibleRouteIds}
+          visibleRouteIds={visibleIds}
+          hiddenByFilter={hiddenIds}
+          isDefaultLines={isDefaultLines}
           onToggleVisible={onToggleVisible}
           onSetVisible={onSetVisible}
+          onRestoreDefault={onRestoreDefault}
+          onClearAll={onClearAll}
           selectedRouteId={selectedRouteId}
-          onSelectRoute={onSelectRoute}
-          onlyOperatingNow={onlyOperatingNow}
-          onToggleOnlyOperatingNow={() => setOnlyOperatingNow((v) => !v)}
-          onOpenSources={() => {
-            closeDetailPanels();
-            setLayersOpen(false);
-            setActiveTool(null);
-            setSourcesOpen(true);
-            closeSidebarOnMobile();
-          }}
-          onOpenAnalysis={() => {
-            closeDetailPanels();
-            setSourcesOpen(false);
-            setLayersOpen(false);
-            setActiveTool('cobertura');
-            closeSidebarOnMobile();
-          }}
+          onSelectRoute={onSelectRouteFromList}
+          onlyOperatingNow={prefs.onlyOperating}
+          onToggleOnlyOperatingNow={onToggleOnlyOperating}
+          onOpenPlanner={onOpenPlanner}
+          onOpenSources={onOpenSources}
         />
 
         <main className="relative flex-1">
           <ConceMap
             theme={theme}
-            routes={ROUTES}
-            visibleRouteIds={visibleIdsAfterTypeFilter}
-            selectedRouteId={selectedRouteId}
-            selectedStopId={selectedStopId}
-            onSelectRoute={onSelectRoute}
-            onSelectStop={onSelectStop}
-            flyToToken={flyToToken}
-            terminals={TERMINALS}
-            selectedTerminalId={selectedTerminalId}
-            onSelectTerminal={onSelectTerminal}
-            paraderos={GTFS_STOPS}
-            selectedParaderoId={selectedParaderoId}
-            onSelectParadero={onSelectParadero}
-            pois={POIS}
-            selectedPoiId={selectedPoiId}
-            onSelectPoi={onSelectPoi}
+            networkRouteIds={networkIds}
+            focus={focus}
+            selection={shownSelection}
+            layers={prefs.layers}
+            layerLoad={layerLoad}
+            layerRetryKeys={retryKeys}
             airQuality={airQuality.stations}
-            layerVisibility={{
-              terminals: showTerminals,
-              paraderos: showParaderos,
-              pois: showPois,
-              airQuality: showAirQuality,
-              coverage: showCoverage,
-              cycleways: showCycleways,
-              greenspace: showGreenspace,
-              schools: showSchools,
-              interurbanCorridors: showInterurbanCorridors,
-            }}
-            pickerMode={pickerMode}
-            onPickPoint={onPickPoint}
-            plannerOrigin={plannerOrigin}
-            plannerDestination={plannerDestination}
-            routeColorById={routeColorById}
-            routeLabelById={routeLabelById}
-            onSelectSimulatedVehicle={onSelectSimulatedVehicle}
-            live={liveArrivals}
-            liveServices={liveServices}
-            panelOpen={!!sheetKind || sourcesOpen || !!activeTool || layersOpen}
-            coverageThreshold={coverageThreshold}
-            coverageRetryKey={coverageRetryKey}
-            coverageLoadStatus={coverageLayer.controls}
-            cyclewaysRetryKey={cyclewaysRetryKey}
-            cyclewaysLoadStatus={cyclewaysLayer.controls}
-            greenspaceRetryKey={greenspaceRetryKey}
-            greenspaceLoadStatus={greenspaceLayer.controls}
-            schoolsRetryKey={schoolsRetryKey}
-            schoolsLoadStatus={schoolsLayer.controls}
-            onBoundsChange={setMapBounds}
-            plannerMidpoint={plannerMidpoint}
+            vehicleFeed={vehicleFeed}
+            planner={plannerOnMap}
+            pick={planner.pick}
+            onPick={planner.onMapPick}
+            flyTo={nav.flyTo}
+            surfaceOpen={surfaceOpen}
+            onSelect={onMapSelect}
           />
 
-          <MapLayerControl
-            terminalsCount={TERMINALS.length}
-            paraderosCount={GTFS_STOPS.length}
-            poisCount={POIS.length}
-            visibility={{
-              terminals: showTerminals,
-              paraderos: showParaderos,
-              pois: showPois,
-              airQuality: showAirQuality,
-              simulatedVehicles: showSimulatedVehicles,
-              coverage: showCoverage,
-              cycleways: showCycleways,
-              greenspace: showGreenspace,
-              schools: showSchools,
-              interurbanCorridors: showInterurbanCorridors,
-            }}
-            simulationScope={simulationScope}
-            onToggleTerminals={() => setShowTerminals((v) => !v)}
-            onToggleParaderos={() => setShowParaderos((v) => !v)}
-            onTogglePois={() => setShowPois((v) => !v)}
-            onToggleAirQuality={() => setShowAirQuality((v) => !v)}
-            onToggleSimulatedVehicles={() => setShowSimulatedVehicles((v) => !v)}
-            onSetSimulationScope={setSimulationScope}
-            coverageThreshold={coverageThreshold}
-            onToggleCoverage={() => setShowCoverage((v) => !v)}
-            onSetCoverageThreshold={setCoverageThreshold}
-            onToggleCycleways={() => setShowCycleways((v) => !v)}
-            onToggleGreenspace={() => setShowGreenspace((v) => !v)}
-            onToggleSchools={() => setShowSchools((v) => !v)}
-            onToggleInterurbanCorridors={() => setShowInterurbanCorridors((v) => !v)}
-            airQualityStatus={airQuality}
-            onRetryAirQuality={() => setAirQualityRetryKey((v) => v + 1)}
-            simulationStatus={simulationStatus}
-            onRetrySimulation={() => setSimulationRetryKey((v) => v + 1)}
-            coverageStatus={coverageLayer.status}
-            cyclewaysStatus={cyclewaysLayer.status}
-            greenspaceStatus={greenspaceLayer.status}
-            schoolsStatus={schoolsLayer.status}
-            onRetryCoverage={() => setCoverageRetryKey((v) => v + 1)}
-            onRetryCycleways={() => setCyclewaysRetryKey((v) => v + 1)}
-            onRetryGreenspace={() => setGreenspaceRetryKey((v) => v + 1)}
-            onRetrySchools={() => setSchoolsRetryKey((v) => v + 1)}
-            layersOpen={layersOpen}
-            onToggleLayers={toggleLayers}
-            onCloseLayers={() => setLayersOpen(false)}
-            onRecenter={onRecenterMap}
-            onOpenTool={toggleTool}
-            activeTool={activeTool}
-          />
+          {/* Columna izquierda sobre el mapa: arriba el control de micros, los
+              avisos y la tarjeta de inicio; abajo la leyenda. Lo de arriba
+              nunca pasa por debajo de la leyenda: si no cabe, se desplaza. */}
+          <div className="pointer-events-none absolute bottom-10 left-2 top-2 z-10 flex max-w-[calc(100%-4rem)] flex-col justify-between gap-2 md:bottom-6 md:left-3 md:top-3">
+            <div
+              data-map-overlay="top-left"
+              className="thin-scroll pointer-events-none -m-1 flex min-h-0 shrink flex-col items-start gap-1.5 overflow-y-auto p-1"
+            >
+              <div className="pointer-events-auto max-w-full">
+                <MicrosSlot
+                  mode={prefs.micros}
+                  onModeChange={onModeChange}
+                  scope={prefs.scope}
+                  onScopeChange={onScopeChange}
+                  routes={gpsRoutes}
+                  selectedRouteId={selectedRouteId}
+                  stopLive={liveStop ? live : null}
+                  onOpenLines={onOpenLines}
+                  compact={surfaceOpen && !isDesktop}
+                  detailCollapsed={gpsDetailCollapsed}
+                  onRetrySchedule={onRetrySchedule}
+                />
+              </div>
+              <div className="pointer-events-auto max-w-full">
+                <MapHints
+                  operatingFilter={operatingHint}
+                  paraderosZoom={paraderosHint}
+                  pick={pickHint}
+                  plannerPoints={plannerPointsHint}
+                  notice={notices.notice}
+                  onDismissNotice={notices.dismiss}
+                />
+              </div>
+              {showWelcome && (
+                <div className="pointer-events-auto max-w-full animate-fade-in">
+                  <WelcomeCard
+                    routesCount={ROUTES.length}
+                    stopsCount={GTFS_STOPS.length}
+                    onSearch={onSearch}
+                    onShowStops={onShowStops}
+                    onDismiss={hideWelcome}
+                  />
+                </div>
+              )}
+            </div>
 
-          {!sheetKind && !sourcesOpen && !activeTool && !layersOpen && (
-            <div className="pointer-events-none absolute left-2 top-2 z-10 animate-fade-in md:left-3 md:top-3">
-              <WelcomeCard
-                routesCount={ROUTES.length}
-                stopsCount={GTFS_STOPS.length}
-                onSearch={() => setCommandOpen(true)}
-                onShowStops={onShowStopsNearCenter}
+            <div className={cn('pointer-events-auto shrink-0 self-start', surfaceOpen && 'hidden sm:block')}>
+              <MapLegend
+                micros={prefs.micros}
+                layers={prefs.layers}
+                collapsed={surfaceOpen || showWelcome}
+                plannerPoints={hasPlannerPoints}
               />
             </div>
-          )}
-
-          {/* Legend hides on mobile when a tool panel is open (bottom-anchored,
-              would overlap). On desktop both can coexist (sidebar/legend left,
-              tool panel right) so we keep it visible. */}
-          <div
-            className={cn(
-              'pointer-events-none absolute bottom-10 left-2 z-10 md:bottom-6 md:left-3',
-              (sheetKind || sourcesOpen || activeTool || layersOpen) && 'hidden md:block',
-            )}
-          >
-            <MapLegend
-              routes={legendRoutes}
-              selectedRouteId={selectedRouteId}
-              onSelectRoute={onSelectRoute}
-            />
           </div>
 
-          {activeTool && (
-            <LazyBoundary onError={() => setActiveTool(null)}>
-              <FloatingToolsPanel
-                tool={activeTool}
-                onClose={() => setActiveTool(null)}
-                plannerOrigin={plannerOrigin}
-                plannerDestination={plannerDestination}
-                pickerMode={pickerMode}
-                plannerMatches={plannerMatches}
-                matchesAvailable={visibleRouteIds.length > 0}
-                onPickOrigin={() => setPickerMode('origin')}
-                onPickDestination={() => setPickerMode('destination')}
-                onClearPlanner={onClearPlanner}
-                onSelectRoute={onSelectRoute}
-                onShowOperatorRoutes={onShowOperatorRoutes}
-                visibleRouteIds={visibleRouteIds}
-                mapBounds={mapBounds}
-                theme={theme}
-                simulationScope={simulationScope}
-                activeMapLayers={{
-                  paraderos: showParaderos,
-                  terminales: showTerminals,
-                  pois: showPois,
-                  coverage: showCoverage,
-                  cycleways: showCycleways,
-                  greenspace: showGreenspace,
-                  schools: showSchools,
-                  simulated: showSimulatedVehicles,
-                }}
-                plannerMidpoint={plannerMidpoint}
-                plannerMidpointLoading={plannerMidpointLoading}
-                plannerMidpointError={plannerMidpointError}
-                onComputeMidpoint={onComputeMidpoint}
-                onClearMidpoint={clearMidpointState}
-              />
-            </LazyBoundary>
-          )}
+          <MapLayerControl
+            counts={LAYER_COUNTS}
+            layers={prefs.layers}
+            onLayersChange={onLayersChange}
+            status={layerStatus}
+            onRetry={onRetryLayer}
+            layersOpen={overlay === 'layers'}
+            onLayersOpenChange={onLayersOpenChange}
+            onRecenter={onRecenter}
+            activePanel={panel}
+            onToggleTool={onToggleTool}
+          />
         </main>
       </div>
 
-      <LazyBoundary onError={closeSheet}>
-        {sheetKind === 'route' && (
-          <RouteDetailSheet
-            open={sheetKind === 'route'}
-            route={selectedRoute}
-            directionId={selectedDetail?.directionId}
-            onPickDirection={onPickRouteDirection}
-            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-            onFocusRoute={onFocusRoute}
-            onDeselectRoute={closeSheet}
-            onSelectStop={onSelectStop}
-          />
-        )}
-        {(sheetKind === 'stop' || sheetKind === 'paradero') && (
-          <StopDetailSheet
-            open
-            stop={sheetKind === 'stop' ? selectedStop : selectedParaderoStop}
-            live={liveArrivals}
-            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-            onSelectRoute={onSelectRoute}
-            onUseAsOrigin={onUsePointAsOrigin}
-            onUseAsDestination={onUsePointAsDestination}
-          />
-        )}
-        {sheetKind === 'terminal' && (
-          <TerminalDetailSheet
-            open={sheetKind === 'terminal'}
-            terminal={selectedTerminal}
-            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-            onFocus={onFocusTerminal}
-          />
-        )}
-        {sheetKind === 'poi' && (
-          <PoiDetailSheet
-            open={sheetKind === 'poi'}
-            poi={selectedPoi}
-            onOpenChange={(o) => (!o ? closeSheet() : undefined)}
-            onFocus={onFocusPoi}
-            onSelectRoute={onSelectRoute}
-          />
-        )}
-        {sourcesOpen && <DataSourcesSheet open onOpenChange={setSourcesOpen} />}
-      </LazyBoundary>
+      <SurfaceHost
+        selection={selection}
+        panel={panel}
+        chrome={chrome}
+        theme={theme}
+        prefs={prefs}
+        visibleRouteIds={visibleIds}
+        live={live}
+        planner={planner.panel}
+        onSelect={selectAndHideWelcome}
+        onRefineRoute={refineRoute}
+        onSetLineVisible={onSetLineVisible}
+        onShowOperatorRoutes={onShowOperatorRoutes}
+        onShowGpsOnMap={onShowGpsOnMap}
+        onPlanFrom={planner.onPlanFrom}
+        onPlanTo={planner.onPlanTo}
+        onError={closeSurface}
+      />
     </div>
   );
 }

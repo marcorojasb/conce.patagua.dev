@@ -25,28 +25,15 @@ import { RouteBadge } from '@/components/route-badge';
 import { WikiLinkButton } from '@/components/wiki-link';
 import { ROUTES_BY_ID, ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
 import { BIOTREN_WIKIDATA } from '@/data/wikidata.generated';
-import type { LiveArrivalsSnapshot } from '@/hooks/use-live-arrivals';
 import { isoDayOfWeek, useStopFrequency } from '@/hooks/use-stop-frequency';
 import { chileClock } from '@/lib/chile-time';
-import { routeShortName } from '@/lib/route-labels';
+import { directionCode, routePillCode, routeShortName } from '@/lib/route-labels';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
 import { endsAt } from '@/lib/stop-services';
 import { liveStopCode } from '@/realtime/live-arrivals';
 import { cn } from '@/lib/utils';
 import type { Route, RouteDirection, StopWithRoutes } from '@/types/transport';
-
-type PlannerPoint = { lat: number; lng: number };
-
-interface StopDetailSheetProps {
-  open: boolean;
-  stop: StopWithRoutes | null;
-  live: LiveArrivalsSnapshot;
-  onOpenChange: (open: boolean) => void;
-  onSelectRoute: (id: string) => void;
-  /** Sin estas acciones la ficha no ofrece Origen/Destino del planificador. */
-  onUseAsOrigin?: (point: PlannerPoint) => void;
-  onUseAsDestination?: (point: PlannerPoint) => void;
-}
+import type { DirectionId, StopDetailSheetProps } from '@/types/ui-contracts';
 
 /** stop_id del GTFS ("gtfs-stop-37520" → "37520"); Biotrén y paraderos OSM no tienen. */
 function gtfsStopCode(stopId: string): string | null {
@@ -65,13 +52,14 @@ function stopSummary(stop: StopWithRoutes, routes: Route[], isBiotrenStation: bo
 }
 
 export function StopDetailSheet({
-  open,
+  chrome,
   stop,
   live,
-  onOpenChange,
+  micros,
+  onShowGpsOnMap,
   onSelectRoute,
-  onUseAsOrigin,
-  onUseAsDestination,
+  onPlanFrom,
+  onPlanTo,
 }: StopDetailSheetProps) {
   // `ROUTES_BY_ID` se muta in-place al llegar el chunk de micros: sin la versión
   // en las deps, un deep link abierto antes de esa carga se queda con la lista
@@ -79,7 +67,6 @@ export function StopDetailSheet({
   const routesVersion = useRoutesVersion();
   const routes = useMemo(() => {
     void routesVersion;
-    if (!stop) return [];
     const linkedRoutes = [];
     for (const id of stop.routes) {
       const route = ROUTES_BY_ID.get(id);
@@ -88,24 +75,19 @@ export function StopDetailSheet({
     return linkedRoutes;
   }, [stop, routesVersion]);
 
-  // La frecuencia por hora solo existe para paraderos del GTFS; el chunk se
-  // pide recién con la ficha abierta.
-  const freqStopId = open && stop && gtfsStopCode(stop.id) ? stop.id : null;
+  // La frecuencia por hora solo existe para paraderos del GTFS.
+  const freqStopId = gtfsStopCode(stop.id) ? stop.id : null;
   const frequency = useStopFrequency(freqStopId);
-
-  if (!stop) return null;
 
   const isBiotrenStation = !!stop.wikidata || routes.some((r) => r.type === 'biotren');
   const hasRoutes = stop.routes.length > 0;
   const point = { lat: stop.lat, lng: stop.lng };
-  const hasActions = !!onUseAsOrigin || !!onUseAsDestination || isBiotrenStation;
   const wikidata = stop.wikidata ? BIOTREN_WIKIDATA[stop.wikidata] : undefined;
   const hasAbout = !!wikidata && !!(wikidata.openedYear || wikidata.imageUrl || wikidata.wikipediaEs);
 
   return (
     <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
+      chrome={chrome}
       title={stop.name}
       eyebrow={
         <>
@@ -115,54 +97,52 @@ export function StopDetailSheet({
       }
       description={stopSummary(stop, routes, isBiotrenStation)}
       actions={
-        hasActions ? (
-          <div className="flex flex-wrap gap-2">
-            {onUseAsOrigin && (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                title="Usar este punto como origen del planificador"
-                onClick={() => onUseAsOrigin(point)}
-              >
-                <ArrowUpFromDot className="size-4 text-emerald-600" />
-                Origen
-              </Button>
-            )}
-            {onUseAsDestination && (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                title="Usar este punto como destino del planificador"
-                onClick={() => onUseAsDestination(point)}
-              >
-                <ArrowDownToDot className="size-4 text-red-600" />
-                Destino
-              </Button>
-            )}
-            {isBiotrenStation && <WikiLinkButton kind="slug" slug="biotren" />}
-          </div>
-        ) : undefined
+        <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="shrink-0"
+            title="Abrir el planificador con este paradero como origen (A)"
+            onClick={() => onPlanFrom(point)}
+          >
+            <ArrowUpFromDot className="size-4 text-emerald-600" />
+            Salir desde aquí
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="shrink-0"
+            title="Abrir el planificador con este paradero como destino (B)"
+            onClick={() => onPlanTo(point)}
+          >
+            <ArrowDownToDot className="size-4 text-red-600" />
+            Ir hasta aquí
+          </Button>
+          {isBiotrenStation && <WikiLinkButton kind="slug" slug="biotren" className="shrink-0" />}
+        </div>
       }
       contentClassName="space-y-6"
     >
       <AccessibilityBadges stop={stop} />
 
       {/* Todo paradero GTFS tiene bloque: si sus líneas no se siguen en vivo, App no consulta y el bloque lo dice. */}
-      {liveStopCode(stop.id) && <LiveArrivalsBlock live={live} routes={routes} />}
+      {liveStopCode(stop.id) && (
+        <LiveArrivalsBlock live={live} routes={routes} micros={micros} onShowGpsOnMap={onShowGpsOnMap} />
+      )}
 
       {hasRoutes ? (
         <>
-          <NextStopServicesBlock stopId={stop.id} routes={routes} enabled={open} />
+          <NextStopServicesBlock stopId={stop.id} routes={routes} enabled />
           <RoutesSection stopId={stop.id} routes={routes} onSelectRoute={onSelectRoute} />
         </>
       ) : (
         <Notice icon={<Info />}>
           Ningún recorrido del visor está asociado a este paradero. Figura en el listado oficial
           de paraderos (GTFS), pero no en los viajes que usamos para dibujar los recorridos, así
-          que no podemos decir qué líneas se detienen aquí ni a qué hora.
-          {(onUseAsOrigin || onUseAsDestination) && ' Igual puedes usarlo como origen o destino.'}
+          que no podemos decir qué líneas se detienen aquí ni a qué hora. Igual puedes salir desde
+          aquí o llegar hasta aquí con el planificador.
         </Notice>
       )}
 
@@ -238,9 +218,12 @@ function AccessibilityBadges({ stop }: { stop: StopWithRoutes }) {
 
 /** Sentidos del recorrido que se detienen en el paradero (los dos en cabeceras y tramos compartidos). */
 function directionsServing(route: Route, stopId: string): RouteDirection[] {
-  return route.directions?.filter((d) => d.stops.some((stop) => stop.id === stopId)) ?? [];
+  return (route.directions ?? [])
+    .filter((d) => d.stops.some((stop) => stop.id === stopId))
+    .sort((a, b) => a.directionId - b.directionId);
 }
 
+/** Una fila por línea y sentido que se detiene aquí: su letrero ("30E") y hacia dónde va. */
 function RoutesSection({
   stopId,
   routes,
@@ -248,9 +231,14 @@ function RoutesSection({
 }: {
   stopId: string;
   routes: Route[];
-  onSelectRoute: (id: string) => void;
+  onSelectRoute: (id: string, directionId?: DirectionId) => void;
 }) {
   const activeCount = routes.reduce((acc, r) => acc + (isRouteOperatingNow(r) ? 1 : 0), 0);
+  const rows = routes.flatMap((route): Array<{ route: Route; direction: RouteDirection | null }> => {
+    const here = directionsServing(route, stopId);
+    if (here.length === 0) return [{ route, direction: null }];
+    return here.map((direction) => ({ route, direction }));
+  });
   return (
     <section aria-label="Recorridos que pasan">
       <SectionLabel
@@ -265,73 +253,74 @@ function RoutesSection({
         Recorridos que pasan
       </SectionLabel>
       <ul className="space-y-1.5">
-        {routes.map((r) => {
-          const Icon = ROUTE_TYPES[r.type].Icon;
-          const active = isRouteOperatingNow(r);
-          const here = directionsServing(r, stopId);
-          return (
-            <li key={r.id}>
-              <button
-                type="button"
-                onClick={() => onSelectRoute(r.id)}
-                className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
-              >
-                <RouteBadge code={r.code} color={r.color} />
-                <div className="min-w-0 flex-1">
-                  {here.length > 0 ? (
-                    here.map((d) => {
-                      const ends = endsAt(d.stops, stopId);
-                      return (
-                        <div
-                          key={d.directionId}
-                          className={cn(
-                            'flex min-w-0 items-center gap-1 text-sm',
-                            ends ? 'text-muted-foreground' : 'font-medium',
-                          )}
-                        >
-                          {d.variant && d.variant !== r.code && (
-                            <span className="shrink-0 font-mono text-[12px] text-muted-foreground">
-                              {d.variant}
-                            </span>
-                          )}
-                          {ends ? (
-                            <span className="truncate">termina aquí</span>
-                          ) : (
-                            <>
-                              <ArrowRight
-                                className="size-3.5 shrink-0 text-muted-foreground"
-                                aria-label="hacia"
-                              />
-                              <span className="truncate">{d.destination ?? d.headsign}</span>
-                            </>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="truncate text-sm font-medium">{routeShortName(r)}</div>
-                  )}
-                  <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <Icon className="size-[11px] shrink-0" aria-label={ROUTE_TYPES[r.type].short} />
-                    <span className="truncate">{r.operator}</span>
-                  </div>
-                </div>
-                <span
-                  className={cn(
-                    'size-2 shrink-0 rounded-full',
-                    active ? 'bg-emerald-500' : 'bg-muted-foreground/40',
-                  )}
-                  title={active ? 'Operando ahora' : 'Fuera de horario o sin datos'}
-                  aria-hidden
-                />
-                <span className="sr-only">{active ? 'Operando ahora' : 'Fuera de horario o sin datos'}</span>
-                <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
-              </button>
-            </li>
-          );
-        })}
+        {rows.map(({ route, direction }) => (
+          <li key={`${route.id}#${direction?.directionId ?? ''}`}>
+            <RouteRow stopId={stopId} route={route} direction={direction} onSelectRoute={onSelectRoute} />
+          </li>
+        ))}
       </ul>
     </section>
+  );
+}
+
+function RouteRow({
+  stopId,
+  route,
+  direction,
+  onSelectRoute,
+}: {
+  stopId: string;
+  route: Route;
+  direction: RouteDirection | null;
+  onSelectRoute: (id: string, directionId?: DirectionId) => void;
+}) {
+  const Icon = ROUTE_TYPES[route.type].Icon;
+  const active = isRouteOperatingNow(route);
+  const ends = direction ? endsAt(direction.stops, stopId) : false;
+  return (
+    <button
+      type="button"
+      onClick={() => onSelectRoute(route.id, direction?.directionId)}
+      className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
+    >
+      <RouteBadge
+        code={direction ? directionCode(route, direction.directionId) : routePillCode(route)}
+        color={route.color}
+        className="min-w-[2.75rem] justify-center"
+      />
+      <div className="min-w-0 flex-1">
+        {direction ? (
+          <div
+            className={cn(
+              'flex min-w-0 items-center gap-1 text-sm',
+              ends ? 'text-muted-foreground' : 'font-medium',
+            )}
+          >
+            {ends ? (
+              <span className="truncate">termina aquí</span>
+            ) : (
+              <>
+                <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" aria-label="hacia" />
+                <span className="truncate">{direction.destination ?? direction.headsign}</span>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="truncate text-sm font-medium">{routeShortName(route)}</div>
+        )}
+        <div className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
+          <Icon className="size-[11px] shrink-0" aria-label={ROUTE_TYPES[route.type].short} />
+          <span className="truncate">{route.operator}</span>
+        </div>
+      </div>
+      <span
+        className={cn('size-2 shrink-0 rounded-full', active ? 'bg-emerald-500' : 'bg-muted-foreground/40')}
+        title={active ? 'Operando ahora' : 'Fuera de horario o sin datos'}
+        aria-hidden
+      />
+      <span className="sr-only">{active ? 'Operando ahora' : 'Fuera de horario o sin datos'}</span>
+      <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+    </button>
   );
 }
 

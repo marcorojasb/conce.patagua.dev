@@ -18,6 +18,13 @@ import type { Route } from '@/types/transport';
 
 export const GPS_STALE_AFTER_MS = 2 * 60_000;
 export const GPS_MAX_AGE_MS = 5 * 60_000;
+/**
+ * Diferencia tolerada entre el reloj del equipo y el del servidor. Por debajo
+ * se envejece con la hora del equipo (la diferencia es la caché de la CDN, de
+ * segundos); por encima el equipo tiene la hora corrida y se corrige: si no,
+ * un teléfono adelantado 6 min vería todas las posiciones vencidas.
+ */
+export const CLOCK_SKEW_TOLERANCE_MS = 60_000;
 /** Tope de pares servicio:sentido por consulta (el mismo que acepta la intermediaria). */
 export const MAX_GPS_PAIRS = 16;
 
@@ -221,6 +228,8 @@ export interface GpsSelection {
   untracked: Route[];
   /** Pares que no entraron por el tope. */
   omitted: number;
+  /** Líneas que quedaron fuera por el tope, en el orden recibido. */
+  omittedRoutes: Route[];
 }
 
 /**
@@ -240,6 +249,7 @@ export function gpsServicesFor(
   const pairs: string[] = [];
   const routeByPair: GpsSelection['routeByPair'] = new Map();
   const untracked: Route[] = [];
+  const omittedRoutes: Route[] = [];
   const seenRoutes = new Set<string>();
   const seenPairs = new Set<string>();
   let omitted = 0;
@@ -264,6 +274,7 @@ export function gpsServicesFor(
     if (full || pairs.length + routePairs.length > max) {
       full = true;
       omitted += routePairs.length;
+      omittedRoutes.push(route);
       continue;
     }
     for (const [pair, directionId] of routePairs) {
@@ -271,7 +282,7 @@ export function gpsServicesFor(
       routeByPair.set(pair, { routeId: route.id, directionId });
     }
   }
-  return { pairs, routeByPair, untracked, omitted };
+  return { pairs, routeByPair, untracked, omitted, omittedRoutes };
 }
 
 /**
@@ -301,6 +312,8 @@ export interface RouteVehiclesState {
   fetchedAt: number | null;
   failures: number;
   lastFailure: LiveFailure | null;
+  /** Hora del equipo menos hora del servidor al recibir la última respuesta buena. */
+  clockOffsetMs?: number;
 }
 
 export const INITIAL_ROUTE_VEHICLES_STATE: RouteVehiclesState = {
@@ -315,15 +328,26 @@ function freshOk(service: ServiceGps | undefined, now: number): service is Extra
 }
 
 /**
+ * Hora para envejecer posiciones, en el reloj del servidor: la del equipo,
+ * corregida solo si está corrida más de CLOCK_SKEW_TOLERANCE_MS.
+ */
+export function sourceClock(state: Pick<RouteVehiclesState, 'clockOffsetMs'>, now: number): number {
+  const offset = state.clockOffsetMs ?? 0;
+  return Math.abs(offset) > CLOCK_SKEW_TOLERANCE_MS ? now - offset : now;
+}
+
+/**
  * Suma una respuesta buena al estado, solo para los pares consultados. Un
  * servicio que esta vez no se pudo leer conserva su último dato bueno
  * mientras no pase de GPS_MAX_AGE_MS; uno más viejo que el que ya se tiene
- * (caché de otra instancia) no lo pisa.
+ * (caché de otra instancia) no lo pisa. `receivedAt` (hora del equipo al
+ * recibirla) mide cuánto está corrido su reloj.
  */
 export function applyRouteVehicles(
   state: RouteVehiclesState,
   response: RouteVehiclesResponse,
   pairs: readonly string[],
+  receivedAt?: number,
 ): RouteVehiclesState {
   const now = response.fetchedAt;
   const byService: Record<string, ServiceGps> = {};
@@ -341,6 +365,7 @@ export function applyRouteVehicles(
     fetchedAt: Math.max(state.fetchedAt ?? 0, response.fetchedAt),
     failures: 0,
     lastFailure: null,
+    clockOffsetMs: receivedAt != null ? receivedAt - response.fetchedAt : state.clockOffsetMs,
   };
 }
 
@@ -351,8 +376,9 @@ export function applyRouteVehiclesFailure(
   now: number,
 ): RouteVehiclesState {
   const byService: Record<string, ServiceGps> = {};
+  const sourceNow = sourceClock(state, now);
   for (const [pair, service] of Object.entries(state.byService)) {
-    if (freshOk(service, now)) byService[pair] = service;
+    if (freshOk(service, sourceNow)) byService[pair] = service;
   }
   return { ...state, byService, failures: state.failures + 1, lastFailure: failure };
 }
@@ -413,9 +439,12 @@ export function gpsStatusByRoute(
   state: RouteVehiclesState,
   now: number,
 ): Map<string, { status: RouteGpsStatus; vehicles: number }> {
-  const byRoute = new Map<string, { vehicles: number; ok: number; missing: number; failed: number }>();
+  const byRoute = new Map<
+    string,
+    { vehicles: number; plates: Set<string>; ok: number; missing: number; failed: number }
+  >();
   for (const [pair, { routeId }] of routeByPair) {
-    const entry = byRoute.get(routeId) ?? { vehicles: 0, ok: 0, missing: 0, failed: 0 };
+    const entry = byRoute.get(routeId) ?? { vehicles: 0, plates: new Set<string>(), ok: 0, missing: 0, failed: 0 };
     byRoute.set(routeId, entry);
     const service = state.byService[pair];
     if (service && service.status !== 'ok') entry.failed += 1;
@@ -423,7 +452,14 @@ export function gpsStatusByRoute(
     else if (!freshOk(service, now)) entry.missing += 1;
     else {
       entry.ok += 1;
-      entry.vehicles += gpsVehiclesForMap({ [pair]: service }, now).length;
+      // Una patente listada en los dos sentidos es una micro, como en el mapa.
+      for (const vehicle of gpsVehiclesForMap({ [pair]: service }, now)) {
+        if (!vehicle.plate) entry.vehicles += 1;
+        else if (!entry.plates.has(vehicle.plate)) {
+          entry.plates.add(vehicle.plate);
+          entry.vehicles += 1;
+        }
+      }
     }
   }
   const out = new Map<string, { status: RouteGpsStatus; vehicles: number }>();

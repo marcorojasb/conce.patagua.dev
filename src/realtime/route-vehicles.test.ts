@@ -14,6 +14,7 @@ import {
   readRouteVehiclesResult,
   retainGpsPairs,
   routeVehiclesUrl,
+  sourceClock,
   vehicleAge,
   type RouteVehiclesResponse,
   type RouteVehiclesState,
@@ -206,6 +207,7 @@ describe('gpsServicesFor', () => {
     );
     expect(selection.untracked.map((r) => r.code).sort()).toEqual(['302', '304', 'L1', 'L2']);
     expect(selection.omitted).toBe(0);
+    expect(selection.omittedRoutes).toEqual([]);
   });
 
   it('de todo el GTFS solo la 302 y la 304 quedan sin nombre en la fuente', () => {
@@ -232,6 +234,7 @@ describe('gpsServicesFor', () => {
     const selection = gpsServicesFor([byCode('24MF'), byCode('30QE'), byCode('401Y')], { max: 3 });
     expect(selection.pairs).toEqual(['24M:I', '24F:R']);
     expect(selection.omitted).toBe(3);
+    expect(selection.omittedRoutes.map((r) => r.code)).toEqual(['30QE', '401Y']);
 
     const all = gpsServicesFor(GTFS_ROUTES, { selectedRouteId: 'gtfs-route-540' });
     const total = GTFS_ROUTES.reduce((n, r) => n + gpsServicesFor([r]).pairs.length, 0);
@@ -243,6 +246,10 @@ describe('gpsServicesFor', () => {
       const route = GTFS_ROUTES.find((r) => r.id === routeId)!;
       expect(gpsServicesFor([route]).pairs.every((p) => all.routeByPair.has(p))).toBe(true);
     }
+    // Las omitidas son líneas completas, sin repetir ninguna consultada.
+    expect(all.omittedRoutes.reduce((n, r) => n + gpsServicesFor([r]).pairs.length, 0)).toBe(all.omitted);
+    const queried = new Set([...all.routeByPair.values()].map((v) => v.routeId));
+    expect(all.omittedRoutes.some((r) => queried.has(r.id))).toBe(false);
     // Nunca más de lo que acepta la intermediaria.
     expect(gpsServicesFor(GTFS_ROUTES, { max: 99 }).pairs).toEqual(gpsServicesFor(GTFS_ROUTES).pairs);
   });
@@ -399,6 +406,40 @@ describe('edad y mapa', () => {
       status: 'unavailable',
       vehicles: 0,
     });
+  });
+
+  it('una patente listada en los dos sentidos cuenta una vez, como en el mapa', () => {
+    const route = byCode('30QE');
+    const { pairs, routeByPair } = gpsServicesFor([route]);
+    const micro = (plate: string) => ({ plate, lat: -36.8, lng: -73.05, bearing: null, reportedAt: NOW - 20_000 });
+    const response = parsed({
+      fetchedAt: NOW,
+      services: {
+        '30Q:I': { status: 'ok', fetchedAt: NOW, vehicles: [micro('PRUE77'), micro('PRUE78')] },
+        '30E:R': { status: 'ok', fetchedAt: NOW, vehicles: [micro('PRUE77')] },
+      },
+    });
+    const state = applyRouteVehicles(INITIAL_ROUTE_VEHICLES_STATE, response, pairs);
+    expect(gpsStatusByRoute(routeByPair, state, NOW).get(route.id)).toEqual({ status: 'live', vehicles: 2 });
+  });
+});
+
+describe('reloj del equipo corrido', () => {
+  it('mide el desfase al recibir y envejece en la hora del servidor solo pasado 1 min', () => {
+    const { pairs } = gpsServicesFor([byCode('24MF')]);
+    const response = parsed(fixtures.responseFor(pairs));
+    // Equipo 6 min adelantado: sin corregir, todo vencería.
+    const ahead = applyRouteVehicles(INITIAL_ROUTE_VEHICLES_STATE, response, pairs, NOW + 6 * 60_000);
+    expect(ahead.clockOffsetMs).toBe(6 * 60_000);
+    expect(sourceClock(ahead, NOW + 6 * 60_000)).toBe(NOW);
+    expect(gpsVehiclesForMap(ahead.byService, sourceClock(ahead, NOW + 6 * 60_000))).toHaveLength(5);
+    // Unos segundos (caché de la CDN): se usa la hora del equipo.
+    const cached = applyRouteVehicles(INITIAL_ROUTE_VEHICLES_STATE, response, pairs, NOW + 15_000);
+    expect(sourceClock(cached, NOW + 20_000)).toBe(NOW + 20_000);
+    // Una falla posterior no borra lo vigente por el reloj del equipo.
+    const failed = applyRouteVehiclesFailure(ahead, 'unavailable', NOW + 6 * 60_000 + 30_000);
+    expect(Object.keys(failed.byService)).toEqual(Object.keys(ahead.byService));
+    expect(failed.clockOffsetMs).toBe(6 * 60_000);
   });
 });
 

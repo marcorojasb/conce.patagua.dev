@@ -1,25 +1,20 @@
-// Etiquetas de las micros en el mapa, iguales en los dos modos de "Micros en
-// el mapa": una píldora con el código del letrero en el color del recorrido y
-// una flecha de rumbo, y una descripción con el mismo formato:
+// Textos de las micros en el mapa, con el mismo formato en los dos modos de
+// "Micros en el mapa": el letrero del sentido y su destino, y luego de dónde
+// sale la posición:
 //   "24F hacia Hualpén · GPS hace 20 s · patente PRUE51"
 //   "24F hacia Hualpén · estimado según horario"
-// Lo que las distingue (sólida con punto en vivo, punteada y más clara, ámbar
-// con el dato viejo) está en las clases .vehicle-pill.is-gps / .is-estimate /
-// .is-stale de src/index.css.
+// Las formas (estimada redonda y punteada; con GPS cuadrada con anillo verde,
+// ámbar si el dato es viejo) las dibuja el canvas de micros con VEHICLE_STYLE
+// de src/types/ui-contracts.ts, el mismo que usa la leyenda.
 
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { formatAge } from '@/realtime/live-arrivals';
-import { readableTextOn } from '@/lib/utils';
 import type { Route } from '@/types/transport';
 
 export interface VehicleLabel {
   /** Código del letrero en ese sentido ("10A", "L1"). */
   code: string;
   destination: string | null;
-}
-
-export function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 }
 
 /**
@@ -69,38 +64,4 @@ export function gpsTooltipLine(vehicle: {
 /** "24F hacia Hualpén · estimado según horario". */
 export function estimateTooltipLine(code: string, destination: string | null): string {
   return `${headline(code, destination)} · estimado según horario`;
-}
-
-const ARROW_SVG =
-  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 19 21 12 17 5 21 12 3Z"/></svg>';
-
-export interface VehiclePill {
-  kind: 'gps' | 'estimate';
-  code: string;
-  color: string;
-  /** Grados (0 = N); null sin rumbo: punto en vez de flecha. */
-  bearing: number | null;
-  stale?: boolean;
-  /** Clases extra del marcador (las que buscan las pruebas: vehicle-marker, live-vehicle-marker…). */
-  className?: string;
-  /** Atributos data-* (sin el prefijo). */
-  data?: Record<string, string>;
-}
-
-/** Píldora de una micro para un L.divIcon. Todo texto variable va escapado. */
-export function vehiclePillHtml(pill: VehiclePill): string {
-  const classes = ['vehicle-pill', pill.kind === 'gps' ? 'is-gps' : 'is-estimate'];
-  if (pill.stale) classes.push('is-stale');
-  if (pill.bearing == null) classes.push('no-heading');
-  if (pill.className) classes.push(pill.className);
-  const style = [
-    `--vehicle-bg:${escapeHtml(pill.color)}`,
-    `--vehicle-fg:${readableTextOn(pill.color)}`,
-    `--vehicle-rotation:${(pill.bearing ?? 0).toFixed(1)}deg`,
-  ].join(';');
-  const data = Object.entries(pill.data ?? {})
-    .map(([key, value]) => ` data-${key}="${escapeHtml(value)}"`)
-    .join('');
-  const code = escapeHtml(pill.code.slice(0, 7));
-  return `<div class="${escapeHtml(classes.join(' '))}" style="${style}"${data}><span class="vehicle-pill-heading">${ARROW_SVG}</span><span class="vehicle-pill-code">${code}</span></div>`;
 }

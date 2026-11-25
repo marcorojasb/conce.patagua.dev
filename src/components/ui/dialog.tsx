@@ -28,8 +28,11 @@ export const DialogContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
+    {/* Radix no marca aria-modal; el diálogo sí lo es (atrapa el foco) y la
+        guarda de Escape de la navegación lo reconoce por ese atributo. */}
     <DialogPrimitive.Content
       ref={ref}
+      aria-modal="true"
       className={cn(
         'fixed left-1/2 top-[18%] z-50 w-full max-w-lg -translate-x-1/2 rounded-xl border bg-popover text-popover-foreground shadow-xl',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',

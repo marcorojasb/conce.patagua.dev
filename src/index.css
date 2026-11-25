@@ -126,7 +126,9 @@
 
 /* Leaflet — make controls + attribution match the shadcn look */
 .leaflet-container {
-  background: hsl(var(--muted));
+  /* !important: leaflet.css llega después (chunk del mapa) con su #ddd fijo,
+     que en tema oscuro se veía como un fogonazo gris mientras cargan teselas. */
+  background: hsl(var(--muted)) !important;
   font-family: inherit;
   /* Force a stacking context. Leaflet's internal panes use z-indexes up to
      800 (zoom control), 700 (popup), 650 (tooltip). Without z-index set on
@@ -288,116 +290,52 @@
   border-top-color: hsl(var(--background));
 }
 
-.vehicle-marker-wrap {
-  background: transparent;
-  border: 0;
-  transition: transform 950ms linear;
-  will-change: transform;
+/* Micros: se dibujan en un canvas propio (src/components/map/vehicle-canvas-layer.ts),
+   sin eventos de puntero; el clic y el tooltip los resuelve map-interaction.ts. */
+.vehicle-canvas {
+  pointer-events: none;
 }
-.vehicle-marker {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: var(--vehicle-bg, #0ea5e9);
-  color: #fff;
-  border: 3px solid #fff;
-  box-shadow:
-    0 2px 7px rgba(0, 0, 0, 0.45),
-    0 0 0 2px rgba(15, 23, 42, 0.35);
+
+/* Cobertura: una imagen de la grilla (src/components/coverage-layer.tsx) que
+   Leaflet escala; de cerca, celdas con borde nítido en vez de un difuminado. */
+.coverage-overlay {
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+.leaflet-container.is-over-vehicle {
   cursor: pointer;
-  transition:
-    box-shadow 120ms ease,
-    transform 120ms ease;
-}
-.vehicle-marker:hover {
-  transform: scale(1.12);
-  box-shadow:
-    0 3px 10px rgba(0, 0, 0, 0.5),
-    0 0 0 3px rgba(255, 255, 255, 0.45);
-}
-.vehicle-marker-arrow {
-  width: 15px;
-  height: 15px;
-  fill: currentColor;
-  transform: rotate(var(--vehicle-rotation, 0deg));
-  transform-origin: center;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
 }
 
-/* La transición de 950 ms hace avanzar las micros entre ticks; durante el zoom
-   Leaflet reubica los marcadores y con transición se verían arrastrarse. */
-.leaflet-zoom-anim .vehicle-marker-wrap {
-  transition: none;
+/* Eligiendo un punto del planificador: todo el mapa (líneas, paraderos y
+   marcadores incluidos) muestra la cruz; los controles conservan su cursor. */
+.leaflet-container.is-picking,
+.leaflet-container.is-picking .leaflet-pane,
+.leaflet-container.is-picking .leaflet-interactive {
+  cursor: crosshair !important;
 }
 
-/* Estimadas desde el horario: borde punteado y algo translúcidas, para no
-   confundirlas con las micros con GPS real (.live-vehicle-marker). */
-.vehicle-marker.is-estimate {
-  border-style: dashed;
-  opacity: 0.82;
+/* Tooltip compartido del mapa (src/components/map/map-tooltip.ts): línea
+   principal en negrita y una secundaria apagada, con los colores del tema. */
+.leaflet-tooltip.map-tooltip-wrap {
+  background: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) - 2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 1.35;
+  white-space: nowrap;
 }
-
-.live-vehicle-wrap {
-  background: transparent;
-  border: 0;
+.leaflet-tooltip-top.map-tooltip-wrap::before {
+  border-top-color: hsl(var(--popover));
 }
-.live-vehicle-marker {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 22px;
-  border-radius: 5px;
-  background: var(--vehicle-bg, #334155);
-  color: #fff;
-  border: 2px solid #fff;
-  font: 700 10px/1 ui-monospace, monospace;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
-  box-shadow:
-    0 2px 7px rgba(0, 0, 0, 0.45),
-    0 0 0 2px #059669;
+.map-tooltip-primary {
+  font-weight: 600;
 }
-.live-vehicle-marker::after {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  border-radius: 8px;
-  border: 2px solid #059669;
-  animation: live-vehicle-pulse 1.8s ease-out infinite;
-}
-/* Dato de más de 2 min: sin pulso y atenuada, con anillo ámbar como la edad
-   destacada del bloque de llegadas. */
-.live-vehicle-marker.is-stale {
-  opacity: 0.6;
-}
-.live-vehicle-marker.is-stale::after {
-  border-color: #d97706;
-  animation: none;
-  opacity: 0.8;
-}
-@keyframes live-vehicle-pulse {
-  from {
-    opacity: 0.9;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 0;
-    transform: scale(1.35);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .vehicle-marker-wrap,
-  .vehicle-marker {
-    transition: none;
-  }
-  .live-vehicle-marker::after {
-    animation: none;
-  }
+.map-tooltip-secondary {
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
 }
 
 /* Interurban corridor pins — sit above the urban network to signal that
@@ -425,6 +363,12 @@
 .interurban-pin:hover {
   transform: scale(1.08);
 }
+.interurban-pin.is-active {
+  transform: scale(1.15);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    0 0 0 3px hsl(var(--foreground) / 0.35);
+}
 .interurban-pin::after {
   content: '';
   position: absolute;
@@ -433,34 +377,6 @@
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-top-color: var(--pin-bg, #0f766e);
-}
-
-/* Leaflet popup customisation for interurban corridors — match shadcn look. */
-.interurban-popup-wrap .leaflet-popup-content-wrapper {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
-}
-.interurban-popup-wrap .leaflet-popup-tip {
-  background: hsl(var(--background));
-  border: 1px solid hsl(var(--border));
-}
-.interurban-popup-wrap .leaflet-popup-content {
-  margin: 12px 14px;
-  line-height: 1.4;
-}
-.interurban-popup .interurban-popup-link {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 500;
-  color: hsl(var(--foreground));
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.interurban-popup .interurban-popup-link:hover {
-  color: hsl(var(--primary));
 }
 
 /* Wiki article rhythm — manual equivalent of shadcn/typeset's size/leading/flow

@@ -42,15 +42,19 @@ function parseColor(color: string): [number, number, number] | null {
  * debajo del 4.5:1 de WCAG AA. Se elige entre blanco y negro según la
  * luminancia relativa del fondo (misma fórmula que usa el contraste WCAG).
  *
+ * El oscuro es negro puro: con él, el mejor de los dos siempre llega al menos
+ * a 4.58:1. Con un gris casi negro (#111) los tonos medios (oliva #598200,
+ * naranjo #ce5504) quedaban bajo 4.5:1 con cualquiera de los dos.
+ *
  * Acepta hex de 3 o 6 dígitos y hsl(), que es lo que emite `operatorColor()`
  * para un recorrido sin color en el GTFS (con tonos amarillos que también son
  * claros). Un color que no se entiende cae a blanco.
  */
-export function readableTextOn(background: string): '#fff' | '#111' {
+export function readableTextOn(background: string): '#fff' | '#000' {
   const rgb = parseColor(background);
   if (!rgb) return '#fff';
   const [r, g, b] = rgb.map(channelLuminance);
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
 
-  return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.05 ? '#fff' : '#111';
+  return 1.05 / (luminance + 0.05) >= (luminance + 0.05) / 0.05 ? '#fff' : '#000';
 }

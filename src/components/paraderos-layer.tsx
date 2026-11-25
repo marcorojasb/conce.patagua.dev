@@ -1,88 +1,130 @@
-// Paraderos GTFS layer, 2110 points rendered imperatively via Leaflet
-// instead of as react-leaflet <CircleMarker> children of <MapContainer>.
+// Capa de paraderos GTFS: ~2.100 puntos en el canvas compartido del mapa.
 //
-// Why: each tick of the simulated-vehicles state (every 4 s) re-renders
-// <ConceMap>, which previously walked all 2110 <CircleMarker> children
-// through React's reconciler, even though Leaflet's canvas renderer
-// underneath does its own efficient drawing. This component owns its
-// L.featureGroup outside React's tree, so it doesn't repaint until
-// `paraderos`, `selectedId`, `shouldDim`, or `enabled` actually change.
+// Los marcadores se crean una vez cada vez que se enciende la capa y después
+// solo cambian de estilo en el lugar (paradero abierto, atenuado con un
+// recorrido destacado, tema): antes cada cambio de selección los recreaba
+// todos. Se ven desde zoom 14; la capa escucha el zoom por su cuenta, sin
+// pasar por React. Los colores son los del tema fijos en código: al cambiar de
+// tema, el efecto de esta capa corre antes de que App cambie la clase .dark,
+// así que leer las variables CSS daría los del tema anterior.
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
-import type { Paradero } from '@/types/transport';
+import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
+import { bindMapTooltip, hideMapTooltip } from '@/components/map/map-tooltip';
+import type { MapActions } from '@/components/map/map-markers';
+import type { Theme } from '@/types/transport';
+
+export const PARADEROS_MIN_ZOOM = 14;
+
+const COLORS: Record<Theme, { fg: string; muted: string; bg: string }> = {
+  light: { fg: '#09090b', muted: '#71717a', bg: '#ffffff' },
+  dark: { fg: '#fafafa', muted: '#a1a1aa', bg: '#09090b' },
+};
 
 interface Props {
   enabled: boolean;
-  paraderos: Paradero[];
   selectedId: string | null;
-  shouldDim: boolean;
-  canvasRenderer: L.Canvas;
-  onSelect: (id: string) => void;
+  /** Hay recorridos destacados: los paraderos quedan en segundo plano. */
+  dim: boolean;
+  theme: Theme;
+  actions: RefObject<MapActions>;
 }
 
-function readColor(varName: string): string {
-  if (typeof document === 'undefined') return '#888';
-  const v = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
-  return v ? `hsl(${v})` : '#888';
+interface Applied {
+  selectedId: string | null;
+  dim: boolean;
+  theme: Theme;
 }
 
-export function ParaderosLayer({
-  enabled,
-  paraderos,
-  selectedId,
-  shouldDim,
-  canvasRenderer,
-  onSelect,
-}: Props) {
+function styleFor(selected: boolean, dim: boolean, theme: Theme): L.CircleMarkerOptions {
+  const c = COLORS[theme];
+  return selected
+    ? { radius: 5, color: c.fg, weight: 2, fillColor: c.fg, fillOpacity: 1, opacity: 1 }
+    : { radius: 3, color: c.muted, weight: 1, fillColor: c.bg, fillOpacity: 0.86, opacity: dim ? 0.55 : 0.9 };
+}
+
+function applyStyle(marker: L.CircleMarker, style: L.CircleMarkerOptions): void {
+  marker.setStyle(style);
+  if (style.radius != null) marker.setRadius(style.radius);
+}
+
+export function ParaderosLayer({ enabled, selectedId, dim, theme, actions }: Props) {
   const map = useMap();
-  // Keep a stable handler ref to onSelect so we don't rebuild markers on
-  // every render. The actual click target reads from this ref at call time.
-  const onSelectRef = useRef(onSelect);
-  useEffect(() => {
-    onSelectRef.current = onSelect;
-  }, [onSelect]);
+  const markersRef = useRef<Map<string, L.CircleMarker> | null>(null);
+  const appliedRef = useRef<Applied | null>(null);
+  // Lo pedido en el último render: al encender la capa se crea ya con ese estilo.
+  const wantedRef = useRef<Applied>({ selectedId, dim, theme });
+  useLayoutEffect(() => {
+    wantedRef.current = { selectedId, dim, theme };
+  }, [selectedId, dim, theme]);
 
-  // react-doctor-disable-next-line react-doctor/effect-needs-cleanup -- False positive: cleanup removes Leaflet handlers and detaches the feature group.
+  // react-doctor-disable-next-line react-doctor/effect-needs-cleanup -- El cleanup quita los listeners de zoom y de cada marcador y saca el grupo del mapa.
   useEffect(() => {
     if (!enabled) return;
     const group = L.featureGroup();
-    // Resolve CSS variables once per build (they're theme-dependent).
-    const fg = readColor('--foreground');
-    const muted = readColor('--muted-foreground');
-    const bg = readColor('--background');
-
-    for (const p of paraderos) {
-      const isSelected = selectedId === p.id;
-      const marker = L.circleMarker([p.lat, p.lng], {
-        radius: isSelected ? 5 : 3,
-        color: isSelected ? fg : muted,
-        weight: isSelected ? 2 : 1,
-        fillColor: isSelected ? fg : bg,
-        fillOpacity: isSelected ? 1 : 0.86,
-        opacity: shouldDim ? 0.55 : 0.9,
-        renderer: canvasRenderer,
+    const markers = new Map<string, L.CircleMarker>();
+    const wanted = wantedRef.current;
+    for (const p of GTFS_STOPS) {
+      const marker = L.circleMarker([p.lat, p.lng], styleFor(p.id === wanted.selectedId, wanted.dim, wanted.theme));
+      marker.on('click', () => {
+        hideMapTooltip(map);
+        actions.current.onSelect({ kind: 'stop', id: p.id });
       });
-      if (p.name) {
-        marker.bindTooltip(p.name, { direction: 'top', offset: [0, -3], opacity: 0.9 });
-      }
-      const onMarkerClick = () => onSelectRef.current(p.id);
-      marker.on('click', onMarkerClick);
+      bindMapTooltip(marker, map, () => ({
+        primary: p.name ?? 'Paradero',
+        secondary: 'Paradero · toca para ver llegadas',
+        at: [p.lat, p.lng],
+      }));
+      markers.set(p.id, marker);
       group.addLayer(marker);
     }
-    group.addTo(map);
+    markersRef.current = markers;
+    appliedRef.current = wanted;
+    const syncZoom = () => {
+      const show = map.getZoom() >= PARADEROS_MIN_ZOOM;
+      if (show && !map.hasLayer(group)) {
+        group.addTo(map);
+        const selected = appliedRef.current?.selectedId;
+        if (selected) markers.get(selected)?.bringToFront();
+      } else if (!show && map.hasLayer(group)) {
+        group.remove();
+      }
+    };
+    syncZoom();
+    map.on('zoomend', syncZoom);
     return () => {
+      map.off('zoomend', syncZoom);
       group.eachLayer((layer) => {
         layer.off();
       });
       group.remove();
+      markersRef.current = null;
+      appliedRef.current = null;
     };
-    // We intentionally rebuild on any of these changes, Leaflet markers
-    // are cheap to recreate and avoiding granular per-marker mutation keeps
-    // the code small. For perf compared to React the win is already huge
-    // because we no longer reconcile 2110 elements on every parent render.
-  }, [enabled, paraderos, selectedId, shouldDim, canvasRenderer, map]);
+  }, [enabled, map, actions]);
+
+  // Estilos en el lugar: todo si cambia el tema o la atenuación; si no, solo
+  // el paradero que se deja y el que se abre.
+  useEffect(() => {
+    const markers = markersRef.current;
+    const applied = appliedRef.current;
+    if (!markers || !applied) return;
+    if (applied.selectedId === selectedId && applied.dim === dim && applied.theme === theme) return;
+    if (applied.dim !== dim || applied.theme !== theme) {
+      for (const [id, marker] of markers) applyStyle(marker, styleFor(id === selectedId, dim, theme));
+    } else if (applied.selectedId !== selectedId) {
+      const previous = applied.selectedId ? markers.get(applied.selectedId) : undefined;
+      if (previous) applyStyle(previous, styleFor(false, dim, theme));
+    }
+    const current = selectedId ? markers.get(selectedId) : undefined;
+    if (current) {
+      applyStyle(current, styleFor(true, dim, theme));
+      current.bringToFront();
+    }
+    appliedRef.current = { selectedId, dim, theme };
+  }, [enabled, selectedId, dim, theme]);
 
   return null;
 }

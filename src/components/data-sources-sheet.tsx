@@ -4,6 +4,7 @@ import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { ROUTES, useRoutesVersion } from '@/data/routes';
 import { GTFS_CONCEPCION_SOURCE, GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { TERMINALS } from '@/data/terminals.generated';
+import type { DataSourcesSheetProps } from '@/types/ui-contracts';
 
 interface Source {
   title: string;
@@ -41,16 +42,16 @@ function buildSources(): Source[] {
       license: 'La DTPR no declara licencia de datos · información pública del Estado',
     },
     {
-      title: 'Llegadas en vivo · fuente de la app Transapp (no oficial)',
+      title: 'GPS en vivo · fuente de la app Transapp (no oficial)',
       detail:
-        'Al abrir un paradero, el visor consulta solo ese paradero en la fuente que usa la app de Transapp para la DTPR. No es un feed oficial ni documentado: puede caerse o responder vacío. Por cada micro trae línea, sentido, minutos, posición GPS, patente y distancia en línea recta (no por la ruta). Una línea sin GPS aparece como "sin datos en vivo · pasa cada N". La consulta pasa por la intermediaria del visor (/api/stop-arrivals), con caché de 25 s por paradero y un tope de 30 consultas por minuto a la fuente. Un dato vale 10 min mostrando su edad.',
+        'Dos consultas, ambas por la intermediaria del visor y nunca desde tu navegador directo a la fuente: al abrir un paradero, sus llegadas (/api/stop-arrivals: línea, sentido, minutos, posición GPS, patente y distancia en línea recta, no por la ruta); y con "Micros en el mapa: GPS en vivo", la posición de las micros de tus líneas (/api/route-vehicles, hasta 16 sentidos por consulta, cada 30 s mientras la pestaña está a la vista). No es un feed oficial ni documentado: puede caerse o responder vacío, y hay líneas que a ratos no transmiten; el mapa lo dice ("sin GPS ahora") y nunca lo rellena con estimaciones. Biotrén y 302/304 no se siguen. La intermediaria guarda 25 s cada paradero y 20 s cada sentido, con topes de 30 y 60 consultas por minuto a la fuente. Una llegada vale 10 min mostrando su edad; una posición en el mapa, 5 min, y desde los 2 min se marca como vieja.',
       count: 'Calce con el GTFS: 2.202 de 2.239 paraderos (código P + stop_id) · 183 de 188 sentidos · sin 302/304',
       license: 'Fuente no oficial · sin licencia de datos publicada',
     },
     {
-      title: 'Servicios en curso (estimación según horario)',
+      title: 'Micros según horario (estimación, no GPS)',
       detail:
-        'La capa "Servicios en curso" proyecta dónde DEBERÍA estar cada bus o tren según su horario programado: GTFS oficial DTPR para los buses (interurbanos incluidos) e itinerarios oficiales de EFE para el Biotrén. Es una estimación, no GPS: atrasos, cancelaciones y desvíos no se ven. En el mapa van redondas con borde punteado; las micros con GPS real van cuadradas con anillo verde.',
+        'Con "Micros en el mapa: Horario" el visor proyecta dónde DEBERÍA estar cada bus o tren según su horario programado: GTFS oficial DTPR para los buses (interurbanos incluidos) e itinerarios oficiales de EFE para el Biotrén. Es una estimación: atrasos, cancelaciones y desvíos no se ven. Van redondas con borde punteado; las micros con GPS, cuadradas con anillo verde, y las dos nunca se dibujan juntas.',
       count: 'Calculado en el navegador cada 1 s desde los horarios programados',
       license: 'Capa derivada · GTFS DTPR + itinerarios EFE',
     },
@@ -89,7 +90,7 @@ const PENDING: Source[] = [
   {
     title: 'DTPR · GTFS-RT Gran Concepción',
     detail:
-      'Posiciones de toda la flota en tiempo real y alertas de servicio en un feed oficial. No hay uno público; mientras tanto las llegadas en vivo vienen de la fuente de la app de Transapp (ver arriba), solo para el paradero abierto.',
+      'Posiciones de toda la flota en tiempo real y alertas de servicio en un feed oficial. No hay uno público; mientras tanto el GPS viene de la fuente de la app de Transapp (ver arriba), solo para el paradero abierto y las líneas de tu mapa.',
     link: { href: 'https://transformacion.dtpr.cl/', label: 'transformacion.dtpr.cl' },
   },
   {
@@ -111,12 +112,7 @@ const SOURCES_EYEBROW = (
   </>
 );
 
-interface DataSourcesSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) {
+export function DataSourcesSheet({ chrome }: DataSourcesSheetProps) {
   const routesVersion = useRoutesVersion();
   const sources = useMemo(() => {
     void routesVersion;
@@ -125,8 +121,7 @@ export function DataSourcesSheet({ open, onOpenChange }: DataSourcesSheetProps) 
 
   return (
     <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
+      chrome={chrome}
       title="Fuentes de datos"
       eyebrow={SOURCES_EYEBROW}
       description="De dónde sale cada capa del visor y cuánto confiar en ella. conce.patagua.dev es open source."

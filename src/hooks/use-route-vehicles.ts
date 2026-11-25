@@ -79,9 +79,10 @@ async function loadOnce(pairs: string[], signal: AbortSignal): Promise<RouteVehi
   } catch {
     body = null;
   }
-  const result = readRouteVehiclesResult(res.status, body, Date.now());
+  const receivedAt = Date.now();
+  const result = readRouteVehiclesResult(res.status, body, receivedAt);
   return result.ok
-    ? applyRouteVehicles(current, result.response, pairs)
+    ? applyRouteVehicles(current, result.response, pairs, receivedAt)
     : applyRouteVehiclesFailure(current, result.failure, Date.now());
 }
 

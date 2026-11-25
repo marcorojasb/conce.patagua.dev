@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Eye, ImageDown, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -6,32 +6,27 @@ import { ROUTES } from '@/data/routes';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { POIS } from '@/data/pois.generated';
 import { TERMINALS } from '@/data/terminals.generated';
+import { useStickyState } from '@/hooks/use-sticky-state';
+import { getMapViewport, type MapBounds } from '@/lib/map-viewport';
 import { buildSimulationRoutes, computeActiveVehicles } from '@/realtime/simulated-vehicles';
-import { getSimulatedVehicles, loadSimulationSchedules } from '@/realtime/use-simulated-vehicles';
+import { loadSimulationSchedules } from '@/realtime/use-simulated-vehicles';
 import { buildWallpaper, buildWallpaperLegend, CURATED_VIEWS, downloadBlob, padBbox, selectWallpaperRoutes, WALLPAPER_SIZES, WALLPAPER_STYLES, type WallpaperRouteMode, type WallpaperSizePreset, type WallpaperStyle } from '@/lib/wallpaper';
-import type { CoverageCell, SimulatedVehicle, Theme } from '@/types/transport';
+import type { CoverageCell, Theme } from '@/types/transport';
+import type { LatLng, MapLayersState, MicrosMode, SimulationScope } from '@/types/ui-contracts';
 import type { RoutingResult } from '@/lib/routing';
 
 interface WallpaperTabProps {
-  visibleRouteIds: string[];
-  mapBounds: [[number, number], [number, number]] | null;
+  visibleRouteIds: readonly string[];
   theme: Theme;
-  simulationScope: 'visible' | 'all';
-  activeMapLayers: {
-    paraderos: boolean;
-    terminales: boolean;
-    pois: boolean;
-    coverage: boolean;
-    cycleways: boolean;
-    greenspace: boolean;
-    schools: boolean;
-    simulated: boolean;
-  };
-  // The walking midpoint computed in the planner. Surfaced here so the user
-  // can include the A/M/B trace in the PNG without having to switch tabs.
+  /** Con Horario en el mapa, las micros estimadas parten incluidas. */
+  micros: MicrosMode;
+  scope: SimulationScope;
+  layers: MapLayersState;
+  // El punto medio a pie del planificador: se puede incluir el trazado A/M/B
+  // en el PNG sin cambiar de herramienta.
   plannerMidpoint: RoutingResult | null;
-  plannerOrigin: { lat: number; lng: number } | null;
-  plannerDestination: { lat: number; lng: number } | null;
+  plannerOrigin: LatLng | null;
+  plannerDestination: LatLng | null;
 }
 
 interface LayerToggleState {
@@ -47,51 +42,58 @@ interface LayerToggleState {
   centros: boolean;
 }
 
+// Todo el formulario vive en useStickyState: abrir otra superficie y volver
+// con Atrás lo encuentra igual (la vista previa sí se rehace).
 // react-doctor-disable-next-line react-doctor/no-giant-component, react-doctor/prefer-useReducer, react-doctor/no-high-complexity-react-function -- Export controls are independent form fields; keeping preview, sizing, and download flow together avoids hidden coupling.
 export default function WallpaperTool({
   visibleRouteIds,
-  mapBounds,
   theme,
-  simulationScope,
-  activeMapLayers,
+  micros,
+  scope,
+  layers: mapLayers,
   plannerMidpoint,
   plannerOrigin,
   plannerDestination,
 }: WallpaperTabProps) { // react-doctor-disable-line react-doctor/prefer-useReducer -- Export form controls are intentionally independent, not a single state machine.
-  const [mode, setMode] = useState<'current' | 'curated' | 'manual'>('current');
-  const [styleId, setStyleId] = useState<WallpaperStyle>('clean');
-  const [sizeId, setSizeId] = useState<string>(WALLPAPER_SIZES[0].id);
-  const [curatedId, setCuratedId] = useState<string>(CURATED_VIEWS[0].id);
-  const [routeMode, setRouteMode] = useState<WallpaperRouteMode>('visible');
-  const [servicesScopeOverride, setServicesScopeOverride] = useState<'visible' | 'all' | null>(null);
-  const [framePadding, setFramePadding] = useState(8);
-  const [zoomDelta, setZoomDelta] = useState(0);
-  const manualBboxRef = useRef<[[number, number], [number, number]] | null>(mapBounds);
-  const [titleText, setTitleText] = useState('Gran Concepción en movimiento');
-  const [subtitleText, setSubtitleText] = useState('Red de transporte público y capas urbanas');
+  const [mode, setMode] = useStickyState<'current' | 'curated' | 'manual'>('wallpaper.mode', 'current');
+  const [styleId, setStyleId] = useStickyState<WallpaperStyle>('wallpaper.style', 'clean');
+  const [sizeId, setSizeId] = useStickyState<string>('wallpaper.size', WALLPAPER_SIZES[0].id);
+  const [curatedId, setCuratedId] = useStickyState<string>('wallpaper.curated', CURATED_VIEWS[0].id);
+  const [routeMode, setRouteMode] = useStickyState<WallpaperRouteMode>('wallpaper.routeMode', 'visible');
+  const [servicesScopeOverride, setServicesScopeOverride] = useStickyState<SimulationScope | null>(
+    'wallpaper.servicesScope',
+    null,
+  );
+  const [framePadding, setFramePadding] = useStickyState('wallpaper.padding', 8);
+  const [zoomDelta, setZoomDelta] = useStickyState('wallpaper.zoomDelta', 0);
+  const [manualBbox, setManualBbox] = useStickyState<MapBounds | null>(
+    'wallpaper.manualBbox',
+    () => getMapViewport()?.bounds ?? null,
+  );
+  const [titleText, setTitleText] = useStickyState('wallpaper.title', 'Gran Concepción en movimiento');
+  const [subtitleText, setSubtitleText] = useStickyState(
+    'wallpaper.subtitle',
+    'Red de transporte público y capas urbanas',
+  );
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
 
-  const [layers, setLayers] = useState<LayerToggleState>({
+  const [layers, setLayers] = useStickyState<LayerToggleState>('wallpaper.layers', () => ({
     recorridos: true,
-    servicios: activeMapLayers.simulated,
+    servicios: micros === 'schedule',
     punto_medio: false,
-    paraderos: activeMapLayers.paraderos,
-    terminales: activeMapLayers.terminales,
-    cobertura: activeMapLayers.coverage,
-    ciclovias: activeMapLayers.cycleways,
-    areas_verdes: activeMapLayers.greenspace,
-    educacion: activeMapLayers.schools,
-    centros: activeMapLayers.pois,
-  });
+    paraderos: mapLayers.paraderos,
+    terminales: mapLayers.terminals,
+    cobertura: mapLayers.coverage,
+    ciclovias: mapLayers.cycleways,
+    areas_verdes: mapLayers.greenspace,
+    educacion: mapLayers.schools,
+    centros: mapLayers.pois,
+  }));
   const setLayer = (key: keyof LayerToggleState) => () =>
     setLayers((cur) => ({ ...cur, [key]: !cur[key] }));
-
-  useEffect(() => {
-    if (!manualBboxRef.current && mapBounds) manualBboxRef.current = mapBounds;
-  }, [mapBounds]);
 
   useEffect(() => {
     return () => {
@@ -102,15 +104,12 @@ export default function WallpaperTool({
   const size = WALLPAPER_SIZES.find((s) => s.id === sizeId) ?? WALLPAPER_SIZES[0];
   const curated = CURATED_VIEWS.find((c) => c.id === curatedId) ?? CURATED_VIEWS[0];
   const midpointAvailable = !!plannerMidpoint;
-  const servicesScope = servicesScopeOverride ?? simulationScope;
+  const servicesScope = servicesScopeOverride ?? scope;
 
   const resolveBbox = () => {
-    const raw =
-      mode === 'curated'
-        ? curated.bbox
-        : mode === 'manual'
-          ? manualBboxRef.current ?? mapBounds
-          : mapBounds;
+    // El encuadre del mapa se lee al generar (map-viewport), no se sigue en vivo.
+    const current = getMapViewport()?.bounds ?? null;
+    const raw = mode === 'curated' ? curated.bbox : mode === 'manual' ? (manualBbox ?? current) : current;
     if (!raw) throw new Error('Aún no hay vista del mapa para capturar.');
     return padBbox(raw, { paddingPct: framePadding, zoomDelta });
   };
@@ -127,7 +126,7 @@ export default function WallpaperTool({
             path: r.path,
             color: r.color,
           })),
-          visibleRouteIds,
+          [...visibleRouteIds],
           routeMode,
         )
       : [];
@@ -138,9 +137,7 @@ export default function WallpaperTool({
     }));
 
     const routeIds = new Set(selectedRouteSources.map((r) => r.id));
-    const vehicles = layers.servicios
-      ? await loadWallpaperVehicles(servicesScope, visibleRouteIds, getSimulatedVehicles())
-      : [];
+    const vehicles = layers.servicios ? await loadWallpaperVehicles(servicesScope, visibleRouteIds) : [];
     const scopedVehicles = servicesScope === 'visible'
       ? vehicles.filter((v) => routeIds.size === 0 || routeIds.has(v.routeId))
       : vehicles;
@@ -231,7 +228,7 @@ export default function WallpaperTool({
       showScale: styleId === 'technical',
       midpoint: midpointLayer,
       title: titleText.trim() || undefined,
-      subtitle: subtitleText.trim() || `${routesForRender.length} recorridos · ${vehiclesForRender.length} servicios simulados`,
+      subtitle: subtitleText.trim() || `${routesForRender.length} recorridos · ${vehiclesForRender.length} micros estimadas según horario`,
     });
   };
 
@@ -274,8 +271,8 @@ export default function WallpaperTool({
   return (
     <div className="space-y-3">
       <p className="text-[12px] leading-snug text-muted-foreground">
-        Mini editor de composición para wallpapers: estilos, capas, encuadre,
-        servicios programados y descarga PNG en alta resolución.
+        Elige estilo, capas y encuadre, y descarga un PNG en alta resolución. Lo que
+        configures se mantiene si abres otra cosa y vuelves.
       </p>
 
       <div className="space-y-1.5">
@@ -390,9 +387,9 @@ export default function WallpaperTool({
           type="button"
           variant="outline"
           size="sm"
-          disabled={!mapBounds}
           onClick={() => {
-            if (mapBounds) manualBboxRef.current = mapBounds;
+            const bounds = getMapViewport()?.bounds;
+            if (bounds) setManualBbox(bounds);
             setMode('manual');
           }}
           className="w-full"
@@ -408,14 +405,14 @@ export default function WallpaperTool({
           onChange={(e) => setTitleText(e.target.value)}
           className="h-9 rounded-md border bg-background px-3 text-sm outline-none focus-ring"
           placeholder="Título"
-          aria-label="Título del wallpaper"
+          aria-label="Título del fondo de pantalla"
         />
         <input
           value={subtitleText}
           onChange={(e) => setSubtitleText(e.target.value)}
           className="h-9 rounded-md border bg-background px-3 text-sm outline-none focus-ring"
           placeholder="Subtítulo"
-          aria-label="Subtítulo del wallpaper"
+          aria-label="Subtítulo del fondo de pantalla"
         />
       </div>
 
@@ -424,7 +421,7 @@ export default function WallpaperTool({
         <div className="overflow-hidden rounded-md border">
           <LayerToggle
             label="Recorridos"
-            detail="Polilíneas de las rutas seleccionadas"
+            detail="Trazados de los recorridos elegidos"
             checked={layers.recorridos}
             onChange={setLayer('recorridos')}
           />
@@ -433,7 +430,7 @@ export default function WallpaperTool({
               label="Recorridos"
               options={[
                 ['visible', 'Visibles'],
-                ['all', 'Toda red'],
+                ['all', 'Toda la red'],
                 ['biotren', 'Biotrén'],
                 ['interurban', 'Interurbanos'],
               ]}
@@ -442,20 +439,20 @@ export default function WallpaperTool({
             />
           )}
           <LayerToggle
-            label="Servicios en curso"
-            detail="Vehículos simulados por horario, no GPS"
+            label="Micros según horario"
+            detail="Dónde deberían ir según el horario: estimadas, no GPS"
             checked={layers.servicios}
             onChange={setLayer('servicios')}
           />
           {layers.servicios && (
             <SegmentedRows
-              label="Servicios"
+              label="Micros"
               options={[
                 ['visible', 'Solo visibles'],
-                ['all', 'Toda red'],
+                ['all', 'Toda la red'],
               ]}
               value={servicesScope}
-              onChange={(v) => setServicesScopeOverride(v as 'visible' | 'all')}
+              onChange={(v) => setServicesScopeOverride(v as SimulationScope)}
             />
           )}
           <LayerToggle
@@ -526,7 +523,7 @@ export default function WallpaperTool({
         {previewUrl ? (
           <img
             src={previewUrl}
-            alt="Previsualización del wallpaper"
+            alt="Vista previa del fondo de pantalla"
             className="mx-auto max-h-[360px] rounded border object-contain"
           />
         ) : (
@@ -740,18 +737,12 @@ async function loadSchools(bbox: [[number, number], [number, number]]) {
   );
 }
 
-async function loadWallpaperVehicles(
-  scope: 'visible' | 'all',
-  visibleRouteIds: string[],
-  currentVehicles: SimulatedVehicle[],
-) {
-  if (scope === 'visible') {
-    const visible = new Set(visibleRouteIds);
-    return currentVehicles.filter((vehicle) => visible.has(vehicle.routeId));
-  }
-
+/** Micros estimadas ahora según horario (siempre estimadas: el PNG no lleva GPS). */
+async function loadWallpaperVehicles(scope: SimulationScope, visibleRouteIds: readonly string[]) {
   const schedules = await loadSimulationSchedules();
-  return computeActiveVehicles(new Date(), buildSimulationRoutes(ROUTES), schedules);
+  const visible = new Set(visibleRouteIds);
+  const routes = scope === 'visible' ? ROUTES.filter((r) => visible.has(r.id)) : ROUTES;
+  return computeActiveVehicles(new Date(), buildSimulationRoutes(routes), schedules);
 }
 
 function pointInBbox(lat: number, lng: number, bbox: [[number, number], [number, number]]) {

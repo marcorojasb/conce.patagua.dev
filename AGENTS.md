@@ -10,12 +10,12 @@ Visor de transporte público del Gran Concepción (React + Vite + TS + Tailwind 
 
 ```
 src/
-  App.tsx            visor principal
+  App.tsx            cascarón del visor (mapa, controles sobre el mapa, superficie de fichas)
   components/ui/      componentes shadcn/ui (Radix)
   data/                *.generated.ts (no editar a mano, ver scripts/) + datos curados (routes.ts, interurban-corridors.ts, static-service-patterns.ts)
   hooks/               hooks de datos en vivo (ej. use-air-quality contra SINCA, use-live-arrivals)
   lib/                 lógica de dominio: planner, routing, geo, horarios, calidad de datos, export GeoJSON
-  realtime/            llegadas en vivo (live-arrivals.ts) y simulación de Servicios en curso
+  realtime/            llegadas en vivo (live-arrivals.ts), micros con GPS por línea y micros estimadas según horario (feeds del mapa)
   types/               tipos compartidos
   wiki/                segunda app, montada en /wiki (wiki-app.tsx + articles/)
 api/                   funciones de Vercel: stop-arrivals.ts (llegadas al paradero) y route-vehicles.ts (micros con GPS por línea); _transapp.ts es lo común (con "_" no se publica como función)
@@ -33,7 +33,7 @@ scripts/               generación de datasets (sync:*) + validación/smoke (dat
 - **Llegadas en vivo**: fuente NO oficial de la app Transapp (`phone.dtpr.transapp.cl`), vía `api/stop-arrivals.ts` (caché 25 s por paradero, tope 30 consultas/min). El identificador de cliente sale de `TRANSAPP_PHONE_ID` (Vercel). **Nunca escribir su valor (ni ningún UUID o identificador de la fuente) en el repo, la wiki, tests, commits ni logs.**
 - **Micros con GPS por línea**: misma fuente, vía `api/route-vehicles.ts` (`GET /api/route-vehicles?services=24F:R,401I:I`, 1–16 pares `<SERVICIO>:<I|R>` con el nombre de `visorServiceName`). La fuente solo responde por servicio y sentido, no hay consulta de toda la red. Caché 20 s por par, consultas en vuelo compartidas, tope 60 consultas/min por instancia (aparte del de paraderos), último dato del par hasta 2 min si hay tope o falla. Una lista vacía es "sin GPS ahora", nunca se rellena con estimaciones. Contrato completo en README ("Micros con GPS por línea").
 - **Qué sale de las intermediarias**: solo los campos que lee el visor (whitelist en cada handler); nunca el identificador del equipo GPS (`machineId`) ni otros campos crudos. Pruebas, smoke y dev server de agentes se corren con `env -u TRANSAPP_PHONE_ID` y con la fuente interceptada o simulada: nunca contra la fuente real.
-- **Servicios en curso**: estimación según horario programado, nunca GPS; la UI debe rotularla como estimación.
+- **Micros en el mapa**: "Horario" (estimación según horario programado, nunca GPS; la UI la rotula como estimación) o "GPS en vivo" (solo posiciones GPS). El mapa dibuja una sola fuente a la vez: nunca se mezclan ni se rellena el modo GPS con estimaciones.
 
 ## Convenciones observadas en el código existente
 
@@ -42,6 +42,7 @@ scripts/               generación de datasets (sync:*) + validación/smoke (dat
 - **Tipado explícito de datos externos**: al parsear respuestas de APIs externas (SINCA, Wikidata, Overpass) se definen interfaces locales para la forma cruda de la respuesta y se valida con guards (`typeof x === 'number'`, etc.) antes de mapear al tipo de dominio interno — no se confía en `any` ni en el shape remoto.
 - **Separación estricta datos generados vs. curados**: todo archivo `*.generated.ts` en `src/data/` se regenera con un script `sync:*` (ver README) y no debe editarse a mano; los archivos sin `.generated` son fuente de verdad manual.
 - **Tests colocados junto al código**: `*.test.ts` vive al lado del archivo que prueba (`src/lib/planner.test.ts`, `src/lib/routing.test.ts`, `src/data/route-quality.test.ts`), no en una carpeta `__tests__` separada.
+- **Navegación en la URL y el historial**: lo que hay en pantalla se lee y escribe con `src/lib/view-state.ts` (puro) y `src/hooks/use-view-state.ts` (store con un solo `popstate` y un solo Escape). Abrir una ficha o panel es `push`; pestaña, sentido y preferencias (líneas, micros, capas) son `replace`; cerrar es `history.back()`. No guardar en estado de React algo que deba sobrevivir a Atrás o a un enlace compartido, y no llamar `history.*` desde componentes.
 - **Nombres de rutas/scripts en inglés técnico, contenido/copy en español**: el código (identificadores, nombres de archivo) está en inglés; la UI, comentarios de dominio y artículos de la wiki están en español (el proyecto es para Concepción, Chile).
 
 ## Antes de dar por terminado un cambio
@@ -50,7 +51,9 @@ scripts/               generación de datasets (sync:*) + validación/smoke (dat
 npm run check
 ```
 
-(`typecheck` + `test` + `data:validate` + `maplinks:validate` + `build` + `bundle:budget` + `smoke`). Si el cambio toca capas de datos, UI del mapa o la wiki, correr además `npm run check:full` (agrega `smoke:services`, con Playwright).
+(`typecheck` + `test` + `data:validate` + `maplinks:validate` + `build` + `bundle:budget` + `smoke`). Si el cambio toca capas de datos, UI del mapa, la navegación o la wiki, correr además `npm run check:full` (agrega `smoke:services`, con Playwright). Si toca el dibujo del mapa (capas, micros, marcadores), correr también `npm run build && env -u TRANSAPP_PHONE_ID npm run bench:map -- --assert` (umbrales de rendimiento en `scripts/bench-map.ts`; no está dentro de `check`).
+
+Servidores, pruebas, smokes y benchmarks se corren siempre sin `TRANSAPP_PHONE_ID` (`env -u TRANSAPP_PHONE_ID …`) y con `/api/*` interceptado por fixtures: nunca se consulta la fuente en vivo real.
 
 `maplinks:validate` comprueba que cada `<MapLink>` de artículos apunte a una entidad real y que el índice reverso `MAP_WIKI_LINKS` en `src/wiki/map-links.ts` solo use slugs/códigos existentes.
 

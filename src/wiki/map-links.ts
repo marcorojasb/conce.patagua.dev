@@ -115,8 +115,8 @@ export function wikiUrl(slug: string): string {
 
 /**
  * Construye una URL del visor que abre el mapa enfocado en una entidad.
- * El parámetro `focus=<kind>:<id>` lo lee `src/hooks/use-url-state.ts`
- * en el primer render del visor.
+ * El parámetro `focus=<kind>:<id>` lo lee `parseView` en
+ * `src/lib/view-state.ts` al cargar el visor y lo convierte en selección.
  */
 export function mapFocusUrl(
   kind: 'route' | 'corridor' | 'terminal' | 'stop' | 'poi',

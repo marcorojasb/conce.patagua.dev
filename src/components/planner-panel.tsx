@@ -1,40 +1,30 @@
-import { Footprints, LocateFixed, MapPin, Route, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useMemo } from 'react';
+import { Footprints, LocateFixed, MapPin, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Notice } from '@/components/ui/notice';
+import { RouteBadge } from '@/components/route-badge';
+import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
 import { ROUTE_TYPES } from '@/data/routes';
-import { cn, readableTextOn } from '@/lib/utils';
-import type { PlannerMatch } from '@/lib/planner';
-import {
-  formatDistanceMeters,
-  formatDurationSeconds,
-  type RoutingResult,
-} from '@/lib/routing';
+import { nearestStop } from '@/lib/nearest-stop';
+import { routePillCode, routeShortName } from '@/lib/route-labels';
+import { formatDistanceMeters, formatDurationSeconds, type RoutingResult } from '@/lib/routing';
+import { cn } from '@/lib/utils';
+import type { LatLng, PlannerPanelProps } from '@/types/ui-contracts';
 
-interface PlannerPanelProps {
-  origin: { lat: number; lng: number } | null;
-  destination: { lat: number; lng: number } | null;
-  pickerMode: 'origin' | 'destination' | null;
-  matches: PlannerMatch[];
-  matchesAvailable: boolean;
-  onPickOrigin: () => void;
-  onPickDestination: () => void;
-  onClear: () => void;
-  onSelectRoute: (id: string) => void;
-  midpoint: RoutingResult | null;
-  midpointLoading: boolean;
-  midpointError: string | null;
-  onComputeMidpoint: () => void;
-  onClearMidpoint: () => void;
-}
+/** Hasta dónde un paradero sirve para nombrar el punto ("Cerca de …"). */
+const NAME_RADIUS_M = 300;
+const MAX_LISTED = 10;
 
 export function PlannerPanel({
-  origin,
-  destination,
-  pickerMode,
+  a,
+  b,
+  pick,
   matches,
-  matchesAvailable,
-  onPickOrigin,
-  onPickDestination,
+  searchAll,
+  onSearchAllChange,
+  linesOnMap,
+  onPick,
+  onCancelPick,
   onClear,
   onSelectRoute,
   midpoint,
@@ -43,53 +33,67 @@ export function PlannerPanel({
   onComputeMidpoint,
   onClearMidpoint,
 }: PlannerPanelProps) {
-  const hasAny = !!origin || !!destination;
   return (
-    <div className="min-w-0 rounded-md border bg-card">
-      <div className="flex min-w-0 items-center justify-between gap-2 border-b px-3 py-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            <Route className="size-3.5" />
-            Planificador
-          </div>
-          <div className="mt-0.5 truncate text-[11px] text-muted-foreground">
-            Cobertura por proximidad a recorridos
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Badge variant="outline" className="h-6 font-mono text-[10px]">
-            400 m
-          </Badge>
-          {hasAny && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="rounded-sm p-1 text-muted-foreground hover:bg-accent hover:text-foreground focus-ring"
-              aria-label="Limpiar"
-            >
-              <X className="size-3" />
-            </button>
-          )}
-        </div>
+    <div className="min-w-0 space-y-3">
+      <div className="space-y-2">
+        <PointRow target="a" point={a} active={pick === 'a'} onPick={onPick} onCancel={onCancelPick} />
+        <PointRow target="b" point={b} active={pick === 'b'} onPick={onPick} onCancel={onCancelPick} />
       </div>
 
-      <div className="min-w-0 space-y-2 p-2">
-        <PickerRow
-          kind="origin"
-          point={origin}
-          active={pickerMode === 'origin'}
-          onPick={onPickOrigin}
-        />
-        <PickerRow
-          kind="destination"
-          point={destination}
-          active={pickerMode === 'destination'}
-          onPick={onPickDestination}
-        />
-      </div>
+      {(a || b) && (
+        <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-[12px]" onClick={onClear}>
+          <X className="size-3.5" />
+          Limpiar
+        </Button>
+      )}
 
-      {origin && destination && (
-        <div className="border-t px-2 pb-2 pt-2">
+      {!a || !b ? (
+        <p className="text-[12px] leading-snug text-muted-foreground">
+          Elige el origen (A) y el destino (B) tocando el mapa: aquí aparecen los recorridos que
+          pasan a 400 m o menos de los dos.
+        </p>
+      ) : (
+        <>
+          <section aria-label="Recorridos que sirven">
+            <MatchesHeader
+              count={matches.length}
+              searchAll={searchAll}
+              linesOnMap={linesOnMap}
+              onSearchAllChange={onSearchAllChange}
+            />
+            {matches.length > 0 && (
+              <ul className="space-y-1">
+                {matches.slice(0, MAX_LISTED).map((m) => (
+                  <li key={m.route.id}>
+                    <button
+                      type="button"
+                      onClick={() => onSelectRoute(m.route.id)}
+                      className="flex w-full items-center gap-2 rounded-md border bg-card p-1.5 text-left transition-colors hover:bg-accent focus-ring"
+                    >
+                      <RouteBadge
+                        code={routePillCode(m.route)}
+                        color={m.route.color}
+                        className="min-w-[2.75rem] justify-center"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[12px] font-medium">{routeShortName(m.route)}</div>
+                        <div className="text-[11px] text-muted-foreground tabular-nums">
+                          {ROUTE_TYPES[m.route.type].short} · A {Math.round(m.originDistance)} m · B{' '}
+                          {Math.round(m.destinationDistance)} m
+                        </div>
+                      </div>
+                    </button>
+                  </li>
+                ))}
+                {matches.length > MAX_LISTED && (
+                  <li className="text-center text-[11px] text-muted-foreground">
+                    + {matches.length - MAX_LISTED} más
+                  </li>
+                )}
+              </ul>
+            )}
+          </section>
+
           <MidpointSection
             midpoint={midpoint}
             loading={midpointLoading}
@@ -97,47 +101,138 @@ export function PlannerPanel({
             onCompute={onComputeMidpoint}
             onClear={onClearMidpoint}
           />
-          <div className="mb-1.5 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>{matches.length === 0 ? 'Sin coincidencias' : `${matches.length} recorridos cubren ambos`}</span>
-            <span className="font-mono">≤400 m</span>
-          </div>
-          {!matchesAvailable && matches.length === 0 && (
-            <div className="rounded-md border bg-muted/40 p-2 text-[11px] text-muted-foreground">
-              No hay recorridos en el mapa. Actívalos con el ojo de la lista
-              lateral («Mostrar en el mapa») y vuelve a colocar los pines.
-            </div>
-          )}
-          <div className="space-y-1">
-            {matches.slice(0, 10).map((m) => (
-              <button
-                key={m.route.id}
-                type="button"
-                onClick={() => onSelectRoute(m.route.id)}
-                className="flex w-full items-center gap-2 rounded-md border bg-background p-1.5 text-left transition-colors hover:bg-accent focus-ring"
-              >
-                <Badge
-                  className="border-transparent font-mono text-[10px]"
-                  style={{ background: m.route.color, color: readableTextOn(m.route.color) }}
-                >
-                  {m.route.code}
-                </Badge>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[12px] font-medium">{m.route.name}</div>
-                  <div className="text-[10px] text-muted-foreground">
-                    {ROUTE_TYPES[m.route.type].short} · A {Math.round(m.originDistance)} m ·
-                    B {Math.round(m.destinationDistance)} m
-                  </div>
-                </div>
-              </button>
-            ))}
-            {matches.length > 10 && (
-              <div className="text-center text-[10px] text-muted-foreground">
-                + {matches.length - 10} más
-              </div>
-            )}
-          </div>
-        </div>
+        </>
       )}
+    </div>
+  );
+}
+
+/** "Cerca de {paradero} · 120 m"; sin paradero a 300 m, las coordenadas. */
+function describePoint(point: LatLng): { label: string; detail: string | null } {
+  const near = nearestStop(point, GTFS_STOPS, NAME_RADIUS_M);
+  const coords = `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`;
+  if (!near?.stop.name) return { label: coords, detail: null };
+  // Sobre el mismo paradero (p. ej. "Salir desde aquí") la distancia no aporta.
+  const meters = Math.round(near.meters);
+  return { label: meters < 10 ? `Cerca de ${near.stop.name}` : `Cerca de ${near.stop.name} · ${meters} m`, detail: coords };
+}
+
+function PointRow({
+  target,
+  point,
+  active,
+  onPick,
+  onCancel,
+}: {
+  target: 'a' | 'b';
+  point: LatLng | null;
+  active: boolean;
+  onPick: (target: 'a' | 'b') => void;
+  onCancel: () => void;
+}) {
+  const isOrigin = target === 'a';
+  const noun = isOrigin ? 'origen' : 'destino';
+  const described = useMemo(() => (point ? describePoint(point) : null), [point]);
+  return (
+    <div
+      className={cn(
+        'flex min-w-0 items-center gap-2 rounded-md border bg-card p-2 transition-colors',
+        active && 'border-foreground/60 bg-accent/60',
+      )}
+      data-planner-point={target}
+    >
+      <span
+        className={cn(
+          'inline-flex size-7 shrink-0 items-center justify-center rounded-md text-[12px] font-bold text-white shadow-sm',
+          isOrigin ? 'bg-green-600' : 'bg-red-600',
+        )}
+        aria-hidden
+      >
+        {isOrigin ? 'A' : 'B'}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          {isOrigin ? 'Origen' : 'Destino'}
+        </div>
+        {active ? (
+          <div className="flex items-center gap-1 text-[13px] font-medium">
+            <LocateFixed className="size-3.5 shrink-0" aria-hidden />
+            Toca el mapa…
+          </div>
+        ) : described ? (
+          <>
+            <div className="truncate text-[13px] font-medium" title={described.label}>
+              {described.label}
+            </div>
+            {described.detail && (
+              <div className="truncate font-mono text-[10px] text-muted-foreground">{described.detail}</div>
+            )}
+          </>
+        ) : (
+          <div className="text-[13px] text-muted-foreground">Sin elegir</div>
+        )}
+      </div>
+      {active ? (
+        <Button type="button" size="sm" variant="outline" className="h-8 shrink-0" onClick={onCancel}>
+          Cancelar
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          size="sm"
+          variant={point ? 'ghost' : 'outline'}
+          className="h-8 shrink-0"
+          onClick={() => onPick(target)}
+        >
+          <MapPin className="size-3.5" />
+          Elegir {noun}
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function MatchesHeader({
+  count,
+  searchAll,
+  linesOnMap,
+  onSearchAllChange,
+}: {
+  count: number;
+  searchAll: boolean;
+  linesOnMap: number;
+  onSearchAllChange: (value: boolean) => void;
+}) {
+  const pool = searchAll ? 'todas las líneas' : `las ${linesOnMap} ${linesOnMap === 1 ? 'línea' : 'líneas'} del mapa`;
+  const toggle = (
+    <button
+      type="button"
+      onClick={() => onSearchAllChange(!searchAll)}
+      className="shrink-0 rounded-sm font-medium text-foreground underline underline-offset-2 hover:opacity-80 focus-ring"
+    >
+      {searchAll ? 'Solo las del mapa' : 'Buscar en todas'}
+    </button>
+  );
+  if (count === 0) {
+    return (
+      <Notice className="mb-2">
+        <span>
+          {searchAll
+            ? 'Ningún recorrido pasa a 400 m o menos de A y B.'
+            : linesOnMap === 0
+              ? 'No tienes líneas en el mapa'
+              : `Sin coincidencias entre ${pool}`}
+        </span>{' '}
+        {!searchAll && <>· {toggle}</>}
+      </Notice>
+    );
+  }
+  return (
+    <div className="mb-1.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+      <span>
+        {count} {count === 1 ? 'recorrido pasa' : 'recorridos pasan'} cerca de A y B · entre {pool}
+      </span>
+      {toggle}
     </div>
   );
 }
@@ -156,7 +251,7 @@ function MidpointSection({
   onClear: () => void;
 }) {
   return (
-    <div className="mb-2 space-y-1.5">
+    <section aria-label="Punto medio caminando" className="space-y-1.5 border-t pt-3">
       <div className="flex items-center justify-between gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
         <span className="flex items-center gap-1">
           <Footprints className="size-3" />
@@ -166,9 +261,9 @@ function MidpointSection({
           <button
             type="button"
             onClick={onClear}
-            className="rounded-sm p-0.5 normal-case tracking-normal text-[10px] text-muted-foreground hover:text-foreground focus-ring"
+            className="rounded-sm p-0.5 text-[11px] normal-case tracking-normal text-muted-foreground hover:text-foreground focus-ring"
           >
-            limpiar
+            Quitar
           </button>
         )}
       </div>
@@ -178,7 +273,7 @@ function MidpointSection({
           type="button"
           size="sm"
           variant="outline"
-          className="h-8 w-full justify-center text-[11px]"
+          className="h-8 w-full justify-center text-[12px]"
           onClick={onCompute}
         >
           <Footprints className="size-3.5" />
@@ -187,7 +282,7 @@ function MidpointSection({
       )}
 
       {loading && (
-        <div className="rounded-md border bg-muted/40 p-2 text-[11px] text-muted-foreground">
+        <div className="rounded-md border bg-muted/40 p-2 text-[11px] text-muted-foreground" role="status">
           Consultando OSRM (ruteo peatonal)…
         </div>
       )}
@@ -203,14 +298,8 @@ function MidpointSection({
           <div className="grid grid-cols-2 gap-2">
             <Stat label="Distancia" value={formatDistanceMeters(midpoint.distanceMeters)} />
             <Stat label="Tiempo a pie" value={formatDurationSeconds(midpoint.durationSeconds)} />
-            <Stat
-              label="A → M"
-              value={formatDistanceMeters(midpoint.distanceFromAMeters)}
-            />
-            <Stat
-              label="M → B"
-              value={formatDistanceMeters(midpoint.distanceToBMeters)}
-            />
+            <Stat label="A → M" value={formatDistanceMeters(midpoint.distanceFromAMeters)} />
+            <Stat label="M → B" value={formatDistanceMeters(midpoint.distanceToBMeters)} />
           </div>
           <div className="border-t pt-1.5 text-[10px] text-muted-foreground">
             Punto medio:{' '}
@@ -219,12 +308,12 @@ function MidpointSection({
             </span>
           </div>
           <div className="text-[10px] leading-snug text-muted-foreground">
-            Trazado a pie según OSRM público (OSM). El punto medio es exacto sobre
-            la mitad del recorrido peatonal, no la línea recta entre A y B.
+            Trazado a pie según OSRM público (OSM). El punto medio es exacto sobre la mitad del
+            recorrido peatonal, no la línea recta entre A y B.
           </div>
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -233,59 +322,6 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div className="rounded-sm border bg-muted/30 px-2 py-1">
       <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="font-mono text-[12px] leading-tight">{value}</div>
-    </div>
-  );
-}
-
-function PickerRow({
-  kind,
-  point,
-  active,
-  onPick,
-}: {
-  kind: 'origin' | 'destination';
-  point: { lat: number; lng: number } | null;
-  active: boolean;
-  onPick: () => void;
-}) {
-  const isOrigin = kind === 'origin';
-  const label = isOrigin ? 'Origen' : 'Destino';
-  const color = isOrigin ? '#16A34A' : '#DC2626';
-  return (
-    <div
-      className={cn(
-        'min-w-0 rounded-md border bg-background p-2 text-[12px] transition-colors',
-        active && 'border-foreground/80 bg-accent/70',
-      )}
-    >
-      <div className="flex min-w-0 items-center gap-2">
-        <span
-          className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-[11px] font-bold text-white shadow-sm"
-          style={{ background: color }}
-        >
-          {isOrigin ? 'A' : 'B'}
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            {label}
-          </div>
-          <div className="truncate font-mono text-[12px]">
-            {point ? `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}` : 'Sin punto definido'}
-          </div>
-        </div>
-      </div>
-      <Button
-        type="button"
-        size="sm"
-        variant={active ? 'default' : point ? 'secondary' : 'outline'}
-        className="mt-2 h-8 w-full min-w-0 justify-center overflow-hidden px-2 text-[11px]"
-        onClick={onPick}
-      >
-        {active ? <LocateFixed className="size-3.5" /> : <MapPin className="size-3.5" />}
-        <span className="truncate">
-          {active ? 'Haz click en el mapa' : point ? `Cambiar ${label.toLowerCase()}` : `Elegir ${label.toLowerCase()}`}
-        </span>
-      </Button>
     </div>
   );
 }

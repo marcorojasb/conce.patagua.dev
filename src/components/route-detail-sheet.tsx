@@ -6,15 +6,18 @@ import {
   ChevronRight,
   Clock,
   CreditCard,
+  Crosshair,
+  Ellipsis,
   ExternalLink,
+  EyeOff,
   Github,
   Info,
   MapPin,
+  Plus,
   Route as RouteIcon,
   Wallet,
-  XCircle,
 } from 'lucide-react';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
@@ -38,22 +41,12 @@ import {
   type NextDeparture,
 } from '@/lib/route-schedule-summary';
 import { formatServiceClock } from '@/lib/stop-services';
-import { isInterurban, routeShortName } from '@/lib/route-labels';
+import { directionCode, isInterurban, routePillCode, routeShortName } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
 import type { LatLngTuple, Route, RouteSchedule, Stop } from '@/types/transport';
+import type { DirectionId, RouteDetailSheetProps, RouteTab } from '@/types/ui-contracts';
 
-interface RouteDetailSheetProps {
-  open: boolean;
-  route: Route | null;
-  /** Sentido pedido (p. ej. la variante "10A" de la URL); sin él, el primero. */
-  directionId?: 0 | 1;
-  /** Sentido elegido en la ficha (solo micros con `direction_id`). */
-  onPickDirection?: (directionId: 0 | 1) => void;
-  onOpenChange: (open: boolean) => void;
-  onFocusRoute: () => void;
-  onDeselectRoute: () => void;
-  onSelectStop: (id: string) => void;
-}
+const REPORT_URL = 'https://github.com/marcorojasb/conce.patagua.dev/issues';
 
 // Mismo import() que la capa de servicios en curso (activa al iniciar): el
 // chunk de horarios suele estar ya en caché al abrir la ficha y no pesa en la
@@ -82,8 +75,10 @@ for (const pattern of STATIC_SERVICE_PATTERNS) {
 interface DirectionView {
   /** Clave de su horario: "gtfs-route-835#0" en micros, "forward"/"reverse" en patrones estáticos. */
   key: string;
-  /** Código del letrero en ese sentido ("10A"). */
-  variant?: string;
+  /** Sentido GTFS (cambia el mapa); null en los patrones de Biotrén. */
+  directionId: DirectionId | null;
+  /** Letrero en ese sentido ("30E"; el de la línea si no tiene variante). */
+  code: string;
   destination: string;
   /** Solo patrones estáticos (Biotrén): estación de salida. */
   origin?: string;
@@ -93,13 +88,16 @@ interface DirectionView {
 
 function routeDirections(route: Route): DirectionView[] {
   if (route.directions && route.directions.length > 0) {
-    return route.directions.map((d) => ({
-      key: `${route.id}#${d.directionId}`,
-      variant: d.variant,
-      destination: d.destination ?? d.headsign,
-      stops: d.stops,
-      km: pathKilometers(d.path),
-    }));
+    return [...route.directions]
+      .sort((a, b) => a.directionId - b.directionId)
+      .map((d) => ({
+        key: `${route.id}#${d.directionId}`,
+        directionId: d.directionId,
+        code: directionCode(route, d.directionId),
+        destination: d.destination ?? d.headsign,
+        stops: d.stops,
+        km: pathKilometers(d.path),
+      }));
   }
   // Biotrén no tiene sentidos en el modelo: salen de sus patrones EFE, que
   // recorren `route.stops` en orden (forward) o al revés (reverse).
@@ -112,6 +110,8 @@ function routeDirections(route: Route): DirectionView[] {
     const [origin, destination] = pattern.directionLabel.split('→').map((part) => part.trim());
     views.push({
       key: direction,
+      directionId: null,
+      code: route.code,
       origin: destination ? origin : undefined,
       destination: destination || pattern.directionLabel,
       stops: direction === 'forward' ? route.stops : [...route.stops].reverse(),
@@ -159,13 +159,12 @@ type ScheduleState =
   | { status: 'error'; retry: () => void }
   | { status: 'ready'; data: RouteScheduleData | null };
 
-function useRouteSchedule(route: Route | null, active: boolean): ScheduleState {
+function useRouteSchedule(route: Route): ScheduleState {
   const [index, setIndex] = useState<Record<string, RouteSchedule> | null>(null);
   const [failed, setFailed] = useState(false);
-  const wanted = active && route !== null;
 
   useEffect(() => {
-    if (!wanted || index || failed) return undefined;
+    if (index || failed) return undefined;
     let cancelled = false;
     loadSchedules()
       .then((loaded) => {
@@ -178,24 +177,22 @@ function useRouteSchedule(route: Route | null, active: boolean): ScheduleState {
     return () => {
       cancelled = true;
     };
-  }, [wanted, index, failed]);
+  }, [index, failed]);
 
   return useMemo<ScheduleState>(() => {
     if (failed) return { status: 'error', retry: () => setFailed(false) };
-    if (!route || !index) return { status: 'loading' };
+    if (!index) return { status: 'loading' };
     return { status: 'ready', data: scheduleForRoute(route, index) };
   }, [failed, index, route]);
 }
 
 /** Hora actual que avanza sola mientras la ficha está abierta. */
-function useNow(active: boolean): Date {
+function useNow(): Date {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
-    if (!active) return undefined;
-    setNow(new Date());
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
     return () => window.clearInterval(timer);
-  }, [active]);
+  }, []);
   return now;
 }
 
@@ -277,38 +274,63 @@ const FEED_PROGRAM_DATE = (() => {
   return match ? `${match[3]}-${match[2]}-${match[1]}` : null;
 })();
 
+const TABS: readonly RouteTab[] = ['info', 'recorrido', 'horarios'];
+const isRouteTab = (value: string): value is RouteTab => (TABS as readonly string[]).includes(value);
+
 export function RouteDetailSheet({
-  open,
+  chrome,
   route,
+  tab,
+  onTabChange,
   directionId,
-  onPickDirection,
-  onOpenChange,
+  onDirectionChange,
+  membership,
   onFocusRoute,
-  onDeselectRoute,
   onSelectStop,
 }: RouteDetailSheetProps) {
-  const schedule = useRouteSchedule(route, open);
-  const now = useNow(open);
-  const directions = useMemo(() => (route ? routeDirections(route) : []), [route]);
-  const routeKm = useMemo(() => (route ? pathKilometers(route.path) : 0), [route]);
-  const [tab, setTab] = useState('info');
-  // El sentido elegido vale para el recorrido en que se eligió.
-  const [pickedDirection, setPickedDirection] = useState<{ routeId: string; key: string } | null>(
-    null,
-  );
-  const requestedKey = route && directionId !== undefined ? `${route.id}#${directionId}` : undefined;
-  const directionKey =
-    pickedDirection && pickedDirection.routeId === route?.id
-      ? pickedDirection.key
-      : (directions.find((d) => d.key === requestedKey) ?? directions[0])?.key;
+  const schedule = useRouteSchedule(route);
+  const now = useNow();
+  const directions = useMemo(() => routeDirections(route), [route]);
+  const routeKm = useMemo(() => pathKilometers(route.path), [route]);
+  // Micros: el sentido viene de la URL y cambia el mapa. Biotrén: su patrón
+  // EFE es una elección local de la ficha (el mapa dibuja la línea entera).
+  const [patternKey, setPatternKey] = useState<string | null>(null);
+  const gtfsDirections = directions.filter((d) => d.directionId !== null);
+  const twoWay = gtfsDirections.length > 1;
+  const activeKey =
+    gtfsDirections.length > 0
+      ? twoWay
+        ? (gtfsDirections.find((d) => d.directionId === directionId)?.key ?? null)
+        : gtfsDirections[0].key
+      : (patternKey ?? directions[0]?.key ?? null);
 
-  const panelChrome = useMemo(() => {
-    if (!route) return null;
-    const TypeIcon = ROUTE_TYPES[route.type].Icon;
-    return {
-      eyebrow: (
+  const pickDirection = (key: string) => {
+    const view = directions.find((d) => d.key === key);
+    if (!view) return;
+    if (view.directionId === null) setPatternKey(key);
+    else onDirectionChange(view.directionId);
+  };
+  const showDirection = (key: string) => {
+    pickDirection(key);
+    onTabChange('recorrido');
+  };
+
+  const TypeIcon = ROUTE_TYPES[route.type].Icon;
+
+  return (
+    <FloatingInfoPanel
+      chrome={chrome}
+      title={capitalize(routeShortName(route))}
+      description={
+        <>
+          {route.operator}
+          <MembershipChips onMap={membership.onMap} hiddenByFilter={membership.hiddenByFilter} />
+        </>
+      }
+      scroll={false}
+      eyebrow={
         <div className="flex flex-wrap items-center gap-1.5">
-          <RouteBadge code={route.code} color={route.color} />
+          <RouteBadge code={routePillCode(route)} color={route.color} />
           <TypeIcon />
           <span>{ROUTE_TYPES[route.type].label}</span>
           {isInterurban(route) && (
@@ -320,62 +342,16 @@ export function RouteDetailSheet({
             </Badge>
           )}
         </div>
-      ),
-      actions: (
-        <div className="flex flex-wrap gap-1.5">
-          <Button size="sm" variant="outline" onClick={onFocusRoute}>
-            <RouteIcon className="size-3.5" />
-            Centrar en mapa
-          </Button>
-          <Button size="sm" variant="secondary" onClick={onDeselectRoute}>
-            <XCircle className="size-3.5" />
-            Deseleccionar
-          </Button>
-          <WikiLinkButton kind="route" code={route.code} />
-          <Button
-            size="icon"
-            variant="ghost"
-            className="size-8 text-muted-foreground hover:text-foreground"
-            aria-label="Reportar un problema con este recorrido"
-            title="Reportar un problema con este recorrido"
-            onClick={() =>
-              window.open(
-                'https://github.com/marcorojasb/conce.patagua.dev/issues',
-                '_blank',
-                'noopener',
-              )
-            }
-          >
-            <Github className="size-4" />
-          </Button>
-        </div>
-      ),
-    };
-  }, [onDeselectRoute, onFocusRoute, route]);
-
-  if (!route || !panelChrome) return null;
-
-  const pickDirection = (key: string) => {
-    setPickedDirection({ routeId: route.id, key });
-    const id = /#([01])$/.exec(key)?.[1];
-    if (id) onPickDirection?.(id === '1' ? 1 : 0);
-  };
-  const showDirection = (key: string) => {
-    pickDirection(key);
-    setTab('recorrido');
-  };
-
-  return (
-    <FloatingInfoPanel
-      open={open}
-      onClose={() => onOpenChange(false)}
-      title={capitalize(routeShortName(route))}
-      description={route.operator}
-      scroll={false}
-      eyebrow={panelChrome.eyebrow}
-      actions={panelChrome.actions}
+      }
+      actions={<RouteActions route={route} membership={membership} onFocusRoute={onFocusRoute} />}
     >
-      <Tabs value={tab} onValueChange={setTab} className="flex h-full min-h-0 flex-col px-5 pb-5 pt-4">
+      <Tabs
+        value={tab}
+        onValueChange={(value) => {
+          if (isRouteTab(value)) onTabChange(value);
+        }}
+        className="flex h-full min-h-0 flex-col gap-3 px-5 pb-5 pt-4"
+      >
         <TabsList className="self-start">
           <TabsTrigger value="info">
             <Info className="size-3" />
@@ -391,11 +367,21 @@ export function RouteDetailSheet({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="info" className="min-h-0 flex-1">
+        {twoWay && (
+          <DirectionGroup
+            route={route}
+            directions={gtfsDirections}
+            directionId={directionId}
+            onChange={onDirectionChange}
+          />
+        )}
+
+        <TabsContent value="info" className="mt-0 min-h-0 flex-1">
           <ScrollArea className="h-full pr-2 scroll-fade-y">
             <InfoTab
               route={route}
               directions={directions}
+              activeKey={twoWay ? activeKey : null}
               schedule={schedule}
               now={now}
               routeKm={routeKm}
@@ -404,12 +390,12 @@ export function RouteDetailSheet({
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="recorrido" className="min-h-0 flex-1">
+        <TabsContent value="recorrido" className="mt-0 min-h-0 flex-1">
           <ScrollArea className="h-full pr-2 scroll-fade-y">
             <StopsTab
               route={route}
               directions={directions}
-              directionKey={directionKey}
+              activeKey={activeKey}
               onPickDirection={pickDirection}
               routeKm={routeKm}
               onSelectStop={onSelectStop}
@@ -417,13 +403,159 @@ export function RouteDetailSheet({
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="horarios" className="min-h-0 flex-1">
+        <TabsContent value="horarios" className="mt-0 min-h-0 flex-1">
           <ScrollArea className="h-full pr-2 scroll-fade-y">
             <ScheduleTab route={route} directions={directions} schedule={schedule} now={now} />
           </ScrollArea>
         </TabsContent>
       </Tabs>
     </FloatingInfoPanel>
+  );
+}
+
+/** "No está en tu mapa" / "Fuera de horario ahora": por qué el mapa la dibuja como la dibuja. */
+function MembershipChips({ onMap, hiddenByFilter }: { onMap: boolean; hiddenByFilter: boolean }) {
+  if (onMap && !hiddenByFilter) return null;
+  return (
+    <span className="ml-1.5 inline-flex flex-wrap gap-1 align-middle">
+      {!onMap && (
+        <span className="inline-flex items-center rounded-full border border-dashed px-2 py-px text-[11px] text-muted-foreground">
+          No está en tu mapa
+        </span>
+      )}
+      {hiddenByFilter && (
+        <span
+          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-px text-[11px] font-medium text-amber-900 dark:bg-amber-500/20 dark:text-amber-200"
+          title="«Operando ahora» la saca de la red; se dibuja igual mientras está abierta"
+        >
+          <Clock className="size-3" aria-hidden />
+          Fuera de horario ahora
+        </span>
+      )}
+    </span>
+  );
+}
+
+/**
+ * Acciones de la ficha. En móvil van en una sola fila que se desliza de lado
+ * y lo secundario (wiki, reportar) queda tras "⋯"; en escritorio, a la vista.
+ */
+function RouteActions({
+  route,
+  membership,
+  onFocusRoute,
+}: {
+  route: Route;
+  membership: RouteDetailSheetProps['membership'];
+  onFocusRoute: () => void;
+}) {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreId = useId();
+  const report = () => window.open(REPORT_URL, '_blank', 'noopener');
+
+  return (
+    <div>
+      <div className="flex items-center gap-1.5">
+        <div className="-mx-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+          {membership.onMap ? (
+            <Button size="sm" variant="outline" className="shrink-0" onClick={membership.onRemove}>
+              <EyeOff className="size-3.5" />
+              Quitar del mapa
+            </Button>
+          ) : (
+            <Button size="sm" className="shrink-0" onClick={membership.onAdd}>
+              <Plus className="size-3.5" />
+              Agregar al mapa
+            </Button>
+          )}
+          <Button size="sm" variant="outline" className="shrink-0" onClick={onFocusRoute}>
+            <Crosshair className="size-3.5" />
+            Centrar en el mapa
+          </Button>
+          <span className="hidden sm:contents">
+            <WikiLinkButton kind="route" code={route.code} />
+            <Button
+              size="icon"
+              variant="ghost"
+              className="size-8 text-muted-foreground hover:text-foreground"
+              aria-label="Reportar un problema con este recorrido"
+              title="Reportar un problema con este recorrido"
+              onClick={report}
+            >
+              <Github className="size-4" />
+            </Button>
+          </span>
+        </div>
+        <Button
+          size="icon"
+          variant="outline"
+          className="size-8 shrink-0 sm:hidden"
+          aria-label="Más acciones"
+          aria-expanded={moreOpen}
+          aria-controls={moreOpen ? moreId : undefined}
+          onClick={() => setMoreOpen((open) => !open)}
+        >
+          <Ellipsis className="size-4" />
+        </Button>
+      </div>
+      {moreOpen && (
+        <div id={moreId} className="mt-2 flex flex-wrap gap-1.5 sm:hidden">
+          <WikiLinkButton kind="route" code={route.code} />
+          <Button size="sm" variant="outline" onClick={report}>
+            <Github className="size-3.5" />
+            Reportar un problema
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** "Ambos" o un sentido: el mapa dibuja solo ese trazado, sus paraderos y sus micros. */
+function DirectionGroup({
+  route,
+  directions,
+  directionId,
+  onChange,
+}: {
+  route: Route;
+  directions: DirectionView[];
+  directionId: DirectionId | null;
+  onChange: (directionId: DirectionId | null) => void;
+}) {
+  const buttonClass = (active: boolean) =>
+    cn(
+      'min-w-0 rounded-md px-2 py-1 text-xs font-medium transition-colors focus-ring',
+      active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/80',
+    );
+  return (
+    <div
+      role="group"
+      aria-label="Sentido"
+      className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-1 rounded-lg bg-muted p-1"
+    >
+      <button
+        type="button"
+        aria-pressed={directionId === null}
+        onClick={() => onChange(null)}
+        className={buttonClass(directionId === null)}
+      >
+        Ambos
+      </button>
+      {directions.map((d) => (
+        <button
+          key={d.key}
+          type="button"
+          aria-pressed={d.directionId === directionId}
+          aria-label={`${d.code} → ${d.destination}`}
+          title={`${d.code} hacia ${d.destination}`}
+          onClick={() => onChange(d.directionId)}
+          className={buttonClass(d.directionId === directionId)}
+        >
+          <DirectionSign route={route} direction={d} />
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -460,7 +592,7 @@ function stopsNoun(route: Route, count: number): string {
   return count === 1 ? 'paradero' : 'paraderos';
 }
 
-/** Letrero de un sentido: código de la variante (o de la ruta) y destino. */
+/** Letrero de un sentido: código de ese sentido ("30E") y destino. */
 function DirectionSign({
   route,
   direction,
@@ -472,7 +604,7 @@ function DirectionSign({
 }) {
   return (
     <span className={cn('flex min-w-0 items-center gap-1.5', className)}>
-      <RouteBadge code={direction.variant ?? route.code} color={route.color} />
+      <RouteBadge code={direction.code} color={route.color} />
       <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" aria-label="hacia" />
       <span className="truncate">{direction.destination}</span>
     </span>
@@ -482,6 +614,7 @@ function DirectionSign({
 function InfoTab({
   route,
   directions,
+  activeKey,
   schedule,
   now,
   routeKm,
@@ -489,6 +622,8 @@ function InfoTab({
 }: {
   route: Route;
   directions: DirectionView[];
+  /** Sentido elegido (solo micros de dos sentidos); null = ambos. */
+  activeKey: string | null;
   schedule: ScheduleState;
   now: Date;
   routeKm: number;
@@ -558,13 +693,18 @@ function InfoTab({
                 formatKm(direction.km),
                 data ? (range ? `hoy ${range}` : 'hoy sin salidas') : null,
               ].filter(Boolean);
+              const active = direction.key === activeKey;
               return (
                 <li key={direction.key}>
                   <button
                     type="button"
                     onClick={() => onShowDirection(direction.key)}
                     title="Ver sus paraderos en orden"
-                    className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
+                    aria-current={active ? 'true' : undefined}
+                    className={cn(
+                      'flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring',
+                      active && 'border-foreground/40 bg-accent/60',
+                    )}
                   >
                     <div className="min-w-0 flex-1">
                       <DirectionSign
@@ -1115,22 +1255,26 @@ function HourlyChart({
 function StopsTab({
   route,
   directions,
-  directionKey,
+  activeKey,
   onPickDirection,
   routeKm,
   onSelectStop,
 }: {
   route: Route;
   directions: DirectionView[];
-  directionKey: string | undefined;
+  /** null con "Ambos" en una micro de dos sentidos: se pide elegir uno. */
+  activeKey: string | null;
   onPickDirection: (key: string) => void;
   routeKm: number;
   onSelectStop: (id: string) => void;
 }) {
-  const direction = directions.find((d) => d.key === directionKey) ?? directions[0];
-  const stops = direction?.stops ?? route.stops;
+  const direction = directions.find((d) => d.key === activeKey) ?? null;
+  // Patrones de Biotrén: se eligen aquí (no cambian el mapa).
+  const patterns = directions.filter((d) => d.directionId === null);
+  const stops = direction?.stops ?? (directions.length === 0 ? route.stops : []);
   const km = direction?.km ?? routeKm;
   const last = stops.length - 1;
+  const place = route.type === 'biotren' ? 'una estación' : 'un paradero';
 
   return (
     <div className="space-y-3">
@@ -1144,17 +1288,17 @@ function StopsTab({
         </Notice>
       )}
 
-      {directions.length > 1 && (
+      {patterns.length > 1 && (
         <div role="group" aria-label="Sentido" className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
-          {directions.map((d) => (
+          {patterns.map((d) => (
             <button
               key={d.key}
               type="button"
-              aria-pressed={d.key === direction?.key}
+              aria-pressed={d.key === activeKey}
               onClick={() => onPickDirection(d.key)}
               className={cn(
                 'min-w-0 rounded-md px-2 py-1 text-xs font-medium transition-colors focus-ring',
-                d.key === direction?.key
+                d.key === activeKey
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground/80',
               )}
@@ -1165,7 +1309,33 @@ function StopsTab({
         </div>
       )}
 
-      {stops.length === 0 ? (
+      {!direction && directions.length > 1 ? (
+        <section aria-label="Elegir sentido">
+          <p className="mb-2 text-[12px] leading-snug text-muted-foreground">
+            El mapa muestra los dos sentidos. Elige uno para ver sus paraderos en orden (el mapa
+            dibuja solo ese).
+          </p>
+          <ul className="space-y-1.5">
+            {directions.map((d) => (
+              <li key={d.key}>
+                <button
+                  type="button"
+                  onClick={() => onPickDirection(d.key)}
+                  className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
+                >
+                  <div className="min-w-0 flex-1">
+                    <DirectionSign route={route} direction={d} className="text-sm font-medium" />
+                    <div className="mt-0.5 text-[11px] text-muted-foreground tabular-nums">
+                      {d.stops.length} {stopsNoun(route, d.stops.length)} · {formatKm(d.km)}
+                    </div>
+                  </div>
+                  <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : stops.length === 0 ? (
         <Notice icon={<Info />}>
           Este recorrido viene de OpenStreetMap sin lista de paraderos. Largo total:{' '}
           <span className="font-semibold text-foreground">{formatKm(km)}</span>.
@@ -1182,8 +1352,7 @@ function StopsTab({
           </SectionLabel>
           <p className="mb-2 text-[11px] text-muted-foreground">
             {route.directions?.length === 1 && 'El GTFS oficial publica un solo sentido. '}
-            Toca {route.type === 'biotren' ? 'una estación' : 'un paradero'} para verlo
-            en el mapa.
+            Toca {place} para ver su ficha.
           </p>
           <ol>
             {stops.map((stop, i) => {
