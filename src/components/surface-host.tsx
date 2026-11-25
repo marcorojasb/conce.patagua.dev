@@ -161,6 +161,7 @@ function renderSurface({
           micros={prefs.micros}
           onShowGpsOnMap={onShowGpsOnMap}
           onSelectRoute={selectRoute(onSelect)}
+          onSelectStop={(id) => onSelect({ kind: 'stop', id }, 'list')}
           onPlanFrom={onPlanFrom}
           onPlanTo={onPlanTo}
         />

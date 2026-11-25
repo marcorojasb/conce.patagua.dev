@@ -161,8 +161,10 @@ describe('buildGpsMapVehicles', () => {
     const vehicles = buildGpsMapVehicles(input(lines, state, NOW, stop));
     expect(vehicles).toHaveLength(6);
     expect(vehicles.filter((v) => v.id === '24F:R#PRUE51')).toHaveLength(1);
-    expect(vehicles.find((v) => v.id === '24F:R#PRUE51')).toMatchObject({ lat: -36.823, lng: -73.049, bearing: null });
-    expect(vehicles.find((v) => v.id === '24F:R#PRUE53')).toMatchObject({ lat: -36.842, stale: false });
+    // La posición es la del paradero, pero conserva el rumbo del reporte de la línea (20 s, no viejo).
+    expect(vehicles.find((v) => v.id === '24F:R#PRUE51')).toMatchObject({ lat: -36.823, lng: -73.049, bearing: 239 });
+    // El reporte de 4 min ya era viejo: su rumbo no se arrastra.
+    expect(vehicles.find((v) => v.id === '24F:R#PRUE53')).toMatchObject({ lat: -36.842, stale: false, bearing: null });
     expect(vehicles.find((v) => v.id === '30E:R#PRUE30')).toMatchObject({
       kind: 'gps',
       routeId: byCode('30QE').id,

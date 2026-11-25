@@ -123,7 +123,13 @@ export function buildGpsMapVehicles(input: GpsMapInput): MapVehicle[] {
       out.push(vehicle);
       ageOf.push(ageMs);
     } else if (ageMs < ageOf[index]) {
-      out[index] = vehicle;
+      // Las llegadas del paradero no traen rumbo: la micro conserva la flecha
+      // del reporte GPS de su línea mientras ese reporte no sea viejo.
+      const previous = out[index];
+      out[index] =
+        vehicle.bearing == null && previous.bearing != null && !previous.stale
+          ? { ...vehicle, bearing: previous.bearing }
+          : vehicle;
       ageOf[index] = ageMs;
     }
   };

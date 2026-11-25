@@ -800,6 +800,19 @@ step('S15 micro urbana a intervalo fijo: frecuencia sin conteo ni gráfico', () 
   }),
 );
 
+step('S16 paradero de enfrente: 20318 (hacia Concepción) lleva al 20317 (hacia Santa Juana) y Atrás vuelve', () =>
+  withSession({ url: '/?stop=gtfs-stop-20318' }, async ({ page }) => {
+    const front = page.getByRole('button', { name: /Al frente: Camino el Patagual Santa Juana/ });
+    await visible(front, '"Al frente" row on stop 20318');
+    await waitForBody(page, /en el otro sentido, hacia Santa Juana · a \d+ m/, 'opposite stop says where its buses go');
+    await front.click();
+    await waitForUrl(page, (u) => param(u, 'stop') === 'gtfs-stop-20317', 'Expected ?stop=gtfs-stop-20317 after "Al frente"');
+    await visible(page.getByRole('button', { name: /Al frente: Camino el Patagual hacia concepción/ }), '20317 points back to 20318');
+    await page.goBack();
+    await waitForUrl(page, (u) => param(u, 'stop') === 'gtfs-stop-20318', 'Back returns to 20318 in one step');
+  }),
+);
+
 step('N1 ⌘K → ficha → recorrido → sentido → paradero; Atrás/Adelante', () =>
   withSession({ url: '/' }, async ({ page }) => {
     // "30Q" es la variante del sentido 0: abre el recorrido 30QE en ese sentido.
