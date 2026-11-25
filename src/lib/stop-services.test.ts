@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   formatServiceClock,
   getNextStopServices,
   stopPositionAlong,
 } from './stop-services';
-import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
+import * as routesModule from '@/data/routes';
+import { STOP_SERVICE_WINDOWS, type StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import type { Route, Stop } from '@/types/transport';
 
 const HEADSIGN_10A = 'Vía Láctea 10A - Centinela';
@@ -243,5 +244,72 @@ describe('próximas pasadas de Biotrén (itinerario EFE)', () => {
     });
     expect(snapshot.services).toHaveLength(1);
     expect(snapshot.services[0]).toMatchObject({ scheduledMin: 1440 + 355, minutesUntil: 415 });
+  });
+});
+
+describe('próximas pasadas de la 201 de lunes a viernes (lista del operador)', () => {
+  // Plaza de Armas de Santa Juana: 4.º paradero hacia Concepción y último hacia Santa Juana.
+  const STOP = 'gtfs-stop-20101';
+  let routes201: Route[];
+  let windows: readonly StopServiceWindow[];
+
+  beforeAll(async () => {
+    await vi.waitFor(() => expect(routesModule.microRoutesReady).toBe(true), { timeout: 10_000 });
+    routes201 = ['gtfs-route-949', 'gtfs-route-950'].map((id) => routesModule.ROUTES_BY_ID.get(id)!);
+    windows = STOP_SERVICE_WINDOWS[STOP];
+  });
+
+  // 2026-11-25 es miércoles; en noviembre Chile está en CLST (-03).
+  it('un día hábil usa las salidas de la lista, no la ventana del programa cada 5 min', () => {
+    const snapshot = getNextStopServices({
+      stopId: STOP,
+      routes: routes201,
+      windows,
+      now: new Date('2026-11-25T10:30:00-03:00'),
+    });
+    const toConcepcion = snapshot.services.filter((s) => s.routeId === 'gtfs-route-949');
+    // Hacia Santa Juana termina aquí: no se lista.
+    expect(toConcepcion).toHaveLength(1);
+    const [service] = toConcepcion;
+    const position = stopPositionAlong(routes201[0].directions![0].stops, STOP)!;
+    expect(position).toBeGreaterThan(0);
+    // De la lista: 10:20 ya pasó por aquí; la próxima sale de Santa Juana a las 10:40.
+    expect(service).toEqual({
+      routeId: 'gtfs-route-949',
+      variant: '201',
+      destination: 'Concepción',
+      scheduledMin: 640 + Math.round(position * 114),
+      minutesUntil: 10 + Math.round(position * 114),
+      source: 'static-trips',
+      origin: { name: 'Santa Juana', departureMin: 640 },
+    });
+    // La 201-AU no tiene lista: sigue con la ventana del programa.
+    expect(snapshot.services.find((s) => s.routeId === 'gtfs-route-950')).toMatchObject({ source: 'gtfs-window' });
+  });
+
+  it('el sábado sigue con la ventana del programa', () => {
+    const snapshot = getNextStopServices({
+      stopId: STOP,
+      routes: routes201,
+      windows,
+      now: new Date('2026-11-28T10:30:00-03:00'),
+    });
+    expect(snapshot.services.find((s) => s.routeId === 'gtfs-route-949')).toMatchObject({
+      source: 'gtfs-window',
+      headwayMin: 10,
+    });
+  });
+
+  it('el viernes después de la última salida de la lista pasa al programa del sábado', () => {
+    const snapshot = getNextStopServices({
+      stopId: STOP,
+      routes: routes201,
+      windows,
+      now: new Date('2026-11-27T22:30:00-03:00'),
+    });
+    expect(snapshot.services.find((s) => s.routeId === 'gtfs-route-949')).toMatchObject({
+      source: 'gtfs-window',
+      windowEdge: 'first',
+    });
   });
 });

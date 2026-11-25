@@ -2,7 +2,7 @@
 // "Micros en el mapa": el letrero del sentido y su destino, y luego de dónde
 // sale la posición:
 //   "24F hacia Hualpén · GPS hace 20 s · patente PRUE51"
-//   "24F hacia Hualpén · estimado según horario"
+//   "24F hacia Hualpén · estimado según el programa"
 // Las formas (estimada redonda y punteada; con GPS cuadrada con anillo verde,
 // ámbar si el dato es viejo) las dibuja el canvas de micros con VEHICLE_STYLE
 // de src/types/ui-contracts.ts, el mismo que usa la leyenda.
@@ -61,7 +61,7 @@ export function gpsTooltipLine(vehicle: {
   return parts.join(' · ');
 }
 
-/** "24F hacia Hualpén · estimado según horario". */
+/** "24F hacia Hualpén · estimado según el programa". */
 export function estimateTooltipLine(code: string, destination: string | null): string {
-  return `${headline(code, destination)} · estimado según horario`;
+  return `${headline(code, destination)} · estimado según el programa`;
 }

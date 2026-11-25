@@ -37,7 +37,7 @@ export type Selection =
 export type ToolId = 'planner' | 'operators' | 'quality' | 'export' | 'wallpaper';
 export type PanelId = ToolId | 'sources';
 
-/** Micros en el mapa: según horario, solo GPS en vivo, o ninguna. Nunca se mezclan. */
+/** Micros en el mapa: según el programa, solo GPS en vivo, o ninguna. Nunca se mezclan. */
 export type MicrosMode = 'schedule' | 'gps' | 'off';
 /** Solo para Horario: micros de las líneas en el mapa o de toda la red. */
 export type SimulationScope = 'visible' | 'all';
@@ -155,7 +155,7 @@ export interface VehicleFeed {
  * desteñido con flecha hueca y anillo ámbar cortado.
  */
 export const VEHICLE_STYLE = {
-  estimate: { shape: 'circle', label: 'Micro estimada según horario' },
+  estimate: { shape: 'circle', label: 'Micro estimada según el programa' },
   gps: { shape: 'square', label: 'Micro con GPS en vivo' },
   gpsStale: { shape: 'square-hollow-arrow', label: 'GPS de hace más de 2 min' },
   dimmedAlpha: 0.25,

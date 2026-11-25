@@ -31,11 +31,12 @@ import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generat
 import { BIOTREN_IDENTITY, INTERURBAN_IDENTITY } from '@/data/route-identity';
 import { interurbanOperator } from '@/data/bus-lines';
 import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
+import { operatorTimetablesOfRoute } from '@/data/operator-timetables';
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { densifyPath } from '@/lib/geo';
 import { serviceSpansFromTrips } from '@/lib/operating-hours';
 import { isInterurban, lineOperatorName, routeCodeKey } from '@/lib/route-labels';
-import { buildStaticRouteSchedules } from '@/realtime/static-service-schedules';
+import { buildStaticRouteSchedules, DAY_INDEXES } from '@/realtime/static-service-schedules';
 import type {
   BusRoute,
   MapCenter,
@@ -92,6 +93,21 @@ function staticServiceSpans(routeId: string): ServiceSpans {
   const schedules = buildStaticRouteSchedules(STATIC_SERVICE_PATTERNS.filter((p) => p.routeId === routeId));
   for (const schedule of Object.values(schedules)) schedule.forEach((trips, day) => days[day].push(...trips));
   return serviceSpansFromTrips(days);
+}
+
+// Los días con lista del operador (operator-timetables.ts, que cubre los dos
+// sentidos) los tramos salen de ella y no del programa del GTFS: así "Operando
+// ahora" calza con la ficha del recorrido y con el mapa (la 201 de lunes a
+// viernes: 06:15 a 01:02, no 05:38 a 02:33).
+function withOperatorSpans(routeId: string, spans: ServiceSpans | undefined): ServiceSpans | undefined {
+  const timetables = operatorTimetablesOfRoute(routeId);
+  if (!spans || timetables.length === 0) return spans;
+  const days: ScheduledTrip[][] = [[], [], [], [], [], [], []];
+  for (const timetable of timetables) {
+    for (const kind of timetable.days) for (const index of DAY_INDEXES[kind]) days[index].push(...timetable.trips);
+  }
+  const operatorSpans = serviceSpansFromTrips(days);
+  return spans.map((daySpans, day) => (days[day].length > 0 ? operatorSpans[day] : daySpans));
 }
 
 // Hash operator name → stable hue so the same operator's routes share a color.
@@ -184,7 +200,7 @@ function busRouteToRoute(b: BusRoute): Route {
     // que seguidos forman el circuito completo sin saltos visibles.
     path: directions.flatMap((d) => d.path),
     directions,
-    serviceSpans: b.serviceSpans,
+    serviceSpans: withOperatorSpans(b.id, b.serviceSpans),
     network: b.network,
     digitized: b.digitized,
   };

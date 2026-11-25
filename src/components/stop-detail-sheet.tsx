@@ -18,7 +18,6 @@ import { Button } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
 import { SectionLabel } from '@/components/ui/section-label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { StatTile } from '@/components/ui/stat-tile';
 import { StatusChip } from '@/components/ui/status-chip';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { LiveArrivalsBlock } from '@/components/live-arrivals-block';
@@ -348,49 +347,32 @@ function FrequencyBlock({
   const now = new Date();
   const today = isoDayOfWeek(now);
   const hourNow = Math.floor(chileClock(now).minutes / 60);
+  const todaySlice = useMemo(() => hourly?.slice(today * 24, today * 24 + 24) ?? null, [hourly, today]);
+  const passesNow = todaySlice?.[hourNow] ?? 0;
 
-  const stats = useMemo(() => {
-    if (!hourly) return null;
-    const todaySlice = hourly.slice(today * 24, today * 24 + 24);
-    const peakHour = todaySlice.reduce(
-      (acc, count, hour) => (count > acc.count ? { hour, count } : acc),
-      { hour: 0, count: 0 },
-    );
-    return {
-      now: todaySlice[hourNow] ?? 0,
-      totalToday: todaySlice.reduce((a, b) => a + b, 0),
-      peakHour,
-      todaySlice,
-    };
-  }, [hourly, today, hourNow]);
-
-  if (!loading && !stats && !showEmpty) return null;
+  if (!loading && !todaySlice && !showEmpty) return null;
 
   const label = (
-    <SectionLabel icon={<ChartColumn />} aside={stats ? DAY_NAMES[today] : undefined}>
-      Frecuencia programada
+    <SectionLabel icon={<ChartColumn />} aside={todaySlice ? DAY_NAMES[today] : undefined}>
+      Programa por hora
     </SectionLabel>
   );
 
   if (loading) {
     return (
-      <section aria-label="Frecuencia programada">
+      <section aria-label="Programa por hora">
         {label}
-        <div role="status" aria-label="Cargando frecuencia programada">
-          <div className="mb-2 grid grid-cols-3 gap-2">
-            <Skeleton className="h-[78px] w-full" />
-            <Skeleton className="h-[78px] w-full" />
-            <Skeleton className="h-[78px] w-full" />
-          </div>
+        <div role="status" aria-label="Cargando programa por hora">
+          <Skeleton className="mb-2 h-4 w-40" />
           <Skeleton className="h-12 w-full" />
         </div>
       </section>
     );
   }
 
-  if (!stats) {
+  if (!todaySlice) {
     return (
-      <section aria-label="Frecuencia programada">
+      <section aria-label="Programa por hora">
         {label}
         <Notice>
           Sin frecuencia por hora: los recorridos de este paradero no traen horario en el GTFS
@@ -400,20 +382,21 @@ function FrequencyBlock({
     );
   }
 
-  const max = Math.max(...stats.todaySlice, 1);
-
   return (
-    <section aria-label="Frecuencia programada">
+    <section aria-label="Programa por hora">
       {label}
-      <div className="mb-3 grid grid-cols-3 gap-2">
-        <StatTile label={`${hh(hourNow)}–${hh((hourNow + 1) % 24)} h`} value={stats.now} detail="pasadas" />
-        <StatTile label="Hoy" value={stats.totalToday} detail="pasadas" />
-        <StatTile label="Hora punta" value={stats.peakHour.count} detail={`a las ${hh(stats.peakHour.hour)} h`} />
-      </div>
-      <HourlyBars hourly={stats.todaySlice} max={max} currentHour={hourNow} />
+      <p className="mb-2 text-[12px] text-muted-foreground">
+        {`${hh(hourNow)}–${hh((hourNow + 1) % 24)} h: `}
+        <span className="font-medium text-foreground">
+          {passesNow} {passesNow === 1 ? 'pasada' : 'pasadas'}
+        </span>{' '}
+        en el programa
+      </p>
+      <HourlyBars hourly={todaySlice} max={Math.max(...todaySlice, 1)} currentHour={hourNow} />
       <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
-        Pasadas por hora según el programa oficial de la DTPR (GTFS); la barra resaltada es la
-        hora actual.
+        Suma las salidas del programa oficial de la DTPR (GTFS), que reparte cada recorrido a
+        intervalo fijo: sirve para ver a qué horas hay servicio, no cuántas micros pasan de verdad.
+        La barra resaltada es la hora actual.
       </p>
     </section>
   );

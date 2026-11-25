@@ -12,10 +12,10 @@ Visor de transporte público del Gran Concepción (React + Vite + TS + Tailwind 
 src/
   App.tsx            cascarón del visor (mapa, controles sobre el mapa, superficie de fichas)
   components/ui/      componentes shadcn/ui (Radix)
-  data/                *.generated.ts (no editar a mano, ver scripts/) + datos curados (routes.ts, interurban-corridors.ts, static-service-patterns.ts)
+  data/                *.generated.ts (no editar a mano, ver scripts/) + datos curados (routes.ts, interurban-corridors.ts, static-service-patterns.ts, operator-timetables.ts, fleets.ts)
   hooks/               hooks de datos en vivo (ej. use-air-quality contra SINCA, use-live-arrivals)
   lib/                 lógica de dominio: planner, routing, geo, horarios, calidad de datos, export GeoJSON
-  realtime/            llegadas en vivo (live-arrivals.ts), micros con GPS por línea y micros estimadas según horario (feeds del mapa)
+  realtime/            llegadas en vivo (live-arrivals.ts), micros con GPS por línea y micros estimadas según el programa (feeds del mapa)
   types/               tipos compartidos
   wiki/                segunda app, montada en /wiki (wiki-app.tsx + articles/)
 api/                   funciones de Vercel: stop-arrivals.ts (llegadas al paradero) y route-vehicles.ts (micros con GPS por línea); _transapp.ts es lo común (con "_" no se publica como función)
@@ -25,6 +25,8 @@ scripts/               generación de datasets (sync:*) + validación/smoke (dat
 ## Datos: fuentes y reglas
 
 - **Buses**: GTFS oficial de la DTPR (`https://dtpr.gob.cl/wp-content/uploads/2025/12/granconcepcion.zip`, versión "Gran Concepción20250228"). Calendario declarado 2024-01-01..2025-12-31, formalmente vencido pero es la última publicación oficial; el visor lo usa sin filtrar por fecha y lo dice en la UI. 102 recorridos, 188 sentidos, 2.239 paraderos. Incluye los interurbanos 201/201-AU, 401/401Y/411/421 y 302/304.
+- **Programa, no itinerario**: los horarios del GTFS son un **programa a intervalo fijo** (trip_id `POT-…`, sin `block_id`): en día hábil 182 de 188 sentidos salen a un solo intervalo de la primera a la última salida (la 201 trae 420 para 23 buses). Nunca mostrar su conteo como salidas reales. La detección está en `src/lib/schedule-program.ts` (≥ 12 salidas y ≥ 80 % de intervalos iguales a la moda ±1 min, por sentido y día), en tiempo de ejecución y sin regenerar datos; en esos días la ficha muestra frecuencia y ventana.
+- **La 201 y las flotas**: de lunes a viernes la 201 usa la lista de venta del operador (`src/data/operator-timetables.ts`, kupos.cl, 25-11-2026) en vez del programa: en la ficha del recorrido, en las próximas pasadas del paradero (`src/lib/stop-services.ts`), en «Operando ahora» (`serviceSpans` de `src/data/routes.ts`) y en el mapa. Las flotas con cifra oficial de la DTPR están en `src/data/fleets.ts`; solo entran cifras con documento citado.
 - **Sync**: `npm run sync:gtfs` (`scripts/sync-gtfs-official.ts`, lee el zip con `node:zlib`, sin sqlite), diario en `.github/workflows/sync-data.yml`. Ya no existen los scripts `sync:gtfs-*`/`sync:stop-*` ni la base sqlite del feed 2019.
 - **Códigos**: el código del recorrido junta dos variantes, una por sentido (`10AN` = sentido 0 `10A` + sentido 1 `10N`). La variante sale del letrero oficial. `MapLink route=` acepta el código (`10AN`) o una variante (`10A`).
 - **Letreros cruzados**: en 02AD, 02KP y 23BS el feed trae el letrero cruzado entre sentidos; `correctTripHeadsign` (`scripts/lib/gtfs-transform.ts`) lo corrige solo cuando viene cruzado. No "arreglar" a mano en los generados.
@@ -33,7 +35,7 @@ scripts/               generación de datasets (sync:*) + validación/smoke (dat
 - **Llegadas en vivo**: fuente NO oficial de la app Transapp (`phone.dtpr.transapp.cl`), vía `api/stop-arrivals.ts` (caché 25 s por paradero, tope 30 consultas/min). El identificador de cliente sale de `TRANSAPP_PHONE_ID` (Vercel). **Nunca escribir su valor (ni ningún UUID o identificador de la fuente) en el repo, la wiki, tests, commits ni logs.**
 - **Micros con GPS por línea**: misma fuente, vía `api/route-vehicles.ts` (`GET /api/route-vehicles?services=24F:R,401I:I`, 1–16 pares `<SERVICIO>:<I|R>` con el nombre de `visorServiceName`). La fuente solo responde por servicio y sentido, no hay consulta de toda la red. Caché 20 s por par, consultas en vuelo compartidas, tope 60 consultas/min por instancia (aparte del de paraderos), último dato del par hasta 2 min si hay tope o falla. Una lista vacía es "sin GPS ahora", nunca se rellena con estimaciones. Contrato completo en README ("Micros con GPS por línea").
 - **Qué sale de las intermediarias**: solo los campos que lee el visor (whitelist en cada handler); nunca el identificador del equipo GPS (`machineId`) ni otros campos crudos. Pruebas, smoke y dev server de agentes se corren con `env -u TRANSAPP_PHONE_ID` y con la fuente interceptada o simulada: nunca contra la fuente real.
-- **Micros en el mapa**: "Horario" (estimación según horario programado, nunca GPS; la UI la rotula como estimación) o "GPS en vivo" (solo posiciones GPS). El mapa dibuja una sola fuente a la vez: nunca se mezclan ni se rellena el modo GPS con estimaciones.
+- **Micros en el mapa**: "Horario" (estimación según el programa, nunca GPS; la UI la rotula como estimación y avisa que en la calle puede haber otra cantidad de micros, casi siempre menos) o "GPS en vivo" (solo posiciones GPS). El mapa dibuja una sola fuente a la vez: nunca se mezclan ni se rellena el modo GPS con estimaciones. En las líneas con flota conocida se ralean las salidas de programa hasta caber en la flota (`capToKnownFleets`, `src/realtime/schedule-index.ts`); nunca se inventan salidas.
 
 ## Convenciones observadas en el código existente
 
@@ -68,4 +70,5 @@ No editar directamente los `*.generated.ts` en `src/data/` — si un dataset nec
 
 - Las llegadas en vivo necesitan `TRANSAPP_PHONE_ID` en las variables de entorno (Vercel, o `.env.local` para `npm run dev`). Sin ella `/api/stop-arrivals` y `/api/route-vehicles` responden 503 y el visor dice que no están activadas. La fuente no es oficial ni documentada: puede cambiar o cortarse sin aviso.
 - El calendario del GTFS oficial venció el 2025-12-31 y no hay versión posterior: cambios de la red en 2026 (por ejemplo 11 servicios que la fuente en vivo ya sigue: 02H 02L 20F 20N 30H 30Z 50SY 70FY 70HY 80B 80V; la 02L solo como la variante 02L-Y del GTFS) no están en el visor hasta que la DTPR publique otra.
+- La lista del operador de la 201 se leyó un solo día (miércoles 25-11-2026) y no separa la 201-AU: sábado, domingo, festivos y la 201-AU siguen con el programa del GTFS. Volver a leer kupos.cl un sábado y un domingo.
 - `interurban-routes.generated.ts` (trazados OSM de 201/401/411/421) ya no se importa ni se regenera en `sync:osm`: esos servicios vienen del GTFS oficial. Se conserva porque el wiki lo cita; `npm run sync:interurban-routes` sigue disponible a mano.

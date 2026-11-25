@@ -16,7 +16,7 @@ const IGNORED_TARGETS = '.leaflet-marker-pane, .leaflet-popup-pane, .leaflet-con
 const CLICK_SLOP_PX = 6;
 
 export const VEHICLE_SECONDARY = {
-  estimate: 'Estimada según horario · no es GPS',
+  estimate: 'Estimada según el programa · no es GPS',
   gps: 'GPS en vivo · Transapp/DTPR, no oficial',
 } as const;
 

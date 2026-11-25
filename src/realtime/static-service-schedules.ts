@@ -1,7 +1,7 @@
 import { STATIC_SERVICE_PATTERNS, type StaticServicePattern } from '@/data/static-service-patterns';
 import type { RouteSchedule, ScheduledTrip } from '@/types/transport';
 
-const DAY_INDEXES = {
+export const DAY_INDEXES = {
   weekday: [0, 1, 2, 3, 4],
   saturday: [5],
   sunday: [6],

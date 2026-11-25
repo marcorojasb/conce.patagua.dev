@@ -34,10 +34,11 @@ function buildSources(): Source[] {
     {
       title: 'GTFS oficial Gran Concepción · DTPR',
       detail:
-        `Programa oficial de buses que publica la División de Transporte Público Regional (DTPR, Ministerio de Transportes) en dtpr.gob.cl: trazado y paraderos de cada sentido y horario programado por día, para la red urbana y los interurbanos 201/201-AU (Santa Juana), 401/401Y/411/421 (Tomé y Dichato) y 302/304 (Lota). Versión «${gtfs.feedVersion}», calendario declarado del ${dmy(gtfs.feedStartDate)} al ${dmy(gtfs.feedEndDate)}` +
+        `Programa oficial de buses que publica la División de Transporte Público Regional (DTPR, Ministerio de Transportes) en dtpr.gob.cl: trazado y paraderos de cada sentido y un programa de salidas por día, para la red urbana y los interurbanos 201/201-AU (Santa Juana), 401/401Y/411/421 (Tomé y Dichato) y 302/304 (Lota). Versión «${gtfs.feedVersion}», calendario declarado del ${dmy(gtfs.feedStartDate)} al ${dmy(gtfs.feedEndDate)}` +
         (gtfsExpired
           ? ': ya venció, pero es la última publicación oficial y el visor la usa como el programa más reciente.'
           : '.') +
+        ' El programa reparte las salidas a intervalo fijo de la primera a la última (en día hábil, cada 5 min en la mayoría de los sentidos): no es un itinerario, así que el visor muestra su frecuencia y su ventana y no cuenta salidas.' +
         ' Un proceso diario revisa el archivo y, si cambió, abre una solicitud de cambios que se publica al aprobarla. Las shapes se simplifican (~9 m), se usa la secuencia de paraderos más común de cada sentido y se corrigen los letreros cruzados de 02AD, 02KP y 23BS; el resto se usa tal cual.',
       count: `${microCount.toLocaleString('es-CL')} recorridos · ${GTFS_STOPS.length.toLocaleString('es-CL')} paraderos · ${gtfs.source}`,
       link: { href: gtfs.url, label: 'granconcepcion.zip (dtpr.gob.cl)' },
@@ -51,11 +52,11 @@ function buildSources(): Source[] {
       license: 'Fuente no oficial · sin licencia de datos publicada',
     },
     {
-      title: 'Micros según horario (estimación, no GPS)',
+      title: 'Micros según el programa (estimación, no GPS)',
       detail:
-        'Con "Micros en el mapa: Horario" el visor proyecta dónde DEBERÍA estar cada bus o tren según su horario programado: GTFS oficial DTPR para los buses (interurbanos incluidos) e itinerarios oficiales de EFE para el Biotrén. Es una estimación: atrasos, cancelaciones y desvíos no se ven. Van redondas y planas, con aro blanco; las micros con GPS, cuadradas con anillo verde, y las dos nunca se dibujan juntas.',
-      count: 'Calculado en el navegador cada 1 s desde los horarios programados',
-      license: 'Capa derivada · GTFS DTPR + itinerarios EFE',
+        'Con "Micros en el mapa: Horario" el visor proyecta dónde DEBERÍA estar cada bus o tren según el programa: GTFS oficial DTPR para los buses (interurbanos incluidos) e itinerarios oficiales de EFE para el Biotrén. Es una estimación: atrasos, cancelaciones y desvíos no se ven. En la calle puede haber otra cantidad de micros, casi siempre menos: de día, con toda la red, el programa pone más micros urbanas que las 1.894 inscritas en el perímetro. En las líneas con flota oficial conocida (201 y 201-AU, Tomé, 11, 63 y 80) se ralean las salidas del programa para no dibujar más micros que buses; la 201 usa de lunes a viernes la lista de venta del operador. Van redondas y planas, con aro blanco; las micros con GPS, cuadradas con anillo verde, y las dos nunca se dibujan juntas.',
+      count: 'Calculado en el navegador cada 1 s desde el programa (raleado según la flota donde se conoce)',
+      license: 'Capa derivada · GTFS DTPR + itinerarios EFE + salidas a la venta de la 201',
     },
     {
       title: 'EFE · itinerarios del Biotrén',
@@ -63,6 +64,12 @@ function buildSources(): Source[] {
         'Horario de cada tren de L1 (Hualqui ↔ Mercado Talcahuano) y L2 (Coronel ↔ Concepción), transcrito tren por tren desde los itinerarios oficiales vigentes desde el 15-07-2026 (lunes a viernes, sábado y domingo). EFE no publica GTFS. También vienen de EFE el orden y los nombres oficiales de las 25 estaciones (12 en L1 y 14 en L2, con Concepción compartida).',
       count: 'Día hábil: L1 37 trenes · L2 104 trenes (de cabecera a cabecera)',
       link: { href: 'https://www.efe.cl/itinerario-biotren/', label: 'efe.cl/itinerario-biotren' },
+    },
+    {
+      title: 'Transportes Santa Juana · salidas de la 201',
+      detail:
+        'Lista de salidas a la venta que publica el operador en kupos.cl para el día de la consulta, leída el miércoles 25-11-2026 (53 desde Santa Juana y 60 desde Concepción). El visor la usa de lunes a viernes para la 201 en vez del programa del GTFS. No separa la 201 de la 201-AU; sábado y domingo siguen con el programa.',
+      link: { href: 'https://kupos.cl/en/bus/tickets/concepcion/santa-juana', label: 'kupos.cl' },
     },
     {
       title: 'OpenStreetMap · Overpass API',

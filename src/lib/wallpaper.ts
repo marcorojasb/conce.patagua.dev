@@ -11,7 +11,7 @@
 // Líneas y micros van con el color de pantalla del tema en que se dibuja el
 // PNG (displayRouteColor, inkRouteColor), el mismo del mapa: el `route_color`
 // oficial crudo no se lee sobre las teselas. Las micros son siempre estimadas
-// según horario (el PNG no lleva GPS) y se pintan con la insignia del mapa
+// según el programa (el PNG no lleva GPS) y se pintan con la insignia del mapa
 // (map-paint.ts: círculo con aro blanco y flecha), o con su punto en una
 // imagen chica; la leyenda muestra la misma de las dos que se dibujó. Las
 // ciclovías van con el color y el trazo de su capa. Lugares y Educación
@@ -272,7 +272,7 @@ export function buildWallpaperLegend(
   const items: WallpaperLegendItem[] = [];
   if (input.routesCount > 0) items.push({ label: `${input.routesCount} recorridos`, color: c.sample, kind: 'line' });
   if (input.vehiclesCount > 0) {
-    // Lo mismo que dice el panel: son estimaciones según horario, no
+    // Lo mismo que dice el panel: son estimaciones según el programa, no
     // posiciones GPS. Corto para que "(no GPS)" quepa también en la vista previa.
     const noun = input.vehiclesCount === 1 ? 'micro estimada' : 'micros estimadas';
     items.push({ label: `${input.vehiclesCount} ${noun} (no GPS)`, color: MAP_SAMPLE_INK, kind: 'vehicle' });

@@ -130,8 +130,8 @@ export default function ConcepcionCoronelLota() {
         </p>
         <KeyValueList
           items={[
-            ['302 (GTFS, programa 28-feb-2025)', 'De lunes a viernes, 169 salidas por sentido entre ~07:00 y ~21:00, una cada ~5 min; viaje de ~2 h 5 min a 2 h 15 min. Sábado y domingo, 73 por sentido entre ~08:00 y ~20:00.'],
-            ['304 (GTFS)', 'Programa acotado: de lunes a viernes, 37 salidas hacia Concepción entre 06:03 y 09:03 y 85 hacia Lota entre 09:01 y 16:01.'],
+            ['302 (GTFS, programa 28-feb-2025)', 'Programa a intervalo fijo: de lunes a viernes, cada 5 min por sentido entre ~07:00 y ~21:00 (169 salidas en el GTFS), con viajes de ~2 h 5 min a 2 h 15 min; sábado y domingo, cada 10 min entre ~08:00 y ~20:00. Las salidas reales no están publicadas.'],
+            ['304 (GTFS)', 'Programa a intervalo fijo y acotado: de lunes a viernes, cada 5 min hacia Concepción entre 06:03 y 09:03 (37 salidas en el GTFS) y hacia Lota entre 09:01 y 16:01 (85); sábado y domingo, cada 10 min. Las salidas reales no están publicadas.'],
             ['Otros troncales', 'Sin numeración unificada: se identifican por destino (Lota Bajo/Alto, Coronel terminal, Lagunillas, Maule, San Pedro del Mar). Frecuencia y primera/última salida, pendientes. La prensa cita saturación en la punta de la mañana hacia Concepción y de la tarde hacia el sur.'],
             ['Tiempo real', 'No documentado. La fuente de llegadas en vivo del visor (app de Transapp, no oficial) no sigue la 302 ni la 304.'],
           ]}
@@ -205,8 +205,8 @@ export default function ConcepcionCoronelLota() {
             </li>
             <li>
               <strong>302 y 304</strong>, rotuladas «Interurbano Lota»:
-              trazado por sentido, paraderos y horario programado. Sin
-              llegadas en vivo.
+              trazado por sentido, paraderos y programa de salidas a
+              intervalo fijo (no un itinerario). Sin llegadas en vivo.
             </li>
             <li>
               Algunos servicios del PE Gran Concepción (UN23, UN24) entran a

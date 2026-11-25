@@ -635,6 +635,11 @@ step('S9 micros en Horario: estimadas de mis líneas y de toda la red', () =>
     const mine = await waitForCanvas(page, (d) => d.mode === 'schedule' && Number(d.estimated) > 0, 'estimates of my lines');
     if (mine.gps !== '0') fail(`Horario drew GPS vehicles: ${JSON.stringify(mine)}`);
     await waitForBody(page, /estimadas/, 'MicrosControl estimate count');
+    // Mis líneas incluye interurbanos del GTFS: su programa a intervalo fijo lleva el aviso
+    // (una línea corta; la explicación entera va en el title).
+    await waitForBody(page, /En la calle suele haber menos micros\./, 'program caveat in Horario status');
+    const caveatTitle = await page.locator('[data-micros-note="program"]').first().getAttribute('title');
+    if (!/casi siempre menos/.test(caveatTitle ?? '')) fail(`Program caveat lacks its explanation: "${caveatTitle}"`);
     await page.getByRole('radio', { name: 'Toda la red' }).click();
     await waitForUrl(page, (u) => param(u, 'red') === '1', 'Expected red=1 for "Toda la red"');
     await waitForCanvas(
@@ -642,6 +647,8 @@ step('S9 micros en Horario: estimadas de mis líneas y de toda la red', () =>
       (d) => Number(d.estimated) > Number(mine.estimated),
       `all-network scope adds vehicles (mine ${mine.estimated})`,
     );
+    // Lunes 08:30: el programa pone más urbanas que la flota inscrita del perímetro, y se dice con la cifra.
+    await waitForBody(page, /más micros urbanas que las 1\.894 inscritas en el perímetro/, 'perimeter fleet caveat');
     if (vehicleQueries.length > 0) fail('Horario mode queried GPS vehicles.');
   }),
 );
@@ -655,6 +662,7 @@ step('S10 herramientas: calidad de datos y fondo de pantalla con descarga', () =
     await tool(page, 'Calidad de datos').click();
     await visible(page.getByRole('dialog', { name: /Calidad de datos/ }), 'data quality surface');
     await waitForBody(page, /Cobertura de simulación|Segmento largo|Calidad de datos/, 'data quality tool');
+    await waitForBody(page, /Programa a intervalo fijo/, 'fixed-interval program check');
     await tool(page, 'Fondo de pantalla').click();
     await visible(page.getByRole('dialog', { name: /Fondo de pantalla/ }), 'wallpaper surface');
     await page.getByRole('button', { name: /Editorial/ }).click();
@@ -757,6 +765,36 @@ step('S13 GPS en vivo vence con el reloj (modo GPS)', () =>
         fail(`Expected the live block to be "down" 11 min after a failure, got "${state}"`);
       });
     await waitForCanvas(page, (d) => d.gps === '0' && d.estimated === '0', 'no GPS vehicles after the data expired');
+  }),
+);
+
+// El GTFS de la 201 trae 220 + 200 salidas cada 5 min (un programa, no un
+// itinerario); de lunes a viernes la ficha usa las 113 que vende el operador.
+step('S14 la 201: salidas del operador, no las 420 del programa', () =>
+  withSession({ url: '/?route=201' }, async ({ page }) => {
+    await surfaceWith(page, /según el operador/, '201 departures come from the operator on a weekday');
+    await surfaceWith(page, /\b113\b/, '201 shows the 113 operator departures');
+    const info = await surface(page).first().innerText();
+    if (/\b420\b/.test(info)) fail('201 route sheet shows the 420 departures of the GTFS program.');
+    await page.getByRole('tab', { name: 'Horarios' }).click();
+    await surfaceWith(page, /kupos\.cl/, '201 schedule cites the operator list');
+    await page.getByRole('group', { name: 'Día de la semana' }).getByRole('button', { name: /^Sáb/ }).click();
+    await surfaceWith(page, /cada 10 min/, '201 on Saturday shows the program frequency');
+    await surfaceWith(page, /es un programa, no un itinerario/, '201 on Saturday explains the program');
+    await surfaceWith(page, /23 buses/, '201 on Saturday shows the real fleet');
+    const saturday = await surface(page).first().innerText();
+    const count = /\b\d+ salidas\b/.exec(saturday);
+    if (count) fail(`201 on Saturday counts program departures ("${count[0]}").`);
+  }),
+);
+
+step('S15 micro urbana a intervalo fijo: frecuencia sin conteo ni gráfico', () =>
+  withSession({ url: '/?route=30QE&tab=horarios' }, async ({ page }) => {
+    await surfaceWith(page, /cada 5 min/, '30QE schedule shows the program frequency');
+    await surfaceWith(page, /es un programa, no un itinerario/, '30QE schedule explains the program');
+    if ((await page.getByRole('group', { name: /^Salidas por hora/ }).count()) > 0) {
+      fail('30QE schedule draws departures per hour for a fixed-interval program.');
+    }
   }),
 );
 

@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { ROUTE_DIRECTION_SCHEDULES } from '@/data/gtfs-schedule.generated';
+import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import {
   departuresByHour,
+  directionProgram,
   isEvenlySpaced,
   summarizeDay,
+  summarizeProgramDay,
   summarizeToday,
 } from '@/lib/route-schedule-summary';
+import { STATIC_ROUTE_SCHEDULES } from '@/realtime/static-service-schedules';
 import type { RouteSchedule, ScheduledTrip } from '@/types/transport';
 
 function every(fromMin: number, toMin: number, stepMin: number, durationMin = 60): ScheduledTrip[] {
@@ -168,5 +173,53 @@ describe('isEvenlySpaced', () => {
     const single: RouteSchedule = [[[480, 30]], [], [], [], [], [], []];
     expect(isEvenlySpaced([single], 0)).toBe(true);
     expect(isEvenlySpaced([single], 6)).toBe(true);
+  });
+});
+
+describe('directionProgram y summarizeProgramDay', () => {
+  // La 201 en el GTFS: 220 salidas hacia Concepción (05:38–23:53) y 200 hacia
+  // Santa Juana (06:54–23:29), cada 5 min exactos en día hábil.
+  const toConcepcion = [ROUTE_DIRECTION_SCHEDULES['gtfs-route-949#0']];
+  const toSantaJuana = [ROUTE_DIRECTION_SCHEDULES['gtfs-route-949#1']];
+
+  it('la 201 del GTFS es un programa cada 5 min en día hábil', () => {
+    expect(directionProgram(toConcepcion, 0)).toMatchObject({ headwayMin: 5, trips: 220, first: 338, last: 1433 });
+    expect(summarizeProgramDay([toConcepcion, toSantaJuana], 0)).toEqual({
+      headwayMin: 5,
+      headwayMax: 5,
+      first: 338,
+      last: 1433,
+    });
+  });
+
+  it('el Biotrén (itinerario de EFE tren por tren) no es programa ningún día', () => {
+    for (const routeId of new Set(STATIC_SERVICE_PATTERNS.map((p) => p.routeId))) {
+      const patterns = STATIC_SERVICE_PATTERNS.filter((p) => p.routeId === routeId);
+      const directions = (['forward', 'reverse'] as const).map((direction) =>
+        patterns.filter((p) => p.direction === direction).map((p) => STATIC_ROUTE_SCHEDULES[p.id]),
+      );
+      for (let day = 0; day < 7; day++) {
+        expect(summarizeProgramDay(directions, day), `${routeId} día ${day}`).toBeNull();
+      }
+    }
+  });
+
+  it('con un sentido programa y otro no: intervalo del programa, ventana de ambos', () => {
+    const program = weekdaysOnly(every(420, 1200, 15));
+    const irregular = weekdaysOnly([[300, 60], [410, 60], [700, 60], [1290, 60]]);
+    expect(directionProgram([irregular], 0)).toBeNull();
+    expect(summarizeProgramDay([[program], [irregular]], 0)).toEqual({
+      headwayMin: 15,
+      headwayMax: 15,
+      first: 300,
+      last: 1290,
+    });
+    expect(summarizeProgramDay([[program], [irregular]], 5)).toBeNull();
+  });
+
+  it('con sentidos a distinto intervalo da el menor y el mayor', () => {
+    const every15 = weekdaysOnly(every(400, 1200, 15));
+    const every30 = weekdaysOnly(every(420, 1260, 30));
+    expect(summarizeProgramDay([[every15], [every30]], 0)).toMatchObject({ headwayMin: 15, headwayMax: 30 });
   });
 });

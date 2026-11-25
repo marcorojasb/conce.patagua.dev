@@ -11,11 +11,16 @@
 //
 // El chunk de horarios GTFS (~cientos de KB, por sentido) se carga recién la
 // primera vez que la capa se enciende; los de Biotrén (EFE) son chicos y ya
-// vienen con el bundle principal.
+// vienen con el bundle principal. El GTFS es un programa a intervalo fijo que
+// pide más micros que buses: en las líneas con flota conocida
+// (src/data/fleets.ts) sus salidas se ralean hasta caber, y la 201 usa de
+// lunes a viernes la lista del operador (ver src/realtime/schedule-index.ts).
 
 import { useEffect, useSyncExternalStore } from 'react';
+import { URBAN_PERIMETER_FLEET } from '@/data/fleets';
+import { ROUTES_BY_ID } from '@/data/routes';
+import { capToKnownFleets, loadScheduleIndex } from '@/realtime/schedule-index';
 import { computeActiveVehicles, type SimulationRouteInput } from '@/realtime/simulated-vehicles';
-import { STATIC_ROUTE_SCHEDULES } from '@/realtime/static-service-schedules';
 import type { RouteSchedule, SimulatedVehicle } from '@/types/transport';
 
 const TICK_MS = 1000;
@@ -25,9 +30,11 @@ export interface SimulationStatus {
   error: string | null;
   count: number;
   nonGtfsCount: number;
+  /** Micros urbanas (red del perímetro): se comparan con su flota inscrita. */
+  urbanCount: number;
 }
 
-const IDLE_STATUS: SimulationStatus = { loading: false, error: null, count: 0, nonGtfsCount: 0 };
+const IDLE_STATUS: SimulationStatus = { loading: false, error: null, count: 0, nonGtfsCount: 0, urbanCount: 0 };
 
 let vehicles: SimulatedVehicle[] = [];
 let status = IDLE_STATUS;
@@ -36,12 +43,12 @@ let schedulePromise: Promise<Record<string, RouteSchedule>> | null = null;
 const vehicleListeners = new Set<(vehicles: SimulatedVehicle[]) => void>();
 const statusListeners = new Set<() => void>();
 
-/** Horarios por clave de simulación (`<routeId>#<directionId>` o id de patrón). */
+/**
+ * Horarios por clave de simulación (`<routeId>#<directionId>` o id de patrón),
+ * raleados según la flota donde se conoce.
+ */
 export function loadSimulationSchedules(): Promise<Record<string, RouteSchedule>> {
-  schedulePromise ??= import('@/data/gtfs-schedule.generated').then((gtfs) => ({
-    ...gtfs.ROUTE_DIRECTION_SCHEDULES,
-    ...STATIC_ROUTE_SCHEDULES,
-  }));
+  schedulePromise ??= loadScheduleIndex().then((index) => capToKnownFleets(index));
   return schedulePromise;
 }
 
@@ -50,7 +57,8 @@ function setStatus(next: SimulationStatus): void {
     next.loading === status.loading &&
     next.error === status.error &&
     next.count === status.count &&
-    next.nonGtfsCount === status.nonGtfsCount
+    next.nonGtfsCount === status.nonGtfsCount &&
+    next.urbanCount === status.urbanCount
   ) {
     return;
   }
@@ -62,8 +70,12 @@ function publish(next: SimulatedVehicle[]): void {
   vehicles = next;
   for (const listener of vehicleListeners) listener(next);
   let nonGtfsCount = 0;
-  for (const v of next) if (v.sourceKind !== 'gtfs') nonGtfsCount += 1;
-  setStatus({ loading: false, error: null, count: next.length, nonGtfsCount });
+  let urbanCount = 0;
+  for (const v of next) {
+    if (v.sourceKind !== 'gtfs') nonGtfsCount += 1;
+    else if (ROUTES_BY_ID.get(v.routeId)?.network === URBAN_PERIMETER_FLEET.network) urbanCount += 1;
+  }
+  setStatus({ loading: false, error: null, count: next.length, nonGtfsCount, urbanCount });
 }
 
 /** La capa del mapa recibe cada tick sin pasar por React. */

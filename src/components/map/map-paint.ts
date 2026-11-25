@@ -7,7 +7,7 @@
 // Micros: la forma dice el tipo y el relleno, la línea (la "tinta": el color
 // de la línea; en oscuro, un paso más claro que en claro; siempre con aro y
 // flecha blancos).
-//   - estimada según horario: la insignia de siempre (7d6cdbf), círculo plano
+//   - estimada según el programa: la insignia de siempre (7d6cdbf), círculo plano
 //     con aro blanco sólido y flecha blanca;
 //   - GPS al día: cuadrado redondeado con aro blanco sólido, anillo verde
 //     separado por una ranura y sombra;
