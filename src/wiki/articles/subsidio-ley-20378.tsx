@@ -11,6 +11,7 @@
 
 import {
   DataTable,
+  IssueNotice,
   KeyValueList,
   PendingBanner,
   Section,
@@ -354,41 +355,26 @@ export default function SubsidioLey20378() {
 
       <Section title="Críticas y reformas pendientes">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Falta de permanencia
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Depende de prórrogas legislativas cíclicas (2018-2019,
-              2022, 2024-2025). Cada ciclo abre incertidumbre. La
-              conversión a régimen permanente se ha propuesto sin
-              prosperar.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Insuficiencia y débil incentivo a electromovilidad
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El polinomio reajusta por inflación pero gremios y
-              academia señalan que el monto queda corto frente a la
-              inversión en flota e infraestructura. El texto original
-              no incorpora incentivos explícitos a buses eléctricos;
-              SEREMI Fierro aclaró en nov-2025 que el Gran Concepción
-              no exige flota 100% eléctrica.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Brecha per cápita RM vs regiones y fiscalización limitada
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              15 años después, la RM sigue recibiendo más subsidio per
-              cápita que la suma de regiones. La DTPR fiscaliza pero el
-              ranking de cumplimiento del PE Gran Concepción 2024 , su
-              palanca más fuerte, no se publica desagregado.
-            </p>
-          </div>
+          <IssueNotice title="Falta de permanencia">
+            Depende de prórrogas legislativas cíclicas (2018-2019,
+            2022, 2024-2025). Cada ciclo abre incertidumbre. La
+            conversión a régimen permanente se ha propuesto sin
+            prosperar.
+          </IssueNotice>
+          <IssueNotice title="Insuficiencia y débil incentivo a electromovilidad">
+            El polinomio reajusta por inflación pero gremios y
+            academia señalan que el monto queda corto frente a la
+            inversión en flota e infraestructura. El texto original
+            no incorpora incentivos explícitos a buses eléctricos;
+            SEREMI Fierro aclaró en nov-2025 que el Gran Concepción
+            no exige flota 100% eléctrica.
+          </IssueNotice>
+          <IssueNotice title="Brecha per cápita RM vs regiones y fiscalización limitada">
+            15 años después, la RM sigue recibiendo más subsidio per
+            cápita que la suma de regiones. La DTPR fiscaliza pero el
+            ranking de cumplimiento del PE Gran Concepción 2024 , su
+            palanca más fuerte, no se publica desagregado.
+          </IssueNotice>
         </div>
       </Section>
 

@@ -7,6 +7,17 @@
 // on top.
 //
 // Outcome: deterministic, retina-sharp, no UI leakage, no extra deps.
+//
+// Líneas y micros van con el color de pantalla del tema en que se dibuja el
+// PNG (displayRouteColor, inkRouteColor), el mismo del mapa: el `route_color`
+// oficial crudo no se lee sobre las teselas. Las micros son siempre estimadas
+// según horario (el PNG no lleva GPS) y se pintan con la insignia del mapa
+// (map-paint.ts: círculo con aro blanco y flecha); las ciclovías, con el
+// color y el trazo de su capa.
+
+import { paintVehicleDot, paintVehicleSymbol } from '@/components/map/map-paint';
+import { MAP_SAMPLE_INK, MAP_THEME, POI_COLOR, SCHOOL_COLOR } from '@/lib/map-theme';
+import { displayRouteColor, inkRouteColor } from '@/lib/route-colors';
 
 const TILE_SIZE = 256;
 // Esri sirve tiles reales hasta z16; más allá devuelve un placeholder, así que
@@ -26,6 +37,8 @@ export interface WallpaperRoute {
   path: Array<[number, number]>; // [lat, lng] vertices
   color: string;
   weight?: number;
+  /** Punteado en px a escala 1 (ciclovías compartidas). */
+  dash?: number[];
 }
 
 export interface WallpaperCoverageCell {
@@ -204,27 +217,43 @@ export function selectWallpaperRoutes(
   });
 }
 
-export function buildWallpaperLegend(input: {
-  routesCount: number;
-  vehiclesCount: number;
-  paraderos: boolean;
-  terminales: boolean;
-  cobertura: boolean;
-  cycleways: boolean;
-  greenspace: boolean;
-  schools: boolean;
-  pois: boolean;
-}): WallpaperLegendItem[] {
+/** Tema en que se pinta el PNG: el nocturno siempre en oscuro. */
+export function wallpaperRenderTheme(theme: WallpaperTheme, style: WallpaperStyle = 'clean'): WallpaperTheme {
+  return style === 'night' ? 'dark' : theme;
+}
+
+/** Leyenda automática de las capas activas, con los colores del tema en que se pinta (wallpaperRenderTheme). */
+export function buildWallpaperLegend(
+  input: {
+    routesCount: number;
+    vehiclesCount: number;
+    paraderos: boolean;
+    terminales: boolean;
+    cobertura: boolean;
+    cycleways: boolean;
+    greenspace: boolean;
+    schools: boolean;
+    pois: boolean;
+  },
+  theme: WallpaperTheme = 'light',
+): WallpaperLegendItem[] {
+  const c = MAP_THEME[theme];
+  const ink = theme === 'dark' ? '#fafafa' : '#3f3f46';
   const items: WallpaperLegendItem[] = [];
-  if (input.routesCount > 0) items.push({ label: `${input.routesCount} recorridos`, color: '#0ea5e9', kind: 'line' });
-  if (input.vehiclesCount > 0) items.push({ label: `${input.vehiclesCount} servicios en curso`, color: '#f8fafc', kind: 'vehicle' });
-  if (input.paraderos) items.push({ label: 'Paraderos', color: '#f8fafc', kind: 'dot' });
-  if (input.terminales) items.push({ label: 'Terminales', color: '#f8fafc', kind: 'square' });
+  if (input.routesCount > 0) items.push({ label: `${input.routesCount} recorridos`, color: c.sample, kind: 'line' });
+  if (input.vehiclesCount > 0) {
+    // Lo mismo que dice el panel: son estimaciones según horario, no
+    // posiciones GPS. Corto para que "(no GPS)" quepa también en la vista previa.
+    const noun = input.vehiclesCount === 1 ? 'micro estimada' : 'micros estimadas';
+    items.push({ label: `${input.vehiclesCount} ${noun} (no GPS)`, color: MAP_SAMPLE_INK, kind: 'vehicle' });
+  }
+  if (input.paraderos) items.push({ label: 'Paraderos', color: ink, kind: 'dot' });
+  if (input.terminales) items.push({ label: 'Terminales', color: ink, kind: 'square' });
   if (input.cobertura) items.push({ label: 'Cobertura territorial', color: '#facc15', kind: 'polygon' });
-  if (input.cycleways) items.push({ label: 'Ciclovías', color: '#2563eb', kind: 'line' });
+  if (input.cycleways) items.push({ label: 'Ciclovías', color: c.cycleway, kind: 'line' });
   if (input.greenspace) items.push({ label: 'Áreas verdes', color: '#22c55e', kind: 'polygon' });
-  if (input.schools) items.push({ label: 'Educación', color: '#dc2626', kind: 'dot' });
-  if (input.pois) items.push({ label: 'Centros de atracción', color: '#7c3aed', kind: 'dot' });
+  if (input.schools) items.push({ label: 'Educación', color: SCHOOL_COLOR.school, kind: 'dot' });
+  if (input.pois) items.push({ label: 'Centros de atracción', color: POI_COLOR.hospital, kind: 'dot' });
   return items;
 }
 
@@ -288,7 +317,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     subtitle,
   } = cfg;
   const styleMeta = STYLE_META[style];
-  const renderTheme: WallpaperTheme = style === 'night' ? 'dark' : theme;
+  const renderTheme = wallpaperRenderTheme(theme, style);
   const [[latMin, lngMin], [latMax, lngMax]] = bbox;
   const centerLat = (latMin + latMax) / 2;
   const centerLng = (lngMin + lngMax) / 2;
@@ -416,12 +445,14 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     ctx.restore();
   };
 
+  // Ciclovías como en el mapa: un solo color del tema, sin borde, y el tipo
+  // por el trazo (grosor y punteado de cada una).
   if (cycleways && cycleways.length > 0) {
-    for (const r of cycleways) drawPath(r, { alpha: 0.78, dash: [5, 4] });
+    for (const r of cycleways) drawPath({ ...r, color: MAP_THEME[renderTheme].cycleway }, { dash: r.dash });
   }
 
   for (const r of routes) drawPath(r, { halo: true, alpha: styleMeta.routeHaloAlpha });
-  for (const r of routes) drawPath(r);
+  for (const r of routes) drawPath({ ...r, color: displayRouteColor(r.color, renderTheme) });
 
   // Paraderos as small filled circles. Skipped at very low zoom — wouldn't
   // be readable anyway and they'd just blanket the map.
@@ -474,25 +505,34 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
   drawStyledPoints(schools, 2.4);
   drawStyledPoints(pois, 3.1);
 
+  // Micros estimadas: la insignia del mapa (Ø18 en una imagen de 1280 px,
+  // aro blanco y flecha), a escala de la imagen. En una
+  // imagen chica (la vista previa) no se leería: van como el punto redondo
+  // del mapa de lejos, que tampoco se confunde con un GPS.
   if (vehicles && vehicles.length > 0) {
-    const markerSize = 7.2 * lineScale;
+    const diameter = 18;
+    const scale = Math.min(width, height) / 1280;
+    const badges = diameter * scale >= 10;
+    const reach = badges ? (diameter / 2 + 1) * scale : 5;
     for (const v of vehicles) {
       const [x, y] = toCanvas(v.lat, v.lng);
-      if (x < -markerSize || x > width + markerSize || y < -markerSize || y > height + markerSize) continue;
+      if (x < -reach || x > width + reach || y < -reach || y > height + reach) continue;
+      const ink = inkRouteColor(v.color, renderTheme);
+      if (!badges) {
+        paintVehicleDot(ctx, x, y, { kind: 'estimate', stale: false, ink, theme: renderTheme });
+        continue;
+      }
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate((v.bearing * Math.PI) / 180);
-      ctx.beginPath();
-      ctx.moveTo(0, -markerSize);
-      ctx.lineTo(markerSize * 0.78, markerSize * 0.82);
-      ctx.lineTo(0, markerSize * 0.42);
-      ctx.lineTo(-markerSize * 0.78, markerSize * 0.82);
-      ctx.closePath();
-      ctx.fillStyle = v.color;
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = Math.max(1.4, 1.8 * lineScale);
-      ctx.fill();
-      ctx.stroke();
+      ctx.scale(scale, scale);
+      paintVehicleSymbol(ctx, 0, 0, {
+        kind: 'estimate',
+        stale: false,
+        ink,
+        diameter,
+        bucket: Number.isFinite(v.bearing) ? Math.round((((v.bearing % 360) + 360) % 360) / 22.5) % 16 : null,
+        theme: renderTheme,
+      });
       ctx.restore();
     }
   }
@@ -537,7 +577,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
       ctx.textBaseline = 'alphabetic';
     };
 
-    if (midpoint.origin) drawLabeledPin(midpoint.origin.lat, midpoint.origin.lng, 'A', '#16A34A');
+    if (midpoint.origin) drawLabeledPin(midpoint.origin.lat, midpoint.origin.lng, 'A', '#15803d');
     if (midpoint.destination) drawLabeledPin(midpoint.destination.lat, midpoint.destination.lng, 'B', '#DC2626');
     drawLabeledPin(midpoint.midpoint[0], midpoint.midpoint[1], 'M', '#7C3AED');
   }
@@ -663,7 +703,12 @@ function drawLegend(
 ) {
   const fontSize = Math.round(11 * opts.lineScale);
   const rowH = Math.round(18 * opts.lineScale);
-  const panelW = Math.min(opts.width * 0.46, 280 * opts.lineScale);
+  // Ancho según el rótulo más largo, sin pasar del ancho de la imagen.
+  ctx.save();
+  ctx.font = `500 ${fontSize}px Inter, system-ui, sans-serif`;
+  const longest = Math.max(0, ...items.map((item) => ctx.measureText(item.label).width));
+  ctx.restore();
+  const panelW = Math.min(opts.width - 2 * opts.padX, Math.max(160 * opts.lineScale, longest + 56 * opts.lineScale));
   const panelH = 18 * opts.lineScale + items.length * rowH;
   const x = opts.width - opts.padX - panelW;
   const y = opts.padY;
@@ -694,14 +739,19 @@ function drawLegend(
     } else if (item.kind === 'square' || item.kind === 'polygon') {
       ctx.fillRect(iconX, iconY - 5 * opts.lineScale, 10 * opts.lineScale, 10 * opts.lineScale);
     } else if (item.kind === 'vehicle') {
-      ctx.beginPath();
-      ctx.moveTo(iconX + 5 * opts.lineScale, iconY - 7 * opts.lineScale);
-      ctx.lineTo(iconX + 11 * opts.lineScale, iconY + 6 * opts.lineScale);
-      ctx.lineTo(iconX - 1 * opts.lineScale, iconY + 6 * opts.lineScale);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = opts.renderTheme === 'dark' ? '#111827' : '#fff';
-      ctx.stroke();
+      // La misma insignia que en el mapa, con la tinta de ejemplo.
+      ctx.save();
+      ctx.translate(iconX + 7 * opts.lineScale, iconY);
+      ctx.scale(opts.lineScale, opts.lineScale);
+      paintVehicleSymbol(ctx, 0, 0, {
+        kind: 'estimate',
+        stale: false,
+        ink: item.color,
+        diameter: 14,
+        bucket: 2,
+        theme: opts.renderTheme,
+      });
+      ctx.restore();
     } else {
       ctx.beginPath();
       ctx.arc(iconX + 5 * opts.lineScale, iconY, 4 * opts.lineScale, 0, Math.PI * 2);

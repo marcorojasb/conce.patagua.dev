@@ -115,7 +115,7 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
     content = (
       <div className="space-y-1.5" aria-label="Cargando próximas pasadas programadas" role="status">
         {[0, 1, 2].map((i) => (
-          <Skeleton key={i} className="h-[52px] w-full rounded-md" />
+          <Skeleton key={i} className="h-[58px] w-full rounded-md" />
         ))}
       </div>
     );
@@ -141,11 +141,11 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
             return (
               <li
                 key={`${service.routeId}-${service.destination}-${service.scheduledMin}`}
-                className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border bg-card p-2"
+                className="grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border bg-card p-2.5"
               >
                 <RouteBadge
                   code={service.variant ?? route?.code ?? service.routeId}
-                  color={route?.color ?? '#64748b'}
+                  color={route?.color ?? '#71717a'}
                 />
                 <div className="min-w-0">
                   <div className="flex min-w-0 items-center gap-1 text-sm font-medium">
@@ -159,15 +159,15 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
                 <div className="text-right">
                   {projected ? (
                     <>
-                      <div className="font-mono text-sm font-semibold">~{service.headwayMin} min</div>
+                      <div className="font-mono text-sm font-semibold tabular-nums">~{service.headwayMin} min</div>
                       <div className="text-[11px] text-muted-foreground">entre pasadas</div>
                     </>
                   ) : (
                     <>
-                      <div className="font-mono text-sm font-semibold">
+                      <div className="font-mono text-sm font-semibold tabular-nums">
                         {formatServiceClock(service.scheduledMin)}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-[11px] tabular-nums text-muted-foreground">
                         {formatWait(service.minutesUntil, service.scheduledMin)}
                       </div>
                     </>
@@ -194,6 +194,7 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
       <SectionLabel
         icon={<CalendarClock />}
         aside={clock && !state.loading ? <span title="Hora de Chile">{clock}</span> : undefined}
+        asideMono
       >
         Próximas pasadas · horario
       </SectionLabel>

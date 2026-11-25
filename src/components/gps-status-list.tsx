@@ -5,12 +5,24 @@
 // 16 sentidos por consulta, cuáles quedaron fuera.
 
 import { RouteBadge } from '@/components/route-badge';
+import { StatusChip, type StatusChipTone } from '@/components/ui/status-chip';
 import { ROUTES_BY_ID } from '@/data/routes';
 import { routePillCode } from '@/lib/route-labels';
 import { noGpsText } from '@/realtime/gps-mode-summary';
 import { MAX_GPS_PAIRS } from '@/realtime/route-vehicles';
-import { cn } from '@/lib/utils';
 import type { GpsLineStatus } from '@/types/ui-contracts';
+
+// En vivo en verde; "no se pudo consultar" en el tono de advertencia; la
+// fuente que no sigue la línea con borde punteado (no es un fallo, nunca
+// tendrá GPS); el resto, neutro.
+const STATUS_TONE: Record<GpsLineStatus['status'], StatusChipTone> = {
+  live: 'live',
+  'no-gps': 'muted',
+  untracked: 'dashed',
+  unavailable: 'stale',
+  pending: 'muted',
+  omitted: 'muted',
+};
 
 function statusText(line: GpsLineStatus, isBiotren: boolean): string {
   switch (line.status) {
@@ -33,23 +45,11 @@ function LineRow({ line }: { line: GpsLineStatus }) {
   const route = ROUTES_BY_ID.get(line.routeId);
   const isBiotren = route?.type === 'biotren';
   return (
-    <li data-gps-line={line.code} data-status={line.status} className="flex items-center gap-2 py-0.5">
-      <RouteBadge
-        code={route ? routePillCode(route) : line.code}
-        color={line.color}
-        size="sm"
-        className="min-w-[2.75rem] justify-center"
-      />
-      <span
-        className={cn(
-          'min-w-0 truncate',
-          line.status === 'live' && 'font-medium text-foreground',
-          line.status === 'unavailable' && 'text-amber-700 dark:text-amber-400',
-          line.status !== 'live' && line.status !== 'unavailable' && 'text-muted-foreground',
-        )}
-      >
-        {statusText(line, isBiotren)}
-      </span>
+    <li data-gps-line={line.code} data-status={line.status} className="flex min-h-5 items-center gap-2">
+      <RouteBadge code={route ? routePillCode(route) : line.code} color={line.color} size="sm" />
+      <StatusChip tone={STATUS_TONE[line.status]} className="min-w-0">
+        <span className="truncate">{statusText(line, isBiotren)}</span>
+      </StatusChip>
     </li>
   );
 }
@@ -61,7 +61,7 @@ export function GpsStatusList({ lines, id }: { lines: readonly GpsLineStatus[]; 
 
   return (
     <div id={id} data-gps-status className="thin-scroll max-h-44 overflow-y-auto text-[11px] md:max-h-[30vh]">
-      <ul aria-label="GPS por línea">
+      <ul aria-label="GPS por línea" className="space-y-0.5">
         {shown.map((line) => (
           <LineRow key={line.routeId} line={line} />
         ))}

@@ -6,7 +6,10 @@
 // - Una sola fuente a la vez (VehicleFeed): al cambiarla se borra lo dibujado
 //   en el acto, así estimadas y GPS nunca conviven ni un cuadro.
 // - Cada dibujo recorta por lat/lng antes de proyectar, ordena (atenuadas,
-//   viejas, normales, foco) y pinta en lotes por color según el zoom.
+//   viejas, normales, foco) y pinta en lotes según el zoom, con las formas y
+//   los colores del tema de map-paint.ts (setTheme redibuja).
+// - Las lengüetas (zoom ≥ 15) van en JetBrains Mono: al terminar de cargar la
+//   fuente se rehacen los sprites, que pudieron pintarse con la de respaldo.
 // - No se redibuja mientras el mapa se arrastra o hace zoom: se guarda lo
 //   último y se dibuja al terminar: Leaflet vacía el canvas tras moveend,
 //   zoomend y viewreset y llama a _draw, que aquí dibuja las micros.
@@ -27,7 +30,9 @@
 //   data-stale, data-drawn.
 
 import L from 'leaflet';
+import { VEHICLE_TAB_FONT, vehicleDiameterForZoom } from '@/components/map/map-paint';
 import {
+  clearSprites,
   cullVehicles,
   drawVehicleItems,
   focusIndex,
@@ -37,9 +42,11 @@ import {
   vehicleEmphasis,
   type DrawItem,
   type FocusIndex,
+  type VehicleLod,
 } from '@/components/map/vehicle-draw';
-import { VehicleHitGrid } from '@/components/map/vehicle-hit-grid';
+import { hitRadiusPx, VehicleHitGrid } from '@/components/map/vehicle-hit-grid';
 import type { MapFocus, MapVehicle, VehicleFeed } from '@/types/ui-contracts';
+import type { Theme } from '@/types/transport';
 
 export const VEHICLE_PANE = 'vehiclePane';
 const VEHICLE_PANE_Z = '450';
@@ -82,6 +89,9 @@ export class VehicleCanvasLayer extends L.Canvas {
   private unsubscribe: (() => void) | null = null;
   private vehicles: readonly MapVehicle[] = [];
   private focus: FocusIndex | null = null;
+  private theme: Theme = 'light';
+  /** Estimadas de toda la red: puntos también a zoom 13 (lodForZoom). */
+  private dense = false;
   private interactingSince = 0;
   private drawFrame = 0;
   private animFrame = 0;
@@ -90,6 +100,9 @@ export class VehicleCanvasLayer extends L.Canvas {
   /** Posición dibujada por id (GPS desde zoom 16, para interpolar desde ahí). */
   private drawnAt = new Map<string, { lat: number; lng: number }>();
   private readonly grid = new VehicleHitGrid<MapVehicle>();
+  /** Nivel de detalle del último dibujo: decide el radio de toque. */
+  private drawnLod: VehicleLod = 'icon';
+
   private stats = '';
   /** Reubicación postergada tras soltar un arrastre (rAF + timeout). */
   private deferredFrame = 0;
@@ -120,6 +133,18 @@ export class VehicleCanvasLayer extends L.Canvas {
     map.on('movestart zoomstart', this.onInteractStart);
     map.on('moveend zoomend', this.onInteractEnd);
     this.resubscribe();
+    if (typeof document !== 'undefined' && document.fonts) {
+      document.fonts
+        .load(VEHICLE_TAB_FONT)
+        .then(() => {
+          if (!this.internals._map) return;
+          clearSprites();
+          this.requestDraw();
+        })
+        .catch(() => {
+          // Sin la fuente, las lengüetas quedan con la monoespaciada del sistema.
+        });
+    }
     return this;
   }
 
@@ -201,6 +226,19 @@ export class VehicleCanvasLayer extends L.Canvas {
     this.resubscribe();
   }
 
+  /** Tinta, anillos, mezcla del GPS viejo y lengüetas siguen al tema. */
+  setTheme(theme: Theme): void {
+    if (theme === this.theme) return;
+    this.theme = theme;
+    this.requestDraw();
+  }
+
+  setDense(dense: boolean): void {
+    if (dense === this.dense) return;
+    this.dense = dense;
+    this.requestDraw();
+  }
+
   setFocus(focus: MapFocus | null): void {
     const next = focusIndex(focus);
     if (sameFocus(next, this.focus)) return;
@@ -223,12 +261,12 @@ export class VehicleCanvasLayer extends L.Canvas {
     this.drawNow();
   }
 
-  /** La micro dibujada más cercana a un punto del contenedor del mapa, dentro de `radius` px. */
-  hitTest(containerPoint: L.Point, radius: number): MapVehicle | null {
+  /** La micro dibujada más cercana a un punto del contenedor del mapa, con el radio de toque de lo dibujado. */
+  hitTest(containerPoint: L.Point, touch: boolean): MapVehicle | null {
     const map = this.internals._map;
     if (!map || this.isInteracting()) return null;
     const p = map.containerPointToLayerPoint(containerPoint);
-    return this.grid.nearest(p.x, p.y, radius);
+    return this.grid.nearest(p.x, p.y, hitRadiusPx(this.drawnLod === 'dot', touch));
   }
 
   private resubscribe(): void {
@@ -354,7 +392,8 @@ export class VehicleCanvasLayer extends L.Canvas {
     }
     this.drawnAt = drawnAt;
     const sorted = sortForDraw(items);
-    drawVehicleItems(ctx, sorted, lodForZoom(zoom));
+    this.drawnLod = lodForZoom(zoom, this.dense);
+    drawVehicleItems(ctx, sorted, { lod: this.drawnLod, diameter: vehicleDiameterForZoom(zoom), theme: this.theme });
     for (const item of sorted) this.grid.insert(item.x, item.y, item.vehicle);
 
     const mode = this.feed ? (this.feed.kind === 'gps' ? 'gps' : 'schedule') : 'off';

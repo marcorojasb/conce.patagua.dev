@@ -111,11 +111,7 @@ export default function CommandPalette({ open, onOpenChange, onSelectRoute, onSe
                     else onSelectRoute(r.id);
                   }}
                 >
-                  <RouteBadge
-                    code={hit ? directionCode(r, hit.directionId) : routePillCode(r)}
-                    color={r.color}
-                    className="min-w-[3rem] justify-center"
-                  />
+                  <RouteBadge code={hit ? directionCode(r, hit.directionId) : routePillCode(r)} color={r.color} />
                   {hit ? (
                     <span className="flex min-w-0 items-center gap-1">
                       <ArrowRight className="shrink-0 text-muted-foreground" aria-label="hacia" />
@@ -143,8 +139,8 @@ export default function CommandPalette({ open, onOpenChange, onSelectRoute, onSe
                 }}
               >
                 <MapPin className="size-[15px] text-muted-foreground" />
-                <span className="font-medium">{s.name}</span>
-                <CommandShortcut>
+                <span className="min-w-0 truncate font-medium">{s.name}</span>
+                <CommandShortcut className="max-w-[45%] shrink-0 truncate font-mono text-[11px] tracking-normal">
                   {s.routes
                     .flatMap((rid) => {
                       const route = ROUTES_BY_ID.get(rid);

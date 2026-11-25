@@ -14,8 +14,6 @@ import type { LatLng, MapVehicle } from '@/types/ui-contracts';
 
 const IGNORED_TARGETS = '.leaflet-marker-pane, .leaflet-popup-pane, .leaflet-control-container';
 const CLICK_SLOP_PX = 6;
-const HIT_RADIUS_MOUSE_PX = 10;
-const HIT_RADIUS_TOUCH_PX = 16;
 
 export const VEHICLE_SECONDARY = {
   estimate: 'Estimada según horario · no es GPS',
@@ -24,7 +22,8 @@ export const VEHICLE_SECONDARY = {
 
 export interface MapInteractionHandlers {
   onPick: (point: LatLng) => void;
-  hitVehicle: (containerPoint: L.Point, radius: number) => MapVehicle | null;
+  /** La micro bajo el punto; `touch` agranda el radio (vehicle-hit-grid.ts). */
+  hitVehicle: (containerPoint: L.Point, touch: boolean) => MapVehicle | null;
   onSelectVehicle: (vehicle: MapVehicle) => void;
 }
 
@@ -62,8 +61,7 @@ export function attachMapInteraction(map: L.Map, handlers: MapInteractionHandler
       handlers.onPick({ lat: latlng.lat, lng: latlng.lng });
       return;
     }
-    const radius = down?.touch ? HIT_RADIUS_TOUCH_PX : HIT_RADIUS_MOUSE_PX;
-    const vehicle = handlers.hitVehicle(map.mouseEventToContainerPoint(e), radius);
+    const vehicle = handlers.hitVehicle(map.mouseEventToContainerPoint(e), down?.touch === true);
     if (!vehicle) return;
     e.stopImmediatePropagation();
     hideMapTooltip(map, 'vehicle');
@@ -74,7 +72,7 @@ export function attachMapInteraction(map: L.Map, handlers: MapInteractionHandler
     hoverFrame = 0;
     const e = lastMove;
     if (!e || picking) return;
-    const vehicle = handlers.hitVehicle(e.containerPoint, HIT_RADIUS_MOUSE_PX);
+    const vehicle = handlers.hitVehicle(e.containerPoint, false);
     setOverVehicle(vehicle != null);
     if (vehicle) {
       showMapTooltip(map, [vehicle.lat, vehicle.lng], vehicle.tooltip, VEHICLE_SECONDARY[vehicle.kind], 'vehicle');

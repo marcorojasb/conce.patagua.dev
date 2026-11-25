@@ -5,6 +5,23 @@
 
 export const HIT_CELL_PX = 32;
 
+// Radio de toque alrededor del centro de la micro. Con insignias (zoom ≥ 13):
+// con el mouse, la insignia más grande (Ø26); con el dedo, 40 px de diámetro
+// (objetivo táctil mínimo), más que cualquier insignia con su anillo. Lejos,
+// con puntos de Ø7 pegados a los paraderos de su línea, el radio vuelve al de
+// antes (10 y 16): con 20 px, tocar un paradero o una línea en "Toda la red"
+// abría una micro.
+export const HIT_RADIUS_MOUSE_PX = 13;
+export const HIT_RADIUS_TOUCH_PX = 20;
+export const HIT_RADIUS_DOT_MOUSE_PX = 10;
+export const HIT_RADIUS_DOT_TOUCH_PX = 16;
+
+/** Radio de toque según lo dibujado: puntos (nivel `dot`) o insignias. */
+export function hitRadiusPx(dots: boolean, touch: boolean): number {
+  if (dots) return touch ? HIT_RADIUS_DOT_TOUCH_PX : HIT_RADIUS_DOT_MOUSE_PX;
+  return touch ? HIT_RADIUS_TOUCH_PX : HIT_RADIUS_MOUSE_PX;
+}
+
 export class VehicleHitGrid<T> {
   private cells = new Map<number, Array<{ x: number; y: number; seq: number; item: T }>>();
   private seq = 0;

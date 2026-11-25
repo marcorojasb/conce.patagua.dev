@@ -7,11 +7,13 @@ interface Props {
   icon?: ReactNode;
   /** Dato a la derecha (conteo, hora, estado). */
   aside?: ReactNode;
+  /** El dato de la derecha es una hora o cifra: va en JetBrains Mono. */
+  asideMono?: boolean;
   className?: string;
 }
 
 /** Rótulo de sección de las fichas: mayúsculas chicas, con dato opcional a la derecha. */
-export function SectionLabel({ children, icon, aside, className }: Props) {
+export function SectionLabel({ children, icon, aside, asideMono = false, className }: Props) {
   return (
     <div
       className={cn(
@@ -24,7 +26,9 @@ export function SectionLabel({ children, icon, aside, className }: Props) {
         <span className="truncate">{children}</span>
       </span>
       {aside != null && (
-        <span className="shrink-0 font-mono normal-case tracking-normal">{aside}</span>
+        <span className={cn('shrink-0 normal-case tracking-normal tabular-nums', asideMono && 'font-mono')}>
+          {aside}
+        </span>
       )}
     </div>
   );

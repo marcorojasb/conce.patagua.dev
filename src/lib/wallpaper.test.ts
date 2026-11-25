@@ -1,8 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { BADGE_CONTOUR } from '@/components/map/map-paint';
+import { displayRouteColor, inkRouteColor } from './route-colors';
 import {
+  buildWallpaper,
   buildWallpaperLegend,
   padBbox,
   selectWallpaperRoutes,
+  type WallpaperConfig,
   type WallpaperRouteSource,
 } from './wallpaper';
 
@@ -45,10 +49,85 @@ describe('wallpaper helpers', () => {
     });
     expect(legend.map((item) => item.label)).toEqual([
       '4 recorridos',
-      '12 servicios en curso',
+      '12 micros estimadas (no GPS)',
       'Paraderos',
       'Cobertura territorial',
       'Áreas verdes',
     ]);
+  });
+});
+
+/** Canvas falso que anota cada color con que se traza o rellena; las teselas fallan al instante. */
+function stubCanvas(): { strokes: string[]; fills: string[]; dashes: number[][] } {
+  const strokes: string[] = [];
+  const fills: string[] = [];
+  const dashes: number[][] = [];
+  const ctx = new Proxy({} as Record<string | symbol, unknown>, {
+    get: (target, key) => {
+      if (key in target) return target[key];
+      if (key === 'setLineDash') return (d: number[]) => dashes.push([...d]);
+      if (key === 'createRadialGradient') return () => ({ addColorStop: () => {} });
+      if (key === 'measureText') return () => ({ width: 10 });
+      return () => {};
+    },
+    set: (target, key, value) => {
+      if (key === 'strokeStyle') strokes.push(value);
+      if (key === 'fillStyle') fills.push(value);
+      target[key] = value;
+      return true;
+    },
+  });
+  const canvas = { width: 0, height: 0, getContext: () => ctx, toBlob: (cb: (b: Blob) => void) => cb(new Blob()) };
+  vi.stubGlobal('document', { createElement: () => canvas });
+  vi.stubGlobal(
+    'Image',
+    class {
+      onerror: (() => void) | null = null;
+      set src(_url: string) {
+        queueMicrotask(() => this.onerror?.());
+      }
+    },
+  );
+  return { strokes, fills, dashes };
+}
+
+describe('buildWallpaper', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const base: WallpaperConfig = {
+    bbox: [[-36.85, -73.1], [-36.8, -73.0]],
+    width: 300,
+    height: 300,
+    theme: 'light',
+    routes: [{ path: [[-36.84, -73.08], [-36.81, -73.02]], color: '#0d7215', weight: 3 }],
+    vehicles: [{ lat: -36.83, lng: -73.05, bearing: 45, routeId: 'r', color: '#b10086' }],
+  };
+
+  it('pinta líneas y micros con el color de pantalla del tema, no con el oficial crudo', async () => {
+    const { strokes, fills } = stubCanvas();
+    await buildWallpaper({ ...base, theme: 'dark' });
+    expect(strokes).toContain(displayRouteColor('#0d7215', 'dark'));
+    // La micro, con la tinta del tema (la misma de la insignia del mapa).
+    expect(fills).toContain(inkRouteColor('#b10086', 'dark'));
+    expect(strokes).not.toContain('#0d7215');
+    expect(fills).not.toContain('#b10086');
+  });
+
+  it('a tamaño de fondo de pantalla, la micro es la insignia estimada del mapa (aro blanco sólido y contorno)', async () => {
+    const { fills, strokes, dashes } = stubCanvas();
+    await buildWallpaper({ ...base, width: 1280, height: 1280 });
+    expect(fills).toContain(inkRouteColor('#b10086', 'light'));
+    expect(strokes).toContain('#ffffff');
+    expect(strokes).toContain(BADGE_CONTOUR);
+    expect(dashes.some((d) => d.length > 0)).toBe(false);
+  });
+
+  it('el estilo nocturno usa los colores del tema oscuro aunque la app esté en claro', async () => {
+    const { strokes } = stubCanvas();
+    await buildWallpaper({ ...base, theme: 'light', style: 'night' });
+    expect(strokes).toContain(displayRouteColor('#0d7215', 'dark'));
+    expect(strokes).not.toContain(displayRouteColor('#0d7215', 'light'));
   });
 });

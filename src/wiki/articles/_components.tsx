@@ -6,7 +6,13 @@
 //
 // Mantener la API estable: el 201 sigue importando los mismos nombres.
 
-import { useState, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
+import { AlertTriangle, CircleCheck } from 'lucide-react';
+import { Notice } from '@/components/ui/notice';
+import { StatusChip } from '@/components/ui/status-chip';
+import { curatedRouteColor } from '@/data/route-identity';
+import { routeColorVars } from '@/lib/route-colors';
+import { cn } from '@/lib/utils';
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -43,7 +49,7 @@ export function SourceLink({ href, children }: { href: string; children: ReactNo
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="underline underline-offset-2 hover:text-foreground"
+      className="rounded-sm underline underline-offset-2 focus-ring hover:text-foreground"
     >
       {children}
     </a>
@@ -55,7 +61,7 @@ export function SourceLink({ href, children }: { href: string; children: ReactNo
 // que en el listado de landmarks de un lector de pantalla no aportan nada.
 export function Sources({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-2 rounded-sm border border-muted-foreground/20 bg-muted/30 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+    <div className="mt-2 rounded-md border bg-muted/40 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
       <span className="font-medium uppercase tracking-wider">Fuentes</span>
       <div className="mt-1 flex flex-col gap-0.5">{children}</div>
     </div>
@@ -94,15 +100,15 @@ export function Timeline({
 }
 
 // Banners verificación / pendiente. Se usan al tope de un artículo o sección
-// para marcar el estatus editorial del bloque que sigue.
+// para marcar el estatus editorial del bloque que sigue. Son el mismo Notice
+// de las fichas del visor (tokens --live / --stale), no colores propios.
 
 export function VerifiedBanner({ children }: { children: ReactNode }) {
   return (
-    <aside
-      aria-label="Bloque verificado"
-      className="rounded-md border border-emerald-500/40 bg-emerald-500/10 p-3 text-[12px] text-emerald-900 dark:text-emerald-200"
-    >
-      {children}
+    <aside aria-label="Bloque verificado">
+      <Notice tone="success" icon={<CircleCheck />}>
+        {children}
+      </Notice>
     </aside>
   );
 }
@@ -110,10 +116,39 @@ export function VerifiedBanner({ children }: { children: ReactNode }) {
 // Igual que Sources: aviso dentro del flujo de la sección. Marcarlo como
 // landmark repetía el mismo nombre accesible varias veces por artículo.
 export function PendingBanner({ children }: { children: ReactNode }) {
+  return <Notice tone="warning" icon={<AlertTriangle />}>{children}</Notice>;
+}
+
+/** Problema o crítica conocida ("Issues conocidos"): título y detalle, con sus fuentes. */
+export function IssueNotice({ title, children }: { title: ReactNode; children: ReactNode }) {
   return (
-    <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-[12px] text-amber-900 dark:text-amber-200">
+    <Notice tone="warning" icon={<AlertTriangle />}>
+      <div className="font-medium">{title}</div>
+      <div className="mt-1">{children}</div>
+    </Notice>
+  );
+}
+
+/**
+ * Código de servicio con la forma de RouteBadge del visor (mono, ancho mínimo
+ * que alinea la columna). Biotrén e interurbanos llevan su color de identidad,
+ * el mismo de su píldora en el visor (route-identity.ts, sin cargar el GTFS);
+ * las urbanas quedan neutras.
+ */
+export function ServiceCode({ children }: { children: ReactNode }) {
+  const color = typeof children === 'string' ? curatedRouteColor(children) : null;
+  return (
+    <span
+      className={cn(
+        'inline-flex min-w-[3.25rem] shrink-0 items-center justify-center rounded-md px-1.5 py-0.5 font-mono text-xs font-medium tabular-nums',
+        color
+          ? 'bg-[var(--route)] text-[color:var(--route-fg)] dark:bg-[var(--route-dark)] dark:text-[color:var(--route-fg-dark)]'
+          : 'bg-muted text-foreground',
+      )}
+      style={color ? routeColorVars(color) : undefined}
+    >
       {children}
-    </div>
+    </span>
   );
 }
 
@@ -141,12 +176,14 @@ export function FactStrip({
         {items.map((item) => (
           <div
             key={item.label}
-            className="inline-flex max-w-full items-baseline gap-1.5 rounded-md border bg-muted/40 px-2 py-1 text-[12px] leading-snug"
+            className="inline-flex max-w-full items-baseline gap-1.5 rounded-md border bg-card px-2 py-1 leading-snug"
           >
-            <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <span className="shrink-0 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               {item.label}
             </span>
-            <span className="min-w-0 font-medium text-foreground">{item.value}</span>
+            <span className="min-w-0 font-mono text-[13px] font-medium tabular-nums text-foreground">
+              {item.value}
+            </span>
           </div>
         ))}
       </div>
@@ -208,7 +245,7 @@ export function NewsPulse({
             key={`${item.date}-${item.title}`}
             className="rounded-md border bg-card px-3 py-2"
           >
-            <div className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground tabular-nums">
               {item.date}
             </div>
             <div className="text-[13px] font-medium leading-snug">{item.title}</div>
@@ -352,13 +389,21 @@ export interface ServiceRowProps {
 export function ServiceRow({ code, title, notes, slug, verified, extra }: ServiceRowProps) {
   return (
     <div className="rounded-md border bg-card p-3">
-      <div className="flex items-baseline gap-2">
-        <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{code}</span>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        {/* "201 · 201-AU": una insignia por código, como en el visor; el "·" queda para lectores de pantalla. */}
+        <span className="flex flex-wrap gap-1">
+          {code.split(' · ').map((c, i) => (
+            <Fragment key={c}>
+              {i > 0 && <span className="sr-only"> · </span>}
+              <ServiceCode>{c}</ServiceCode>
+            </Fragment>
+          ))}
+        </span>
         <span className="text-[14px] font-medium">{title}</span>
         {verified && (
-          <span className="ml-auto rounded bg-emerald-500/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+          <StatusChip tone="live" icon={<CircleCheck />} className="ml-auto">
             verificado
-          </span>
+          </StatusChip>
         )}
       </div>
       <p className="mt-1 text-[12px] leading-snug text-muted-foreground">{notes}</p>

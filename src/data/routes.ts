@@ -28,6 +28,7 @@ import {
   BIOTREN_L2_STOPS,
 } from '@/data/biotren.generated';
 import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generated';
+import { BIOTREN_IDENTITY, INTERURBAN_IDENTITY } from '@/data/route-identity';
 import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { densifyPath } from '@/lib/geo';
@@ -101,13 +102,15 @@ function operatorColor(operator: string | undefined, fallbackSeed: string): stri
   return `hsl(${hue} 70% 45%)`;
 }
 
+// `color` es la identidad en tema claro (route-identity.ts); route-colors.ts
+// da la de cada tema.
 const BIOTREN_ROUTES: Route[] = [
   {
     id: 'bt-l1',
     code: 'L1',
     name: 'Biotrén L1 · Hualqui ↔ Mercado Talcahuano',
     type: 'biotren',
-    color: '#0EA5E9',
+    color: BIOTREN_IDENTITY.L1,
     operator: 'EFE Sur · Biotrén',
     headway: '30 min en punta',
     hours: BIOTREN_L1_HOURS,
@@ -121,7 +124,7 @@ const BIOTREN_ROUTES: Route[] = [
     code: 'L2',
     name: 'Biotrén L2 · Coronel ↔ Concepción',
     type: 'biotren',
-    color: '#0284C7',
+    color: BIOTREN_IDENTITY.L2,
     operator: 'EFE Sur · Biotrén',
     headway: '12 min en punta',
     hours: BIOTREN_L2_HOURS,
@@ -159,12 +162,15 @@ function busRouteToRoute(b: BusRoute): Route {
   // del paradero lo lista igual.
   const stopById = new Map<string, Stop>();
   for (const d of directions) for (const stop of d.stops) if (!stopById.has(stop.id)) stopById.set(stop.id, stop);
+  // Interurbanos con la identidad curada de su corredor (route-identity.ts).
+  const identity = INTERURBAN_IDENTITY[b.ref];
   return {
     id: b.id,
     code: b.ref,
     name: b.name,
     type: 'micro',
-    color: b.colour ?? operatorColor(b.operator, b.id),
+    color: identity ?? b.colour ?? operatorColor(b.operator, b.id),
+    officialColor: identity ? b.colour : undefined,
     operator: b.operator ?? 'Operador no informado en el GTFS',
     headway: 'Programado GTFS',
     hours: 'Según calendario GTFS',

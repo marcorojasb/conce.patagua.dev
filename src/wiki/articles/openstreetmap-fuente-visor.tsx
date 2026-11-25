@@ -168,7 +168,7 @@ export default function OpenstreetmapFuenteVisor() {
               </tr>
               <tr>
                 <td className="px-3 py-2 font-medium">Basemap</td>
-                <td className="px-3 py-2 text-[12px]">Tiles Esri Gray Canvas (Light / Dark), derivados de OSM.</td>
+                <td className="px-3 py-2 text-[12px]">Tiles Esri Gray Canvas (Light / Dark) y su capa de rótulos, derivados de OSM.</td>
                 <td className="px-3 py-2 text-[12px]">Atribución <code className="font-mono">© OSM · © Esri</code> al pie.</td>
                 <td className="px-3 py-2 text-[12px]">Runtime en Leaflet (<code className="font-mono">conce-map.tsx</code>), sin <code>.generated.ts</code>.</td>
               </tr>

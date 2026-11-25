@@ -7,8 +7,10 @@
 
 import {
   DataTable,
+  IssueNotice,
   KeyValueList,
   Section,
+  ServiceCode,
   SourceLink,
   Sources,
   Timeline,
@@ -147,22 +149,18 @@ export default function Ruta201SantaJuana() {
             Dos códigos en uso, mismo trazado, distinta accesibilidad:
           </p>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
-            <div className="rounded-sm border bg-background p-2">
-              <div className="flex items-baseline gap-2">
-                <span className="rounded bg-foreground px-1.5 py-0.5 font-mono text-[11px] text-background">
-                  201
-                </span>
+            <div className="rounded-md border bg-background p-2">
+              <div className="flex items-center gap-2">
+                <ServiceCode>201</ServiceCode>
                 <span className="text-[13px] font-medium">Servicio estándar</span>
               </div>
               <p className="mt-1 text-[12px] text-muted-foreground">
                 Buses estándar de la licitación, sin accesibilidad universal.
               </p>
             </div>
-            <div className="rounded-sm border bg-background p-2">
-              <div className="flex items-baseline gap-2">
-                <span className="rounded bg-foreground px-1.5 py-0.5 font-mono text-[11px] text-background">
-                  201 AU
-                </span>
+            <div className="rounded-md border bg-background p-2">
+              <div className="flex items-center gap-2">
+                <ServiceCode>201 AU</ServiceCode>
                 <span className="text-[13px] font-medium">Accesibilidad Universal</span>
               </div>
               <p className="mt-1 text-[12px] text-muted-foreground">
@@ -395,24 +393,19 @@ export default function Ruta201SantaJuana() {
       </Section>
 
       <Section title="Issues y críticas">
-        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-          <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-            Septiembre 2024 · Espacio entre filas de asientos
-          </div>
-          <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-            La SEREMITT Biobío (institución, vocería de Héctor Silva en
-            ese momento) confirmó que la distancia entre filas de
-            asientos en la flota nueva no cumplía con lo licitado. El operador
-            se comprometió a <strong>eliminar una fila de asientos</strong> en
-            cada bus para corregir la separación. Estado del cumplimiento de
-            ese compromiso: no verificado en fuentes recientes.
-          </p>
+        <IssueNotice title="Septiembre 2024 · Espacio entre filas de asientos">
+          La SEREMITT Biobío (institución, vocería de Héctor Silva en
+          ese momento) confirmó que la distancia entre filas de
+          asientos en la flota nueva no cumplía con lo licitado. El operador
+          se comprometió a <strong>eliminar una fila de asientos</strong> en
+          cada bus para corregir la separación. Estado del cumplimiento de
+          ese compromiso: no verificado en fuentes recientes.
           <Sources>
             <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/09/24/buses-a-santa-juana-todavia-no-se-corrige-la-poca-distancia-entre-asientos-para-pasajeros.html">
               Diario Concepción 24-sep-2024
             </SourceLink>
           </Sources>
-        </div>
+        </IssueNotice>
       </Section>
 
       <Section title="Datos pendientes">

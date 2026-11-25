@@ -13,14 +13,18 @@ import L from 'leaflet';
 import type { Cycleway, CyclewayKind } from '@/data/cycleways.generated';
 import type { LayerStatusControls } from '@/hooks/use-layer-status';
 import { bindMapTooltip } from '@/components/map/map-tooltip';
+import { useCurrentTheme } from '@/hooks/use-theme';
+import { MAP_THEME } from '@/lib/map-theme';
 
-// Color encoding by kind, segregated stands out (the gold standard for
-// safety), shared is muted (less reliable infra), lane is in-between. The
-// map legend draws its key from this same table.
+// Un solo color por tema (gris piedra, MAP_THEME.cycleway), fuera de las
+// familias de los recorridos y de los tonos de "en vivo" y "dato viejo": antes
+// azul, cian e índigo se confundían con el Biotrén y las líneas. El tipo lo
+// dice la forma: segregada gruesa, ciclobanda delgada, compartida punteada.
+// `color` es el de tema claro; la capa y la leyenda usan el del tema actual.
 export const CYCLEWAY_KIND_STYLE: Record<CyclewayKind, { color: string; weight: number; dash?: string; label: string }> = {
-  segregated: { color: '#2563eb', weight: 3, label: 'Ciclovía segregada' }, // blue-600
-  lane: { color: '#06b6d4', weight: 2, label: 'Ciclobanda en calzada' }, // cyan-500
-  shared: { color: '#6366f1', weight: 2.5, dash: '4 4', label: 'Ruta compartida' }, // indigo-500 dashed
+  segregated: { color: MAP_THEME.light.cycleway, weight: 3, label: 'Ciclovía segregada' },
+  lane: { color: MAP_THEME.light.cycleway, weight: 2, label: 'Ciclobanda en calzada' },
+  shared: { color: MAP_THEME.light.cycleway, weight: 2.5, dash: '4 4', label: 'Ruta compartida' },
 };
 
 let dataCache: readonly Cycleway[] | null = null;
@@ -46,6 +50,8 @@ export function CyclewaysLayer({
   loadStatus,
 }: Props) {
   const map = useMap();
+  // Cambiar el tema rehace la capa: pasa pocas veces y son ~460 trazados en el canvas.
+  const color = MAP_THEME[useCurrentTheme()].cycleway;
 
   useEffect(() => {
     if (!enabled) return;
@@ -60,9 +66,9 @@ export function CyclewaysLayer({
         const primary = c.name ?? style.label;
         const secondary = c.name ? detail : c.surface ?? undefined;
         const line = L.polyline(c.path, {
-          color: style.color,
+          color,
           weight: style.weight,
-          opacity: 0.85,
+          opacity: 1,
           dashArray: style.dash,
           lineCap: 'round',
           lineJoin: 'round',
@@ -97,7 +103,7 @@ export function CyclewaysLayer({
       });
       group.remove();
     };
-  }, [enabled, map, loadStatus, retryKey]);
+  }, [enabled, map, loadStatus, retryKey, color]);
 
   return null;
 }

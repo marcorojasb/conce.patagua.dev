@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Notice } from '@/components/ui/notice';
 import { Switch } from '@/components/ui/switch';
 import { ROUTES } from '@/data/routes';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
@@ -151,11 +152,11 @@ export default function ExportTool({ visibleRouteIds }: { visibleRouteIds: reado
         {busy ? 'Generando…' : 'Descargar GeoJSON'}
       </Button>
 
-      <div className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
+      <Notice>
         Cita las fuentes en cualquier publicación: los recorridos y paraderos de micros
         vienen del GTFS oficial de DTPR (no declara licencia); terminales, POIs y
         trazado del Biotrén, de OpenStreetMap bajo ODbL.
-      </div>
+      </Notice>
     </div>
   );
 }

@@ -4,10 +4,15 @@
 // works because we listen to popstate.
 
 import { Suspense, useSyncExternalStore, type MouseEvent } from 'react';
-import { ArrowLeft, BookOpen, ExternalLink, Github, Moon, Pencil, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft, BookOpen, ExternalLink, Pencil } from 'lucide-react';
+import { AppHeader } from '@/components/header';
+import { buttonVariants } from '@/components/ui/button-variants';
+import { Notice } from '@/components/ui/notice';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { SectionLabel } from '@/components/ui/section-label';
+import { Tooltip } from '@/components/ui/tooltip';
 import { useTheme } from '@/hooks/use-theme';
+import { cn } from '@/lib/utils';
 import { ARTICLES, findArticle, SECTION_LABELS, type ArticleMeta } from './articles';
 
 const REPO_BASE = 'https://github.com/marcorojasb/conce.patagua.dev';
@@ -59,50 +64,27 @@ export default function WikiApp() {
 
   return (
     <div className="flex h-full w-full flex-col bg-background text-foreground">
-      <header className="relative z-10 flex h-12 items-center gap-1.5 border-b bg-background/95 px-2 backdrop-blur md:h-14 md:gap-3 md:px-4">
-        <a
-          href="/"
-          onClick={backToVisor}
-          className="flex size-10 shrink-0 items-center justify-center rounded-md hover:bg-accent md:h-9 md:w-9"
-          aria-label="Volver al visor"
-        >
-          <ArrowLeft className="size-[18px]" />
-        </a>
-        <div className="flex min-w-0 items-center gap-2">
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <BookOpen className="size-4" />
-          </div>
-          <div className="min-w-0 leading-tight">
-            <div className="truncate font-mono text-sm font-semibold tracking-tight">
-              conce.patagua.dev/wiki
-            </div>
-            <div className="hidden truncate text-[11px] text-muted-foreground md:block">
-              Conocimiento contribuido sobre el transporte y la planificación del Gran Concepción
-            </div>
-          </div>
-        </div>
-        <div className="flex-1" />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() =>
-            window.open(`${REPO_BASE}/tree/main/src/wiki/articles`, '_blank', 'noopener')
-          }
-          aria-label="Repositorio del wiki"
-          className="size-10 shrink-0 md:h-9 md:w-9"
-        >
-          <Github className="size-[18px]" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          aria-label="Cambiar tema"
-          className="size-10 shrink-0 md:h-9 md:w-9"
-        >
-          {theme === 'dark' ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
-        </Button>
-      </header>
+      <AppHeader
+        leading={
+          <Tooltip content="Volver al visor" side="bottom">
+            <a
+              href="/"
+              onClick={backToVisor}
+              className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'shrink-0')}
+              aria-label="Volver al visor"
+            >
+              <ArrowLeft className="size-[18px]" />
+            </a>
+          </Tooltip>
+        }
+        icon={BookOpen}
+        title="conce.patagua.dev/wiki"
+        subtitle="Conocimiento contribuido sobre el transporte y la planificación del Gran Concepción"
+        repoUrl={`${REPO_BASE}/tree/main/src/wiki/articles`}
+        repoLabel="Repositorio del wiki"
+        theme={theme}
+        onToggleTheme={toggleTheme}
+      />
 
       <div className="relative flex min-h-0 flex-1">
         <aside className="hidden w-[280px] shrink-0 border-r md:flex md:flex-col">
@@ -117,13 +99,7 @@ export default function WikiApp() {
               {article ? (
                 <article className="prose-wiki">
                   <ArticleHeader article={article} />
-                  <Suspense
-                    fallback={
-                      <div className="rounded-md border bg-muted/40 p-4 text-sm text-muted-foreground">
-                        Cargando contenido…
-                      </div>
-                    }
-                  >
+                  <Suspense fallback={<Notice>Cargando contenido…</Notice>}>
                     <article.Component />
                   </Suspense>
                 </article>
@@ -173,9 +149,9 @@ function WikiNav({
       </button>
       {Object.entries(grouped).map(([section, items]) => (
         <div key={section}>
-          <div className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <SectionLabel className="mb-0 px-3 pb-1.5">
             {SECTION_LABELS[section as ArticleMeta['section']]}
-          </div>
+          </SectionLabel>
           <ul className="space-y-0.5">
             {items.map((a) => {
               const active = a.slug === slug;
@@ -204,9 +180,7 @@ function WikiNav({
 function ArticleHeader({ article }: { article: ArticleMeta }) {
   return (
     <header className="mb-6 border-b pb-4">
-      <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        {SECTION_LABELS[article.section]}
-      </div>
+      <SectionLabel>{SECTION_LABELS[article.section]}</SectionLabel>
       <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{article.title}</h1>
       <p className="mt-1.5 text-sm text-muted-foreground">{article.summary}</p>
       <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
@@ -216,9 +190,9 @@ function ArticleHeader({ article }: { article: ArticleMeta }) {
           href={`${REPO_BASE}/edit/main/src/wiki/articles/${article.slug}.tsx`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 hover:text-foreground hover:underline"
+          className="inline-flex min-h-10 items-center gap-1 rounded-sm focus-ring hover:text-foreground hover:underline md:min-h-0"
         >
-          <Pencil className="size-3" />
+          <Pencil className="size-3" aria-hidden />
           Editar en GitHub
         </a>
       </div>
@@ -230,9 +204,7 @@ function WikiHome({ onSelect }: { onSelect: (slug: string | null) => void }) {
   return (
     <div className="space-y-6">
       <header>
-        <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          Bienvenida
-        </div>
+        <SectionLabel>Bienvenida</SectionLabel>
         <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
           El wiki de conce.patagua.dev
         </h1>
@@ -246,7 +218,8 @@ function WikiHome({ onSelect }: { onSelect: (slug: string | null) => void }) {
       </header>
 
       <section className="rounded-md border bg-card p-4">
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        {/* Receta de SectionLabel sobre un h2: conserva el encabezado para lectores de pantalla. */}
+        <h2 className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Qué hay acá
         </h2>
         <ul className="space-y-2">
@@ -267,7 +240,7 @@ function WikiHome({ onSelect }: { onSelect: (slug: string | null) => void }) {
         </ul>
       </section>
 
-      <section className="rounded-md border bg-muted/40 p-4 text-[12px] leading-relaxed text-muted-foreground">
+      <Notice className="leading-relaxed">
         <p>
           Este wiki es <strong>contribuido</strong>, no oficial. Los artículos
           se editan via pull requests en{' '}
@@ -275,15 +248,15 @@ function WikiHome({ onSelect }: { onSelect: (slug: string | null) => void }) {
             href={`${REPO_BASE}/tree/main/src/wiki/articles`}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline underline-offset-2 hover:text-foreground"
+            className="rounded-sm underline underline-offset-2 focus-ring hover:text-foreground"
           >
             github.com/marcorojasb/conce.patagua.dev/tree/main/src/wiki/articles
-            <ExternalLink className="ml-1 inline size-3" />
+            <ExternalLink className="ml-1 inline size-3" aria-hidden />
           </a>
           . Cada artículo cita sus fuentes. Cuando una fuente oficial cambia,
           actualizamos el artículo.
         </p>
-      </section>
+      </Notice>
     </div>
   );
 }

@@ -1,14 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import {
+  MAX_SPRITES,
+  badgeSpriteKey,
   bearingBucket,
   cullVehicles,
   focusIndex,
   lodForZoom,
   sortForDraw,
   splitForLod,
+  tabSpriteKey,
   vehicleEmphasis,
   type DrawItem,
 } from '@/components/map/vehicle-draw';
+import { vehicleDiameterForZoom } from '@/components/map/map-paint';
 import type { MapVehicle } from '@/types/ui-contracts';
 
 function vehicle(over: Partial<MapVehicle> = {}): MapVehicle {
@@ -41,6 +45,10 @@ describe('lodForZoom', () => {
     expect(lodForZoom(14)).toBe('icon');
     expect(lodForZoom(15)).toBe('pill');
     expect(lodForZoom(18)).toBe('pill');
+    // Toda la red: puntos también a zoom 13, insignias desde 14.
+    expect(lodForZoom(13, true)).toBe('dot');
+    expect(lodForZoom(14, true)).toBe('icon');
+    expect(lodForZoom(12, true)).toBe('dot');
   });
 });
 
@@ -139,5 +147,36 @@ describe('bearingBucket', () => {
     expect(bearingBucket(-90)).toBe(12);
     expect(bearingBucket(null)).toBeNull();
     expect(bearingBucket(Number.NaN)).toBeNull();
+  });
+});
+
+describe('claves de sprite', () => {
+  it('la estimada solo depende de su tinta (que ya trae el tema); el GPS lleva el tema (anillos y mezcla del viejo)', () => {
+    expect(badgeSpriteKey('estimate', '#0860ab', false, 3, 18, 'light')).toBe('e|#0860ab|3|18');
+    expect(badgeSpriteKey('estimate', '#0860ab', false, 3, 18, 'dark')).toBe('e|#0860ab|3|18');
+    expect(badgeSpriteKey('gps', '#0860ab', true, null, 26, 'dark')).toBe('g|dark|#0860ab|true|null|26');
+    expect(badgeSpriteKey('gps', '#0860ab', false, null, 26, 'dark')).not.toBe(
+      badgeSpriteKey('gps', '#0860ab', true, null, 26, 'dark'),
+    );
+    expect(tabSpriteKey('light', false, true, '30E')).toBe('l|light|false|true|30E');
+  });
+
+  it('con ~26 tintas, 17 rumbos y 3 tamaños, una fuente y un tema caben en el caché', () => {
+    const inks = Array.from({ length: 26 }, (_, i) => `#0000${i.toString(16).padStart(2, '0')}`);
+    const buckets = [null, ...Array.from({ length: 16 }, (_, i) => i)];
+    const diameters = [...new Set([13, 14, 15].map(vehicleDiameterForZoom))];
+    for (const kind of ['estimate', 'gps'] as const) {
+      const keys = new Set<string>();
+      for (const ink of inks) {
+        for (const bucket of buckets) {
+          for (const d of diameters) {
+            for (const stale of kind === 'gps' ? [false, true] : [false]) {
+              keys.add(badgeSpriteKey(kind, ink, stale, bucket, d, 'light'));
+            }
+          }
+        }
+      }
+      expect(keys.size).toBeLessThan(MAX_SPRITES);
+    }
   });
 });

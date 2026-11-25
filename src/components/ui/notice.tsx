@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
+// El texto va siempre en foreground (AA en ambos temas); el tono lo dan el
+// borde, el fondo y el ícono con los tokens semánticos (--stale, --live).
 const TONES = {
   muted: 'border bg-muted/40 text-muted-foreground',
-  warning:
-    'border border-amber-500/30 bg-amber-50 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200',
-  danger: 'border border-destructive/30 bg-destructive/10 text-destructive',
-  success:
-    'border border-emerald-600/30 bg-emerald-50 text-emerald-900 dark:bg-emerald-500/10 dark:text-emerald-200',
+  warning: 'border border-stale/30 bg-stale/10 text-foreground [&_svg]:text-stale',
+  danger: 'border border-destructive/30 bg-destructive/10 text-foreground [&_svg]:text-destructive',
+  success: 'border border-live/30 bg-live/10 text-foreground [&_svg]:text-live',
 } as const;
 
 interface Props {

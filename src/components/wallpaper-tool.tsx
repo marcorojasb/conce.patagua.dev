@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Eye, ImageDown, RefreshCw } from 'lucide-react';
+import { CYCLEWAY_KIND_STYLE } from '@/components/cycleways-layer';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Notice } from '@/components/ui/notice';
+import { SectionLabel } from '@/components/ui/section-label';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Switch } from '@/components/ui/switch';
 import { ROUTES } from '@/data/routes';
 import { GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
@@ -8,9 +13,10 @@ import { POIS } from '@/data/pois.generated';
 import { TERMINALS } from '@/data/terminals.generated';
 import { useStickyState } from '@/hooks/use-sticky-state';
 import { getMapViewport, type MapBounds } from '@/lib/map-viewport';
+import { POI_COLOR, SCHOOL_COLOR } from '@/lib/map-theme';
 import { buildSimulationRoutes, computeActiveVehicles } from '@/realtime/simulated-vehicles';
 import { loadSimulationSchedules } from '@/realtime/use-simulated-vehicles';
-import { buildWallpaper, buildWallpaperLegend, CURATED_VIEWS, downloadBlob, padBbox, selectWallpaperRoutes, WALLPAPER_SIZES, WALLPAPER_STYLES, type WallpaperRouteMode, type WallpaperSizePreset, type WallpaperStyle } from '@/lib/wallpaper';
+import { buildWallpaper, buildWallpaperLegend, CURATED_VIEWS, downloadBlob, padBbox, selectWallpaperRoutes, wallpaperRenderTheme, WALLPAPER_SIZES, WALLPAPER_STYLES, type WallpaperRouteMode, type WallpaperSizePreset, type WallpaperStyle } from '@/lib/wallpaper';
 import type { CoverageCell, Theme } from '@/types/transport';
 import type { LatLng, MapLayersState, MicrosMode, SimulationScope } from '@/types/ui-contracts';
 import type { RoutingResult } from '@/lib/routing';
@@ -28,6 +34,17 @@ interface WallpaperTabProps {
   plannerOrigin: LatLng | null;
   plannerDestination: LatLng | null;
 }
+
+// Opciones de dos líneas (nombre y descripción) o en columna: el control fija
+// el alto de una línea y el ancho parejo, así que aquí se sueltan.
+const STACKED_OPTIONS =
+  '[&>button]:h-auto [&>button]:min-h-10 [&>button]:justify-start [&>button]:whitespace-normal [&>button]:py-2 [&>button]:text-left';
+
+const MODE_OPTIONS = [
+  { value: 'current', label: 'Vista actual' },
+  { value: 'curated', label: 'Vistas curadas' },
+  { value: 'manual', label: 'Manual' },
+] as const;
 
 interface LayerToggleState {
   recorridos: boolean;
@@ -176,7 +193,7 @@ export default function WallpaperTool({
             ? [{
                 lat: p.lat,
                 lng: p.lng,
-                color: p.category === 'hospital' ? '#ef4444' : p.category === 'mall' ? '#f97316' : '#7c3aed',
+                color: POI_COLOR[p.category],
                 radius: p.category === 'hospital' ? 3.6 : 3,
               }]
             : [],
@@ -205,7 +222,7 @@ export default function WallpaperTool({
       greenspace: !!greenspace?.length,
       schools: !!schools?.length,
       pois: !!poisLayer?.length,
-    });
+    }, wallpaperRenderTheme(theme, styleId));
 
     setProgress(preview ? 'Renderizando preview…' : 'Renderizando PNG…');
     return buildWallpaper({
@@ -275,90 +292,43 @@ export default function WallpaperTool({
         configures se mantiene si abres otra cosa y vuelves.
       </p>
 
-      <div className="space-y-1.5">
-        <SectionLabel>Estilo</SectionLabel>
-        <div className="grid grid-cols-2 gap-1.5">
-          {WALLPAPER_STYLES.map((s) => (
-            <Button
-              key={s.id}
-              type="button"
-              variant={styleId === s.id ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStyleId(s.id)}
-              aria-pressed={styleId === s.id}
-              className="h-auto justify-start whitespace-normal py-2 text-left"
-            >
-              <span>
-                <span className="block text-xs font-semibold">{s.label}</span>
-                <span className="block text-[10px] font-normal opacity-75">{s.description}</span>
-              </span>
-            </Button>
-          ))}
-        </div>
+      <div>
+        <SectionLabel className="mb-1.5">Estilo</SectionLabel>
+        <SegmentedControl
+          variant="toggle"
+          label="Estilo"
+          value={styleId}
+          onChange={setStyleId}
+          options={WALLPAPER_STYLES.map((s) => ({
+            value: s.id,
+            label: <TwoLineOption label={s.label} detail={s.description} />,
+          }))}
+          className={`grid grid-cols-2 ${STACKED_OPTIONS}`}
+        />
       </div>
 
-      <div className="grid grid-cols-3 gap-1.5">
-        <Button
-          type="button"
-          variant={mode === 'current' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setMode('current')}
-          aria-pressed={mode === 'current'}
-        >
-          Vista actual
-        </Button>
-        <Button
-          type="button"
-          variant={mode === 'curated' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setMode('curated')}
-          aria-pressed={mode === 'curated'}
-        >
-          Vistas curadas
-        </Button>
-        <Button
-          type="button"
-          variant={mode === 'manual' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => setMode('manual')}
-          aria-pressed={mode === 'manual'}
-        >
-          Manual
-        </Button>
-      </div>
+      <SegmentedControl variant="toggle" label="Encuadre" value={mode} onChange={setMode} options={MODE_OPTIONS} />
 
       {mode === 'curated' && (
-        <div className="space-y-1.5">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Composición
-          </div>
-          <div className="overflow-hidden rounded-md border">
-            <ul className="divide-y">
-              {CURATED_VIEWS.map((v) => (
-                <li key={v.id}>
-                  <button
-                    type="button"
-                    onClick={() => setCuratedId(v.id)}
-                    className={`block w-full px-3 py-2 text-left transition-colors focus-ring ${
-                      v.id === curatedId ? 'bg-accent/60' : 'hover:bg-accent/30'
-                    }`}
-                    aria-pressed={v.id === curatedId}
-                  >
-                    <div className="text-sm font-medium">{v.label}</div>
-                    <div className="text-[11px] leading-snug text-muted-foreground">
-                      {v.description}
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div>
+          <SectionLabel className="mb-1.5">Composición</SectionLabel>
+          <SegmentedControl
+            variant="toggle"
+            label="Composición"
+            value={curatedId}
+            onChange={setCuratedId}
+            options={CURATED_VIEWS.map((v) => ({
+              value: v.id,
+              label: <TwoLineOption label={v.label} detail={v.description} />,
+            }))}
+            className={`flex-col ${STACKED_OPTIONS}`}
+          />
         </div>
       )}
 
-      <div className="space-y-2 rounded-md border bg-muted/20 p-3">
+      <div className="space-y-2 rounded-md border bg-card p-2.5">
         <div className="grid grid-cols-2 gap-2">
-          <label className="space-y-1 text-[11px] text-muted-foreground">
+          <label className="space-y-1 text-[11px] tabular-nums text-muted-foreground">
             Padding {framePadding}%
             <input
               type="range"
@@ -367,10 +337,10 @@ export default function WallpaperTool({
               max="24"
               value={framePadding}
               onChange={(e) => setFramePadding(Number(e.target.value))}
-              className="w-full"
+              className="w-full accent-foreground"
             />
           </label>
-          <label className="space-y-1 text-[11px] text-muted-foreground">
+          <label className="space-y-1 text-[11px] tabular-nums text-muted-foreground">
             Zoom {zoomDelta > 0 ? `+${zoomDelta}` : zoomDelta}
             <input
               type="range"
@@ -379,7 +349,7 @@ export default function WallpaperTool({
               max="3"
               value={zoomDelta}
               onChange={(e) => setZoomDelta(Number(e.target.value))}
-              className="w-full"
+              className="w-full accent-foreground"
             />
           </label>
         </div>
@@ -400,24 +370,22 @@ export default function WallpaperTool({
       </div>
 
       <div className="grid gap-2">
-        <input
+        <Input
           value={titleText}
           onChange={(e) => setTitleText(e.target.value)}
-          className="h-9 rounded-md border bg-background px-3 text-sm outline-none focus-ring"
           placeholder="Título"
           aria-label="Título del fondo de pantalla"
         />
-        <input
+        <Input
           value={subtitleText}
           onChange={(e) => setSubtitleText(e.target.value)}
-          className="h-9 rounded-md border bg-background px-3 text-sm outline-none focus-ring"
           placeholder="Subtítulo"
           aria-label="Subtítulo del fondo de pantalla"
         />
       </div>
 
-      <div className="space-y-1.5">
-        <SectionLabel>Capas a incluir</SectionLabel>
+      <div>
+        <SectionLabel className="mb-1.5">Capas a incluir</SectionLabel>
         <div className="overflow-hidden rounded-md border">
           <LayerToggle
             label="Recorridos"
@@ -511,15 +479,15 @@ export default function WallpaperTool({
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <SectionLabel>Tamaño</SectionLabel>
-        <div className="overflow-hidden rounded-md border">
+      <div>
+        <SectionLabel className="mb-1.5">Tamaño</SectionLabel>
+        <div className="space-y-2">
           <SizeGroup label="Teléfono" presets={WALLPAPER_SIZES.filter((s) => s.group === 'phone')} selectedId={sizeId} onSelect={setSizeId} />
           <SizeGroup label="Computador" presets={WALLPAPER_SIZES.filter((s) => s.group === 'desktop')} selectedId={sizeId} onSelect={setSizeId} />
         </div>
       </div>
 
-      <div className="space-y-2 rounded-md border bg-muted/20 p-2">
+      <div className="space-y-2 rounded-md border bg-card p-2">
         {previewUrl ? (
           <img
             src={previewUrl}
@@ -542,25 +510,22 @@ export default function WallpaperTool({
         {busy ? progress ?? 'Generando…' : 'Descargar PNG'}
       </Button>
 
-      {progress && !busy && (
-        <div className="rounded-md border bg-destructive/10 p-2 text-[11px] text-destructive">
-          {progress}
-        </div>
-      )}
+      {progress && !busy && <Notice tone="danger">{progress}</Notice>}
 
-      <div className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
+      <Notice>
         El PNG incluye la atribución embebida (OSM · Esri · GTFS oficial DTPR ·
         itinerarios EFE). Si lo publicas, mantén esa franja visible.
-      </div>
+      </Notice>
     </div>
   );
 }
 
-function SectionLabel({ children }: { children: string }) {
+function TwoLineOption({ label, detail }: { label: string; detail: string }) {
   return (
-    <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-      {children}
-    </div>
+    <span className="min-w-0">
+      <span className="block text-xs font-semibold">{label}</span>
+      <span className="block text-[11px] font-normal leading-snug opacity-75">{detail}</span>
+    </span>
   );
 }
 
@@ -577,24 +542,17 @@ function SegmentedRows({
 }) {
   return (
     <div className="border-b bg-muted/20 px-3 py-2">
-      <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
-      <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
-        {options.map(([id, text]) => (
-          <Button
-            key={id}
-            type="button"
-            variant={value === id ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onChange(id)}
-            aria-pressed={value === id}
-            className="h-7 px-2 text-[11px]"
-          >
-            {text}
-          </Button>
-        ))}
-      </div>
+      <SectionLabel className="mb-1.5">{label}</SectionLabel>
+      {/* Cada opción crece desde su ancho natural: a partes iguales "Interurbanos" no cabe. */}
+      <SegmentedControl
+        variant="toggle"
+        size="sm"
+        label={label}
+        value={value}
+        onChange={onChange}
+        options={options.map(([id, text]) => ({ value: id, label: text }))}
+        className="[&>button]:flex-auto"
+      />
     </div>
   );
 }
@@ -643,30 +601,29 @@ function SizeGroup({
   selectedId: string;
   onSelect: (id: string) => void;
 }) {
+  const selected = presets.some((p) => p.id === selectedId) ? selectedId : null;
   return (
-    <div className="border-b last:border-b-0">
-      <div className="bg-muted/30 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
-      <ul className="divide-y">
-        {presets.map((p) => (
-          <li key={p.id}>
-            <button
-              type="button"
-              onClick={() => onSelect(p.id)}
-              aria-pressed={p.id === selectedId}
-              className={`flex w-full items-center justify-between px-3 py-1.5 text-left transition-colors focus-ring ${
-                p.id === selectedId ? 'bg-accent/60' : 'hover:bg-accent/30'
-              }`}
-            >
-              <span className="text-sm">{p.label}</span>
-              <span className="font-mono text-[11px] text-muted-foreground">
+    <div>
+      <SectionLabel className="mb-1">{label}</SectionLabel>
+      <SegmentedControl
+        variant="toggle"
+        size="sm"
+        label={label}
+        value={selected}
+        onChange={onSelect}
+        options={presets.map((p) => ({
+          value: p.id,
+          label: (
+            <span className="flex w-full items-center justify-between gap-2">
+              <span className="text-sm font-normal">{p.label}</span>
+              <span className="font-mono text-[11px] font-normal tabular-nums opacity-75">
                 {p.width}×{p.height}
               </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+            </span>
+          ),
+        }))}
+        className={`flex-col ${STACKED_OPTIONS}`}
+      />
     </div>
   );
 }
@@ -694,15 +651,12 @@ async function loadCoverage(bbox?: [[number, number], [number, number]]) {
 
 async function loadCycleways(bbox: [[number, number], [number, number]]) {
   const mod = await import('@/data/cycleways.generated');
-  return mod.CYCLEWAYS.flatMap((c) =>
-    pathIntersectsBbox(c.path, bbox)
-      ? [{
-      path: c.path,
-      color: c.kind === 'segregated' ? '#2563eb' : c.kind === 'shared' ? '#6366f1' : '#06b6d4',
-      weight: c.kind === 'segregated' ? 2.4 : 1.8,
-        }]
-      : [],
-  );
+  // Trazo de cada tipo como en la capa del mapa; el color lo pone buildWallpaper según el tema.
+  return mod.CYCLEWAYS.flatMap((c) => {
+    if (!pathIntersectsBbox(c.path, bbox)) return [];
+    const style = CYCLEWAY_KIND_STYLE[c.kind];
+    return [{ path: c.path, color: style.color, weight: style.weight, dash: style.dash?.split(' ').map(Number) }];
+  });
 }
 
 async function loadGreenspace(bbox: [[number, number], [number, number]]) {
@@ -730,7 +684,7 @@ async function loadSchools(bbox: [[number, number], [number, number]]) {
       ? [{
       lat: s.lat,
       lng: s.lng,
-      color: s.kind === 'university' || s.kind === 'college' ? '#7c3aed' : '#dc2626',
+      color: SCHOOL_COLOR[s.kind],
       radius: s.kind === 'university' || s.kind === 'college' ? 3.1 : 2.3,
         }]
       : [],

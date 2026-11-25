@@ -35,7 +35,7 @@ export interface InterurbanCorridor {
   title: string;
   /** Sub-rótulo en el tooltip (operador, frecuencia o estado). */
   subtitle: string;
-  /** Color del pin (HSL/HEX). */
+  /** Color del pin (HSL/HEX). Neutro (zinc-600, texto blanco 7,7:1): sin GTFS, no lleva color de línea. */
   color: string;
   /**
    * Punto representativo del corredor. Para servicios con terminal urbano
@@ -70,7 +70,7 @@ export const INTERURBAN_CORRIDORS: InterurbanCorridor[] = [
     wikiSlug: 'concepcion-florida',
     title: 'Concepción ↔ Florida (corredor de El Pimentón)',
     subtitle: 'Sin GTFS público · operadores privados',
-    color: '#b45309',
+    color: '#52525b',
     // Ilustre Municipalidad de Florida (Arturo Prat) — Nominatim 2026-07-17.
     anchor: [-36.8237723, -72.6608169],
     // osm-way-114474600 · Terminal Camilo Henríquez
@@ -91,7 +91,7 @@ export const INTERURBAN_CORRIDORS: InterurbanCorridor[] = [
     wikiSlug: 'concepcion-yumbel',
     title: 'Concepción ↔ Yumbel',
     subtitle: 'Ruta 146 · sin PE ni licitación DTPR',
-    color: '#0f766e',
+    color: '#52525b',
     // Terminal Rodoviario San Francisco (Yumbel) — Nominatim 2026-07-17.
     anchor: [-37.1034745, -72.5618012],
     // osm-way-597586612 · Terminal Collao

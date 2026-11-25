@@ -29,12 +29,13 @@ export const DialogContent = React.forwardRef<
   <DialogPortal>
     <DialogOverlay />
     {/* Radix no marca aria-modal; el diálogo sí lo es (atrapa el foco) y la
-        guarda de Escape de la navegación lo reconoce por ese atributo. */}
+        guarda de Escape de la navegación lo reconoce por ese atributo.
+        Superficie de las fichas (.surface-panel). */}
     <DialogPrimitive.Content
       ref={ref}
       aria-modal="true"
       className={cn(
-        'fixed left-1/2 top-[18%] z-50 w-full max-w-lg -translate-x-1/2 rounded-xl border bg-popover text-popover-foreground shadow-xl',
+        'surface-panel fixed left-1/2 top-[18%] z-50 w-full max-w-lg -translate-x-1/2 text-foreground',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',

@@ -3,6 +3,8 @@ import { ChevronRight, Clock, Eye, EyeOff, RotateCcw, Search, X } from 'lucide-r
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SectionLabel } from '@/components/ui/section-label';
+import { SegmentedControl } from '@/components/ui/segmented-control';
+import { StatusDot } from '@/components/ui/status-dot';
 import { RouteBadge } from '@/components/route-badge';
 import { ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
@@ -20,11 +22,11 @@ import type { SidebarProps } from '@/types/ui-contracts';
 
 type ListFilter = 'all' | 'micro' | 'interurban' | 'biotren';
 
-const FILTERS: Array<{ id: ListFilter; label: string }> = [
-  { id: 'all', label: 'Todos' },
-  { id: 'micro', label: 'Micros' },
-  { id: 'interurban', label: 'Interurbanos' },
-  { id: 'biotren', label: 'Biotrén' },
+const FILTERS: Array<{ value: ListFilter; label: string }> = [
+  { value: 'all', label: 'Todos' },
+  { value: 'micro', label: 'Micros' },
+  { value: 'interurban', label: 'Interurbanos' },
+  { value: 'biotren', label: 'Biotrén' },
 ];
 
 /** "En el mapa" muestra hasta aquí sin pedirlo: con 20 líneas enteras serían ~50 filas. */
@@ -56,8 +58,11 @@ function groupByLine(routes: Route[]): LineGroup[] {
   }).sort((a, b) => compareRouteCodes(a.family, b.family));
 }
 
+// En móvil el texto queda dentro de un objetivo táctil de 40 px.
 const TEXT_BUTTON =
-  'rounded-sm text-[11px] font-medium underline-offset-2 hover:text-foreground hover:underline focus-ring';
+  'inline-flex min-h-10 min-w-10 items-center rounded-sm text-[11px] font-medium underline-offset-2 hover:text-foreground hover:underline focus-ring md:min-h-0 md:min-w-0';
+const FOOTER_LINK =
+  'inline-flex min-h-10 min-w-10 items-center justify-center rounded-sm hover:text-foreground focus-ring md:min-h-0 md:min-w-0';
 
 // react-doctor-disable-next-line react-doctor/no-giant-component -- La barra lateral junta buscador, filtros y las secciones de la lista; partirla solo reparte el mismo estado en más props.
 export function Sidebar({
@@ -179,58 +184,68 @@ export function Sidebar({
         >
           <div className="space-y-2.5 border-b p-3">
             <div className="relative">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute inset-y-0 left-2.5 my-auto size-3.5 text-muted-foreground" />
               <Input
                 ref={searchRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Número o destino: 30Q, Lomas, Tomé…"
                 aria-label="Buscar recorrido por número o destino"
-                className="h-9 pl-8 pr-8"
+                className={cn('pl-8', query ? 'pr-10 md:pr-8' : 'pr-3')}
               />
               {query && (
                 <button
                   type="button"
                   onClick={clearSearch}
                   aria-label="Borrar búsqueda"
-                  className="absolute right-1.5 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded text-muted-foreground hover:text-foreground focus-ring"
+                  className="absolute inset-y-0 right-0 my-auto grid size-10 place-items-center rounded-md text-muted-foreground hover:text-foreground focus-ring md:right-1.5 md:size-6"
                 >
                   <X className="size-3.5" />
                 </button>
               )}
             </div>
-            <div className="flex flex-wrap gap-1" role="group" aria-label="Filtrar la lista">
-              {FILTERS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setFilter(f.id)}
-                  aria-pressed={filter === f.id}
-                  className={cn(
-                    'rounded-full border px-2.5 py-1 text-xs transition-colors focus-ring',
-                    filter === f.id
-                      ? 'border-foreground bg-foreground text-background'
-                      : 'bg-background text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {f.label}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={onToggleOnlyOperatingNow}
-                aria-pressed={onlyOperatingNow}
+            {/* Cada opción crece desde su ancho natural: a partes iguales
+                "Interurbanos" no cabe en la barra. */}
+            <SegmentedControl
+              variant="toggle"
+              size="sm"
+              label="Filtrar la lista"
+              value={filter}
+              options={FILTERS}
+              onChange={setFilter}
+              className="[&>button]:flex-auto"
+            />
+            {/* El interruptor es solo visual: el estado lo dice aria-pressed del botón. */}
+            <button
+              type="button"
+              onClick={onToggleOnlyOperatingNow}
+              aria-pressed={onlyOperatingNow}
+              className={cn(
+                'flex min-h-10 w-full items-center gap-2 rounded-md border px-3 text-xs font-medium transition-colors focus-ring md:min-h-8',
+                onlyOperatingNow
+                  ? 'border-live text-foreground'
+                  : 'bg-background text-foreground/75 hover:bg-accent hover:text-foreground',
+              )}
+            >
+              <Clock className={cn('size-3.5 shrink-0', onlyOperatingNow && 'text-live')} aria-hidden />
+              <span className="flex-1 text-left">Operando ahora</span>
+              <span
+                aria-hidden
                 className={cn(
-                  'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors focus-ring',
+                  'flex h-5 w-9 shrink-0 items-center rounded-full border-2 transition-colors',
                   onlyOperatingNow
-                    ? 'border-emerald-600 bg-emerald-600 text-white'
-                    : 'bg-background text-muted-foreground hover:text-foreground',
+                    ? 'justify-end border-live bg-live'
+                    : 'justify-start border-muted-foreground bg-card',
                 )}
               >
-                <Clock className="size-3" />
-                Operando ahora
-              </button>
-            </div>
+                <span
+                  className={cn(
+                    'block size-4 rounded-full',
+                    onlyOperatingNow ? 'bg-background shadow-sm' : 'scale-75 bg-muted-foreground',
+                  )}
+                />
+              </span>
+            </button>
           </div>
 
           <ScrollArea className="min-w-0 flex-1 scroll-fade-y">
@@ -242,7 +257,7 @@ export function Sidebar({
                     {offScheduleCount > 0 && ` (${offScheduleCount} fuera de horario)`}
                   </SectionLabel>
                   {(!isDefaultLines || onMap.length > 0) && (
-                    <div className="-mt-1 mb-1.5 flex flex-wrap gap-x-3 gap-y-1 px-0.5 text-muted-foreground">
+                    <div className="-mt-2 flex flex-wrap gap-x-3 px-0.5 text-muted-foreground md:-mt-1 md:mb-1.5 md:gap-y-1">
                       {!isDefaultLines && (
                         <button
                           type="button"
@@ -289,7 +304,7 @@ export function Sidebar({
                           type="button"
                           onClick={() => setShowAllOnMap((v) => !v)}
                           aria-expanded={showAllOnMap}
-                          className={cn(TEXT_BUTTON, 'px-1.5 py-1 text-muted-foreground')}
+                          className={cn(TEXT_BUTTON, 'px-1.5 text-muted-foreground md:py-1')}
                         >
                           {showAllOnMap ? 'Mostrar menos' : `Mostrar las ${onMap.length}`}
                         </button>
@@ -305,7 +320,7 @@ export function Sidebar({
               )}
 
               {onlyOperatingNow && filtered.length > 0 && (
-                <p className="rounded-md bg-emerald-50 px-2.5 py-1.5 text-[11px] leading-snug text-emerald-900 dark:bg-emerald-500/10 dark:text-emerald-200">
+                <p className="rounded-md border border-live/30 bg-live/10 px-2.5 py-1.5 text-[11px] leading-snug text-foreground">
                   Mostrando solo lo que opera ahora ({filtered.length} de {matching.length}) ·{' '}
                   <button type="button" onClick={onToggleOnlyOperatingNow} className={cn(TEXT_BUTTON, 'underline')}>
                     Ver todos
@@ -316,7 +331,7 @@ export function Sidebar({
               {filtered.length === 0 && (
                 <EmptyCatalog
                   query={query.trim()}
-                  kind={FILTERS.find((f) => f.id === filter && f.id !== 'all')?.label ?? null}
+                  kind={FILTERS.find((f) => f.value === filter && f.value !== 'all')?.label ?? null}
                   onlyOperatingNow={onlyOperatingNow}
                   matchingCount={matching.length}
                   onClearFilter={onToggleOnlyOperatingNow}
@@ -407,15 +422,15 @@ export function Sidebar({
             </div>
           </ScrollArea>
 
-          <div className="flex items-center justify-between gap-3 border-t px-3 py-2.5 text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-between gap-3 border-t px-3 py-0.5 text-[11px] text-muted-foreground md:py-2.5">
             <div className="flex items-center gap-3">
-              <button type="button" onClick={onOpenPlanner} className="rounded-sm hover:text-foreground focus-ring">
+              <button type="button" onClick={onOpenPlanner} className={FOOTER_LINK}>
                 Planificador
               </button>
-              <button type="button" onClick={onOpenSources} className="rounded-sm hover:text-foreground focus-ring">
+              <button type="button" onClick={onOpenSources} className={FOOTER_LINK}>
                 Fuentes de datos
               </button>
-              <a href="/wiki" className="rounded-sm hover:text-foreground focus-ring">
+              <a href="/wiki" className={FOOTER_LINK}>
                 Wiki
               </a>
             </div>
@@ -423,7 +438,7 @@ export function Sidebar({
               href="https://github.com/marcorojasb/conce.patagua.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-sm hover:text-foreground focus-ring"
+              className={FOOTER_LINK}
             >
               Código abierto
             </a>
@@ -524,17 +539,17 @@ const RouteRow = memo(function RouteRow({
         onClick={() => onSelect(route.id)}
         aria-current={selected ? 'true' : undefined}
         className={cn(
-          'flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1.5 text-left focus-ring',
+          'flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 text-left focus-ring',
           offSchedule && 'opacity-60',
         )}
       >
-        <RouteBadge code={routePillCode(route)} color={route.color} className="min-w-[2.75rem] justify-center" />
+        {/* El ancho mínimo de RouteBadge cabe "201-AU": la columna de nombres queda alineada. */}
+        <RouteBadge code={routePillCode(route)} color={route.color} />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] leading-tight">{routeShortName(route)}</span>
+          {/* 13 px y hasta dos líneas: "Santa Juana ↔ Concepción" se lee entero, no "Santa Juana ↔ Concep…". */}
+          <span className="line-clamp-2 break-words text-[13px] font-medium leading-tight">{routeShortName(route)}</span>
           {offSchedule ? (
-            <span className="block truncate text-[11px] text-amber-700 dark:text-amber-300">
-              Fuera de horario · no se dibuja
-            </span>
+            <span className="block truncate text-[11px] text-stale">Fuera de horario · no se dibuja</span>
           ) : (
             !compact && (
               <span className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
@@ -544,12 +559,7 @@ const RouteRow = memo(function RouteRow({
             )
           )}
         </span>
-        <span
-          className={cn('size-1.5 shrink-0 rounded-full', operating ? 'bg-emerald-500' : 'bg-muted-foreground/30')}
-          title={operating ? 'Operando ahora' : 'Fuera de horario ahora'}
-          aria-label={operating ? 'Operando ahora' : 'Fuera de horario ahora'}
-          role="img"
-        />
+        <StatusDot on={operating} label={operating ? 'Operando ahora' : 'Fuera de horario ahora'} />
       </button>
       <button
         type="button"
@@ -558,7 +568,7 @@ const RouteRow = memo(function RouteRow({
         aria-label={`Ver ${route.code} en el mapa`}
         title={visible ? 'Quitar del mapa' : 'Mostrar en el mapa'}
         className={cn(
-          'grid size-8 shrink-0 place-items-center rounded-md transition-colors focus-ring',
+          'grid size-10 shrink-0 place-items-center rounded-md transition-colors focus-ring md:size-8',
           visible ? 'text-foreground hover:bg-background' : 'text-muted-foreground/60 hover:text-foreground',
         )}
       >
@@ -586,7 +596,7 @@ function LineGroupRow({ group, expanded, visibleCount, onToggleExpanded, onSetVi
           type="button"
           onClick={() => onToggleExpanded(group.family)}
           aria-expanded={expanded}
-          className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1.5 text-left focus-ring"
+          className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 text-left focus-ring"
         >
           <ChevronRight
             className={cn('size-3.5 shrink-0 text-muted-foreground transition-transform', expanded && 'rotate-90')}
@@ -594,12 +604,12 @@ function LineGroupRow({ group, expanded, visibleCount, onToggleExpanded, onSetVi
           <span className="min-w-0 flex-1">
             <span className="block text-[13px] font-medium leading-tight">Línea {group.family}</span>
             <span className="block truncate text-[11px] text-muted-foreground">
-              {group.routes.map((r) => routePillCode(r)).join(' · ')}
+              <span className="font-mono">{group.routes.map((r) => routePillCode(r)).join(' · ')}</span>
               {group.operator ? ` — ${group.operator}` : ''}
             </span>
           </span>
           {visibleCount > 0 && (
-            <span className="shrink-0 rounded-full bg-foreground px-1.5 font-mono text-[10px] text-background">
+            <span className="h-5 min-w-5 shrink-0 rounded-full bg-foreground px-1.5 text-center font-mono text-[11px] leading-5 text-background">
               {visibleCount}
             </span>
           )}
@@ -611,7 +621,7 @@ function LineGroupRow({ group, expanded, visibleCount, onToggleExpanded, onSetVi
           aria-label={`Ver toda la línea ${group.family} en el mapa`}
           title={allVisible ? 'Quitar la línea del mapa' : 'Mostrar toda la línea'}
           className={cn(
-            'grid size-8 shrink-0 place-items-center rounded-md transition-colors focus-ring',
+            'grid size-10 shrink-0 place-items-center rounded-md transition-colors focus-ring md:size-8',
             allVisible ? 'text-foreground' : 'text-muted-foreground/60 hover:text-foreground',
           )}
         >

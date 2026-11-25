@@ -12,6 +12,11 @@ import { nextSnap, shownSnap, toggleSnap, type SheetSnap } from '@/lib/sheet-sna
 import { cn } from '@/lib/utils';
 import type { FloatingInfoPanelProps } from '@/types/ui-contracts';
 
+interface Props extends FloatingInfoPanelProps {
+  /** En escritorio el panel mide lo que su contenido (hasta el alto disponible) en vez de ocupar toda la altura. */
+  fit?: boolean;
+}
+
 // La única superficie a la vista: panel a la derecha en escritorio, hoja
 // inferior con tres alturas en móvil. "←" vuelve a la superficie anterior y
 // "×" al mapa; Escape lo maneja la navegación (use-view-state), no el panel.
@@ -27,7 +32,11 @@ const DRAG_MIN_HEIGHT_PX = 72;
 const SNAP_HEIGHT: Record<SheetSnap, string> = {
   // Asomada: solo el encabezado (título y acción principal), ~120 px.
   peek: 'h-auto max-h-[45dvh]',
-  half: 'h-[58dvh]',
+  // Media: nunca más arriba que el riel derecho del mapa (encabezado 48 +
+  // 8 + cinco botones de 40 con sus separaciones = 287 px, más 8 de aire y
+  // los 8 del margen de abajo ≈ 19rem): una ficha que cortaba "Más
+  // herramientas" por la mitad lo dejaba tocable solo en su parte de arriba.
+  half: 'h-[min(58dvh,calc(100dvh-19rem))]',
   // Deja a la vista el header (h-12) más un respiro, también bajo un notch.
   full: 'h-[min(90dvh,calc(100dvh-4rem-env(safe-area-inset-top)))]',
 };
@@ -53,7 +62,8 @@ export function FloatingInfoPanel({
   widthClassName = 'sm:w-[380px] min-[1360px]:w-[420px]',
   scroll = true,
   closeLabel = 'Cerrar',
-}: FloatingInfoPanelProps) {
+  fit = false,
+}: Props) {
   const panelRef = useRef<HTMLElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<SheetDrag | null>(null);
@@ -185,6 +195,7 @@ export function FloatingInfoPanel({
         SNAP_HEIGHT[shown],
         'transition-[height] duration-300 ease-out motion-reduce:transition-none',
         'sm:left-auto sm:right-[64px] sm:bottom-3 sm:top-16 sm:h-auto sm:max-h-none sm:transition-none',
+        fit && 'sm:bottom-auto',
         widthClassName,
         className,
       )}
@@ -203,8 +214,12 @@ export function FloatingInfoPanel({
           // Columna explícita minmax(0,1fr): sin ella la columna implícita crece
           // hasta el ancho mínimo del contenido (textos truncados) y el panel se
           // desborda de lado.
-          'pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden rounded-lg border bg-background/95 shadow-xl outline-none backdrop-blur animate-fade-in supports-[backdrop-filter]:bg-background/90',
+          'surface-panel pointer-events-auto grid h-full max-h-[inherit] min-h-0 grid-cols-[minmax(0,1fr)] overflow-hidden outline-none animate-fade-in',
           peek ? 'grid-rows-[auto] sm:grid-rows-[auto_minmax(0,1fr)]' : 'grid-rows-[auto_minmax(0,1fr)]',
+          // Con alto según contenido el tope va aquí (top-16 + 1 rem de respiro):
+          // un max-height en % del contenedor no se resolvería contra un alto
+          // automático, y la fila 1fr se achica hasta caber.
+          fit && 'sm:max-h-[calc(100dvh-5rem)]',
         )}
       >
         {/* Zona de arrastre (manija + encabezado) de la hoja móvil. pan-x deja
@@ -223,12 +238,12 @@ export function FloatingInfoPanel({
             onClick={() => applySnap(toggleSnap(shown))}
             aria-label={shown === 'full' ? 'Reducir panel' : 'Expandir panel'}
             aria-expanded={shown === 'full'}
-            className="flex h-6 w-full items-center justify-center rounded-t-lg focus-ring sm:hidden"
+            className="flex h-10 w-full items-center justify-center rounded-t-lg focus-ring sm:hidden"
           >
             <span className="h-1 w-10 rounded-full bg-muted-foreground/40" />
           </button>
 
-          <div className={cn('px-4 pb-3 pt-0.5 sm:px-5 sm:py-4', !peek && 'border-b', peek && 'sm:border-b')}>
+          <div className={cn('px-5 pb-3 sm:py-4', !peek && 'border-b', peek && 'sm:border-b')}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 {back && (
@@ -236,7 +251,7 @@ export function FloatingInfoPanel({
                     type="button"
                     onClick={back.onBack}
                     aria-label={`Volver a ${back.label}`}
-                    className="-ml-1.5 mb-1 inline-flex h-7 max-w-full items-center gap-1 rounded-md px-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring"
+                    className="-ml-1.5 mb-1 inline-flex h-10 max-w-full items-center gap-1 rounded-md px-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring md:h-7"
                   >
                     <ArrowLeft className="size-3.5 shrink-0" aria-hidden />
                     <span className="truncate">{back.label}</span>
@@ -254,7 +269,7 @@ export function FloatingInfoPanel({
                 )}
                 <h2
                   className={cn(
-                    'text-base font-semibold leading-tight tracking-tight text-foreground sm:text-lg',
+                    'text-lg font-semibold leading-tight tracking-tight text-foreground',
                     peek && 'max-sm:truncate',
                   )}
                 >
@@ -272,9 +287,9 @@ export function FloatingInfoPanel({
                 size="icon"
                 onClick={chrome.onClose}
                 aria-label={closeLabel}
-                className="-mr-2 -mt-1 size-8 shrink-0 text-muted-foreground hover:text-foreground"
+                className="-mr-2.5 -mt-2 shrink-0 text-muted-foreground hover:text-foreground"
               >
-                <X className="size-4" />
+                <X className="size-5" />
               </Button>
             </div>
             {actions && <div className="mt-3">{actions}</div>}

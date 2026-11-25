@@ -7,6 +7,7 @@
 
 import {
   DataTable,
+  IssueNotice,
   KeyValueList,
   PendingBanner,
   Section,
@@ -477,42 +478,27 @@ export default function TaxisColectivosGranConcepcion() {
 
       <Section title="Tendencias y desafíos">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Competencia con apps y disputa por paraderos
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Desde 2017-2018 las EAT (Uber, Cabify, DiDi) presionan al
-              sector; Ley 21.431 (2022) las regula pero no las equipara
-              tarifariamente. Impacto cuantitativo pendiente. Buses,
-              colectivos e interurbanos cortos compiten por Plaza
-              Independencia y calles centrales (O'Higgins, Aníbal Pinto,
-              Barros Arana).
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Mercado secundario de cupos y envejecimiento
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Con padrón cerrado desde 2011, el cupo es activo escaso
-              (prensa nacional cita varios millones de pesos por cupo;
-              dato Biobío 2026 pendiente). El sector reporta dificultad
-              para atraer conductores jóvenes y la flota tiende al tope
-              reglamentario por falta de incentivo a renovar.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Electrificación pendiente
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Mientras los buses avanzan a flota eléctrica
-              (electrocorredores MOP, PE 2024), los colectivos siguen
-              100% combustión interna. Sin programa público de
-              electrificación al cierre 2025-2026.
-            </p>
-          </div>
+          <IssueNotice title="Competencia con apps y disputa por paraderos">
+            Desde 2017-2018 las EAT (Uber, Cabify, DiDi) presionan al
+            sector; Ley 21.431 (2022) las regula pero no las equipara
+            tarifariamente. Impacto cuantitativo pendiente. Buses,
+            colectivos e interurbanos cortos compiten por Plaza
+            Independencia y calles centrales (O'Higgins, Aníbal Pinto,
+            Barros Arana).
+          </IssueNotice>
+          <IssueNotice title="Mercado secundario de cupos y envejecimiento">
+            Con padrón cerrado desde 2011, el cupo es activo escaso
+            (prensa nacional cita varios millones de pesos por cupo;
+            dato Biobío 2026 pendiente). El sector reporta dificultad
+            para atraer conductores jóvenes y la flota tiende al tope
+            reglamentario por falta de incentivo a renovar.
+          </IssueNotice>
+          <IssueNotice title="Electrificación pendiente">
+            Mientras los buses avanzan a flota eléctrica
+            (electrocorredores MOP, PE 2024), los colectivos siguen
+            100% combustión interna. Sin programa público de
+            electrificación al cierre 2025-2026.
+          </IssueNotice>
         </div>
       </Section>
 

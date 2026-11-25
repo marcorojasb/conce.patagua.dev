@@ -47,7 +47,7 @@ export function MapLink(props: Props) {
       href={href}
       className={
         props.className ??
-        'inline-flex items-center gap-1 rounded-sm text-[12px] underline underline-offset-2 hover:text-foreground'
+        'inline-flex items-center gap-1 rounded-sm text-[12px] underline underline-offset-2 focus-ring hover:text-foreground'
       }
     >
       <MapPin className="size-3" aria-hidden />

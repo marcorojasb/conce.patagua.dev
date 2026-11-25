@@ -28,6 +28,7 @@
 
 import {
   DataTable,
+  IssueNotice,
   KeyValueList,
   NewsPulse,
   OperatorTable,
@@ -744,66 +745,41 @@ export default function PerimetroExclusionGranConcepcion2024() {
 
       <Section title="Issues conocidos">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Cobertura nocturna débil
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El contrato del PE define ventanas operativas pero la
-              cobertura nocturna (post 22:00) sigue siendo
-              históricamente débil. Los servicios periféricos terminan temprano. El
-              régimen no estableció obligación de servicio 24/7.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Frecuencias en periferias
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Mismas zonas que el SEREMI identificó en marzo 2024 como
-              necesitadas de refuerzo siguen siendo críticas: sur de
-              San Pedro de la Paz (Boca Sur, Michaihue), Hualqui, "los
-              cerros" de Talcahuano. El ranking de cumplimiento es la
-              palanca para presionar a los operadores adjudicados.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Pago electrónico tardío
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El compromiso de tener pago electrónico en 2025 se
-              postergó: licitación recién en sep-2025, adjudicación en
-              ene-2026, marcha blanca Q3 2026, 100% electrónico a fines
-              de 2026, dos años después del perímetro.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Conflicto operador-pasajero
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Quejas recurrentes en redes sociales por buses que pasan
-              llenos sin parar, recortes de recorrido en horario punta,
-              choferes que cobran tarifa adulto a estudiantes sin TNE
-              firmada. El ranking no se publica desagregado por UN, difícil para el usuario verificar si su operador cumple.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              GTFS público sin actualizar
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El GTFS oficial vigente es el programa del 28-feb-2025, con
-              calendario vencido el 31-dic-2025 y sin versión posterior al
-              24-nov-2026. La red que sigue en vivo la app de Transapp ya
-              tiene 11 servicios que no calzan con ese feed (02H, 02L, 20F,
-              20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B, 80V). El visor depende
-              del feed, así que diez de ellos no aparecen como recorrido
-              (la 02L solo como la variante 02L-Y, con 2 viajes en día
-              hábil) hasta que la DTPR publique otra versión.
-            </p>
-          </div>
+          <IssueNotice title="Cobertura nocturna débil">
+            El contrato del PE define ventanas operativas pero la
+            cobertura nocturna (post 22:00) sigue siendo
+            históricamente débil. Los servicios periféricos terminan temprano. El
+            régimen no estableció obligación de servicio 24/7.
+          </IssueNotice>
+          <IssueNotice title="Frecuencias en periferias">
+            Mismas zonas que el SEREMI identificó en marzo 2024 como
+            necesitadas de refuerzo siguen siendo críticas: sur de
+            San Pedro de la Paz (Boca Sur, Michaihue), Hualqui, "los
+            cerros" de Talcahuano. El ranking de cumplimiento es la
+            palanca para presionar a los operadores adjudicados.
+          </IssueNotice>
+          <IssueNotice title="Pago electrónico tardío">
+            El compromiso de tener pago electrónico en 2025 se
+            postergó: licitación recién en sep-2025, adjudicación en
+            ene-2026, marcha blanca Q3 2026, 100% electrónico a fines
+            de 2026, dos años después del perímetro.
+          </IssueNotice>
+          <IssueNotice title="Conflicto operador-pasajero">
+            Quejas recurrentes en redes sociales por buses que pasan
+            llenos sin parar, recortes de recorrido en horario punta,
+            choferes que cobran tarifa adulto a estudiantes sin TNE
+            firmada. El ranking no se publica desagregado por UN, difícil para el usuario verificar si su operador cumple.
+          </IssueNotice>
+          <IssueNotice title="GTFS público sin actualizar">
+            El GTFS oficial vigente es el programa del 28-feb-2025, con
+            calendario vencido el 31-dic-2025 y sin versión posterior al
+            24-nov-2026. La red que sigue en vivo la app de Transapp ya
+            tiene 11 servicios que no calzan con ese feed (02H, 02L, 20F,
+            20N, 30H, 30Z, 50SY, 70FY, 70HY, 80B, 80V). El visor depende
+            del feed, así que diez de ellos no aparecen como recorrido
+            (la 02L solo como la variante 02L-Y, con 2 viajes en día
+            hábil) hasta que la DTPR publique otra versión.
+          </IssueNotice>
         </div>
       </Section>
 

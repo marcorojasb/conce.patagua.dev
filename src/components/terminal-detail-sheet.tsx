@@ -1,6 +1,7 @@
 import { Building2, Crosshair, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Notice } from '@/components/ui/notice';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { WikiLinkButton } from '@/components/wiki-link';
 import type { TerminalDetailSheetProps } from '@/types/ui-contracts';
@@ -42,7 +43,7 @@ export function TerminalDetailSheet({ chrome, terminal, onFocus }: TerminalDetai
         </div>
       }
     >
-      <div className="space-y-2 rounded-md border bg-card p-3 text-sm">
+      <div className="space-y-2 rounded-md border bg-card p-2.5 text-sm">
         <Row label="Red">
           {terminal.network ? (
             <Badge variant="secondary" className="font-mono">{terminal.network}</Badge>
@@ -58,10 +59,10 @@ export function TerminalDetailSheet({ chrome, terminal, onFocus }: TerminalDetai
         </Row>
       </div>
 
-      <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+      <Notice>
         Datos extraídos de OpenStreetMap. La cobertura depende de los aportes
         de la comunidad; algunos nodos aún no publican operador verificable.
-      </div>
+      </Notice>
     </FloatingInfoPanel>
   );
 }
@@ -69,7 +70,7 @@ export function TerminalDetailSheet({ chrome, terminal, onFocus }: TerminalDetai
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className="text-right text-sm">{children}</span>
     </div>
   );

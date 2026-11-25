@@ -15,8 +15,18 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="theme-color" content="#18181b" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
+    <!-- Tema antes de pintar (misma lectura que src/hooks/use-theme.ts, que después
+         manda): sin esto, en oscuro se ve un fogonazo blanco hasta que carga la app. -->
+    <script>
+      try {
+        var t = localStorage.getItem('conce.theme');
+        if (t === 'dark' || (t !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

@@ -42,6 +42,18 @@ export default {
           DEFAULT: 'hsl(var(--destructive) / <alpha-value>)',
           foreground: 'hsl(var(--destructive-foreground) / <alpha-value>)',
         },
+        live: 'hsl(var(--live) / <alpha-value>)',
+        stale: 'hsl(var(--stale) / <alpha-value>)',
+        origin: 'hsl(var(--origin) / <alpha-value>)',
+        destination: 'hsl(var(--destination) / <alpha-value>)',
+        'map-land': 'hsl(var(--map-land) / <alpha-value>)',
+      },
+      // Objetivo táctil mínimo en móvil (40 px).
+      minHeight: {
+        touch: '2.5rem',
+      },
+      minWidth: {
+        touch: '2.5rem',
       },
       borderRadius: {
         lg: 'var(--radius)',

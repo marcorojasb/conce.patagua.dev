@@ -457,6 +457,7 @@ export default function App() {
             layerRetryKeys={retryKeys}
             airQuality={airQuality.stations}
             vehicleFeed={vehicleFeed}
+            vehiclesDense={prefs.micros === 'schedule' && prefs.scope === 'all'}
             planner={plannerOnMap}
             pick={planner.pick}
             onPick={planner.onMapPick}
@@ -468,7 +469,7 @@ export default function App() {
           {/* Columna izquierda sobre el mapa: arriba el control de micros, los
               avisos y la tarjeta de inicio; abajo la leyenda. Lo de arriba
               nunca pasa por debajo de la leyenda: si no cabe, se desplaza. */}
-          <div className="pointer-events-none absolute bottom-10 left-2 top-2 z-10 flex max-w-[calc(100%-4rem)] flex-col justify-between gap-2 md:bottom-6 md:left-3 md:top-3">
+          <div className="pointer-events-none absolute bottom-6 left-2 top-2 z-10 flex max-w-[calc(100%-4rem)] flex-col justify-between gap-1.5 md:left-3 md:top-3">
             <div
               data-map-overlay="top-left"
               className="thin-scroll pointer-events-none -m-1 flex min-h-0 shrink flex-col items-start gap-1.5 overflow-y-auto p-1"
@@ -517,6 +518,7 @@ export default function App() {
                 layers={prefs.layers}
                 collapsed={surfaceOpen || showWelcome}
                 plannerPoints={hasPlannerPoints}
+                lines={networkIds}
               />
             </div>
           </div>

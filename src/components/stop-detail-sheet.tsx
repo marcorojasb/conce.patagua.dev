@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import {
   Accessibility,
   ArrowDownToDot,
@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
 import { SectionLabel } from '@/components/ui/section-label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StatTile } from '@/components/ui/stat-tile';
+import { StatusChip } from '@/components/ui/status-chip';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { LiveArrivalsBlock } from '@/components/live-arrivals-block';
 import { NextStopServicesBlock } from '@/components/next-stop-services';
@@ -40,7 +42,7 @@ function gtfsStopCode(stopId: string): string | null {
   return /^gtfs-stop-(.+)$/.exec(stopId)?.[1] ?? null;
 }
 
-function stopSummary(stop: StopWithRoutes, routes: Route[], isBiotrenStation: boolean): string {
+function stopSummary(stop: StopWithRoutes, routes: Route[], isBiotrenStation: boolean): ReactNode {
   const lines = routes.filter((r) => r.type === 'biotren').map((r) => r.code);
   if (isBiotrenStation && lines.length > 0) {
     return `${lines.length === 1 ? 'Línea' : 'Líneas'} ${lines.join(' y ')}`;
@@ -48,7 +50,13 @@ function stopSummary(stop: StopWithRoutes, routes: Route[], isBiotrenStation: bo
   const n = stop.routes.length;
   const count = n === 0 ? 'sin recorridos asociados' : `${n} ${n === 1 ? 'recorrido' : 'recorridos'}`;
   const code = gtfsStopCode(stop.id);
-  return code ? `Código ${code} · ${count}` : count;
+  return code ? (
+    <>
+      Código <span className="font-mono font-medium">{code}</span> · {count}
+    </>
+  ) : (
+    count
+  );
 }
 
 export function StopDetailSheet({
@@ -106,7 +114,7 @@ export function StopDetailSheet({
             title="Abrir el planificador con este paradero como origen (A)"
             onClick={() => onPlanFrom(point)}
           >
-            <ArrowUpFromDot className="size-4 text-emerald-600" />
+            <ArrowUpFromDot className="size-4 text-origin" />
             Salir desde aquí
           </Button>
           <Button
@@ -117,7 +125,7 @@ export function StopDetailSheet({
             title="Abrir el planificador con este paradero como destino (B)"
             onClick={() => onPlanTo(point)}
           >
-            <ArrowDownToDot className="size-4 text-red-600" />
+            <ArrowDownToDot className="size-4 text-destination" />
             Ir hasta aquí
           </Button>
           {isBiotrenStation && <WikiLinkButton kind="slug" slug="biotren" className="shrink-0" />}
@@ -183,7 +191,7 @@ export function StopDetailSheet({
         </section>
       )}
 
-      <p className="font-mono text-[10px] text-muted-foreground">
+      <p className="font-mono text-[11px] text-muted-foreground">
         Ubicación {stop.lat.toFixed(5)}, {stop.lng.toFixed(5)}
       </p>
     </FloatingInfoPanel>
@@ -195,22 +203,19 @@ function AccessibilityBadges({ stop }: { stop: StopWithRoutes }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {stop.wheelchair === 'yes' && (
-        <Badge variant="secondary" className="gap-1 font-normal">
-          <Accessibility className="size-3" />
+        <StatusChip tone="muted" icon={<Accessibility />}>
           Accesible
-        </Badge>
+        </StatusChip>
       )}
       {stop.wheelchair === 'limited' && (
-        <Badge variant="outline" className="gap-1 font-normal">
-          <Accessibility className="size-3" />
+        <StatusChip tone="dashed" icon={<Accessibility />}>
           Acceso limitado
-        </Badge>
+        </StatusChip>
       )}
       {stop.tactilePaving && (
-        <Badge variant="secondary" className="gap-1 font-normal">
-          <Footprints className="size-3" />
+        <StatusChip tone="muted" icon={<Footprints />}>
           Pavimento podotáctil
-        </Badge>
+        </StatusChip>
       )}
     </div>
   );
@@ -245,7 +250,7 @@ function RoutesSection({
         icon={<Waypoints />}
         aside={
           <span className="inline-flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-emerald-500" aria-hidden />
+            <span className="size-2 rounded-full bg-live" aria-hidden />
             {activeCount} de {routes.length} operando ahora
           </span>
         }
@@ -281,12 +286,11 @@ function RouteRow({
     <button
       type="button"
       onClick={() => onSelectRoute(route.id, direction?.directionId)}
-      className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
+      className="flex w-full items-center gap-2 rounded-md border bg-card p-2.5 text-left transition-colors hover:bg-accent focus-ring"
     >
       <RouteBadge
         code={direction ? directionCode(route, direction.directionId) : routePillCode(route)}
         color={route.color}
-        className="min-w-[2.75rem] justify-center"
       />
       <div className="min-w-0 flex-1">
         {direction ? (
@@ -314,7 +318,7 @@ function RouteRow({
         </div>
       </div>
       <span
-        className={cn('size-2 shrink-0 rounded-full', active ? 'bg-emerald-500' : 'bg-muted-foreground/40')}
+        className={cn('size-2 shrink-0 rounded-full', active ? 'bg-live' : 'bg-muted-foreground/40')}
         title={active ? 'Operando ahora' : 'Fuera de horario o sin datos'}
         aria-hidden
       />
@@ -374,9 +378,9 @@ function FrequencyBlock({
         {label}
         <div role="status" aria-label="Cargando frecuencia programada">
           <div className="mb-2 grid grid-cols-3 gap-2">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-[78px] w-full" />
+            <Skeleton className="h-[78px] w-full" />
+            <Skeleton className="h-[78px] w-full" />
           </div>
           <Skeleton className="h-12 w-full" />
         </div>
@@ -402,9 +406,9 @@ function FrequencyBlock({
     <section aria-label="Frecuencia programada">
       {label}
       <div className="mb-3 grid grid-cols-3 gap-2">
-        <Stat label={`${hh(hourNow)}–${hh((hourNow + 1) % 24)} h`} value={stats.now} suffix="pasadas" />
-        <Stat label="Hoy" value={stats.totalToday} suffix="pasadas" />
-        <Stat label="Hora punta" value={stats.peakHour.count} suffix={`a las ${hh(stats.peakHour.hour)} h`} />
+        <StatTile label={`${hh(hourNow)}–${hh((hourNow + 1) % 24)} h`} value={stats.now} detail="pasadas" />
+        <StatTile label="Hoy" value={stats.totalToday} detail="pasadas" />
+        <StatTile label="Hora punta" value={stats.peakHour.count} detail={`a las ${hh(stats.peakHour.hour)} h`} />
       </div>
       <HourlyBars hourly={stats.todaySlice} max={max} currentHour={hourNow} />
       <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
@@ -412,18 +416,6 @@ function FrequencyBlock({
         hora actual.
       </p>
     </section>
-  );
-}
-
-function Stat({ label, value, suffix }: { label: string; value: number; suffix: string }) {
-  return (
-    <div className="rounded-md border bg-card p-2">
-      <div className="truncate text-[11px] text-muted-foreground">{label}</div>
-      <div className="mt-0.5 flex items-baseline gap-1">
-        <span className="text-base font-semibold leading-none">{value}</span>
-        <span className="truncate text-[11px] text-muted-foreground">{suffix}</span>
-      </div>
-    </div>
   );
 }
 
@@ -465,7 +457,7 @@ function HourlyBars({
           );
         })}
       </div>
-      <div className="mt-1 grid grid-cols-[repeat(24,minmax(0,1fr))] gap-[2px] font-mono text-[10px] text-muted-foreground" aria-hidden>
+      <div className="mt-1 grid grid-cols-[repeat(24,minmax(0,1fr))] gap-[2px] font-mono text-[11px] text-muted-foreground" aria-hidden>
         {HOUR_TICKS.map((hour) => (
           <span key={hour} className="col-span-6" style={{ gridColumnStart: hour + 1 }}>
             {hh(hour)}

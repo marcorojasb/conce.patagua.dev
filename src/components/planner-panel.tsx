@@ -2,6 +2,8 @@ import { useMemo } from 'react';
 import { Footprints, LocateFixed, MapPin, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
+import { SectionLabel } from '@/components/ui/section-label';
+import { StatTile } from '@/components/ui/stat-tile';
 import { RouteBadge } from '@/components/route-badge';
 import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
 import { ROUTE_TYPES } from '@/data/routes';
@@ -41,7 +43,7 @@ export function PlannerPanel({
       </div>
 
       {(a || b) && (
-        <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-[12px]" onClick={onClear}>
+        <Button type="button" size="sm" variant="ghost" className="px-2" onClick={onClear}>
           <X className="size-3.5" />
           Limpiar
         </Button>
@@ -68,15 +70,11 @@ export function PlannerPanel({
                     <button
                       type="button"
                       onClick={() => onSelectRoute(m.route.id)}
-                      className="flex w-full items-center gap-2 rounded-md border bg-card p-1.5 text-left transition-colors hover:bg-accent focus-ring"
+                      className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
                     >
-                      <RouteBadge
-                        code={routePillCode(m.route)}
-                        color={m.route.color}
-                        className="min-w-[2.75rem] justify-center"
-                      />
+                      <RouteBadge code={routePillCode(m.route)} color={m.route.color} />
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-[12px] font-medium">{routeShortName(m.route)}</div>
+                        <div className="truncate text-[13px] font-medium">{routeShortName(m.route)}</div>
                         <div className="text-[11px] text-muted-foreground tabular-nums">
                           {ROUTE_TYPES[m.route.type].short} · A {Math.round(m.originDistance)} m · B{' '}
                           {Math.round(m.destinationDistance)} m
@@ -107,7 +105,7 @@ export function PlannerPanel({
   );
 }
 
-/** "Cerca de {paradero} · 120 m"; sin paradero a 300 m, las coordenadas. */
+/** "Cerca de {paradero} · 120 m"; sin paradero a 300 m, las coordenadas (detail null). */
 function describePoint(point: LatLng): { label: string; detail: string | null } {
   const near = nearestStop(point, GTFS_STOPS, NAME_RADIUS_M);
   const coords = `${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}`;
@@ -143,17 +141,16 @@ function PointRow({
     >
       <span
         className={cn(
-          'inline-flex size-7 shrink-0 items-center justify-center rounded-md text-[12px] font-bold text-white shadow-sm',
-          isOrigin ? 'bg-green-600' : 'bg-red-600',
+          // Redondo, como el pin A/B del mapa y de la leyenda.
+          'inline-flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-[12px] font-bold text-white shadow-sm',
+          isOrigin ? 'bg-origin' : 'bg-destination',
         )}
         aria-hidden
       >
         {isOrigin ? 'A' : 'B'}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          {isOrigin ? 'Origen' : 'Destino'}
-        </div>
+        <SectionLabel className="mb-0">{isOrigin ? 'Origen' : 'Destino'}</SectionLabel>
         {active ? (
           <div className="flex items-center gap-1 text-[13px] font-medium">
             <LocateFixed className="size-3.5 shrink-0" aria-hidden />
@@ -161,11 +158,15 @@ function PointRow({
           </div>
         ) : described ? (
           <>
-            <div className="truncate text-[13px] font-medium" title={described.label}>
+            <div
+              // Sin paradero cerca el título son las coordenadas: en mono, como cuando van de detalle.
+              className={cn('truncate text-[13px] font-medium', !described.detail && 'font-mono tabular-nums')}
+              title={described.label}
+            >
               {described.label}
             </div>
             {described.detail && (
-              <div className="truncate font-mono text-[10px] text-muted-foreground">{described.detail}</div>
+              <div className="truncate font-mono text-[11px] text-muted-foreground">{described.detail}</div>
             )}
           </>
         ) : (
@@ -173,7 +174,7 @@ function PointRow({
         )}
       </div>
       {active ? (
-        <Button type="button" size="sm" variant="outline" className="h-8 shrink-0" onClick={onCancel}>
+        <Button type="button" size="sm" variant="outline" className="shrink-0" onClick={onCancel}>
           Cancelar
         </Button>
       ) : (
@@ -181,7 +182,7 @@ function PointRow({
           type="button"
           size="sm"
           variant={point ? 'ghost' : 'outline'}
-          className="h-8 shrink-0"
+          className="shrink-0"
           onClick={() => onPick(target)}
         >
           <MapPin className="size-3.5" />
@@ -208,7 +209,7 @@ function MatchesHeader({
     <button
       type="button"
       onClick={() => onSearchAllChange(!searchAll)}
-      className="shrink-0 rounded-sm font-medium text-foreground underline underline-offset-2 hover:opacity-80 focus-ring"
+      className="inline-flex min-h-10 shrink-0 items-center rounded-sm font-medium text-foreground underline underline-offset-2 hover:opacity-80 focus-ring md:min-h-0"
     >
       {searchAll ? 'Solo las del mapa' : 'Buscar en todas'}
     </button>
@@ -251,77 +252,60 @@ function MidpointSection({
   onClear: () => void;
 }) {
   return (
-    <section aria-label="Punto medio caminando" className="space-y-1.5 border-t pt-3">
-      <div className="flex items-center justify-between gap-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <Footprints className="size-3" />
-          Punto medio caminando
-        </span>
-        {midpoint && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="rounded-sm p-0.5 text-[11px] normal-case tracking-normal text-muted-foreground hover:text-foreground focus-ring"
-          >
-            Quitar
-          </button>
-        )}
-      </div>
+    <section aria-label="Punto medio caminando" className="space-y-2 border-t pt-3">
+      <SectionLabel
+        className="mb-0"
+        icon={<Footprints />}
+        aside={
+          midpoint && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="inline-flex min-h-10 items-center rounded-sm px-1 text-[11px] text-muted-foreground hover:text-foreground focus-ring md:min-h-0"
+            >
+              Quitar
+            </button>
+          )
+        }
+      >
+        Punto medio caminando
+      </SectionLabel>
 
       {!midpoint && !loading && (
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="h-8 w-full justify-center text-[12px]"
-          onClick={onCompute}
-        >
+        <Button type="button" size="sm" variant="outline" className="w-full justify-center" onClick={onCompute}>
           <Footprints className="size-3.5" />
           Calcular trazado por calles
         </Button>
       )}
 
       {loading && (
-        <div className="rounded-md border bg-muted/40 p-2 text-[11px] text-muted-foreground" role="status">
-          Consultando OSRM (ruteo peatonal)…
+        <div role="status">
+          <Notice>Consultando OSRM (ruteo peatonal)…</Notice>
         </div>
       )}
 
-      {error && !loading && (
-        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-[11px] text-destructive">
-          {error}
-        </div>
-      )}
+      {error && !loading && <Notice tone="danger">{error}</Notice>}
 
       {midpoint && !loading && (
-        <div className="space-y-1.5 rounded-md border bg-card p-2">
+        <>
           <div className="grid grid-cols-2 gap-2">
-            <Stat label="Distancia" value={formatDistanceMeters(midpoint.distanceMeters)} />
-            <Stat label="Tiempo a pie" value={formatDurationSeconds(midpoint.durationSeconds)} />
-            <Stat label="A → M" value={formatDistanceMeters(midpoint.distanceFromAMeters)} />
-            <Stat label="M → B" value={formatDistanceMeters(midpoint.distanceToBMeters)} />
+            <StatTile compact label="Distancia" value={formatDistanceMeters(midpoint.distanceMeters)} />
+            <StatTile compact label="Tiempo a pie" value={formatDurationSeconds(midpoint.durationSeconds)} />
+            <StatTile compact label="A → M" value={formatDistanceMeters(midpoint.distanceFromAMeters)} />
+            <StatTile compact label="M → B" value={formatDistanceMeters(midpoint.distanceToBMeters)} />
           </div>
-          <div className="border-t pt-1.5 text-[10px] text-muted-foreground">
+          <div className="text-[11px] text-muted-foreground">
             Punto medio:{' '}
-            <span className="font-mono">
+            <span className="font-mono tabular-nums">
               {midpoint.midpoint[0].toFixed(5)}, {midpoint.midpoint[1].toFixed(5)}
             </span>
           </div>
-          <div className="text-[10px] leading-snug text-muted-foreground">
+          <div className="text-[11px] leading-snug text-muted-foreground">
             Trazado a pie según OSRM público (OSM). El punto medio es exacto sobre la mitad del
             recorrido peatonal, no la línea recta entre A y B.
           </div>
-        </div>
+        </>
       )}
     </section>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-sm border bg-muted/30 px-2 py-1">
-      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="font-mono text-[12px] leading-tight">{value}</div>
-    </div>
   );
 }
