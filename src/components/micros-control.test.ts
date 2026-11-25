@@ -46,17 +46,18 @@ describe('scheduleProgramNote', () => {
     expect(scheduleProgramNote({ ...idle, count: 12, nonGtfsCount: 12 })).toBeNull();
   });
 
-  it('con pocas micros dice que puede haber otra cantidad, casi siempre menos, y que solo se recortan las de flota conocida', () => {
+  it('con pocas micros, una línea corta; el detalle dice que puede haber otra cantidad y que solo se recortan las de flota conocida', () => {
     const note = scheduleProgramNote({ ...idle, count: 40, nonGtfsCount: 6, urbanCount: 20 });
-    expect(note).toMatch(/puede haber otra cantidad de micros, casi siempre menos/);
-    expect(note).toMatch(/Solo las líneas con flota conocida/);
+    expect(note?.text).toBe('En la calle suele haber menos micros.');
+    expect(note?.detail).toMatch(/puede haber otra cantidad de micros, casi siempre menos/);
+    expect(note?.detail).toMatch(/Solo las líneas con flota conocida/);
   });
 
   it('si las urbanas pasan de la flota inscrita del perímetro lo dice con la cifra', () => {
     const note = scheduleProgramNote({ ...idle, count: 2981, nonGtfsCount: 12, urbanCount: 2800 });
-    expect(note).toMatch(/más micros urbanas que las 1\.894 inscritas en el perímetro: en la calle hay menos/);
+    expect(note?.text).toMatch(/más micros urbanas que las 1\.894 inscritas en el perímetro: en la calle hay menos/);
     // El total puede pasar de 1.894 con interurbanos sin que las urbanas lo hagan.
-    expect(scheduleProgramNote({ ...idle, count: 1950, nonGtfsCount: 12, urbanCount: 1850 })).toMatch(
+    expect(scheduleProgramNote({ ...idle, count: 1950, nonGtfsCount: 12, urbanCount: 1850 })?.detail).toMatch(
       /casi siempre menos/,
     );
   });

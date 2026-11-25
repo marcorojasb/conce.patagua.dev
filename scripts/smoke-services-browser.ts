@@ -635,8 +635,11 @@ step('S9 micros en Horario: estimadas de mis líneas y de toda la red', () =>
     const mine = await waitForCanvas(page, (d) => d.mode === 'schedule' && Number(d.estimated) > 0, 'estimates of my lines');
     if (mine.gps !== '0') fail(`Horario drew GPS vehicles: ${JSON.stringify(mine)}`);
     await waitForBody(page, /estimadas/, 'MicrosControl estimate count');
-    // Mis líneas incluye interurbanos del GTFS: su programa a intervalo fijo lleva el aviso.
-    await waitForBody(page, /puede haber otra cantidad de micros, casi siempre menos/, 'program caveat in Horario status');
+    // Mis líneas incluye interurbanos del GTFS: su programa a intervalo fijo lleva el aviso
+    // (una línea corta; la explicación entera va en el title).
+    await waitForBody(page, /En la calle suele haber menos micros\./, 'program caveat in Horario status');
+    const caveatTitle = await page.locator('[data-micros-note="program"]').first().getAttribute('title');
+    if (!/casi siempre menos/.test(caveatTitle ?? '')) fail(`Program caveat lacks its explanation: "${caveatTitle}"`);
     await page.getByRole('radio', { name: 'Toda la red' }).click();
     await waitForUrl(page, (u) => param(u, 'red') === '1', 'Expected red=1 for "Toda la red"');
     await waitForCanvas(

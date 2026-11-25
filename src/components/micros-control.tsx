@@ -94,16 +94,23 @@ export function scheduleMeta(simulation: SimulationStatus, noLines: boolean): st
 /**
  * Aviso del modo Horario sobre el programa del GTFS, o null sin micros del
  * GTFS (el Biotrén sale de los itinerarios de EFE). Si las urbanas pasan de la
- * flota inscrita del perímetro, lo dice con la cifra: en la calle hay menos.
- * Si no, no asegura una sola dirección: en Tomé la prensa cuenta en la punta
- * de la tarde un poco más de salidas que el programa.
+ * flota inscrita del perímetro, lo dice entero y con la cifra: en la calle hay
+ * menos. Si no, una línea corta (el control abierto en escritorio entra en el
+ * tope de mapa tapado) y la explicación en `detail`; no asegura una sola
+ * dirección: en Tomé la prensa cuenta en la punta de la tarde un poco más de
+ * salidas que el programa.
  */
-export function scheduleProgramNote(simulation: SimulationStatus): string | null {
+export function scheduleProgramNote(simulation: SimulationStatus): { text: string; detail: string } | null {
   if (simulation.count <= simulation.nonGtfsCount) return null;
   if (simulation.urbanCount > URBAN_PERIMETER_FLEET.buses) {
-    return `El programa oficial de la DTPR reparte salidas a intervalo fijo y pone más micros urbanas que las ${URBAN_PERIMETER_FLEET.buses.toLocaleString('es-CL')} inscritas en el perímetro: en la calle hay menos.`;
+    const text = `El programa oficial de la DTPR reparte salidas a intervalo fijo y pone más micros urbanas que las ${URBAN_PERIMETER_FLEET.buses.toLocaleString('es-CL')} inscritas en el perímetro: en la calle hay menos.`;
+    return { text, detail: text };
   }
-  return 'El programa oficial de la DTPR reparte salidas a intervalo fijo: en la calle puede haber otra cantidad de micros, casi siempre menos. Solo las líneas con flota conocida se recortan a ella.';
+  return {
+    text: 'En la calle suele haber menos micros.',
+    detail:
+      'El programa oficial de la DTPR reparte salidas a intervalo fijo: en la calle puede haber otra cantidad de micros, casi siempre menos. Solo las líneas con flota conocida se recortan a ella.',
+  };
 }
 
 export interface GpsMeta {
@@ -237,8 +244,8 @@ function ScheduleStatus({
           )}
         </StatusLine>
         {programNote && (
-          <p data-micros-note="program" className="leading-snug">
-            {programNote}
+          <p data-micros-note="program" className="leading-snug" title={programNote.detail}>
+            {programNote.text}
           </p>
         )}
       </>
