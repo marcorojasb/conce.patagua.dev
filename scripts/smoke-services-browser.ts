@@ -570,6 +570,8 @@ step('S5+G6 paradero con llegadas en vivo: GPS solo en modo GPS', () =>
     await waitForBody(page, /Llegadas en vivo[\s\S]*62H[\s\S]*hacia [\s\S]*patente PRUE20[\s\S]*1 min/, 'live arrivals block');
     await waitForBody(page, /fuente no oficial/, 'live arrivals source disclaimer');
     await waitForBody(page, /estimado, sin GPS/, 'non-GPS prediction label');
+    // PRUE50 espera en la cabecera: su hora de salida, no los 8 min que le da la fuente.
+    await waitForBody(page, /aún no sale[\s\S]*sale \d{2}:\d{2}/, 'bus waiting at its terminal shows its departure');
     // El paradero abierto se marca aunque ninguno de sus recorridos esté visible.
     if ((await page.locator('.stop-marker.is-active').count()) !== 1) {
       fail('Expected the open stop to be drawn as exactly one active stop marker.');
@@ -795,6 +797,19 @@ step('S15 micro urbana a intervalo fijo: frecuencia sin conteo ni gráfico', () 
     if ((await page.getByRole('group', { name: /^Salidas por hora/ }).count()) > 0) {
       fail('30QE schedule draws departures per hour for a fixed-interval program.');
     }
+  }),
+);
+
+step('S16 paradero de enfrente: 20318 (hacia Concepción) lleva al 20317 (hacia Santa Juana) y Atrás vuelve', () =>
+  withSession({ url: '/?stop=gtfs-stop-20318' }, async ({ page }) => {
+    const front = page.getByRole('button', { name: /Al frente: Camino el Patagual Santa Juana/ });
+    await visible(front, '"Al frente" row on stop 20318');
+    await waitForBody(page, /en el otro sentido, hacia Santa Juana · a \d+ m/, 'opposite stop says where its buses go');
+    await front.click();
+    await waitForUrl(page, (u) => param(u, 'stop') === 'gtfs-stop-20317', 'Expected ?stop=gtfs-stop-20317 after "Al frente"');
+    await visible(page.getByRole('button', { name: /Al frente: Camino el Patagual hacia concepción/ }), '20317 points back to 20318');
+    await page.goBack();
+    await waitForUrl(page, (u) => param(u, 'stop') === 'gtfs-stop-20318', 'Back returns to 20318 in one step');
   }),
 );
 

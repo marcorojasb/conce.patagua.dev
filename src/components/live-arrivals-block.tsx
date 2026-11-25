@@ -14,10 +14,12 @@ import {
   LIVE_CLOCK_TICK_MS,
   STALE_AFTER_MS,
   formatAge,
+  formatDeparture,
   indexLiveServices,
   liveServiceLabel,
   liveView,
   minutesUntil,
+  notDepartedYet,
   onlyUntrackedLines,
   servicesWithoutGps,
   type LiveArrival,
@@ -248,6 +250,9 @@ function ArrivalRow({
   stale: boolean;
 }) {
   const minutes = minutesUntil(arrival, now);
+  // La fuente da minutos también a las que esperan en la cabecera: se muestra
+  // su hora de salida, no esos minutos (ver tripDeparture).
+  const waiting = arrival.departsAt != null && notDepartedYet(arrival, now) ? formatDeparture(arrival.departsAt) : null;
   const details = [
     match?.direction.destination && arrival.direction ? DIRECTION_LABEL[arrival.direction] : null,
     arrival.distanceM != null ? `a ${formatDistance(arrival.distanceM)} en línea recta` : null,
@@ -267,6 +272,15 @@ function ArrivalRow({
             estimado, sin GPS
           </StatusChip>
         )}
+        {waiting && (
+          <StatusChip
+            tone="muted"
+            className="mt-0.5"
+            title={`Su viaje sale a las ${waiting} desde la cabecera. La fuente le da minutos de llegada como si ya viniera; el visor no los muestra hasta que salga.`}
+          >
+            aún no sale
+          </StatusChip>
+        )}
         {/* Puede ocupar dos líneas: la patente no se pierde en pantallas angostas. */}
         <div className="text-[11px] leading-snug text-muted-foreground">
           {details.length > 0 ? details.join(' · ') : 'sin distancia informada'}
@@ -275,10 +289,10 @@ function ArrivalRow({
       <div
         className={cn(
           'text-right font-mono text-sm font-semibold tabular-nums',
-          arrival.realtime && !stale ? 'text-live' : 'text-foreground',
+          arrival.realtime && !stale && !waiting ? 'text-live' : 'text-foreground',
         )}
       >
-        {minutes === 0 ? 'llegando' : `${minutes} min`}
+        {waiting ? `sale ${waiting}` : minutes === 0 ? 'llegando' : `${minutes} min`}
       </div>
     </li>
   );

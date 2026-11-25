@@ -376,6 +376,8 @@ export interface StopDetailSheetProps {
   /** "Ver en el mapa con GPS en vivo": pasa el mapa a modo GPS. */
   onShowGpsOnMap: () => void;
   onSelectRoute: (id: string, directionId?: DirectionId) => void;
+  /** "Al frente": abre el paradero del sentido contrario. */
+  onSelectStop: (id: string) => void;
   /** "Salir desde aquí" / "Ir hasta aquí": abren el planificador con A o B puesto. */
   onPlanFrom: (point: LatLng) => void;
   onPlanTo: (point: LatLng) => void;

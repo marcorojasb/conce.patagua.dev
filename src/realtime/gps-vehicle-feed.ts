@@ -12,7 +12,14 @@
 
 import { directionCode } from '@/lib/route-labels';
 import { gpsTooltipLine } from '@/lib/vehicle-labels';
-import { gpsArrivals, type LiveArrival, type LiveServiceMatch, type LiveView } from '@/realtime/live-arrivals';
+import {
+  formatDeparture,
+  gpsArrivals,
+  notDepartedYet,
+  type LiveArrival,
+  type LiveServiceMatch,
+  type LiveView,
+} from '@/realtime/live-arrivals';
 import {
   GPS_MAX_AGE_MS,
   GPS_STALE_AFTER_MS,
@@ -63,7 +70,16 @@ function destinationOf(route: Route, directionId: DirectionId): string | null {
 function toMapVehicle(
   route: Route,
   directionId: DirectionId,
-  v: { id: string; lat: number; lng: number; bearing: number | null; plate: string | null; ageMs: number },
+  v: {
+    id: string;
+    lat: number;
+    lng: number;
+    bearing: number | null;
+    plate: string | null;
+    ageMs: number;
+    /** "19:00" si su viaje todavía no sale de la cabecera. */
+    departsAt?: string | null;
+  },
 ): MapVehicle {
   const code = directionCode(route, directionId);
   return {
@@ -77,7 +93,13 @@ function toMapVehicle(
     color: route.color,
     code,
     stale: v.ageMs > GPS_STALE_AFTER_MS,
-    tooltip: gpsTooltipLine({ code, destination: destinationOf(route, directionId), ageMs: v.ageMs, plate: v.plate }),
+    tooltip: gpsTooltipLine({
+      code,
+      destination: destinationOf(route, directionId),
+      ageMs: v.ageMs,
+      plate: v.plate,
+      departsAt: v.departsAt,
+    }),
   };
 }
 
@@ -101,7 +123,13 @@ export function buildGpsMapVehicles(input: GpsMapInput): MapVehicle[] {
       out.push(vehicle);
       ageOf.push(ageMs);
     } else if (ageMs < ageOf[index]) {
-      out[index] = vehicle;
+      // Las llegadas del paradero no traen rumbo: la micro conserva la flecha
+      // del reporte GPS de su línea mientras ese reporte no sea viejo.
+      const previous = out[index];
+      out[index] =
+        vehicle.bearing == null && previous.bearing != null && !previous.stale
+          ? { ...vehicle, bearing: previous.bearing }
+          : vehicle;
       ageOf[index] = ageMs;
     }
   };
@@ -130,6 +158,7 @@ export function buildGpsMapVehicles(input: GpsMapInput): MapVehicle[] {
         bearing: null,
         plate: arrival.plate,
         ageMs: stop.ageMs,
+        departsAt: arrival.departsAt != null && notDepartedYet(arrival, now) ? formatDeparture(arrival.departsAt) : null,
       });
       add(vehicle, arrival.plate, stop.ageMs);
     }

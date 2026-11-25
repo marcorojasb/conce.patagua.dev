@@ -52,11 +52,12 @@ export function gpsTooltipLine(vehicle: {
   destination: string | null;
   ageMs: number | null;
   plate: string | null;
+  /** Hora de salida ("19:00") si su viaje todavía no sale de la cabecera. */
+  departsAt?: string | null;
 }): string {
-  const parts = [
-    headline(vehicle.code, vehicle.destination),
-    vehicle.ageMs == null ? 'GPS' : `GPS ${formatAge(vehicle.ageMs)}`,
-  ];
+  const parts = [headline(vehicle.code, vehicle.destination)];
+  if (vehicle.departsAt) parts.push(`aún no sale (sale ${vehicle.departsAt})`);
+  parts.push(vehicle.ageMs == null ? 'GPS' : `GPS ${formatAge(vehicle.ageMs)}`);
   if (vehicle.plate) parts.push(`patente ${vehicle.plate}`);
   return parts.join(' · ');
 }

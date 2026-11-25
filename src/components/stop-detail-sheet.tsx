@@ -2,6 +2,7 @@ import { useMemo, type ReactNode } from 'react';
 import {
   Accessibility,
   ArrowDownToDot,
+  ArrowLeftRight,
   ArrowRight,
   ArrowUpFromDot,
   ChartColumn,
@@ -30,6 +31,7 @@ import { isoDayOfWeek, useStopFrequency } from '@/hooks/use-stop-frequency';
 import { chileClock } from '@/lib/chile-time';
 import { directionCode, routePillCode, routeShortName } from '@/lib/route-labels';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
+import { findOppositeStop, type OppositeStop } from '@/lib/opposite-stop';
 import { endsAt } from '@/lib/stop-services';
 import { liveStopCode } from '@/realtime/live-arrivals';
 import { cn } from '@/lib/utils';
@@ -65,6 +67,7 @@ export function StopDetailSheet({
   micros,
   onShowGpsOnMap,
   onSelectRoute,
+  onSelectStop,
   onPlanFrom,
   onPlanTo,
 }: StopDetailSheetProps) {
@@ -81,6 +84,7 @@ export function StopDetailSheet({
     }
     return linkedRoutes;
   }, [stop, routesVersion]);
+  const opposite = useMemo(() => findOppositeStop(stop.id, routes), [stop.id, routes]);
 
   // La frecuencia por hora solo existe para paraderos del GTFS.
   const freqStopId = gtfsStopCode(stop.id) ? stop.id : null;
@@ -143,6 +147,7 @@ export function StopDetailSheet({
         <>
           <NextStopServicesBlock stopId={stop.id} routes={routes} enabled />
           <RoutesSection stopId={stop.id} routes={routes} onSelectRoute={onSelectRoute} />
+          {opposite && <OppositeStopRow opposite={opposite} lineCount={routes.length} onSelectStop={onSelectStop} />}
         </>
       ) : (
         <Notice icon={<Info />}>
@@ -263,6 +268,48 @@ function RoutesSection({
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+/** "Al frente": el paradero del sentido contrario de estas líneas, para quien quiere ir hacia el otro lado. */
+function OppositeStopRow({
+  opposite,
+  lineCount,
+  onSelectStop,
+}: {
+  opposite: OppositeStop;
+  lineCount: number;
+  onSelectStop: (id: string) => void;
+}) {
+  const codes = opposite.lines.map((l) => routePillCode(l.route));
+  const destinations = new Set(opposite.lines.map((l) => l.destination));
+  const destination = destinations.size === 1 ? [...destinations][0] : null;
+  const which =
+    opposite.lines.length === lineCount
+      ? lineCount === 1
+        ? 'La misma línea'
+        : 'Las mismas líneas'
+      : codes.length <= 3
+        ? codes.join(', ')
+        : `${codes.slice(0, 3).join(', ')} y ${codes.length - 3} más`;
+  return (
+    <section aria-label="Paradero de enfrente">
+      <button
+        type="button"
+        onClick={() => onSelectStop(opposite.stop.id)}
+        className="flex w-full items-center gap-2 rounded-md border border-dashed bg-card p-2.5 text-left transition-colors hover:bg-accent focus-ring"
+      >
+        <ArrowLeftRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-medium">Al frente: {opposite.stop.name}</div>
+          <div className="text-[11px] leading-snug text-muted-foreground">
+            {which} en el otro sentido{destination ? `, hacia ${destination}` : ''} · a{' '}
+            {Math.round(opposite.distanceM)} m
+          </div>
+        </div>
+        <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+      </button>
     </section>
   );
 }

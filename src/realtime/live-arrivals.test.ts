@@ -4,12 +4,15 @@ import {
   applyFailure,
   applySnapshot,
   formatAge,
+  formatDeparture,
   gpsArrivals,
   htmlToText,
+  isGone,
   liveView,
   minutesFromLabel,
   minutesUntil,
   nextPollDelay,
+  notDepartedYet,
   parseStopInfo,
   indexLiveServices,
   liveServiceLabel,
@@ -17,6 +20,7 @@ import {
   liveStopCode,
   onlyUntrackedLines,
   serviceNotes,
+  tripDeparture,
   visorServiceName,
   type StopInfoSnapshot,
 } from '@/realtime/live-arrivals';
@@ -37,13 +41,17 @@ function snapshotOf(raw: unknown, fetchedAt = NOW): StopInfoSnapshot {
 describe('parseStopInfo', () => {
   it('lee predicciones, routeInfo y alertas, ordenadas por llegada', () => {
     const snap = snapshotOf(fixtures.withBuses);
-    expect(snap.arrivals.map((a) => a.route)).toEqual(['62H', '30Q', '62H', '30Q', '30Q']);
+    // La que espera en la cabecera (PRUE50, sale en 12 min) va por su salida, no por sus 8 min.
+    expect(snap.arrivals.map((a) => a.plate)).toEqual(['PRUE20', 'PRUE10', 'PRUE21', 'PRUE50', 'PRUE30', 'PRUE40']);
     expect(snap.arrivals[0]).toMatchObject({
+      route: '62H',
       direction: 'I',
       distanceM: 210.7,
       timeLabel: 'Llegando',
       plate: 'PRUE20',
-      tripId: '62H_I_L_1325',
+      // 09:00 en Chile; el viaje salió 38 min antes.
+      tripId: '62H_I_L_0822',
+      departsAt: NOW - 38 * 60_000,
       position: { lat: -36.8262, lng: -73.0497 },
       realtime: true,
     });
@@ -208,7 +216,7 @@ describe('estados', () => {
     const state = applySnapshot(INITIAL_LIVE_STATE, snapshotOf(fixtures.withBuses));
     const view = liveView(state, NOW + 5_000, false);
     expect(view.kind).toBe('live');
-    expect(view.arrivals).toHaveLength(5);
+    expect(view.arrivals).toHaveLength(6);
   });
 
   it('una vacía de golpe no reemplaza a la anterior con micros por llegar', () => {
@@ -295,10 +303,11 @@ describe('micros en el mapa', () => {
     const state = applySnapshot(INITIAL_LIVE_STATE, snapshotOf(fixtures.withBuses));
     const plates = (now: number, s = state) => gpsArrivals(liveView(s, now, false)).map((a) => a.plate);
     // Sin la estimada (PRUE21, realtime:false) ni la sin señal (PRUE40, 0,0).
-    expect(plates(NOW)).toEqual(['PRUE20', 'PRUE10', 'PRUE30']);
+    // La que espera en la cabecera (PRUE50) sí: su GPS es real, solo sus minutos no.
+    expect(plates(NOW)).toEqual(['PRUE20', 'PRUE10', 'PRUE50', 'PRUE30']);
     // La 62H llegaba en 40 s: a los 3 min ya no se dibuja; el resto, con el dato viejo.
     expect(liveView(state, NOW + 3 * 60_000, false).kind).toBe('stale');
-    expect(plates(NOW + 3 * 60_000)).toEqual(['PRUE10', 'PRUE30']);
+    expect(plates(NOW + 3 * 60_000)).toEqual(['PRUE10', 'PRUE50', 'PRUE30']);
     // Vencido el dato (10 min) no queda ninguna, haya fallado o no la consulta.
     expect(plates(NOW + 11 * 60_000)).toEqual([]);
     expect(plates(NOW + 11 * 60_000, applyFailure(state, 'unavailable'))).toEqual([]);
@@ -378,5 +387,48 @@ describe('calce con el visor', () => {
     const names = routes.flatMap((r) => (r.directions ?? []).map((d) => visorServiceName(r.code, d)));
     const used = names.filter((n): n is string => n != null);
     expect(new Set(used).size).toBe(used.length);
+  });
+});
+
+describe('micros que todavía no salen de la cabecera', () => {
+  // 25-nov-2026, 18:16:48 en Chile (CLST, -03): lo que se vio en el paradero
+  // P20318 (Camino El Patagual, hacia Concepción). Patentes y posiciones no.
+  const AT = Date.UTC(2026, 10, 25, 21, 16, 48);
+  const at = (hhmm: string) => Date.UTC(2026, 10, 25, 21 + Number(hhmm.slice(0, 2)) - 18, Number(hhmm.slice(2)), 0);
+
+  it('lee la salida programada del tripId, en hora de Chile', () => {
+    expect(tripDeparture('201I_I_L_1900', AT)).toBe(at('1900'));
+    expect(tripDeparture('201I_I_L_1740', AT)).toBe(at('1740'));
+    expect(formatDeparture(at('1900'))).toBe('19:00');
+    // La salida más cercana a la consulta: cerca de medianoche cruza el día.
+    const lateNight = Date.UTC(2026, 10, 26, 3, 10, 0); // 00:10 del 26 en Chile
+    expect(tripDeparture('24F_R_L_2350', lateNight)).toBe(lateNight - 20 * 60_000);
+    const beforeMidnight = Date.UTC(2026, 10, 26, 2, 55, 0); // 23:55 del 25
+    expect(tripDeparture('24F_R_L_0005', beforeMidnight)).toBe(beforeMidnight + 10 * 60_000);
+    // Sin esa forma no se inventa una salida.
+    for (const id of [null, '', 'POT-1234', '201I_I_L_2460', '201I_I_L_190', '201I_X_L_1900']) {
+      expect(tripDeparture(id, AT)).toBeNull();
+    }
+  });
+
+  it('no da minutos de llegada a las que esperan en Santa Juana y las ordena por su salida', () => {
+    const snap = snapshotOf(
+      {
+        predictions: [
+          { route: '201I', direction: 'I', epochTime: AT / 1000 + 32 * 60, tripId: '201I_I_L_1900', realtime: true },
+          { route: '201I', direction: 'I', epochTime: AT / 1000 + 27 * 60, tripId: '201I_I_L_1830', realtime: true },
+          { route: '201I', direction: 'I', epochTime: AT / 1000 + 7 * 60, tripId: '201I_I_L_1740', realtime: true },
+        ],
+      },
+      AT,
+    );
+    expect(snap.arrivals.map((a) => a.tripId)).toEqual(['201I_I_L_1740', '201I_I_L_1830', '201I_I_L_1900']);
+    expect(snap.arrivals.map((a) => notDepartedYet(a, AT))).toEqual([false, true, true]);
+    // La de 19:00 "llegaba" a las 18:48, antes de salir: pasadas las 18:50 no se da por pasada.
+    const nineteen = snap.arrivals[2];
+    expect(isGone(nineteen, at('1852'))).toBe(false);
+    // Una vez que sale, su dato viejo ya no vale y sí se da por pasada.
+    expect(isGone(nineteen, at('1901'))).toBe(true);
+    expect(notDepartedYet(nineteen, at('1901'))).toBe(false);
   });
 });
