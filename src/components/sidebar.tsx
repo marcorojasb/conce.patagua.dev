@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useRef, useState, type ReactNode } from 'react';
+import { memo, useCallback, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ChevronRight, Clock, Eye, EyeOff, RotateCcw, Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,12 +9,18 @@ import { RouteBadge } from '@/components/route-badge';
 import { ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
 import { isRouteOperatingNow } from '@/lib/operating-hours';
 import {
-  compareRouteCodes,
+  groupByCorridor,
+  groupByLine,
+  groupDetail,
   isInterurban,
-  lineFamily,
   matchesRouteQuery,
+  routeDirectionsLabel,
+  routeGroupContext,
   routePillCode,
   routeShortName,
+  searchGroups,
+  type GroupSearchResult,
+  type RouteGroup,
 } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
 import type { Route } from '@/types/transport';
@@ -32,31 +38,27 @@ const FILTERS: Array<{ value: ListFilter; label: string }> = [
 /** "En el mapa" muestra hasta aquí sin pedirlo: con 20 líneas enteras serían ~50 filas. */
 const ON_MAP_ROWS = 20;
 
-interface LineGroup {
-  family: string;
-  routes: Route[];
-  operator: string | null;
+type ListGroup = GroupSearchResult<Route>;
+
+interface Catalog {
+  biotren: Route[];
+  interurban: ListGroup[];
+  micro: ListGroup[];
 }
+
+const EMPTY_KEYS: ReadonlySet<string> = new Set();
+
+const expandKey = (query: string, key: string) => (query ? `${query}\u0000${key}` : key);
 
 function kindOf(route: Route): Exclude<ListFilter, 'all'> {
   if (route.type === 'biotren') return 'biotren';
   return isInterurban(route) ? 'interurban' : 'micro';
 }
 
-function groupByLine(routes: Route[]): LineGroup[] {
-  const byFamily = new Map<string, Route[]>();
-  for (const route of routes) {
-    const family = lineFamily(route.code);
-    const list = byFamily.get(family) ?? [];
-    list.push(route);
-    byFamily.set(family, list);
-  }
-  return Array.from(byFamily, ([family, list]) => {
-    list.sort((a, b) => compareRouteCodes(a.code, b.code));
-    const operators = new Set(list.map((r) => r.operator).filter(Boolean));
-    return { family, routes: list, operator: operators.size === 1 ? list[0].operator : null };
-  }).sort((a, b) => compareRouteCodes(a.family, b.family));
-}
+const routeCount = (catalog: Catalog) =>
+  catalog.biotren.length + [...catalog.interurban, ...catalog.micro].reduce((n, g) => n + g.routes.length, 0);
+
+const recorridos = (n: number) => `${n} ${n === 1 ? 'recorrido' : 'recorridos'}`;
 
 // En móvil el texto queda dentro de un objetivo táctil de 40 px.
 const TEXT_BUTTON =
@@ -90,34 +92,47 @@ export function Sidebar({
   // Quitar algo de "En el mapa" desmonta el botón pulsado; el foco vuelve a la
   // sección para no caer en <body>.
   const onMapRef = useRef<HTMLElement>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // Líneas abiertas a mano. Al buscar, la línea que calza por número o
+  // empresa ya viene abierta, y lo que se abre o cierra vale solo para esa
+  // búsqueda: la clave lleva lo buscado ("via lactea\u000010").
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(EMPTY_KEYS);
 
   // `ROUTES` se muta in-place cuando llega el chunk lazy de micros (misma
   // identidad de array), así que la señal real para recalcular es la versión.
   const routesVersion = useRoutesVersion();
   const visibleSet = useMemo(() => new Set(visibleRouteIds), [visibleRouteIds]);
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   const searching = q.length > 0;
 
   // Catálogo con búsqueda y tipo, antes del filtro de horario: así se puede
-  // decir "N de M" y por qué la lista quedó vacía.
-  const matching = useMemo(() => {
+  // decir "N de M" y por qué la lista quedó vacía. Micros por línea (empresa
+  // y número) e interurbanos por corredor; la búsqueda deja la línea entera
+  // si calza su número o su empresa, o solo los recorridos que calzan.
+  const matching = useMemo((): Catalog => {
     void routesVersion;
-    return routes.filter((r) => (filter === 'all' || kindOf(r) === filter) && matchesRouteQuery(r, q));
+    const ofKind = (kind: Exclude<ListFilter, 'all'>) =>
+      filter === 'all' || filter === kind ? routes.filter((r) => kindOf(r) === kind) : [];
+    return {
+      biotren: ofKind('biotren').filter((r) => matchesRouteQuery(r, q)),
+      interurban: searchGroups(groupByCorridor(ofKind('interurban')), q),
+      micro: searchGroups(groupByLine(ofKind('micro')), q),
+    };
   }, [routes, filter, q, routesVersion]);
-  const filtered = useMemo(
-    () => (onlyOperatingNow ? matching.filter((r) => isRouteOperatingNow(r)) : matching),
-    [matching, onlyOperatingNow],
-  );
-
-  const sections = useMemo(() => {
-    const biotren = filtered.filter((r) => kindOf(r) === 'biotren');
-    const interurban = filtered
-      .filter((r) => kindOf(r) === 'interurban')
-      .sort((a, b) => compareRouteCodes(a.code, b.code));
-    const micro = groupByLine(filtered.filter((r) => kindOf(r) === 'micro'));
-    return { biotren, interurban, micro };
-  }, [filtered]);
+  const sections = useMemo((): Catalog => {
+    if (!onlyOperatingNow) return matching;
+    const operating = (groups: ListGroup[]) =>
+      groups.flatMap((g) => {
+        const routes = g.routes.filter((r) => isRouteOperatingNow(r));
+        return routes.length > 0 ? [{ ...g, routes }] : [];
+      });
+    return {
+      biotren: matching.biotren.filter((r) => isRouteOperatingNow(r)),
+      interurban: operating(matching.interurban),
+      micro: operating(matching.micro),
+    };
+  }, [matching, onlyOperatingNow]);
+  const matchingCount = routeCount(matching);
+  const filteredCount = routeCount(sections);
 
   // Todo lo que está en el mapa, en orden de agregado; las que "Operando
   // ahora" saca del dibujo se listan igual, atenuadas.
@@ -129,16 +144,49 @@ export function Sidebar({
   const offScheduleCount = onMap.filter((r) => hiddenByFilter.has(r.id)).length;
   const onMapShown = showAllOnMap ? onMap : onMap.slice(0, ON_MAP_ROWS);
 
-  const toggleFamily = useCallback(
-    (family: string) =>
+  const isOpen = (group: ListGroup) => (group.match === 'open') !== expanded.has(expandKey(q, group.key));
+  const toggleGroup = useCallback(
+    (key: string) =>
       setExpanded((cur) => {
         const next = new Set(cur);
-        if (next.has(family)) next.delete(family);
-        else next.add(family);
+        const k = expandKey(q, key);
+        if (next.has(k)) next.delete(k);
+        else next.add(k);
         return next;
       }),
-    [],
+    [q],
   );
+
+  const routeRow = (route: Route, detail?: string) => (
+    <RouteRow
+      key={route.id}
+      route={route}
+      visible={visibleSet.has(route.id)}
+      selected={selectedRouteId === route.id}
+      detail={detail}
+      onSelect={onSelectRoute}
+      onToggleVisible={onToggleVisible}
+    />
+  );
+
+  // Un grupo con su encabezado, o (buscando, si solo calzan recorridos
+  // sueltos) sus filas con la línea al lado: "10 · Vía Láctea".
+  const groupRows = (group: ListGroup) =>
+    searching && !group.match ? (
+      group.routes.map((route) => routeRow(route, routeGroupContext(group, route)))
+    ) : (
+      <RouteGroupRow
+        key={group.key}
+        group={group}
+        expanded={isOpen(group)}
+        visibleCount={group.routes.filter((r) => visibleSet.has(r.id)).length}
+        onToggleExpanded={toggleGroup}
+        onSetVisible={onSetVisible}
+      >
+        {/* La 50 trae dos empresas en sus letreros: cada fila dice la suya. */}
+        {group.routes.map((route) => routeRow(route, group.operators.length > 1 ? route.operator : undefined))}
+      </RouteGroupRow>
+    );
 
   const toggleFromOnMap = useCallback(
     (id: string) => {
@@ -189,8 +237,8 @@ export function Sidebar({
                 ref={searchRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Número o destino: 30Q, Lomas, Tomé…"
-                aria-label="Buscar recorrido por número o destino"
+                placeholder="Número, empresa o destino"
+                aria-label="Buscar recorrido por número, empresa o destino"
                 className={cn('pl-8', query ? 'pr-10 md:pr-8' : 'pr-3')}
               />
               {query && (
@@ -294,7 +342,6 @@ export function Sidebar({
                           visible
                           selected={selectedRouteId === route.id}
                           offSchedule={hiddenByFilter.has(route.id)}
-                          compact
                           onSelect={onSelectRoute}
                           onToggleVisible={toggleFromOnMap}
                         />
@@ -319,21 +366,21 @@ export function Sidebar({
                 </section>
               )}
 
-              {onlyOperatingNow && filtered.length > 0 && (
+              {onlyOperatingNow && filteredCount > 0 && (
                 <p className="rounded-md border border-live/30 bg-live/10 px-2.5 py-1.5 text-[11px] leading-snug text-foreground">
-                  Mostrando solo lo que opera ahora ({filtered.length} de {matching.length}) ·{' '}
+                  Mostrando solo lo que opera ahora ({filteredCount} de {matchingCount}) ·{' '}
                   <button type="button" onClick={onToggleOnlyOperatingNow} className={cn(TEXT_BUTTON, 'underline')}>
                     Ver todos
                   </button>
                 </p>
               )}
 
-              {filtered.length === 0 && (
+              {filteredCount === 0 && (
                 <EmptyCatalog
                   query={query.trim()}
                   kind={FILTERS.find((f) => f.value === filter && f.value !== 'all')?.label ?? null}
                   onlyOperatingNow={onlyOperatingNow}
-                  matchingCount={matching.length}
+                  matchingCount={matchingCount}
                   onClearFilter={onToggleOnlyOperatingNow}
                   onClearSearch={clearSearch}
                   onClearKind={() => setFilter('all')}
@@ -343,80 +390,25 @@ export function Sidebar({
               {sections.biotren.length > 0 && (
                 <section aria-label="Biotrén">
                   <SectionLabel aside={sections.biotren.length}>Biotrén</SectionLabel>
-                  <div className="space-y-0.5">
-                    {sections.biotren.map((route) => (
-                      <RouteRow
-                        key={route.id}
-                        route={route}
-                        visible={visibleSet.has(route.id)}
-                        selected={selectedRouteId === route.id}
-                        onSelect={onSelectRoute}
-                        onToggleVisible={onToggleVisible}
-                      />
-                    ))}
-                  </div>
+                  <div className="space-y-0.5">{sections.biotren.map((route) => routeRow(route, route.operator))}</div>
                 </section>
               )}
 
               {sections.interurban.length > 0 && (
                 <section aria-label="Interurbanos">
-                  <SectionLabel aside={sections.interurban.length}>Interurbanos</SectionLabel>
-                  <div className="space-y-0.5">
-                    {sections.interurban.map((route) => (
-                      <RouteRow
-                        key={route.id}
-                        route={route}
-                        visible={visibleSet.has(route.id)}
-                        selected={selectedRouteId === route.id}
-                        onSelect={onSelectRoute}
-                        onToggleVisible={onToggleVisible}
-                      />
-                    ))}
-                  </div>
+                  <SectionLabel aside={sections.interurban.reduce((n, g) => n + g.routes.length, 0)}>
+                    Interurbanos
+                  </SectionLabel>
+                  <div className="space-y-0.5">{sections.interurban.map(groupRows)}</div>
                 </section>
               )}
 
               {sections.micro.length > 0 && (
                 <section aria-label="Micros urbanas">
-                  <SectionLabel aside={`${sections.micro.reduce((n, g) => n + g.routes.length, 0)}`}>
+                  <SectionLabel aside={sections.micro.reduce((n, g) => n + g.routes.length, 0)}>
                     Micros urbanas
                   </SectionLabel>
-                  <div className="space-y-0.5">
-                    {sections.micro.map((group) =>
-                      searching || group.routes.length === 1 ? (
-                        group.routes.map((route) => (
-                          <RouteRow
-                            key={route.id}
-                            route={route}
-                            visible={visibleSet.has(route.id)}
-                            selected={selectedRouteId === route.id}
-                            onSelect={onSelectRoute}
-                            onToggleVisible={onToggleVisible}
-                          />
-                        ))
-                      ) : (
-                        <LineGroupRow
-                          key={group.family}
-                          group={group}
-                          expanded={expanded.has(group.family)}
-                          visibleCount={group.routes.filter((r) => visibleSet.has(r.id)).length}
-                          onToggleExpanded={toggleFamily}
-                          onSetVisible={onSetVisible}
-                        >
-                          {group.routes.map((route) => (
-                            <RouteRow
-                              key={route.id}
-                              route={route}
-                              visible={visibleSet.has(route.id)}
-                              selected={selectedRouteId === route.id}
-                              onSelect={onSelectRoute}
-                              onToggleVisible={onToggleVisible}
-                            />
-                          ))}
-                        </LineGroupRow>
-                      ),
-                    )}
-                  </div>
+                  <div className="space-y-0.5">{sections.micro.map(groupRows)}</div>
                 </section>
               )}
             </div>
@@ -509,18 +501,26 @@ interface RouteRowProps {
   selected: boolean;
   /** En el mapa pero fuera del dibujo por "Operando ahora". */
   offSchedule?: boolean;
-  compact?: boolean;
+  /**
+   * Segunda línea: la línea de la fila cuando se lista fuera de su grupo
+   * ("10 · Vía Láctea"), o el operador. Sin ella la fila es de una línea.
+   */
+  detail?: string;
   onSelect: (id: string) => void;
   onToggleVisible: (id: string) => void;
 }
 
-/** Fila de un recorrido: tocarla abre su ficha; el ojo lo pone o lo saca del mapa. */
+/**
+ * Fila de un recorrido: la píldora es el letrero ("10A/N") y el nombre, sus
+ * destinos en el mismo orden ("Centinela ↔ Los Bloques"). Tocarla abre su
+ * ficha; el ojo lo pone o lo saca del mapa.
+ */
 const RouteRow = memo(function RouteRow({
   route,
   visible,
   selected,
   offSchedule = false,
-  compact,
+  detail,
   onSelect,
   onToggleVisible,
 }: RouteRowProps) {
@@ -538,6 +538,8 @@ const RouteRow = memo(function RouteRow({
         type="button"
         onClick={() => onSelect(route.id)}
         aria-current={selected ? 'true' : undefined}
+        // "10A hacia Centinela, 10N hacia Los Bloques": lo que dice cada letrero.
+        title={routeDirectionsLabel(route) ?? undefined}
         className={cn(
           'flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 text-left focus-ring',
           offSchedule && 'opacity-60',
@@ -546,15 +548,18 @@ const RouteRow = memo(function RouteRow({
         {/* El ancho mínimo de RouteBadge cabe "201-AU": la columna de nombres queda alineada. */}
         <RouteBadge code={routePillCode(route)} color={route.color} />
         <span className="min-w-0 flex-1">
-          {/* 13 px y hasta dos líneas: "Santa Juana ↔ Concepción" se lee entero, no "Santa Juana ↔ Concep…". */}
-          <span className="line-clamp-2 break-words text-[13px] font-medium leading-tight">{routeShortName(route)}</span>
+          {/* 13 px y hasta dos líneas parejas, con la flecha pegada al primer destino:
+              "Centinela ↔ / Los Bloques" y no "Centinela ↔ Los / Bloques" ni "Las Canchas / ↔ Leonera". */}
+          <span className="line-clamp-2 break-words text-balance text-[13px] font-medium leading-tight">
+            {routeShortName(route).replace(' ↔ ', '\u00a0↔ ')}
+          </span>
           {offSchedule ? (
             <span className="block truncate text-[11px] text-stale">Fuera de horario · no se dibuja</span>
           ) : (
-            !compact && (
+            detail && (
               <span className="flex items-center gap-1 truncate text-[11px] text-muted-foreground">
                 <TypeIcon className="size-3 shrink-0" />
-                <span className="truncate">{route.operator}</span>
+                <span className="truncate">{detail}</span>
               </span>
             )
           )}
@@ -578,48 +583,101 @@ const RouteRow = memo(function RouteRow({
   );
 });
 
-interface LineGroupRowProps {
-  group: LineGroup;
+interface RouteGroupRowProps {
+  group: RouteGroup;
+  /** Solo las líneas se pliegan; los corredores interurbanos van siempre abiertos. */
   expanded: boolean;
   visibleCount: number;
-  onToggleExpanded: (family: string) => void;
+  onToggleExpanded: (key: string) => void;
   onSetVisible: (ids: readonly string[], visible: boolean) => void;
   children: ReactNode;
 }
 
-function LineGroupRow({ group, expanded, visibleCount, onToggleExpanded, onSetVisible, children }: LineGroupRowProps) {
-  const allVisible = visibleCount === group.routes.length;
-  return (
-    <div className="min-w-0">
-      <div className="flex min-w-0 items-center gap-1 rounded-md hover:bg-accent/60">
-        <button
-          type="button"
-          onClick={() => onToggleExpanded(group.family)}
-          aria-expanded={expanded}
-          className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 text-left focus-ring"
+/**
+ * Encabezado de una línea: su número como va en la micro, en una insignia
+ * neutra (el color es de cada recorrido), y la empresa, que es como la
+ * nombra la gente ("14 Chiguayante Sur"); debajo, de qué comuna a qué comuna
+ * llega. Los corredores interurbanos dicen su destino y su operador.
+ */
+function RouteGroupRow({ group, expanded, visibleCount, onToggleExpanded, onSetVisible, children }: RouteGroupRowProps) {
+  const line = group.kind === 'line';
+  const total = group.routes.length;
+  const allVisible = visibleCount === total;
+  const detail = groupDetail(group);
+  const detailId = useId();
+  // Al pasar el puntero, lo que no cabe: todas las comunas y cuántos recorridos tiene.
+  const fullDetail = [group.communes.join(', ') || detail, recorridos(total)].join(' · ');
+  const eye = line
+    ? {
+        label: `Ver toda la línea ${group.number} ${group.name} en el mapa`,
+        title: allVisible ? 'Quitar la línea del mapa' : 'Mostrar toda la línea',
+      }
+    : {
+        label: `Ver todos los interurbanos de ${group.name} en el mapa`,
+        title: allVisible ? 'Quitar del mapa' : 'Mostrar todos',
+      };
+  const heading = (
+    <>
+      {group.number && (
+        <span
+          aria-hidden
+          className="inline-flex min-w-9 shrink-0 items-center justify-center rounded-md border bg-muted px-1.5 py-0.5 font-mono text-xs font-medium tabular-nums text-foreground"
         >
-          <ChevronRight
-            className={cn('size-3.5 shrink-0 text-muted-foreground transition-transform', expanded && 'rotate-90')}
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block text-[13px] font-medium leading-tight">Línea {group.family}</span>
-            <span className="block truncate text-[11px] text-muted-foreground">
-              <span className="font-mono">{group.routes.map((r) => routePillCode(r)).join(' · ')}</span>
-              {group.operator ? ` — ${group.operator}` : ''}
-            </span>
-          </span>
-          {visibleCount > 0 && (
-            <span className="h-5 min-w-5 shrink-0 rounded-full bg-foreground px-1.5 text-center font-mono text-[11px] leading-5 text-background">
-              {visibleCount}
-            </span>
-          )}
-        </button>
+          {group.number}
+        </span>
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13px] font-semibold leading-tight">{group.name}</span>
+        <span id={detailId} className="block truncate text-[11px] text-muted-foreground">
+          {detail}
+        </span>
+      </span>
+      {visibleCount > 0 && (
+        <span
+          aria-hidden
+          className="h-5 min-w-5 shrink-0 rounded-full bg-foreground px-1.5 text-center font-mono text-[11px] leading-5 text-background"
+        >
+          {visibleCount}
+        </span>
+      )}
+      {/* En la línea la cuenta va en el aria-label del botón; el corredor no tiene botón. */}
+      {!line && visibleCount > 0 && <span className="sr-only">, {visibleCount} en el mapa</span>}
+    </>
+  );
+  return (
+    <div className="min-w-0" role={line ? undefined : 'group'} aria-label={line ? undefined : `Interurbanos de ${group.name}`}>
+      <div className={cn('flex min-w-0 items-center gap-1 rounded-md', line && 'hover:bg-accent/60')}>
+        {line ? (
+          <button
+            type="button"
+            onClick={() => onToggleExpanded(group.key)}
+            aria-expanded={expanded}
+            // Como lo escribe la prensa: "línea 14 Chiguayante Sur".
+            aria-label={`Línea ${group.number} ${group.name}, ${recorridos(total)}${
+              visibleCount > 0 ? `, ${visibleCount} en el mapa` : ''
+            }`}
+            // El aria-label tapa el contenido: las comunas que se ven van como descripción.
+            aria-describedby={detailId}
+            title={fullDetail}
+            className="flex min-h-10 min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1 text-left focus-ring"
+          >
+            <ChevronRight
+              aria-hidden
+              className={cn('size-3.5 shrink-0 text-muted-foreground transition-transform', expanded && 'rotate-90')}
+            />
+            {heading}
+          </button>
+        ) : (
+          <div className="flex min-h-10 min-w-0 flex-1 items-center gap-2 px-2 py-1" title={fullDetail}>
+            {heading}
+          </div>
+        )}
         <button
           type="button"
           onClick={() => onSetVisible(group.routes.map((r) => r.id), !allVisible)}
           aria-pressed={allVisible}
-          aria-label={`Ver toda la línea ${group.family} en el mapa`}
-          title={allVisible ? 'Quitar la línea del mapa' : 'Mostrar toda la línea'}
+          aria-label={eye.label}
+          title={eye.title}
           className={cn(
             'grid size-10 shrink-0 place-items-center rounded-md transition-colors focus-ring md:size-8',
             allVisible ? 'text-foreground' : 'text-muted-foreground/60 hover:text-foreground',
@@ -628,7 +686,7 @@ function LineGroupRow({ group, expanded, visibleCount, onToggleExpanded, onSetVi
           {allVisible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
         </button>
       </div>
-      {expanded && <div className="ml-4 border-l pl-1.5">{children}</div>}
+      {(expanded || !line) && <div className="ml-4 border-l pl-1.5">{children}</div>}
     </div>
   );
 }
