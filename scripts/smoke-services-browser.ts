@@ -487,8 +487,27 @@ step('S1 buscador: búsqueda sin tildes y selección', () =>
     await visible(page.locator('[cmdk-item]').filter({ hasText: /30Q\/E/ }), 'palette finds the pill label 30Q/E');
     await page.keyboard.press('Escape');
     const sidebar = page.getByRole('complementary', { name: 'Recorridos' });
-    await sidebar.getByLabel('Buscar recorrido por número o destino').fill('30Q/E');
+    const sidebarSearch = sidebar.getByLabel('Buscar recorrido por número, empresa o destino');
+    await sidebarSearch.fill('30Q/E');
     await visible(sidebar.getByRole('button', { name: /^30Q\/E/ }), 'sidebar finds the pill label 30Q/E');
+    // La línea es la empresa con su número: "vía lactea" (sin tilde) abre la 10
+    // entera, y cada fila es el letrero con sus destinos en el orden de las letras.
+    await sidebarSearch.fill('via lactea');
+    await visible(
+      sidebar.getByRole('button', { name: /^Línea 10 Vía Láctea, 6 recorridos/, expanded: true }),
+      'sidebar opens "Línea 10 Vía Láctea" when searching the company',
+    );
+    await visible(sidebar.getByRole('button', { name: /^10A\/N Centinela\s↔\sLos Bloques/ }), 'row 10A/N with its destinations');
+    // La 31 y la 32 son empresas distintas aunque el GTFS diga "Ruta del Mar" en las dos.
+    await sidebarSearch.fill('ruta del mar');
+    await visible(sidebar.getByRole('button', { name: /^Línea 31 Ruta del Mar,/ }), 'line 31 Ruta del Mar');
+    await visible(sidebar.getByRole('button', { name: /^Línea 32 Buses Ruta del Mar,/ }), 'line 32 Buses Ruta del Mar');
+    // Interurbanos con su operador confirmado.
+    await sidebarSearch.fill('');
+    await visible(
+      sidebar.getByRole('group', { name: 'Interurbanos de Tomé' }).getByText('Transportes Tomé', { exact: false }),
+      'Tomé corridor shows its operator',
+    );
   }),
 );
 
@@ -532,7 +551,7 @@ step('S4 "Operando ahora" por fila según el horario oficial', () =>
   withSession({ url: '/' }, async ({ page }) => {
     // A las 08:30 de un lunes la 11C (solo 17:00–19:49) está fuera de horario y la 10AN no.
     const sidebar = page.getByRole('complementary', { name: 'Recorridos' });
-    const search = sidebar.getByLabel('Buscar recorrido por número o destino');
+    const search = sidebar.getByLabel('Buscar recorrido por número, empresa o destino');
     for (const [code, expected] of [['11C', 'Fuera de horario ahora'], ['10A/N', 'Operando ahora']] as const) {
       await search.fill(code.replace('/', ''));
       const row = sidebar.locator('li, [role="listitem"], button').filter({ hasText: code }).first();
@@ -808,7 +827,7 @@ step('N3 Escape: cierra solo ⌘K; en un campo de texto no cierra la ficha', () 
     await page.keyboard.press('Escape');
     await gone(page.getByPlaceholder('Buscar recorridos, paraderos…'), 'palette closed by Escape');
     await surfaceWith(page, /30Q\/E/, 'route sheet survives Escape on the palette');
-    const search = page.getByRole('complementary', { name: 'Recorridos' }).getByLabel('Buscar recorrido por número o destino');
+    const search = page.getByRole('complementary', { name: 'Recorridos' }).getByLabel('Buscar recorrido por número, empresa o destino');
     await search.click();
     await search.fill('10');
     await page.keyboard.press('Escape');
@@ -924,7 +943,7 @@ step('N8 elegir el recorrido abierto otra vez no lo cierra', () =>
     await pickFromPalette(page, '30QE', /30Q\/E/);
     await surfaceWith(page, /30Q\/E/, 'still open after choosing it again from ⌘K');
     const sidebar = page.getByRole('complementary', { name: 'Recorridos' });
-    await sidebar.getByLabel('Buscar recorrido por número o destino').fill('30Q');
+    await sidebar.getByLabel('Buscar recorrido por número, empresa o destino').fill('30Q');
     await sidebar.getByRole('button', { name: /^30Q\/E/ }).first().click();
     await surfaceWith(page, /30Q\/E/, 'still open after choosing it again from the sidebar');
     const after = await page.evaluate(() => history.length);

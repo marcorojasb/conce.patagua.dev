@@ -38,9 +38,8 @@ const FIXED_NOW_MS = Date.parse('2026-11-24T11:00:00Z');
 const VIEWPORT = { width: 1440, height: 900 };
 
 const SELECTORS = {
+  // Ojo de cada línea de la barra (las 36 lo tienen; parten cerradas, sin filas a la vista).
   familyToggle: 'section[aria-label="Micros urbanas"] button[aria-label^="Ver toda la línea"]',
-  singleToggle:
-    'section[aria-label="Micros urbanas"] button[aria-label^="Ver "][aria-label$=" en el mapa"]:not([aria-label^="Ver toda"])',
   // Interruptor "Micros en el mapa: Horario | GPS en vivo".
   gpsMode: { role: 'radio' as const, name: 'GPS en vivo' },
   map: '.leaflet-container',
@@ -54,8 +53,11 @@ const ALL_LAYERS_QUERY = '?paraderos=1&cobertura=1&ciclovias=1&verdes=1&educacio
 type ScenarioId = 'default' | 'f20' | 'all' | 'gps-f20' | 'layers';
 const SCENARIOS: Record<ScenarioId, { lines: number; gps: boolean; label: string; query?: string }> = {
   default: { lines: 0, gps: false, label: 'vista inicial (Biotrén + interurbanos)' },
+  // Las 20 primeras líneas por número (02…42). Desde que la barra agrupa por
+  // línea (2026-11) son otros recorridos que antes: no comparar f20 con
+  // mediciones anteriores.
   f20: { lines: 20, gps: false, label: '20 líneas de micros encendidas' },
-  // Hay 26 familias + 10 líneas sueltas: "all" es toda la red visible.
+  // Hay 36 líneas, todas con ojo de grupo: "all" es toda la red visible.
   all: { lines: Infinity, gps: false, label: 'toda la red visible' },
   'gps-f20': { lines: 20, gps: true, label: '20 líneas, modo GPS en vivo (fixtures)' },
   layers: {
@@ -357,19 +359,17 @@ async function runScenario(
 
     const { lines, gps } = SCENARIOS[scenario];
     const toggles: WindowResult[] = [];
-    for (const selector of [SELECTORS.familyToggle, SELECTORS.singleToggle]) {
-      const buttons = page.locator(selector);
-      const n = await buttons.count();
-      for (let i = 0; i < n && toggles.length < lines; i++) {
-        const button = buttons.nth(i);
-        if ((await button.getAttribute('aria-pressed')) === 'true' || !(await button.isVisible())) continue;
-        toggles.push(
-          await measure(page, cdp, async () => {
-            await button.click();
-            await page.waitForTimeout(settle);
-          }),
-        );
-      }
+    const buttons = page.locator(SELECTORS.familyToggle);
+    const n = await buttons.count();
+    for (let i = 0; i < n && toggles.length < lines; i++) {
+      const button = buttons.nth(i);
+      if ((await button.getAttribute('aria-pressed')) === 'true' || !(await button.isVisible())) continue;
+      toggles.push(
+        await measure(page, cdp, async () => {
+          await button.click();
+          await page.waitForTimeout(settle);
+        }),
+      );
     }
     if (gps) {
       await page.getByRole(SELECTORS.gpsMode.role, { name: SELECTORS.gpsMode.name }).click();

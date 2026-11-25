@@ -29,11 +29,12 @@ import {
 } from '@/data/biotren.generated';
 import { BIOTREN_L1_TRACK, BIOTREN_L2_TRACK } from '@/data/biotren-track.generated';
 import { BIOTREN_IDENTITY, INTERURBAN_IDENTITY } from '@/data/route-identity';
+import { interurbanOperator } from '@/data/bus-lines';
 import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
 import { STATIC_SERVICE_PATTERNS } from '@/data/static-service-patterns';
 import { densifyPath } from '@/lib/geo';
 import { serviceSpansFromTrips } from '@/lib/operating-hours';
-import { isInterurban, routeCodeKey } from '@/lib/route-labels';
+import { isInterurban, lineOperatorName, routeCodeKey } from '@/lib/route-labels';
 import { buildStaticRouteSchedules } from '@/realtime/static-service-schedules';
 import type {
   BusRoute,
@@ -171,7 +172,10 @@ function busRouteToRoute(b: BusRoute): Route {
     type: 'micro',
     color: identity ?? b.colour ?? operatorColor(b.operator, b.id),
     officialColor: identity ? b.colour : undefined,
-    operator: b.operator ?? 'Operador no informado en el GTFS',
+    // La empresa de la línea, no la del letrero ("Buses Cóndor", la 31 y la 32
+    // por separado); el GTFS no trae operador en los interurbanos: el
+    // confirmado también sale de bus-lines.ts. El color sigue saliendo del letrero.
+    operator: lineOperatorName(b.ref, b.operator) ?? interurbanOperator(b.network) ?? 'Operador sin confirmar',
     headway: 'Programado GTFS',
     hours: 'Según calendario GTFS',
     frequencyByDay: {},

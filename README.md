@@ -23,7 +23,7 @@ Son dos productos distintos que comparten build, estilos (Tailwind/shadcn) y des
 - `src/lib/view-state.ts` + `src/hooks/use-view-state.ts` — qué hay en pantalla, leído y escrito en la URL y el historial (ver "Navegación" más abajo).
 - `src/wiki/` — segunda app (`wiki-app.tsx`), montada en `/wiki`. `src/main.tsx` decide cuál renderizar según `window.location.pathname`; ambas se cargan como chunks lazy independientes (`lazy(() => import(...))`), así que un usuario que solo visita `/` nunca descarga el código del wiki y viceversa.
 - `src/data/*.generated.ts` — datasets generados por los scripts `sync:*` (no editar a mano).
-- `src/data/*.ts` (sin `.generated`) — datos curados a mano (`routes.ts`, `interurban-corridors.ts`, `static-service-patterns.ts`).
+- `src/data/*.ts` (sin `.generated`) — datos curados a mano (`routes.ts`, `bus-lines.ts`, `interurban-corridors.ts`, `static-service-patterns.ts`).
 - `src/lib/` — lógica de dominio (planner, routing, horarios de operación, exportación GeoJSON, calidad de datos).
 - `src/hooks/` — hooks de datos en vivo (calidad del aire vía SINCA, llegadas en vivo al paradero abierto).
 - `api/` — funciones de Vercel, intermediarias de la fuente en vivo: `stop-arrivals.ts` (llegadas al paradero abierto) y `route-vehicles.ts` (micros con GPS por línea y sentido). `_transapp.ts` es lo común a ambas; por empezar con `_`, Vercel no lo publica como función.
