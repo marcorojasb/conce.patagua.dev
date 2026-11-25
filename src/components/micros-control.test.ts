@@ -53,12 +53,12 @@ describe('gpsMeta', () => {
     expect(text(view({ lines: [line('live', 5)], vehicles: 5, stale: 2 }))).toBe('5 GPS · 2 viejos');
   });
 
-  it('dice cuántas de las líneas tienen GPS cuando no son todas, y el dato viejo va en el aviso', () => {
-    const lines = [line('live', 5), line('no-gps'), line('untracked')];
-    expect(text(view({ lines, vehicles: 5 }))).toBe('5 GPS · 1/3 líneas');
+  it('dice cuántas de las líneas consultadas tienen GPS (las que la fuente no sigue no cuentan), y el dato viejo va en el aviso', () => {
+    const lines = [line('live', 5), line('no-gps'), line('untracked'), line('omitted')];
+    expect(text(view({ lines, vehicles: 5 }))).toBe('5 GPS · 1/2 líneas');
     expect(gpsMeta(view({ lines, vehicles: 5, stale: 1 }), NOW)).toEqual({
-      text: '5 GPS · 1/3 líneas',
-      note: '1 de 3 líneas con GPS · 1 con dato viejo',
+      text: '5 GPS · 1/2 líneas',
+      note: '1 de 2 líneas con GPS · 1 con dato viejo',
       stale: true,
     });
   });
@@ -75,7 +75,7 @@ describe('gpsMeta', () => {
 
   it('queda corta (≤ 19 letras; el smoke G13 comprueba que no se corte a 360 px)', () => {
     const lines = [line('live', 12), line('no-gps'), line('untracked'), line('live', 3)];
-    expect(text(view({ lines, vehicles: 15, stale: 2 }))).toBe('15 GPS · 2/4 líneas');
+    expect(text(view({ lines, vehicles: 15, stale: 2 }))).toBe('15 GPS · 2/3 líneas');
     expect(text(view({ lines, vehicles: 15 }), 600_000)).toBe('15 GPS · hace 10 min');
     expect(text(view({ lines, vehicles: 15, stale: 2 })).length).toBeLessThanOrEqual(19);
   });

@@ -280,13 +280,11 @@ export class RouteNetworkLayer {
    */
   private syncStops(): boolean {
     const theme = this.state?.theme ?? 'light';
-    let anyFocus = false;
-    for (const r of this.routes.values()) {
-      if (r.state.focus) {
-        anyFocus = true;
-        break;
-      }
-    }
+    // reorder() sube los trazados en foco en el orden de this.routes: el último
+    // queda encima, así que ese orden decide el aro de las paradas compartidas.
+    const focusRank = new Map<string, number>();
+    for (const [id, r] of this.routes) if (r.state.focus) focusRank.set(id, focusRank.size);
+    const anyFocus = focusRank.size > 0;
     const networkMinZoom = networkStopsMinZoom(this.stops.size);
     // El tamaño entra en la clave, no el zoom: de 15 en adelante no cambia y
     // reestilizar miles de paradas en cada paso de zoom pide otro redibujo.
@@ -294,7 +292,7 @@ export class RouteNetworkLayer {
     const stationSize = stopStyleForZoom(this.zoom, true);
     let shownSome = false;
     for (const entry of this.stops.values()) {
-      const focusRef = anyFocus ? entry.refs.find((id) => this.routes.get(id)?.state.focus) : undefined;
+      const focusRef = anyFocus ? (topPaintedRef(entry.refs, focusRank) ?? undefined) : undefined;
       const ringRef = focusRef ?? topPaintedRef(entry.refs, this.paintRank);
       const color = (ringRef != null && this.routes.get(ringRef)?.color) || null;
       const dim = anyFocus && !focusRef;

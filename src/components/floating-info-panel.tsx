@@ -36,7 +36,9 @@ const SNAP_HEIGHT: Record<SheetSnap, string> = {
   // 8 + cinco botones de 40 con sus separaciones = 287 px, más 8 de aire y
   // los 8 del margen de abajo ≈ 19rem): una ficha que cortaba "Más
   // herramientas" por la mitad lo dejaba tocable solo en su parte de arriba.
-  half: 'h-[min(58dvh,calc(100dvh-19rem))]',
+  // En pantallas bajas (< ~480 px) eso la dejaba más baja que su encabezado:
+  // ahí manda el contenido, con un piso de 15rem (sin pasar de 58dvh).
+  half: 'h-[max(min(58dvh,calc(100dvh-19rem)),min(58dvh,15rem))]',
   // Deja a la vista el header (h-12) más un respiro, también bajo un notch.
   full: 'h-[min(90dvh,calc(100dvh-4rem-env(safe-area-inset-top)))]',
 };

@@ -113,7 +113,8 @@ export function gpsMeta(gps: GpsModeView, now: number = Date.now()): GpsMeta {
   switch (headline.state) {
     case 'live': {
       const count = gps.vehicles.toLocaleString('es-CL');
-      const total = gps.lines.length;
+      // El mismo total que la línea de estado: solo las líneas consultadas.
+      const total = headline.queried;
       const partial = headline.liveLines > 0 && headline.liveLines < total;
       const age = gps.fetchedAt != null ? Math.max(0, now - gps.fetchedAt) : 0;
       const staleNote = gps.stale > 0 ? `${gps.stale.toLocaleString('es-CL')} con dato viejo` : '';
