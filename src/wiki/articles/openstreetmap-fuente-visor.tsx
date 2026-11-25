@@ -1,25 +1,20 @@
-// OpenStreetMap como fuente del visor, ficha metodológica de la
-// segunda fuente estructural (hermana de `gtfs-gran-concepcion.tsx`).
-// OSM cubre lo que el GTFS no: estaciones y vía del Biotrén, pins de los
-// corredores sin GTFS (Florida, Yumbel), terminales, ciclovías, áreas verdes,
-// escuelas, POIs y el basemap de Esri. Desde el 24-nov-2026 los interurbanos
-// 201/401/411/421 salen del GTFS oficial DTPR y ya no de trazados OSM.
+// OpenStreetMap como fuente del visor: ficha metodológica de la segunda fuente
+// estructural (hermana de gtfs-gran-concepcion.tsx). Desde el 24-nov-2026 los
+// interurbanos 201/401/411/421 salen del GTFS oficial DTPR, no de OSM.
 //
-// Verificación contra Overpass (overpass-api.de, 2026-05-16):
-//   - Biotrén L1: route_master relation 6857223 (ref=L1, Q5985914).
-//     Variantes 2170415 / 6738372.
-//   - Biotrén L2: route_master relation 6857222 (ref=L2, Q5986175).
-//     Variantes 2170438 / 6852288.
-//   - Tren Laja–Talcahuano: 6757914 / 6757915 (comparte rieles con L1).
-//   - Estación Coronel: node 4124952607 (Q5788800).
-//   - OSM fundado en 2004 (Steve Coast, UCL). ODbL desde 12-sep-2012.
+// Verificación de IDs: Overpass, 16-may-2026 (relations de variantes y
+// terminales). Relations route_master L1 (6857223) y L2 (6857222): consultadas
+// en openstreetmap.org el 25-nov-2026, siguen vigentes con sus start_date.
 //
-// Aviso de desactualización: el comentario de `fetch-biotren.ts` dice
-// "OSM does not currently have the Biotrén lines as route relations", // está desactualizado, las route_master sí existen. Migrar el pipeline
-// a las relations es trabajo futuro real.
+// Aviso: el comentario de fetch-biotren.ts "OSM does not currently have the
+// Biotrén lines as route relations" está desactualizado: las route_master sí
+// existen. Migrar el pipeline a esas relations es trabajo futuro.
 
 import {
+  ArticleSummary,
+  CollapsibleSection,
   DataTable,
+  FactStrip,
   KeyValueList,
   PendingBanner,
   Section,
@@ -34,634 +29,363 @@ export default function OpenstreetmapFuenteVisor() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
-        <strong>Verificado.</strong> IDs de relation Biotrén (L1: 6857223,
-        L2: 6857222 como <code className="font-mono">route_master</code>;
-        variantes 2170415, 6738372, 2170438, 6852288) confirmadas en
-        Overpass el 2026-05-16. Pipeline de scripts, atribución del basemap
-        y declaración ODbL en el visor: confirmados en código. Aviso: el
-        comentario de cabecera de{' '}
-        <code className="font-mono">scripts/fetch-biotren.ts</code> sobre
-        "OSM does not currently have the Biotrén lines as route relations"
-        quedó desactualizado (ver Trabajo futuro).
+        <strong>Verificado.</strong> Las relations de Biotrén siguen vigentes en
+        OSM (consultadas el 25-nov-2026): L1 = 6857223 y L2 = 6857222, ambas{' '}
+        <code className="font-mono">route_master</code>. Los IDs de variantes se
+        confirmaron en Overpass el 16-may-2026 y no se han vuelto a cotejar.
       </VerifiedBanner>
 
-      <Section title="Qué es y por qué importa">
-        <p>
-          <strong>OpenStreetMap</strong> (OSM) es una enciclopedia
-          geográfica colaborativa, libre y editable. Fundada en 2004 por
-          Steve Coast en University College London, hoy la administra la
-          OpenStreetMap Foundation (sin fines de lucro, Reino Unido). Los
-          datos están bajo <strong>Open Database License (ODbL) 1.0</strong>{' '}, atribución + share-alike.
-        </p>
-        <p>
-          Para este visor OSM es la <strong>segunda fuente estructural</strong>,
-          complementaria del feed{' '}
-          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-            GTFS Gran Concepción
-          </a>
-          . Si el GTFS cubre los buses (la red urbana del PE 2024 y los
-          interurbanos 201, 401/411/421 y 302/304), OSM cubre casi{' '}
-          <em>todo lo demás</em>: estaciones y vía del Biotrén, terminales,
-          los pins de Florida y Yumbel (sin GTFS), ciclovías, plazas,
-          escuelas, hospitales y la trama vial que entrega Esri como
-          basemap. Los horarios del Biotrén vienen de los itinerarios de
-          EFE, no de OSM.
-        </p>
-        <p>
-          La división es deliberada: GTFS llega estructurado (horarios,
-          rutas, <code>stop_id</code>); OSM llega como <em>geografía con
-          tags</em>, nodos, vías y relaciones etiquetadas. Juntas, más
-          los itinerarios de EFE, alimentan la base del visor.
-        </p>
-        <Sources>
-          <SourceLink href="https://www.openstreetmap.org/about">openstreetmap.org · acerca</SourceLink>
-          <SourceLink href="https://wiki.openstreetmap.org/wiki/History_of_OpenStreetMap">OSM Wiki · History (2004, UCL)</SourceLink>
-          <SourceLink href="https://osmfoundation.org/">OpenStreetMap Foundation</SourceLink>
-        </Sources>
-      </Section>
+      <FactStrip
+        snapshot="2026-11-25 (relations L1 y L2)"
+        items={[
+          { label: 'Licencia', value: 'ODbL 1.0' },
+          { label: 'Biotrén', value: 'L1 y L2 · estaciones y vía' },
+          { label: 'Relations', value: '6857223 · 6857222' },
+          { label: 'Interurbanos', value: 'Desde el GTFS, no OSM' },
+        ]}
+      />
+
+      <ArticleSummary
+        bullets={[
+          <>
+            OSM aporta la geografía que el GTFS no trae: estaciones y vía del
+            Biotrén, terminales, pins de Florida y Yumbel, capas y el basemap.
+          </>,
+          <>
+            Los trazados de 201, 401, 411 y 421 ya no salen de OSM: vienen del{' '}
+            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
+              GTFS oficial DTPR
+            </a>{' '}
+            desde el 24-nov-2026.
+          </>,
+          <>
+            El visor no consulta OSM en vivo. Los datos se generan al sincronizar,
+            y cada cambio queda como diff revisable.
+          </>,
+          <>Para corregir un dato, edita OSM: se verá en la siguiente sincronización.</>,
+        ]}
+      />
 
       <Section title="Qué datos del visor vienen de OSM">
-        <p>
-          Inventario a partir de los scripts{' '}
-          <code className="font-mono">scripts/fetch-*.ts</code>. Cada uno
-          produce un <code className="font-mono">*.generated.ts</code> que
-          el bundle importa estáticamente. IDs de relation verificados al
-          2026-05-16.
-        </p>
-        <DataTable columns={['Dataset', 'Filtro OSM', 'Referencia', 'Script · salida']}>
-              <tr>
-                <td className="px-3 py-2 font-medium">Biotrén L1 (12 estaciones Hualqui ↔ Talcahuano)</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">node[railway~"^(station|halt)$"][operator~"EFE",i]</code> en bbox metropolitano</td>
-                <td className="px-3 py-2 text-[12px]">
-                  <SourceLink href="https://www.openstreetmap.org/relation/6857223">relation 6857223</SourceLink>{' '}
-                  (ref=L1, Q5985914)
-                </td>
-                <td className="px-3 py-2 text-[12px]">
-                  <code className="font-mono">fetch-biotren.ts</code> → <code className="font-mono">biotren.generated.ts</code>
-                </td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Biotrén L2 (14 estaciones Coronel ↔ Concepción)</td>
-                <td className="px-3 py-2 text-[12px]">Misma query L1; orden EFE distingue líneas.</td>
-                <td className="px-3 py-2 text-[12px]">
-                  <SourceLink href="https://www.openstreetmap.org/relation/6857222">relation 6857222</SourceLink>{' '}
-                  (ref=L2, Q5986175)
-                </td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-biotren.ts</code></td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Trazado físico L1+L2</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">way[railway="rail"][operator~"EFE",i]</code> + corridor-Dijkstra entre estaciones.</td>
-                <td className="px-3 py-2 text-[12px]">Comparte rieles con 6757914 / 6757915 (Tren Laja-Talcahuano).</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-biotren-track.ts</code> → <code className="font-mono">biotren-track.generated.ts</code></td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Pins Florida y Yumbel</td>
-                <td className="px-3 py-2 text-[12px]">Nodos y relaciones OSM consultados vía Nominatim, citados por <code className="font-mono">osm_id</code>. Un pin por corredor, sin trazado.</td>
-                <td className="px-3 py-2 text-[12px]">Corredores sin GTFS publicado.</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">src/data/interurban-corridors.ts</code> (curado a mano)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">201 / 401 / 411 / 421 (ya no se usa)</td>
-                <td className="px-3 py-2 text-[12px]">Hasta nov-2026: waypoints OSM citados (Ruta 156 para la 201; Plaza Perú → Cosmito → Lirquén → Tomé → Dichato para Tomé) + Dijkstra sobre el grafo <code className="font-mono">highway=</code>.</td>
-                <td className="px-3 py-2 text-[12px]">Hoy esos servicios salen del GTFS oficial DTPR. El script y su archivo siguen en el repo, pero el visor no los importa.</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-interurban-routes.ts</code> → <code className="font-mono">interurban-routes.generated.ts</code></td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Terminales</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">amenity=bus_station</code> + <code className="font-mono">public_transport=station[bus=yes]</code>.</td>
-                <td className="px-3 py-2 text-[12px]">Manuel Rodríguez (way 425356582), Camilo Henríquez (114474600), Collao (597586612).</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-terminals.ts</code></td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">POIs</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">amenity~"^(hospital|university|college)$"</code> + <code className="font-mono">shop=mall</code>.</td>
-                <td className="px-3 py-2 text-[12px]">Hospitales, universidades, malls del Gran Concepción.</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-pois.ts</code></td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Ciclovías</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">highway=cycleway</code> + <code className="font-mono">path[bicycle=designated]</code> + <code className="font-mono">cycleway=lane|track</code>.</td>
-                <td className="px-3 py-2 text-[12px]">Segregada vs compartida en el visor.</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-cycleways.ts</code></td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Áreas verdes</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">leisure=park|garden|nature_reserve</code> + <code className="font-mono">landuse=forest</code> + plazas peatonales.</td>
-                <td className="px-3 py-2 text-[12px]">Parques y reservas del bbox.</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-greenspace.ts</code></td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Escuelas</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">amenity~"^(kindergarten|school|college|university)$"</code> con name.</td>
-                <td className="px-3 py-2 text-[12px]">Equipamiento para análisis de cobertura.</td>
-                <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-schools.ts</code></td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Refs MOP (146/150/156/160/Q-60-O)</td>
-                <td className="px-3 py-2 text-[12px]">Tag <code className="font-mono">ref=</code> sobre ways viales. No es dataset propio; se citaba al digitalizar interurbanos y hoy sirve de referencia en los artículos.</td>
-                <td className="px-3 py-2 text-[12px]">
-                  <SourceLink href="https://www.openstreetmap.org/relation/6582801">relation 6582801 (Ruta 146)</SourceLink>,{' '}
-                  <SourceLink href="https://www.openstreetmap.org/way/1082594953">way 1082594953 (Ruta 150)</SourceLink>
-                </td>
-                <td className="px-3 py-2 text-[12px]">Citado en artículos del wiki (antes, <code className="font-mono">fetch-interurban-routes.ts</code>)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Basemap</td>
-                <td className="px-3 py-2 text-[12px]">Tiles Esri Gray Canvas (Light / Dark) y su capa de rótulos, derivados de OSM.</td>
-                <td className="px-3 py-2 text-[12px]">Atribución <code className="font-mono">© OSM · © Esri</code> al pie.</td>
-                <td className="px-3 py-2 text-[12px]">Runtime en Leaflet (<code className="font-mono">conce-map.tsx</code>), sin <code>.generated.ts</code>.</td>
-              </tr>
-            </DataTable>
+        <DataTable columns={['Dataset', 'Filtro y referencia OSM', 'Script · salida']}>
+          <tr>
+            <td className="px-3 py-2 font-medium">Biotrén L1 y L2 (estaciones)</td>
+            <td className="px-3 py-2 text-[12px]">
+              Estaciones y apeaderos con operador EFE.{' '}
+              <SourceLink href="https://www.openstreetmap.org/relation/6857223">relation 6857223</SourceLink>{' '}
+              (L1, Q5985914) y{' '}
+              <SourceLink href="https://www.openstreetmap.org/relation/6857222">relation 6857222</SourceLink>{' '}
+              (L2, Q5986175)
+            </td>
+            <td className="px-3 py-2 text-[12px]">
+              <code className="font-mono">fetch-biotren.ts</code> → <code className="font-mono">biotren.generated.ts</code>
+            </td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Vía del Biotrén</td>
+            <td className="px-3 py-2 text-[12px]">
+              Vías férreas de operador EFE, con Dijkstra entre estaciones. Comparte rieles con
+              6757914 y 6757915 (Tren Laja-Talcahuano).
+            </td>
+            <td className="px-3 py-2 text-[12px]">
+              <code className="font-mono">fetch-biotren-track.ts</code> → <code className="font-mono">biotren-track.generated.ts</code>
+            </td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Pins de Florida y Yumbel</td>
+            <td className="px-3 py-2 text-[12px]">Un pin por corredor, citado por <code className="font-mono">osm_id</code>. Sin trazado.</td>
+            <td className="px-3 py-2 text-[12px]">
+              <code className="font-mono">src/data/interurban-corridors.ts</code> (curado a mano)
+            </td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Terminales</td>
+            <td className="px-3 py-2 text-[12px]">
+              Manuel Rodríguez (way 425356582), Camilo Henríquez (way 114474600), Collao (way 597586612).
+            </td>
+            <td className="px-3 py-2 text-[12px]"><code className="font-mono">fetch-terminals.ts</code></td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Capas y basemap</td>
+            <td className="px-3 py-2 text-[12px]">
+              POIs, ciclovías, áreas verdes y escuelas. Basemap Esri Gray Canvas, derivado de OSM,
+              con atribución «© OSM · Esri, HERE, Garmin».
+            </td>
+            <td className="px-3 py-2 text-[12px]">
+              <code className="font-mono">fetch-pois.ts</code>, <code className="font-mono">fetch-cycleways.ts</code>,{' '}
+              <code className="font-mono">fetch-greenspace.ts</code>, <code className="font-mono">fetch-schools.ts</code>.
+              Basemap en runtime (<code className="font-mono">conce-map.tsx</code>).
+            </td>
+          </tr>
+        </DataTable>
         <p className="text-[12px] text-muted-foreground">
-          Las estaciones Biotrén enlazan Wikidata vía OSM{' '}
-          <code className="font-mono">wikidata=Q…</code> (Coronel Q5788800,
-          Concepción Q5841708, Mercado de Talcahuano Q5843722).{' '}
-          <code className="font-mono">fetch-wikidata.ts</code> enriquece
-          con fecha de inauguración, imagen y artículo Wikipedia ES.
-          Sinergia OSM ↔ Wikidata, no fuente independiente.
+          Las estaciones enlazan Wikidata (Coronel Q5788800, Concepción Q5841708, Mercado de Talcahuano Q5843722)
+          y <code className="font-mono">fetch-wikidata.ts</code> agrega fecha, imagen y artículo en español. Es sinergia, no
+          otra fuente. <code className="font-mono">fetch-interurban-routes.ts</code> ya no alimenta el visor:
+          sus trazados de 201, 401, 411 y 421 quedan en <code className="font-mono">interurban-routes.generated.ts</code>{' '}
+          solo porque el wiki los cita.
         </p>
       </Section>
 
-      <Section title="Modelo de datos OSM para transporte">
+      <CollapsibleSection title="Pipeline de generación">
         <p>
-          OSM no tiene "rutas" como objeto de primera clase como GTFS.
-          Tiene tres primitivas, <strong>node</strong> (punto),{' '}
-          <strong>way</strong> (línea/polígono) y{' '}
-          <strong>relation</strong> (agrupación ordenada), y tags libres{' '}
-          <code className="font-mono">key=value</code> encima. Convenciones
-          en el OSM Wiki.
+          Cada <code className="font-mono">fetch-*.ts</code> consulta Overpass al <em>build</em>, normaliza la respuesta y
+          escribe su <code className="font-mono">*.generated.ts</code>. El visor no depende de Overpass en runtime.{' '}
+          <code className="font-mono">sync:osm</code> corre en el workflow diario (06:30 UTC) y abre un pull request si hay cambios.
         </p>
-        <KeyValueList
-          items={[
-            ['node railway=station', <>Estación con andén físico (Biotrén, Laja-Talcahuano). Tags: <code>name</code>, <code>operator</code>, <code>railway:ref</code>, <code>wikidata</code>.</>],
-            ['node railway=halt', <>Apeadero menor. Intercambiable con <code>railway=station</code> para el Biotrén; el script filtra ambos.</>],
-            ['node highway=bus_stop', <>Paradero urbano. <code>shelter=yes</code> indica refugio, <code>ref</code> el código del letrero, <code>operator</code> la empresa.</>],
-            ['way railway=rail', <>Vía férrea física. Materia prima de <code className="font-mono">fetch-biotren-track.ts</code>: filtra <code>operator~"EFE",i</code> y corre Dijkstra-por-corredor.</>],
-            ['way highway=*', <>Trama vial. Jerarquía <code>motorway/trunk/primary/secondary/tertiary</code>. Tag <code>ref</code> guarda ID MOP (ej. <code>ref=150</code>).</>],
-            ['relation type=route', <>Recorrido por variante. Biotrén: 2170415 / 6738372 (L1) y 2170438 / 6852288 (L2).</>],
-            ['relation type=route_master', <>Conjunto de variantes = "línea" operativa. Biotrén L1 = 6857223, L2 = 6857222. El visor aún no consume esta capa (ver Trabajo futuro).</>],
-            ['amenity=bus_station', <>Terminal. Tomé: <code>way 425356582</code>; Yumbel Camilo Henríquez: <code>way 114474600</code>.</>],
-            ['Tags comunes', <><code>name</code>, <code>ref</code>, <code>operator</code>, <code>from/to/via</code>, <code>network</code>, <code>wheelchair</code>, <code>tactile_paving</code>, <code>wikidata</code>, <code>wikipedia</code>.</>],
-          ]}
-        />
-        <Sources>
-          <SourceLink href="https://wiki.openstreetmap.org/wiki/Public_transport">OSM Wiki · Public transport v2</SourceLink>
-          <SourceLink href="https://wiki.openstreetmap.org/wiki/Tag:railway%3Dstation">OSM Wiki · railway=station</SourceLink>
-          <SourceLink href="https://wiki.openstreetmap.org/wiki/Tag:highway%3Dbus_stop">OSM Wiki · highway=bus_stop</SourceLink>
-          <SourceLink href="https://wiki.openstreetmap.org/wiki/Relation:route_master">OSM Wiki · route_master</SourceLink>
-        </Sources>
-      </Section>
-
-      <Section title="Cómo lo usa este visor">
-        <p>
-          Patrón uniforme en todos los <code className="font-mono">fetch-*.ts</code>:
-          query Overpass al <em>build</em>, parseo JSON, normalización y
-          escritura de <code className="font-mono">*.generated.ts</code>{' '}
-          que el bundle importa. El visor no depende de Overpass en runtime;
-          cada cambio queda como diff revisable en git.
-        </p>
-        <div className="rounded-md border bg-card p-3">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-            Pipeline simplificado
-          </div>
-          <ol className="mt-2 ml-5 list-decimal space-y-1 text-[12px]">
-            <li>
-              <strong>Query Overpass.</strong> Overpass QL,{' '}
-              <code className="font-mono">[out:json]</code>, timeout 30-180 s.
-              Triple-mirror failover (<code className="font-mono">kumi.systems</code>{' '}
-              → <code className="font-mono">overpass-api.de</code> →{' '}
-              <code className="font-mono">osm.ch</code>) en{' '}
-              <code className="font-mono">scripts/lib/overpass.ts</code>{' '}
-              vía curl (el fetch nativo de Node sufre ETIMEDOUT contra los
-              mirrors).
-            </li>
-            <li>
-              <strong>Parseo y normalización.</strong> Respuesta{' '}
-              <code className="font-mono">{'{ elements: Array<node|way|relation> }'}</code>{' '}
-              filtrada por tipo a estructuras propias.
-            </li>
-            <li>
-              <strong>Procesamiento geométrico</strong>: grafo de la vía
-              del Biotrén, filtros por corredor para evitar ramales
-              industriales, Dijkstra entre nodos OSM consecutivos. Cada
-              vértice es un nodo OSM real.
-            </li>
-            <li>
-              <strong>Simplificación Ramer-Douglas-Peucker</strong>{' '}
-              (<code className="font-mono">scripts/lib/simplify.ts</code>),
-              tolerancia <code className="font-mono">5e-5</code> grados
-              (~5 m en la latitud de Concepción).
-            </li>
-            <li>
-              <strong>Citation stamps.</strong> Los scripts conservan el
-              OSM type+id de cada waypoint o estación. Ese stamp distingue
-              dato verificable de inventado.
-            </li>
-            <li>
-              <strong>Escritura del archivo generado</strong> con banner{' '}
-              <code className="font-mono">// AUTO-GENERATED by …</code> y
-              fecha ISO.
-            </li>
-            <li>
-              <strong>Importación estática</strong> desde React. Los
-              datasets pesados (ciclovías, áreas verdes, escuelas) entran
-              con import dinámico al encender la capa.
-            </li>
-            <li>
-              <strong>Render Leaflet</strong> (<code className="font-mono">conce-map.tsx</code>)
-              sobre TileLayer Esri Gray Canvas. Atribución del control:{' '}
-              <code className="font-mono">© OSM · Esri, HERE, Garmin</code>, más
-              la del GTFS.
-            </li>
-          </ol>
-        </div>
-        <p>
-          Re-generación: <code className="font-mono">npm run sync:all</code>{' '}
-          corre los scripts activos. Cada uno tiene comando aislado
-          (<code className="font-mono">sync:biotren</code>,{' '}
-          <code className="font-mono">sync:terminals</code>,
-          etc.). Cambios upstream aparecen como diffs revisables al
-          commitear. El GTFS de buses tiene su propio script (
-          <code className="font-mono">sync:gtfs</code>, ver{' '}
-          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-            GTFS Gran Concepción
-          </a>
-          ).
+        <ol className="ml-5 list-decimal space-y-1 text-[13px]">
+          <li>
+            <strong>Consulta.</strong> Overpass QL con <code className="font-mono">[out:json]</code>, con failover entre tres
+            mirrors (<code className="font-mono">scripts/lib/overpass.ts</code>), vía curl.
+          </li>
+          <li>
+            <strong>Geometría.</strong> Dijkstra por el grafo de la vía, entre nodos OSM reales. Simplificación
+            Ramer-Douglas-Peucker con tolerancia <code className="font-mono">5e-5</code>° (~5 m).
+          </li>
+          <li>
+            <strong>Citas.</strong> Cada estación y vértice conserva su tipo e ID de OSM. Ese stamp separa el dato
+            verificable de lo inventado.
+          </li>
+          <li>
+            <strong>Archivo y render.</strong> Banner <code className="font-mono">// AUTO-GENERATED</code> con fecha ISO.
+            Las capas pesadas entran con import dinámico. Leaflet dibuja en <code className="font-mono">conce-map.tsx</code>,
+            atribución «© OSM · Esri, HERE, Garmin».
+          </li>
+        </ol>
+        <p className="text-[12px] text-muted-foreground">
+          <code className="font-mono">npm run sync:osm</code> corre biotren, terminals, biotren-track, pois, wikidata,
+          cycleways, greenspace y schools. <code className="font-mono">sync:all</code> suma el GTFS.
         </p>
         <Sources>
           <SourceLink href="https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide">OSM Wiki · Overpass QL</SourceLink>
           <SourceLink href="https://overpass-turbo.eu/">Overpass Turbo · sandbox</SourceLink>
           <SourceLink href="https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm">Wikipedia · RDP</SourceLink>
         </Sources>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Licencia ODbL">
+      <Section title="Modelo y licencia">
         <p>
-          Datos OSM bajo <strong>Open Database License (ODbL) 1.0</strong>,
-          vigente desde el <strong>12-sep-2012</strong> en reemplazo de la
-          CC BY-SA 2.0. Tres obligaciones operativas:
+          OSM no tiene «rutas» como el GTFS. Tiene <strong>nodos</strong>, <strong>vías</strong> y{' '}
+          <strong>relaciones</strong> con tags <code className="font-mono">key=value</code>. Las líneas del Biotrén son
+          relaciones <code className="font-mono">route_master</code>, y cada variante es una relación{' '}
+          <code className="font-mono">route</code>.
         </p>
-        <ul className="ml-5 list-disc space-y-1.5">
-          <li>
-            <strong>Atribución.</strong> "© colaboradores de OpenStreetMap"
-            visible. El visor cumple en{' '}
-            <code className="font-mono">conce-map.tsx</code>:{' '}
-            <code className="font-mono">© OSM · © Esri</code> al pie del
-            mapa.
-          </li>
-          <li>
-            <strong>Share-alike (cláusula 4.4).</strong> "Derivative
-            Database" distribuida públicamente debe ofrecerse bajo ODbL.
-            Los <code className="font-mono">*.generated.ts</code> son
-            derivados; el repo cita fuente.
-          </li>
-          <li>
-            <strong>Produced Work vs Derivative Database.</strong> Una
-            screenshot del mapa es "Produced Work", solo atribución, sin
-            share-alike. Una base de datos sustancial sí cae en share-alike.
-          </li>
-        </ul>
-        <p className="text-[12px] text-muted-foreground">
-          <code className="font-mono">data-sources-sheet.tsx</code> declara
-          "Open Database License (ODbL)" como licencia OSM. Esri agrega
-          atribución propia (basemaps Gray Canvas bajo términos de servicio
-          Esri; reemplazaron a los de CARTO, que desde 2026 exigen API key).
+        <p>
+          Los datos están bajo <strong>ODbL 1.0</strong>, vigente desde el 12-sep-2012 en reemplazo de CC BY-SA 2.0.
+          Atribución: el visor muestra «© OSM · Esri, HERE, Garmin» al pie del mapa. Share-alike: una base derivada distribuida
+          debe ofrecerse bajo ODbL, y los <code className="font-mono">*.generated.ts</code> son derivados que citan
+          su fuente. Una captura del mapa solo requiere atribución.
         </p>
         <Sources>
+          <SourceLink href="https://wiki.openstreetmap.org/wiki/Relation:route_master">OSM Wiki · route_master</SourceLink>
           <SourceLink href="https://opendatacommons.org/licenses/odbl/1-0/">Open Data Commons · ODbL 1.0</SourceLink>
           <SourceLink href="https://www.openstreetmap.org/copyright">openstreetmap.org/copyright</SourceLink>
           <SourceLink href="https://wiki.osmfoundation.org/wiki/Licence">OSMF · License (CC BY-SA → ODbL, 12-sep-2012)</SourceLink>
-          <SourceLink href="https://www.esri.com/en-us/legal/terms/full-master-agreement">Esri · términos de servicio de basemaps</SourceLink>
         </Sources>
+        <p className="text-[12px] text-muted-foreground">
+          <code className="font-mono">data-sources-sheet.tsx</code> declara ODbL como licencia de OSM. El basemap Esri se
+          rige por sus términos de servicio:{' '}
+          <SourceLink href="https://www.esri.com/en-us/legal/terms/full-master-agreement">Esri · términos de servicio de basemaps</SourceLink>.
+        </p>
       </Section>
 
-      <Section title="Cómo verificar y corregir OSM">
-        <p>
-          OSM es editable con cuenta. Correcciones puntuales tienen barrera
-          baja; cualquier mejora aparece en el próximo{' '}
-          <code className="font-mono">npm run sync:*</code>.
+      <Section title="Comparación con el GTFS">
+        <DataTable columns={['Dimensión', 'OpenStreetMap', 'GTFS Gran Concepción']}>
+          <tr>
+            <td className="px-3 py-2 font-medium">Modelo</td>
+            <td className="px-3 py-2 text-[12px]">Nodos, vías, relaciones y tags</td>
+            <td className="px-3 py-2 text-[12px]">Tablas CSV en zip: rutas, viajes, paraderos, horarios</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Actualización</td>
+            <td className="px-3 py-2 text-[12px]">Continua; el visor la recoge con cada <code>sync:*</code></td>
+            <td className="px-3 py-2 text-[12px]">Una versión publicada (programa del 28-feb-2025)</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Rol en el visor</td>
+            <td className="px-3 py-2 text-[12px]">Biotrén, terminales, pins, capas y basemap</td>
+            <td className="px-3 py-2 text-[12px]">Buses urbanos e interurbanos: trazado, paraderos, horarios</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Licencia</td>
+            <td className="px-3 py-2 text-[12px]"><strong>ODbL 1.0</strong></td>
+            <td className="px-3 py-2 text-[12px]">No declarada por la DTPR</td>
+          </tr>
+        </DataTable>
+        <p className="text-[12px] text-muted-foreground">
+          Complementarias: OSM aporta geografía; el GTFS aporta el servicio y su horario. Detalle en{' '}
+          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS Gran Concepción</a>.
         </p>
+      </Section>
+
+      <Section title="Limitaciones">
+        <ul className="ml-5 list-disc space-y-1.5">
+          <li>
+            <strong>Cobertura desigual.</strong> Concepción centro y los troncales (Ruta 150, 156, 160) están bien
+            mapeados. Florida interior, Yumbel rural y Hualqui rural tienen huecos.
+          </li>
+          <li>
+            <strong>Horarios casi nunca en OSM.</strong> El visor no usa los tags <code>interval</code>.
+          </li>
+          <li>
+            <strong>Sin relation de bus para interurbanos.</strong> Ni 201, 401, 411, 421, Yumbel ni Florida tenían
+            relation <code>route=bus</code> al 16-may-2026. Florida y Yumbel quedan como pin.
+          </li>
+          <li>
+            <strong>Refs MOP desactualizados.</strong> Q-60-O figura como <code>ref=Q-60-O</code> con{' '}
+            <code>old_ref=O-60</code>.
+          </li>
+        </ul>
+      </Section>
+
+      <CollapsibleSection title="Cómo verificar y corregir OSM">
+        <p>OSM se edita con cuenta. Las correcciones puntuales tienen barrera baja.</p>
         <KeyValueList
           items={[
-            ['Editar online', <><SourceLink href="https://www.openstreetmap.org/edit">openstreetmap.org/edit</SourceLink>, editor iD para correcciones de tag o posición.</>],
-            ['Editar desktop', <><SourceLink href="https://josm.openstreetmap.de/">JOSM</SourceLink>, Java, validador, presets Chile, imágenes aéreas.</>],
+            ['Editar online', <><SourceLink href="https://www.openstreetmap.org/edit">openstreetmap.org/edit</SourceLink>, editor iD para tags y posiciones.</>],
+            ['Editar desktop', <><SourceLink href="https://josm.openstreetmap.de/">JOSM</SourceLink>, validador y presets de Chile.</>],
             ['Reportar nota', <><SourceLink href="https://www.openstreetmap.org/note/new">Crear nota</SourceLink> si ves un error y no quieres editar.</>],
-            ['Convenciones Chile', <><SourceLink href="https://wiki.openstreetmap.org/wiki/WikiProject_Chile">WikiProject Chile</SourceLink>, nomenclatura de calles, refs MOP, presets.</>],
-            ['Validadores', <><SourceLink href="https://keepright.at/">KeepRight</SourceLink> y <SourceLink href="https://osmose.openstreetmap.fr/es/map/">OSMose</SourceLink> detectan ways rotos, tags inconsistentes.</>],
-            ['Comunidad CL', <><SourceLink href="https://lists.openstreetmap.org/listinfo/talk-cl">talk-cl</SourceLink> y <code className="font-mono">#osm-cl</code> en OSM Discord/Matrix.</>],
+            ['Convenciones Chile', <><SourceLink href="https://wiki.openstreetmap.org/wiki/WikiProject_Chile">WikiProject Chile</SourceLink>: nombres de calles, refs MOP, presets.</>],
+            ['Validadores', <><SourceLink href="https://keepright.at/">KeepRight</SourceLink> y <SourceLink href="https://osmose.openstreetmap.fr/es/map/">OSMose</SourceLink>: ways rotos y tags inconsistentes.</>],
+            ['Comunidad CL', <><SourceLink href="https://lists.openstreetmap.org/listinfo/talk-cl">talk-cl</SourceLink> y <code className="font-mono">#osm-cl</code> en Discord y Matrix.</>],
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
-          Datos OSM (paradero, estación, ref MOP) → editar OSM directamente.
-          Datos GTFS (paraderos urbanos, horarios) → contactar DTPR (ver{' '}
-          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-            GTFS Gran Concepción
-          </a>
-          ).
+          Dato de OSM (paradero, estación, ref MOP): edita OSM. Dato del GTFS (paraderos, horarios): contacta a la DTPR,
+          según <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS Gran Concepción</a>.
         </p>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Comparación con GTFS Gran Concepción">
-        <DataTable columns={['Dimensión', 'OpenStreetMap', 'GTFS Gran Concepción']}>
-              <tr>
-                <td className="px-3 py-2 font-medium">Modelo</td>
-                <td className="px-3 py-2 text-[12px]">node/way/relation + tags <code>key=value</code></td>
-                <td className="px-3 py-2 text-[12px]">CSV en ZIP, agency, routes, trips, stops, stop_times, calendar, shapes</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Licencia</td>
-                <td className="px-3 py-2 text-[12px]"><strong>ODbL 1.0</strong> · atribución + share-alike</td>
-                <td className="px-3 py-2 text-[12px]">No declarada por la DTPR; el visor lo usa como información pública del Estado, con atribución</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Actualización</td>
-                <td className="px-3 py-2 text-[12px]">Continua; el visor recoge cada <code>sync:*</code></td>
-                <td className="px-3 py-2 text-[12px]">Una versión publicada en dtpr.gob.cl (programa 28-feb-2025, calendario vencido el 31-dic-2025); el visor revisa el archivo cada día</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Cobertura</td>
-                <td className="px-3 py-2 text-[12px]">Mundial. Alta en Concepción centro, decreciente al rural</td>
-                <td className="px-3 py-2 text-[12px]">PE Gran Concepción 2024 más los interurbanos 201, 401/411/421 y 302/304</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Datos</td>
-                <td className="px-3 py-2 text-[12px]">Geometría + atributos físicos/operativos (operador, refugio, AU, refs)</td>
-                <td className="px-3 py-2 text-[12px]">Horarios, frecuencias, stop_id, secuencias trip-stop, calendario</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Tiempo real</td>
-                <td className="px-3 py-2 text-[12px]">No</td>
-                <td className="px-3 py-2 text-[12px]">Sin GTFS-Realtime oficial. Las llegadas en vivo del visor vienen de una fuente no oficial (app de Transapp)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Tarifas</td>
-                <td className="px-3 py-2 text-[12px]">No se modelan; viven en wiki y <code>routes.ts</code></td>
-                <td className="px-3 py-2 text-[12px]"><code>fare_attributes.txt</code> opcional; el feed CCP no las usa</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Mantenedor</td>
-                <td className="px-3 py-2 text-[12px]">Comunidad voluntaria global · OSMF</td>
-                <td className="px-3 py-2 text-[12px]">DTPR (División de Transporte Público Regional, MTT)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Rol en el visor</td>
-                <td className="px-3 py-2 text-[12px]">Estaciones y vía del Biotrén, terminales, pins Florida/Yumbel, ciclovías, plazas, escuelas, POIs, basemap</td>
-                <td className="px-3 py-2 text-[12px]">Buses urbanos e interurbanos: trazado de cada sentido, paraderos, horarios</td>
-              </tr>
-            </DataTable>
-        <p className="text-[12px] text-muted-foreground">
-          Complementarias por diseño: OSM aporta geografía + tags; GTFS
-          aporta estructura de servicio y horario. GTFS no cubre Biotrén
-          (no es bus; sus horarios vienen de EFE); OSM no entrega{' '}
-          <code>stop_times.txt</code> para los 102 recorridos del feed.
-        </p>
-      </Section>
-
-      <Section title="Limitaciones conocidas en el Biobío">
-        <ul className="ml-5 list-disc space-y-1.5">
-          <li>
-            <strong>Cobertura desigual.</strong> Concepción centro y
-            troncales (Ruta 150 / 156 / 160) bien mapeados. Comunas rurales
-            (Florida interior, Yumbel rural, Hualqui rural) con huecos:
-            calles secundarias, paraderos cabecera, ramales menores.
-          </li>
-          <li>
-            <strong>Horarios casi nunca en OSM.</strong> Tag{' '}
-            <code className="font-mono">interval</code> excepcional (L1 = 15
-            min, L2 = 30 min, <code>interval:source</code> = fesur.cl 2019).
-            El visor no los usa: buses desde el GTFS y Biotrén desde los
-            itinerarios de EFE.
-          </li>
-          <li>
-            <strong>Tarifas no se modelan</strong>, viven en artículos del
-            wiki y declaraciones oficiales.
-          </li>
-          <li>
-            <strong>Refs MOP a veces desactualizados.</strong> Q-60-O
-            figura como <code>ref=Q-60-O</code> con <code>old_ref=O-60</code>;
-            no toda la cartografía recoge la renumeración.
-          </li>
-          <li>
-            <strong>Variantes route_master incompletas.</strong> Biotrén
-            sí (6857222/6857223). Buses interurbanos (201, 401, 411, 421,
-            Yumbel, Florida) NO tenían relation <code>route=bus</code> al
-            2026-05-16. Para 201/401/411/421 ya no importa: vienen del GTFS
-            oficial. Florida y Yumbel quedan solo como pin.
-          </li>
-          <li>
-            <strong>Comentario obsoleto.</strong>{' '}
-            <code className="font-mono">scripts/fetch-biotren.ts</code>{' '}
-            declara "OSM does not currently have the Biotrén lines as
-            route relations", las route_master sí existen. Migrar el
-            script a consumir relation reduciría errores ante cambios de
-            operador.
-          </li>
-        </ul>
-      </Section>
-
-      <Section title="Trabajo futuro">
-        <ul className="ml-5 list-disc space-y-1.5">
-          <li>
-            <strong>Migrar pipeline Biotrén a route_master</strong>{' '}
-            (6857222 / 6857223). La relation trae miembros en orden, más
-            exacto que filtrar nodos por operador.
-          </li>
-          <li>
-            <strong>Mapear Florida y Yumbel como route=bus</strong> en OSM.
-            Sin GTFS, es la única vía para dibujarlos como recorrido y no
-            solo como pin.
-          </li>
-          <li>
-            <strong>Enriquecer estaciones vía Wikidata.</strong>{' '}
-            <code className="font-mono">fetch-wikidata.ts</code> trae
-            fecha, imagen, artículo Wikipedia desde Q-ids. Extender a
-            terminales y POIs.
-          </li>
-          <li>
-            <strong>Validar con OSMose</strong> el bbox{' '}
-            <code className="font-mono">-37.10,-73.25,-36.65,-72.80</code>{' '}
-            y corregir paraderos sin name, ways no conectados, refs MOP rotos.
-          </li>
-          <li>
-            <strong>Actualizar refs MOP</strong> en Q-60-O y tramos de
-            Ruta 146 (Yumbel).
-          </li>
-          <li>
-            <strong>Mapear paraderos cabecera</strong> de interurbanos
-            (Terminal San Sebastián Yumbel, Terminal San Francisco, Plaza
-            de Florida; Plaza de Armas Santa Juana ya está como way
-            83652338).
-          </li>
-        </ul>
-      </Section>
-
-      <Section title="Cómo contribuir a OSM Biobío">
+      <CollapsibleSection title="Cómo contribuir a OSM Biobío">
         <ul className="ml-5 list-disc space-y-1.5">
           <li>
             <strong>Reportar sin editar.</strong>{' '}
-            <SourceLink href="https://www.openstreetmap.org/note/new">
-              Crear nota
-            </SourceLink>{' '}
-            sobre la zona afectada.
+            <SourceLink href="https://www.openstreetmap.org/note/new">Crear nota</SourceLink> sobre la zona.
           </li>
           <li>
             <strong>Editar puntualmente.</strong> Cuenta en{' '}
-            <SourceLink href="https://www.openstreetmap.org/">openstreetmap.org</SourceLink>
-            , <SourceLink href="https://www.openstreetmap.org/edit">modo edición</SourceLink>, mueve un paradero, corrige nombre, agrega <code>shelter=yes</code>.
+            <SourceLink href="https://www.openstreetmap.org/">openstreetmap.org</SourceLink> y{' '}
+            <SourceLink href="https://www.openstreetmap.org/edit">modo edición</SourceLink>: mueve un paradero, corrige
+            un nombre, agrega <code>shelter=yes</code>.
           </li>
           <li>
             <strong>Mapear sistemáticamente.</strong> Lee{' '}
             <SourceLink href="https://wiki.openstreetmap.org/wiki/WikiProject_Chile">WikiProject Chile</SourceLink>,
-            suscríbete a <SourceLink href="https://lists.openstreetmap.org/listinfo/talk-cl">talk-cl</SourceLink>,
-            usa JOSM. Prioridades: paraderos Concepción ↔ Tomé, terminales
-            Yumbel/Florida, refs Q-60-O.
+            suscríbete a <SourceLink href="https://lists.openstreetmap.org/listinfo/talk-cl">talk-cl</SourceLink>{' '}
+            y usa JOSM. Prioridades: paraderos Concepción ↔ Tomé, terminales de Yumbel y Florida, refs Q-60-O.
           </li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Información de campo sin saber dónde mapear → issue o PR en{' '}
-          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev">
-            el repo del visor
-          </SourceLink>
-          .
+          ¿Información de campo sin saber dónde mapearla? Abre un issue o PR en{' '}
+          <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev">el repo del visor</SourceLink>.
         </p>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Cronología">
+      <CollapsibleSection title="Trabajo futuro">
+        <ul className="ml-5 list-disc space-y-1.5">
+          <li>
+            <strong>Migrar el pipeline Biotrén a route_master</strong> (6857222 / 6857223): las relations traen miembros
+            en orden, más exacto que filtrar nodos por operador.
+          </li>
+          <li>
+            <strong>Mapear Florida y Yumbel como route=bus.</strong> Sin GTFS, es la única vía para dibujarlos como recorrido.
+          </li>
+          <li>
+            <strong>Enriquecer con Wikidata</strong> terminales y POIs, como ya se hace con las estaciones.
+          </li>
+          <li>
+            <strong>Validar con OSMose</strong> el bbox <code className="font-mono">-37.10,-73.25,-36.65,-72.80</code>{' '}
+            y corregir paraderos sin nombre, ways desconectados y refs MOP rotos.
+          </li>
+          <li>
+            <strong>Mapear paraderos cabecera</strong> de los interurbanos (Terminal San Sebastián de Yumbel, Terminal San
+            Francisco, Plaza de Florida). La Plaza de Armas de Santa Juana ya está (way 83652338).
+          </li>
+        </ul>
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Cronología">
         <Timeline
           items={[
             {
+              date: '1999-01',
+              event: 'Inicio de la L1 del Biotrén, según el tag start_date de su relation en OSM.',
+              source: { href: 'https://www.openstreetmap.org/relation/6857223', label: 'relation 6857223' },
+            },
+            {
               date: '9-ago-2004',
-              event: 'Steve Coast crea OpenStreetMap en University College London como respuesta al Ordnance Survey británico (cartografía pública pero no abierta). Punto de origen del proyecto.',
+              event: 'Steve Coast crea OpenStreetMap en University College London.',
               source: { href: 'https://wiki.openstreetmap.org/wiki/History_of_OpenStreetMap', label: 'OSM Wiki · History' },
             },
             {
+              date: '24-nov-2005',
+              event: 'Inicio de la L2 del Biotrén, según el tag start_date de su relation en OSM.',
+              source: { href: 'https://www.openstreetmap.org/relation/6857222', label: 'relation 6857222' },
+            },
+            {
               date: '22-ago-2006',
-              event: 'Se constituye la OpenStreetMap Foundation en el Reino Unido como organización sin fines de lucro. Asume la gobernanza del proyecto.',
+              event: 'Se constituye la OpenStreetMap Foundation en el Reino Unido, sin fines de lucro.',
               source: { href: 'https://osmfoundation.org/', label: 'OSMF' },
             },
             {
               date: '12-sep-2012',
-              event: 'OSM completa la transición de licencia: pasa de CC BY-SA 2.0 a Open Database License (ODbL) 1.0. Los contribuidores no aceptantes ven sus aportes removidos; el resto de la base queda relicenciado.',
+              event: 'OSM pasa de CC BY-SA 2.0 a ODbL 1.0.',
               source: { href: 'https://wiki.osmfoundation.org/wiki/Licence', label: 'OSMF · License' },
             },
-            {
-              date: 'Ene-1999',
-              event: 'Inauguración Biotrén L1 (tag start_date="1999-01" en relation OSM L1).',
-              source: { href: 'https://www.openstreetmap.org/relation/6857223', label: 'relation 6857223 (L1)' },
-            },
-            {
-              date: '24-nov-2005',
-              event: 'Inauguración Biotrén L2 (tag start_date="2005-11-24" en relation OSM L2).',
-              source: { href: 'https://www.openstreetmap.org/relation/6857222', label: 'relation 6857222 (L2)' },
-            },
-            { date: '2019', event: 'Relations route_master Biotrén con interval:source apuntando a fesur.cl 2019.' },
-            { date: 'Q2-Q4 2024', event: 'Pipeline OSM → .generated.ts → Leaflet en línea (scripts fetch-biotren, fetch-terminals, fetch-pois, etc.).' },
-            { date: '2025', event: 'fetch-interurban-routes.ts digitaliza 201, 401, 411, 421 desde waypoints OSM + corridor-Dijkstra.' },
-            { date: '24-nov-2026', event: '201, 401, 411 y 421 pasan a salir del GTFS oficial DTPR; el visor deja de usar los trazados OSM digitalizados.' },
-            { date: '14-may-2026', event: 'Última corrida sync:biotren conocida. 25 estaciones L1+L2 (Concepción compartida) verificadas con Q-ids.' },
-            { date: '16-may-2026', event: 'Verificación Overpass de las relations Biotrén y publicación de la ficha.' },
+            { date: '2019', event: 'Relations route_master del Biotrén con interval:source apuntando a fesur.cl 2019.' },
+            { date: 'Q2-Q4 2024', event: 'Pipeline OSM → .generated.ts → Leaflet en línea (fetch-biotren, fetch-terminals, fetch-pois, etc.).' },
+            { date: '2025', event: 'fetch-interurban-routes.ts digitaliza 201, 401, 411 y 421 desde waypoints OSM.' },
+            { date: '14-may-2026', event: 'Última corrida conocida de sync:biotren: 25 estaciones L1+L2, con Concepción compartida.' },
+            { date: '16-may-2026', event: 'Verificación de las relations Biotrén en Overpass y publicación de esta ficha.' },
+            { date: '24-nov-2026', event: '201, 401, 411 y 421 pasan a salir del GTFS oficial DTPR. El visor deja de usar los trazados OSM digitalizados.' },
+            { date: '25-nov-2026', event: 'Consulta de las relations route_master L1 y L2: siguen vigentes.' },
           ]}
         />
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Vínculos con otros artículos">
+      <CollapsibleSection title="Vínculos con otros artículos">
         <ul className="ml-5 list-disc space-y-1">
-          <li>
-            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-              GTFS Gran Concepción
-            </a>{' '}, la otra fuente estructural. Cubre los buses urbanos del
-            PE 2024 y los interurbanos 201, 401/411/421 y 302/304.
-          </li>
-          <li>
-            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
-              Biotrén y sus extensiones
-            </a>{' '}, estaciones y trazado desde relations 6857222/6857223.
-          </li>
-          <li>
-            <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
-              Ruta 201 Santa Juana
-            </a>{' '}, trazado oficial del GTFS desde nov-2026 (antes, waypoints
-            OSM sobre la Ruta 156).
-          </li>
-          <li>
-            <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
-              Concepción ↔ Tomé
-            </a>{' '}, 401/411/421 desde el GTFS oficial (antes, digitalizados
-            sobre <code>ref=150</code>).
-          </li>
-          <li>
-            <a href="/wiki/concepcion-yumbel" className="underline underline-offset-2">
-              Concepción ↔ Yumbel
-            </a>{' '}, cita relation 6582801 (Ruta 146) y way 454984703 (Q-60-O),
-            servicio no graficado.
-          </li>
-          <li>
-            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
-              Concepción ↔ Florida
-            </a>{' '}, sin GTFS: en el visor es solo un pin con coordenadas
-            OSM.
-          </li>
-          <li>
-            <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
-              Electrocorredores MOP del Biobío
-            </a>{' '}, refs MOP de Ruta 160 / 150 / Concepción-Talcahuano vía OSM.
-          </li>
-          <li>
-            <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
-              SEREMITT Biobío y la DTPR
-            </a>{' '}, marco institucional detrás del visor: la DTPR Biobío
-            publica el GTFS (DTPR) y las resoluciones que el visor refleja.
-            Sucesión SEREMI documentada (Silva → Fierro → Cautivo
-            desde 28-nov-2025).
-          </li>
-          <li>
-            <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">
-              Sobre este wiki
-            </a>{' '}, compromiso: sin fuente abierta no entra al visor. OSM
-            sostiene todo lo no-bus-urbano.
-          </li>
+          <li><a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS Gran Concepción</a>: la otra fuente estructural.</li>
+          <li><a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">Biotrén y sus extensiones</a>: estaciones y trazado desde las relations 6857222 y 6857223.</li>
+          <li><a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ruta 201 Santa Juana</a>: trazado del GTFS desde nov-2026 (antes, waypoints OSM sobre la Ruta 156).</li>
+          <li><a href="/wiki/concepcion-tome" className="underline underline-offset-2">Concepción ↔ Tomé</a>: 401, 411 y 421 desde el GTFS.</li>
+          <li><a href="/wiki/concepcion-yumbel" className="underline underline-offset-2">Concepción ↔ Yumbel</a>: cita la relation 6582801 (Ruta 146); servicio no graficado.</li>
+          <li><a href="/wiki/concepcion-florida" className="underline underline-offset-2">Concepción ↔ Florida</a>: solo un pin con coordenadas OSM.</li>
+          <li><a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">Electrocorredores MOP del Biobío</a>: refs MOP de las Rutas 160 y 150 vía OSM.</li>
+          <li><a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">SEREMITT Biobío y la DTPR</a>: publica el GTFS.</li>
+          <li><a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">Sobre este wiki</a>: sin fuente abierta no entra al visor.</li>
         </ul>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Datos pendientes">
+      <CollapsibleSection title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Cobertura de paraderos OSM (<code>highway=bus_stop</code>) frente a los 2.239 paraderos del GTFS oficial.</li>
-          <li>Inventario verificable de relations <code>route=bus</code> en el Biobío (esperado 0).</li>
-          <li>Estado de migración del pipeline Biotrén a route_master 6857222/6857223.</li>
-          <li>Q-ids Wikidata para estaciones, terminales y POIs faltantes.</li>
-          <li>Mappy parties activas en Concepción / Biobío.</li>
+          <li>Cobertura de paraderos OSM (<code>highway=bus_stop</code>) frente a los 2.239 paraderos del GTFS.</li>
+          <li>Inventario de relations <code>route=bus</code> en el Biobío (se espera 0).</li>
+          <li>Migración del pipeline Biotrén a route_master 6857222 / 6857223.</li>
+          <li>Q-ids de Wikidata para estaciones, terminales y POIs que faltan.</li>
         </ul>
         <PendingBanner>
-          Cierre: ronda de validación con OSMose sobre el bbox + barrido
-          Overpass de relations route=bus/route=train. Secundario: contactar
-          talk-cl@openstreetmap.org.
+          Cierre: ronda de validación con OSMose sobre el bbox y barrido de Overpass de relations route=bus y route=train.
         </PendingBanner>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Fuentes">
+      <CollapsibleSection title="Fuentes">
         <ul className="ml-5 list-disc space-y-1 text-[12px]">
           <li>
             <SourceLink href="https://www.openstreetmap.org/about">openstreetmap.org · acerca</SourceLink>
-            {' · '}
-            <SourceLink href="https://www.openstreetmap.org/copyright">copyright / atribución</SourceLink>
             {' · '}
             <SourceLink href="https://osmfoundation.org/">OSM Foundation</SourceLink>
           </li>
           <li>
             <SourceLink href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0 · texto oficial</SourceLink>
-            {' · '}
-            <SourceLink href="https://wiki.osmfoundation.org/wiki/Licence">OSMF License (CC BY-SA → ODbL, 12-sep-2012)</SourceLink>
           </li>
           <li>
             OSM Wiki:{' '}
             <SourceLink href="https://wiki.openstreetmap.org/wiki/Public_transport">Public transport v2</SourceLink>
             {' · '}
-            <SourceLink href="https://wiki.openstreetmap.org/wiki/Relation:route_master">route_master</SourceLink>
+            <SourceLink href="https://wiki.openstreetmap.org/wiki/Tag:railway%3Dstation">railway=station</SourceLink>
             {' · '}
-            <SourceLink href="https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide">Overpass QL</SourceLink>
-            {' · '}
-            <SourceLink href="https://wiki.openstreetmap.org/wiki/WikiProject_Chile">WikiProject Chile</SourceLink>
+            <SourceLink href="https://wiki.openstreetmap.org/wiki/Tag:highway%3Dbus_stop">highway=bus_stop</SourceLink>
             {' · '}
             <SourceLink href="https://overpass-turbo.eu/">Overpass Turbo</SourceLink>
           </li>
@@ -674,14 +398,20 @@ export default function OpenstreetmapFuenteVisor() {
             <SourceLink href="https://www.openstreetmap.org/relation/2170415">2170415</SourceLink>
             {', '}
             <SourceLink href="https://www.openstreetmap.org/relation/6738372">6738372</SourceLink>
-            {' (L1 variantes); '}
+            {' (variantes L1); '}
             <SourceLink href="https://www.openstreetmap.org/relation/2170438">2170438</SourceLink>
             {', '}
             <SourceLink href="https://www.openstreetmap.org/relation/6852288">6852288</SourceLink>
-            {' (L2 variantes).'}
+            {' (variantes L2).'}
           </li>
           <li>
-            Scripts del repo que consumen OSM:{' '}
+            Refs MOP:{' '}
+            <SourceLink href="https://www.openstreetmap.org/relation/6582801">relation 6582801 (Ruta 146)</SourceLink>
+            {', '}
+            <SourceLink href="https://www.openstreetmap.org/way/1082594953">way 1082594953 (Ruta 150)</SourceLink>.
+          </li>
+          <li>
+            Scripts del repo:{' '}
             <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/blob/main/scripts/fetch-biotren.ts">fetch-biotren</SourceLink>
             {', '}
             <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/blob/main/scripts/fetch-biotren-track.ts">fetch-biotren-track</SourceLink>
@@ -706,7 +436,7 @@ export default function OpenstreetmapFuenteVisor() {
             .
           </li>
         </ul>
-      </Section>
+      </CollapsibleSection>
     </div>
   );
 }

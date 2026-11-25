@@ -1,17 +1,22 @@
-// Concepción ↔ Coronel ↔ Lota, corredor sur metropolitano.
-// Eje Ruta 160 ("Camino a Lota"), también electrocorredor MOP en
-// licitación (Consorcio Electro-Cointer, UF 4.414.000, 5-nov-2025).
+// Concepción ↔ Coronel ↔ Lota, corredor sur metropolitano (eje Ruta 160,
+// "Camino a Lota").
 //
-// Régimen jurídico: NO hay PE formal. Opera la Res. Ex. 457 MTT
-// (2012-2013), "aproximada a un PE". El PE formal está en bases de
-// licitación en Contraloría desde jul-2025 (80 buses proyectados).
-// Coexiste con Biotrén L2 (sin llegar a Lota) y el electrocorredor MOP.
+// Régimen: NO hay PE formal. Opera la Res. Ex. 457 MTT (2012-2013),
+// "aproximada a un PE". La licitación del PE (80 buses: 50 eléctricos y 30
+// diésel) tiene bases con toma de razón de Contraloría (dictamen
+// E147498, 1-sep-2025), llamado el 12-sep-2025 y sigue sin adjudicar al
+// 25-nov-2026 (quinta prórroga de admisibilidad, hasta el 3-dic-2026).
+// El electrocorredor MOP Ruta 160 es otro proyecto (Electro-Cointer).
 // En el visor: 302 y 304 (Lota ↔ Concepción) desde el GTFS oficial DTPR
 // (versión 20250228, cotejado el 24-nov-2026); el resto de los troncales no.
 
 import {
+  ArticleSummary,
+  CollapsibleSection,
   DataTable,
+  FactStrip,
   KeyValueList,
+  NewsPulse,
   OperatorTable,
   PendingBanner,
   Section,
@@ -22,223 +27,126 @@ import {
 } from './_components';
 import { MapLink } from '@/wiki/map-link';
 
+const LINK = 'underline underline-offset-2';
+
 // react-doctor-disable-next-line react-doctor/no-giant-component -- Long-form wiki article: a single content component keeps chronology, citations, and copy review coherent.
 export default function ConcepcionCoronelLota() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
-        <strong>Verificado parcialmente con fuentes primarias.</strong>{' '}
-        Eje Ruta 160, poblaciones (Censo 2017 BCN: Coronel 116.262 hab.,
-        Lota 43.535 hab.), cierre del carbón el <strong>14-abr-1997</strong>{' '}
-        (Enacar / Lota Verde), Biotrén L2 (2009), electrocorredor Ruta 160
-        (UF 4.414.000, Consorcio Electro-Cointer 5-nov-2025) y BusPay 2026
-        (adjudicado 28-ene-2026, incluye Coronel y Lota): todo con fuente.{' '}
-        <strong>Pendiente</strong>: texto completo de la Res. Ex. 457 MTT,
-        estado de las bases del PE Coronel-Lota en Contraloría, tarifa
-        adulto 2026, lista canónica de operadores.
+        <strong>Verificado parcialmente con fuentes primarias y prensa
+        regional con nombre.</strong> Eje Ruta 160, población (Censo 2017
+        BCN), licitación del PE Coronel-Lota (ofertas y prórrogas hasta el
+        18-nov-2026), electrocorredor MOP y BusPay. <strong>Pendientes</strong>:
+        texto de la Res. Ex. 457 MTT, tarifa adulto 2026, lista canónica de
+        operadores y horario de los troncales.
       </VerifiedBanner>
 
-      <Section title="Qué es y por qué importa">
-        <p>
-          El corredor <strong>Concepción ↔ Coronel ↔ Lota</strong> es la{' '}
-          <strong>espina dorsal sur</strong> del Gran Concepción. Conecta
-          el centro de Concepción con <strong>San Pedro de la Paz</strong>{' '}
-          (puente Llacolén / Bicentenario sobre el Biobío),{' '}
-          <strong>Lomas Coloradas</strong>, <strong>Coronel</strong>{' '}
-          (116.262 hab. Censo 2017) y <strong>Lota</strong> (43.535 hab.)
-          por la <strong>Ruta 160</strong>.
-        </p>
-        <ul className="ml-5 list-disc space-y-1">
-          <li>
-            <strong>Régimen sin PE formal.</strong> Coronel y Lota
-            quedaron fuera de la licitación 2002. Operan bajo{' '}
-            <strong>Res. Ex. 457 MTT</strong> (2012-2013): "aproximada a
-            un PE", sin contrato de largo plazo ni polinomio publicado,
-            con fiscalización SEREMITT.
-          </li>
-          <li>
-            <strong>Conflictividad histórica.</strong> El más tensionado
-            del Biobío por la transición post-carbón (Enacar y Lota Verde,
-            14-abr-1997), huelgas recurrentes y accidentes en Ruta 160.
-          </li>
-          <li>
-            <strong>Coexistencia con tren y electrocorredor.</strong> El{' '}
-            <strong>Biotrén L2</strong> (Concepción ↔ Coronel, 14
-            estaciones, desde 2009) cubre el mismo eje; el{' '}
-            <strong>electrocorredor MOP Ruta 160</strong> (San Pedro ↔
-            Coronel, 14 km, UF 4.414.000) reemplazará parte de la vialidad
-            desde 2031-2032. Único corredor del wiki con tres modos
-            competidores simultáneos.
-          </li>
-        </ul>
-        <Sources>
-          <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8102">
-            BCN · Reportes comunales Coronel 2017, 116.262 hab.
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8105">
-            BCN · Reportes comunales Lota 2017, 43.535 hab.
-          </SourceLink>
-          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">
-            Diario Concepción · 15-jul-2025, 80 buses nuevos para Lota y Coronel
-          </SourceLink>
-        </Sources>
-      </Section>
+      <FactStrip
+        snapshot="2026-11-25"
+        items={[
+          { label: 'Régimen', value: 'Res. Ex. 457 MTT (sin PE formal)' },
+          { label: 'Licitación PE', value: '80 buses · sin adjudicar' },
+          { label: 'En el visor', value: <><MapLink route="302">302</MapLink>{' · 304 · '}<MapLink route="L2">L2</MapLink></> },
+          { label: 'Distancia', value: '~38 km a Lota' },
+          { label: 'Tarifa adulto', value: 'sin publicar' },
+        ]}
+      />
 
-      <Section title="Alcance geográfico">
-        <KeyValueList
-          items={[
-            [
-              'Comunas',
-              <>
-                <strong>Concepción</strong> (centro, salida sur por
-                Bicentenario / Llacolén), <strong>San Pedro de la Paz</strong>{' '}
-                (Boca Sur, Candelaria, Michaihue, Lomas, San Pedro del Mar),{' '}
-                <strong>Coronel</strong> (urbano, Yobilo, Maule, Lagunillas,
-                Escuadrón) y <strong>Lota</strong> (Bajo y Alto).
-              </>,
-            ],
-            [
-              'Eje vial',
-              <>
-                <strong>Ruta 160</strong> (OSM relation 9239557,{' '}
-                <code className="font-mono">ref=160</code>, "Camino a Lota").
-                Doble vía concesionada (Autopista del Itata / Costa Arauco),
-                peaje troncal en Coronel.
-              </>,
-            ],
-            ['Distancia Concepción → Lota', '~38 km (peaje Coronel, Boca Sur, intercambio Lagunillas)'],
-            ['Tiempo en bus', '~55-80 min según hora y trazado intermedio'],
-            ['Vías secundarias', 'Av. Las Industrias / Costanera (San Pedro), camino antiguo Coronel-Lota Alto, accesos Yobilo, Maule, Escuadrón.'],
-            [
-              'Corte del artículo',
-              <>
-                Acotado a <strong>Concepción ↔ Coronel ↔ Lota</strong>{' '}
-                (Res. Ex. 457). El interurbano hacia Laraquete / Arauco
-                queda fuera (régimen privado distinto).
-              </>,
-            ],
-            ['Hidrografía', 'Cruce del Biobío, bordemar San Pedro, plano costero a Coronel/Lota; sin cuestas duras.'],
-          ]}
-        />
-        <Sources>
-          <SourceLink href="https://www.openstreetmap.org/relation/9239557">
-            OSM relation 9239557 · Ruta 160
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8102">
-            BCN · Coronel 2017
-          </SourceLink>
-        </Sources>
-      </Section>
+      <ArticleSummary
+        bullets={[
+          <>
+            El corredor une Concepción con San Pedro de la Paz, Coronel
+            (116.262 hab.) y Lota (43.535 hab.) por la <strong>Ruta 160</strong>,
+            con varias empresas privadas y sin operador único.
+          </>,
+          <>
+            No hay perímetro de exclusión formal: rige la{' '}
+            <strong>Res. Ex. 457 MTT</strong> (2012-2013), sin contrato de
+            largo plazo ni polinomio público.
+          </>,
+          <>
+            La licitación del PE (50 buses eléctricos y 30 diésel) recibió
+            cinco ofertas y <strong>no está adjudicada</strong>: la admisibilidad
+            suma cinco prórrogas, la última hasta el 3-dic-2026.
+          </>,
+          <>
+            El visor muestra la <strong>302</strong> y la <strong>304</strong>{' '}
+            (GTFS oficial) y la <strong>L2 del Biotrén</strong>. El resto de
+            los troncales no tiene GTFS.
+          </>,
+          <>
+            El electrocorredor MOP Ruta 160 y el Biotrén L2 comparten el eje,
+            pero ninguno llega a Lota.
+          </>,
+        ]}
+      />
 
-      <Section title="Régimen jurídico: Res. Ex. 457 y la licitación 2025">
-        <p>
-          La regulación del corredor sur es <strong>distinta</strong> al
-          resto del Gran Concepción. Coronel y Lota quedaron fuera de la
-          licitación 2002 (ver{' '}
-          <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
-            PE Gran Concepción 2024
-          </a>
-          ). Lo que opera hoy es un instrumento ad-hoc:
+      <NewsPulse
+        items={[
+          {
+            date: '18-nov-2026',
+            title: 'Quinta prórroga de la licitación: admisibilidad hasta el 3-dic-2026',
+            detail:
+              'La evaluación se extendió 20 días. El alcalde de Coronel, Boris Chamorro, pidió explicaciones al ministro Louis de Grange; el senador Enrique Van Rysselberghe dijo que la prórroga no significa que la licitación haya fracasado.',
+            source: {
+              href: 'https://www.canal9.cl/episodios/2026/11/18/emplazan-a-de-grange-por-quinta-prorroga-en-licitacion-de-transporte-coronel-lota-debera-responder',
+              label: 'Canal 9 · 18-nov-2026',
+            },
+          },
+          {
+            date: '21-oct-2026',
+            title: 'Cinco ofertas y cuatro prórrogas de admisibilidad',
+            detail:
+              'Cuatro ofertas por los 50 buses eléctricos (Lota-Concepción y Lota-Talcahuano) y una por los 30 diésel (Colcura-Concepción). Alcaldes de Coronel y Lota exigen frenar nuevas postergaciones.',
+            source: {
+              href: 'https://www.diarioconcepcion.cl/politica/2026/10/21/retraso-licitacion-buses-lota-coronel.html',
+              label: 'Diario Concepción · 21-oct-2026',
+            },
+          },
+          {
+            date: '4-ago-2026',
+            title: 'Hacienda congela la adjudicación del electrocorredor Ruta 160',
+            detail:
+              'El MOP pasó el proyecto a obra pública directa. Estado y fechas en la ficha de corredores MOP.',
+            source: {
+              href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/08/04/gobierno-frena-corredores-de-transporte-publico-en-gran-concepcion-en-que-invertirian-us400-millones.shtml',
+              label: 'BioBioChile · 4-ago-2026',
+            },
+          },
+        ]}
+      />
+
+      <Section title="Servicios y frecuencias">
+        <p className="text-[12px] text-muted-foreground">
+          El{' '}
+          <a href="/wiki/gtfs-gran-concepcion" className={LINK}>
+            GTFS oficial de la DTPR
+          </a>{' '}
+          trae solo la <strong>302</strong> y la <strong>304</strong>, Lota ↔
+          Concepción por Coronel y la Ruta 160 (cabecera en Av. Collao). El
+          resto de los troncales no tiene GTFS.{' '}
+          <MapLink route="302">Ver la 302 en el mapa →</MapLink>
         </p>
         <KeyValueList
           items={[
-            ['Instrumento', <><strong>Res. Ex. N° 457 MTT</strong> (2012-2013). Regulación especial para Coronel y Lota, "aproximada a un PE" pero formalmente no lo es.</>],
-            ['Naturaleza jurídica', 'Resolución exenta de toma de razón; más débil que un decreto supremo (no asegura contrato de largo plazo ni tarifa uniforme).'],
-            ['Tarifa', 'Sin tarifa única vinculante. Operadores ajustan con anuencia de SEREMITT bajo polinomio no publicado.'],
-            ['Fiscalización', 'SEREMITT Biobío + DTPR Biobío. Programa "Más Pasajes Por Tu Plata".'],
-            ['Cobertura', 'Servicios mayores de Coronel y Lota, incluyendo troncales a Concepción por Ruta 160.'],
-            ['Vigencia', 'Activa al cierre 2025, en espera del PE formal en Contraloría.'],
-          ]}
-        />
-        <p className="mt-2">
-          En paralelo, las <strong>bases del PE Coronel-Lota formal</strong>{' '}
-          están en Contraloría desde <strong>julio de 2025</strong>:
-        </p>
-        <KeyValueList
-          items={[
-            ['Estado a jul-2025', 'Bases ingresadas a CGR, pendiente toma de razón.'],
-            ['Flota proyectada', '80 buses nuevos, primera renovación masiva del corredor sur.'],
-            ['Anuncio', 'Diario Concepción · 15-jul-2025.'],
-            ['Calendario', 'Visación → llamado → adjudicación → marcha blanca. Sin fecha firme.'],
-            [
-              'Encaje con BusPay',
-              <>
-                BusPay (adjudicado a{' '}
-                <a href="/wiki/buspay" className="underline underline-offset-2">
-                  Consorcio Buspay
-                </a>{' '}
-                el 28-ene-2026, marcha blanca Q3 2026) cubre Coronel y
-                Lota desde el inicio. El PE formal hereda los validadores
-                ya instalados.
-              </>,
-            ],
+            ['302 (GTFS, programa 28-feb-2025)', 'De lunes a viernes, 169 salidas por sentido entre ~07:00 y ~21:00, una cada ~5 min; viaje de ~2 h 5 min a 2 h 15 min. Sábado y domingo, 73 por sentido entre ~08:00 y ~20:00.'],
+            ['304 (GTFS)', 'Programa acotado: de lunes a viernes, 37 salidas hacia Concepción entre 06:03 y 09:03 y 85 hacia Lota entre 09:01 y 16:01.'],
+            ['Otros troncales', 'Sin numeración unificada: se identifican por destino (Lota Bajo/Alto, Coronel terminal, Lagunillas, Maule, San Pedro del Mar). Frecuencia y primera/última salida, pendientes. La prensa cita saturación en la punta de la mañana hacia Concepción y de la tarde hacia el sur.'],
+            ['Tiempo real', 'No documentado. La fuente de llegadas en vivo del visor (app de Transapp, no oficial) no sigue la 302 ni la 304.'],
           ]}
         />
         <PendingBanner>
-          <strong>Texto exacto de la Res. Ex. 457 pendiente.</strong> La
-          referencia "2012-2013" aparece en varios artículos del wiki
-          (BusPay 2026, PE Gran Concepción 2024) sin link al expediente.
-          Cierre por Ley de Transparencia a SUBTRANS pidiendo copia
-          íntegra y numeración correlativa.
+          <strong>Tabla horaria oficial de los troncales pendiente.</strong>{' '}
+          Cierre por foto del cartel en los terminales (Maipú / O'Higgins en
+          Concepción, Coronel, Lota Bajo) y por Ley de Transparencia a la
+          DTPR.
         </PendingBanner>
-        <h3 className="mt-3 text-[13px] font-medium">
-          Comparación con los otros regímenes metropolitanos
-        </h3>
-        <DataTable columns={['Dimensión', 'PE Gran Concepción', 'PE Tomé', 'Coronel-Lota']}>
-              <tr>
-                <td className="px-3 py-2 font-medium">Instrumento</td>
-                <td className="px-3 py-2">Decreto MTT, Ley 18.696 art. 3°</td>
-                <td className="px-3 py-2">Decreto MTT, Ley 18.696 art. 3°</td>
-                <td className="px-3 py-2">Resolución Exenta 457 MTT (regulación especial, PE formal en Contraloría)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Vigente desde</td>
-                <td className="px-3 py-2">1-ene-2024</td>
-                <td className="px-3 py-2">10-mar-2022 (decreto jul-2016)</td>
-                <td className="px-3 py-2">2012-2013 (Res. Ex.), PE formal aún no vigente</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Operadores</td>
-                <td className="px-3 py-2">35 empresas en 36 UN</td>
-                <td className="px-3 py-2">UNO · Transportes Tomé SpA</td>
-                <td className="px-3 py-2">Múltiples operadores locales (sin operador único)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Tarifa adulto</td>
-                <td className="px-3 py-2">$580 (23-feb-2025)</td>
-                <td className="px-3 py-2">$750 base (2022)</td>
-                <td className="px-3 py-2">Sin tarifa única publicada, varía por operador</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Pago electrónico</td>
-                <td className="px-3 py-2">BusPay desde Q3 2026</td>
-                <td className="px-3 py-2">BusPay desde Q3 2026</td>
-                <td className="px-3 py-2">BusPay desde Q3 2026 (vía cobertura cross-cutting)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Flota proyectada en próxima licitación</td>
-                <td className="px-3 py-2">Renovación gradual contractual</td>
-                <td className="px-3 py-2">71 buses declarados</td>
-                <td className="px-3 py-2"><strong>80 buses nuevos</strong> (bases en CGR jul-2025)</td>
-              </tr>
-            </DataTable>
-        <Sources>
-          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">
-            Diario Concepción · 15-jul-2025, Bases PE Coronel-Lota en Contraloría
-          </SourceLink>
-          <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
-            Wikipedia · Perímetro de Exclusión del Gran Concepción (sección PE Coronel-Lota)
-          </SourceLink>
-          <SourceLink href="https://dprbiobio.dpr.gob.cl/">
-            DPR Biobío · sitio oficial DTPR
-          </SourceLink>
-        </Sources>
       </Section>
 
       <Section title="Operadores">
         <p className="text-[12px] text-muted-foreground">
-          Múltiples empresas privadas, sin operador único. El wiki
-          cruza <strong>Las Galaxias</strong> y <strong>Buses J. Ewert</strong>:
+          Varias empresas privadas, sin operador único. El wiki cruza dos:
         </p>
         <OperatorTable
           rows={[
@@ -246,7 +154,7 @@ export default function ConcepcionCoronelLota() {
               name: 'Las Galaxias',
               routes: 'Línea 80 (UN80 PE GC) + corredor sur Res. Ex. 457',
               terminal: 'Concepción centro · pendiente',
-              notes: <p>Titular de la <strong>UN80 / Línea 80</strong> en el PE GC 2024; misma razón social con presencia en Coronel-Lota. Líneas, flota y terminal específicos pendientes.</p>,
+              notes: <p>Titular de la <strong>UN80 / Línea 80</strong> en el PE GC 2024; misma razón social con presencia en Coronel-Lota. Líneas, flota y terminal pendientes.</p>,
               source: { href: 'https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n', label: 'Wikipedia' },
             },
             {
@@ -258,69 +166,26 @@ export default function ConcepcionCoronelLota() {
           ]}
         />
         <PendingBanner>
-          <strong>Lista incompleta.</strong> Padrón Res. Ex. 457 no
-          publicado. Faltan operadores de Lota Bajo/Alto y Coronel urbano.
-          Cierre por Ley de Transparencia a DTPR Biobío.
-        </PendingBanner>
-      </Section>
-
-      <Section title="Servicios y frecuencias">
-        <p className="text-[12px] text-muted-foreground">
-          El{' '}
-          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-            GTFS oficial de la DTPR
-          </a>{' '}
-          trae solo dos servicios del corredor sur: <strong>302</strong> y{' '}
-          <strong>304</strong>, Lota ↔ Concepción por Coronel y la Ruta 160
-          (cabecera en Av. Collao). El resto de los troncales (Res. Ex. 457)
-          no tiene GTFS publicado. En el visor se ven la 302, la 304 y la{' '}
-          <em>L2 del Biotrén</em>. <MapLink route="302">Ver la 302 en el mapa →</MapLink>
-        </p>
-        <KeyValueList
-          items={[
-            ['Codificación', 'Sin numeración unificada publicada. Operadores usan nombres comerciales y números de máquina; troncales se identifican por destino (Lota Bajo/Alto, Coronel terminal, Lagunillas, Maule, San Pedro del Mar).'],
-            ['Variantes de trazado', 'Tres familias: troncal a Lota Bajo (eje completo), troncal a Coronel terminal, ramales internos Coronel-Lota Alto + alimentadores Lomas / Boca Sur / Candelaria.'],
-            ['Frecuencia punta', 'Pendiente. Prensa local cita saturación punta mañana hacia Concepción y tarde hacia el sur.'],
-            ['Primera/última salida', 'Troncales Res. Ex. 457: pendiente verificar en terreno. 302 según el GTFS oficial (programa 28-feb-2025): de lunes a viernes, 169 salidas por sentido entre ~07:00 y ~21:00, una cada ~5 min, y ~2 h 5 min a 2 h 15 min de viaje; sábado y domingo, 73 por sentido entre ~08:00 y ~20:00. 304: programa más acotado (de lunes a viernes, 37 salidas hacia Concepción entre 06:03 y 09:03 y 85 hacia Lota entre 09:01 y 16:01).'],
-            ['Tiempo real', 'No documentado. La fuente de llegadas en vivo que usa el visor (app de Transapp, no oficial) no sigue la 302 ni la 304.'],
-            ['GTFS público', 'Solo 302 y 304, dentro del GTFS oficial de Gran Concepción (DTPR). El resto de los troncales, no.'],
-          ]}
-        />
-        <PendingBanner>
-          <strong>Tabla horaria oficial pendiente.</strong> Cierre por
-          foto del cartel en terminales (Maipú / O'Higgins en Concepción,
-          Coronel, Lota Bajo) y Ley de Transparencia a DTPR por el padrón
-          Res. Ex. 457.
+          <strong>Lista incompleta.</strong> El padrón de la Res. Ex. 457 no
+          está publicado; faltan los operadores de Lota Bajo/Alto y Coronel
+          urbano, y el de la 302 y la 304 (el GTFS no lo nombra).
         </PendingBanner>
       </Section>
 
       <Section title="Tarifa y ajuste">
         <KeyValueList
           items={[
-            ['Tarifa adulto 2026', 'Pendiente, sin tarifa única publicada. Varía por operador y tramo (Concepción ↔ Coronel < Concepción ↔ Lota).'],
-            ['Tarifa escolar', 'Pendiente. Aplicación de Ley 20.378 bajo Res. Ex. 457 no documentada.'],
-            ['Accesibilidad universal', 'Pendiente. Res. Ex. 457 no exige flota AU; el PE formal sí.'],
-            ['Polinomio', 'No publicado. Reajustes se tramitan con SEREMITT caso a caso (a diferencia del PE Gran Concepción).'],
+            ['Tarifa adulto 2026', 'Sin tarifa única publicada: varía por operador y tramo (Concepción ↔ Coronel cuesta menos que ↔ Lota).'],
+            ['Polinomio', 'No publicado. Los reajustes se tramitan caso a caso con SEREMITT, a diferencia del PE Gran Concepción ($580).'],
+            ['Escolar y accesibilidad', 'Pendientes. La Res. Ex. 457 no exige flota accesible; el PE formal sí.'],
+            ['Control', 'SEREMITT Biobío y DTPR, con el programa «Más Pasajes Por Tu Plata».'],
           ]}
         />
-        <p className="mt-2">
-          La tarifa es <strong>fuente recurrente de conflicto</strong>:
+        <p className="text-[12px] text-muted-foreground">
+          La tarifa es fuente recurrente de conflicto: hubo paros y huelgas de
+          choferes en 2010-2020 (fechas pendientes) porque cada alza se
+          discute sin polinomio público.
         </p>
-        <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>
-            <strong>Paros y huelgas de choferes</strong> en la década
-            2010-2020 (fechas exactas pendientes). La regulación sin
-            polinomio público hace que cada alza se discuta caso a caso.
-          </li>
-          <li>
-            <strong>"Más Pasajes Por Tu Plata"</strong> de SEREMITT
-            Biobío como mecanismo de control aplicado al corredor sur.
-          </li>
-          <li>
-            Pendiente: cronología documentada de paros y alzas tarifarias.
-            Cierre por archivo BioBioChile / Diario Concepción.
-          </li>
-        </ul>
         <Sources>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/">
             DPR Biobío · sitio oficial
@@ -328,27 +193,52 @@ export default function ConcepcionCoronelLota() {
         </Sources>
       </Section>
 
-      <Section title="Integración con BusPay (Q3 2026)">
+      <Section title="Cobertura del visor">
+        <div className="rounded-md border bg-card p-3">
+          <div className="text-[12px] font-medium">Lo que sí está</div>
+          <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px]">
+            <li>
+              <strong>L2 del Biotrén</strong> (Concepción ↔ Coronel): trazado
+              y 14 estaciones desde OSM, horario del itinerario oficial de
+              EFE. Ver{' '}
+              <a href="/wiki/biotren" className={LINK}>Biotrén</a>.
+            </li>
+            <li>
+              <strong>302 y 304</strong>, rotuladas «Interurbano Lota»:
+              trazado por sentido, paraderos y horario programado. Sin
+              llegadas en vivo.
+            </li>
+            <li>
+              Algunos servicios del PE Gran Concepción (UN23, UN24) entran a
+              San Pedro, pero no siguen a Coronel ni a Lota.
+            </li>
+          </ul>
+        </div>
+        <div className="rounded-md border bg-card p-3">
+          <div className="text-[12px] font-medium">Lo que NO está</div>
+          <p className="mt-1 text-[12px] text-muted-foreground">
+            El resto de los troncales (Res. Ex. 457), sin GTFS publicado. A
+            diferencia de Tomé, donde todos los servicios están en el feed, la
+            fragmentación deja fuera la mayor parte del corredor. Cuando se
+            adjudique el PE y la DTPR publique su programa, la sincronización
+            diaria propondrá sumarlo.
+          </p>
+        </div>
+        <Sources>
+          <SourceLink href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/">
+            DTPR · GTFS Gran Concepción (versión 20250228, incluye 302 y 304)
+          </SourceLink>
+        </Sources>
+      </Section>
+
+      <Section title="BusPay">
         <p>
-          BusPay, adjudicado al <strong>Consorcio Buspay</strong> el{' '}
-          <strong>28-ene-2026</strong> (operador técnico Busmatick, ver{' '}
-          <a href="/wiki/buspay" className="underline underline-offset-2">
-            BusPay 2026
-          </a>
-          ), <strong>sí cubre</strong> Coronel y Lota desde el inicio.
-          Cruza regímenes (PE GC + PE Tomé + Res. Ex. 457 + 201 Santa
-          Juana) en un solo medio de pago.
+          Subtrans incluyó Coronel y Lota entre las 11 comunas del{' '}
+          <a href="/wiki/buspay" className={LINK}>BusPay</a> adjudicado el
+          28-ene-2026, pero la prensa de sep-nov 2026 sobre la marcha blanca
+          (1-dic-2026) no las nombra: cobertura real por confirmar. Según la
+          ficha de BusPay, Sabes tendría un centro de atención en Lota.
         </p>
-        <KeyValueList
-          items={[
-            ['Cobertura', 'Coronel y Lota = 2 de las 11 comunas del alcance BusPay.'],
-            ['Validadores', 'Parte del paquete de 1.800-2.000 validadores embarcados.'],
-            ['Marcha blanca', 'Q3 2026. Fecha exacta para Coronel-Lota no desglosada.'],
-            ['100% electrónico', 'Proyectado fin de 2026. Para operadores Res. Ex. 457 implica instalar validadores antes del PE formal.'],
-            ['Encaje con PE formal', 'El PE Coronel-Lota formal hereda la infraestructura BusPay ya instalada, sin segunda licitación de recaudo.'],
-            ['Tarjeta', 'Campanil UdeC (consulta ciudadana) + tarjeta bancaria contactless, QR.'],
-          ]}
-        />
         <Sources>
           <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
             Subtrans · 30-ene-2026, Adjudicación BusPay (11 comunas)
@@ -359,38 +249,18 @@ export default function ConcepcionCoronelLota() {
         </Sources>
       </Section>
 
-      <Section title="Tensión con el Electrocorredor Ruta 160">
+      <Section title="Electrocorredor MOP Ruta 160">
         <p>
-          El <strong>electrocorredor MOP Ruta 160</strong> es el proyecto
-          que más afecta al corredor sur (ver{' '}
-          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
+          Proyecto de pista exclusiva San Pedro ↔ Coronel (14 km, UF
+          4.414.000, oferta única de Electro-Cointer el 5-nov-2025). No llega
+          a Lota: los últimos 8-10 km seguirían en vialidad mixta. Hacienda
+          congeló la adjudicación el 4-ago-2026 y el MOP lo pasó a obra
+          pública directa; no hay fecha de obra verificada. Detalle en{' '}
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className={LINK}>
             Electrocorredores MOP del Biobío
           </a>
-          ):
+          .
         </p>
-        <KeyValueList
-          items={[
-            ['Tramo', 'San Pedro ↔ Coronel · 14 km bidireccionales'],
-            ['Sector A', 'Daniel Belmar ↔ Av. Cuatro Sur, 7,3 km (San Pedro)'],
-            ['Sector B', 'Av. Cuatro Sur ↔ Parque Industrial Escuadrón I, 6,9 km (Coronel)'],
-            ['Inversión', 'UF 4.414.000 (~USD 171 millones)'],
-            ['Oferente único', 'Consorcio Electro-Cointer (Cointer Concesiones / Grupo Azvi)'],
-            ['Recepción ofertas', '5-nov-2025'],
-            ['Apertura económica', '3-dic-2025'],
-            ['Adjudicación', 'Q1 2026'],
-            ['Plazo', '300 meses (25 años)'],
-            ['Puesta en servicio', '2031-2032'],
-            [
-              'Alcance',
-              <>
-                Hasta Parque Industrial Escuadrón I (Coronel norte).{' '}
-                <strong>NO llega a Lota</strong>: últimos 8-10 km en
-                vialidad mixta.
-              </>,
-            ],
-            ['Coexistencia con buses', 'En 2031-2032 los buses usan pista exclusiva San Pedro-Coronel; en Coronel-Lota siguen en vialidad mixta.'],
-          ]}
-        />
         <Sources>
           <SourceLink href="https://concesiones.mop.gob.cl/project/corredor-de-transporte-publico-ruta-160/">
             MOP Concesiones · Corredor Ruta 160
@@ -404,36 +274,18 @@ export default function ConcepcionCoronelLota() {
         </Sources>
       </Section>
 
-      <Section title="Tensión con el Biotrén Línea 2">
+      <Section title="Biotrén Línea 2">
         <p>
-          La <strong>L2 del Biotrén</strong> (Concepción ↔ Coronel, 14
-          estaciones, desde 2009) cubre el mismo eje. A diferencia de
-          Concepción ↔ Tomé (donde el tren no llega), aquí buses y tren
-          conviven directamente.
-        </p>
-        <KeyValueList
-          items={[
-            ['Terminal sur del tren', 'Estación Coronel, el tren NO llega a Lota. Lota solo en bus.'],
-            ['Capacidad', 'Tren: Xtrapolis cada 12-15 min punta. Bus: frecuencia agregada mayor, capacidad por vehículo menor.'],
-            ['Tarifa', 'Biotrén Z1-Z10 desde 2-ene-2026 (ver artículo Biotrén). Bus Res. Ex. 457: pendiente.'],
-            ['Tarjeta', 'Biotrén: Conecta (desde 2023). Bus: BusPay (Q3 2026). Integración Conecta ↔ BusPay no confirmada.'],
-            [
-              'Coexistencia',
-              <>
-                Tren cubre el eje estructural; buses cubren la red capilar
-                (Lota Alto/Bajo, periferia de Coronel). Extender el
-                Biotrén a Lota se discute recurrentemente (ver{' '}
-                <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
-                  Biotrén y sus extensiones
-                </a>
-                ), pero 80 buses del PE formal y el electrocorredor MOP
-                están más cerca de ejecutarse.
-              </>,
-            ],
-          ]}
-        />
-        <p className="text-[12px] text-muted-foreground">
-          <MapLink route="L2">Ver L2 Coronel ↔ Concepción →</MapLink>
+          La L2 (Concepción ↔ Coronel, 14 estaciones, desde 2009) cubre el
+          mismo eje, pero no llega a Lota: allí solo hay bus. El tren sirve el
+          eje estructural y los buses la red capilar (Lota Alto/Bajo,
+          periferia de Coronel). El Biotrén usa Conecta; la integración
+          Conecta ↔ BusPay no está confirmada. La extensión a Lota está en la
+          ficha{' '}
+          <a href="/wiki/biotren-extensiones-proyectos" className={LINK}>
+            Biotrén y sus extensiones
+          </a>
+          . <MapLink route="L2">Ver L2 Coronel ↔ Concepción →</MapLink>
         </p>
         <Sources>
           <SourceLink href="https://es.wikipedia.org/wiki/Biotr%C3%A9n">
@@ -445,45 +297,98 @@ export default function ConcepcionCoronelLota() {
         </Sources>
       </Section>
 
-      <Section title="Historia operacional">
+      <CollapsibleSection title="Régimen jurídico, licitación 2025-2026 e historia">
         <p>
-          El corredor sur tiene una historia más <strong>política</strong>{' '}
-          que la del corredor norte (Tomé) o el del valle (Yumbel):
+          Coronel y Lota quedaron fuera de la licitación 2002 (ver{' '}
+          <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className={LINK}>
+            PE Gran Concepción 2024
+          </a>
+          ). Hoy opera un instrumento ad hoc:
         </p>
-        <h3 className="mt-2 text-[13px] font-medium">
-          Cierre del carbón (14-abr-1997)
-        </h3>
-        <p>
-          <strong>Enacar</strong> cerró el <strong>14-abr-1997</strong>,
-          fin del ciclo industrial-obrero. La <strong>Carbonífera
-          Schwager</strong> (Coronel) se fusionó con Enacar en{' '}
-          <strong>1994</strong>; <strong>Lota Verde</strong> cerró también en 1997. El flujo de
-          transporte dejó de ser commuting obrero a las minas y pasó a
-          pendular residencial hacia Concepción (trabajo, salud,
-          educación).
-        </p>
-        <h3 className="mt-2 text-[13px] font-medium">
-          Conflictividad sindical y tarifaria
-        </h3>
-        <p>
-          Res. Ex. 457 sin polinomio público expone cada alza a
-          negociación caso a caso. Hay registros de huelgas y paros en
-          2010-2020; cronología pendiente de archivo de prensa.
-        </p>
-        <h3 className="mt-2 text-[13px] font-medium">Accidentes en Ruta 160</h3>
-        <p>
-          Ruta 160 ha sido escenario recurrente de colisiones, salidas de
-          pista y atropellos (Lomas Coloradas, Coronel norte). Es uno de
-          los motores políticos del electrocorredor MOP, la pista
-          exclusiva reduce conflicto entre flujo residencial, industrial
-          portuario y buses.
-        </p>
+        <KeyValueList
+          items={[
+            ['Instrumento', <><strong>Res. Ex. N° 457 MTT</strong> (2012-2013): regulación especial «aproximada a un PE», pero formalmente no lo es. Es una resolución exenta, más débil que un decreto supremo: no asegura contrato de largo plazo ni tarifa uniforme.</>],
+            ['Licitación del PE', 'Bases con toma de razón de Contraloría (dictamen E147498, 1-sep-2025); llamado abierto el 12-sep-2025. 80 buses: 50 eléctricos (Lota-Concepción y Lota-Talcahuano) y 30 diésel (Colcura-Concepción), con dos operadores.'],
+            ['Interés del mercado', '38 organizaciones compraron las bases; hubo cinco ofertas (cuatro por los eléctricos y una por los diésel, de Sociedad de Transportes de Pasajeros Lota S.A.).'],
+            ['Oferentes eléctricos', 'Consorcio o Unión Temporal Provincial Lota Express, Transportes Jorge Alarcón Jara EIRL, Transportes Giovanni Concha Zanetti EIRL y Transportes Públicos de Pasajeros Ruta Las Playas S.A.'],
+            ['Prórrogas de admisibilidad', '14-may-2026 (10 días hábiles), 29-may (20), 26-jun (30), 11-ago (60) y la quinta, de 20 días, hasta el 3-dic-2026.'],
+            ['Estado al 25-nov-2026', 'Sin adjudicación ni inicio de operación. En ago-2026 el Gobierno esperaba adjudicar «este año»; la fecha no está confirmada.'],
+          ]}
+        />
         <PendingBanner>
-          <strong>Cronología detallada pendiente.</strong> Fundada en
-          consenso de prensa regional sin fechas verificadas. Cierre por
-          archivo BioBioChile + Diario Concepción + El Sur (1997-2025).
+          <strong>Pendientes:</strong> texto íntegro de la Res. Ex. 457 (citada
+          «2012-2013» sin link al expediente), decreto de adjudicación del PE
+          y fecha de marcha blanca. No hallé en fuentes primarias (MTT, DTPR,
+          Contraloría) un comunicado de adjudicación.
         </PendingBanner>
+        <h3 className="mt-3 text-[13px] font-medium">Historia</h3>
+        <p>
+          Enacar cerró el <strong>14-abr-1997</strong> (la Carbonífera
+          Schwager de Coronel se había fusionado con ella en 1994; Lota Verde
+          cerró también en 1997): el flujo pasó de obrero a pendular
+          residencial hacia Concepción. Desde entonces el corredor es de los
+          más tensionados del Biobío, con huelgas de choferes en 2010-2020 y
+          colisiones recurrentes en la Ruta 160 (Lomas Coloradas, Coronel
+          norte), uno de los motores del electrocorredor. La cronología
+          detallada de paros y alzas está pendiente de archivo de prensa.
+        </p>
+        <h3 className="mt-3 text-[13px] font-medium">
+          Comparación con los otros regímenes
+        </h3>
+        <DataTable columns={['Dimensión', 'PE Gran Concepción', 'PE Tomé', 'Coronel-Lota']}>
+          <tr>
+            <td className="px-3 py-2 font-medium">Instrumento</td>
+            <td className="px-3 py-2">Decreto MTT, Ley 18.696 art. 3°</td>
+            <td className="px-3 py-2">Decreto MTT, Ley 18.696 art. 3°</td>
+            <td className="px-3 py-2">Res. Ex. 457 MTT (PE formal en licitación)</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Vigente desde</td>
+            <td className="px-3 py-2">1-ene-2024</td>
+            <td className="px-3 py-2">10-mar-2022 (decreto jul-2016)</td>
+            <td className="px-3 py-2">2012-2013; PE formal aún no vigente</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Operadores</td>
+            <td className="px-3 py-2">35 empresas en 36 UN</td>
+            <td className="px-3 py-2">Uno · Transportes Tomé SpA</td>
+            <td className="px-3 py-2">Varios, sin operador único</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Tarifa adulto</td>
+            <td className="px-3 py-2">$580 (23-feb-2025)</td>
+            <td className="px-3 py-2">$780 / $830 (feb-2025)</td>
+            <td className="px-3 py-2">Sin tarifa única publicada</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Flota en la licitación</td>
+            <td className="px-3 py-2">Renovación gradual</td>
+            <td className="px-3 py-2">71 buses declarados</td>
+            <td className="px-3 py-2"><strong>80 buses nuevos</strong></td>
+          </tr>
+        </DataTable>
         <Sources>
+          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">
+            Diario Concepción · 15-jul-2025, Bases PE Coronel-Lota en Contraloría
+          </SourceLink>
+          <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/09/12/abren-licitacion-de-nuevo-sistema-de-transporte-a-coronel-y-lota-con-80-buses-de-alto-estandar.html">
+            Diario Concepción · 12-sep-2025, Abren la licitación (80 buses)
+          </SourceLink>
+          <SourceLink href="https://vlex.cl/vid/dictamen-n-e147498-contraloria-1090894666">
+            vLex · Dictamen E147498 de Contraloría, 1-sep-2025
+          </SourceLink>
+          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/08/13/vuelven-a-postergar-licitacion-para-regular-transporte-publico-de-buses-coronel-lota.shtml">
+            BioBioChile · 13-ago-2026, Vuelven a postergar la licitación
+          </SourceLink>
+          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/08/24/gobierno-espera-este-ano-adjudicar-licitacion-de-servicio-de-transporte-publico-de-buses-coronel-lota.shtml">
+            BioBioChile · 24-ago-2026, Gobierno espera adjudicar este año
+          </SourceLink>
+          <SourceLink href="https://sabes.cl/2026/02/10/licitacion-de-nuevos-buses-para-coronel-y-lota-logra-interes-de-empresarios/">
+            Sabes · 10-feb-2026, Alto interés de empresarios
+          </SourceLink>
+          <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
+            Wikipedia · Perímetro de Exclusión del Gran Concepción (sección PE Coronel-Lota)
+          </SourceLink>
           <SourceLink href="https://es.wikipedia.org/wiki/Lota">
             Wikipedia · Lota (cierre Enacar 1997)
           </SourceLink>
@@ -491,260 +396,158 @@ export default function ConcepcionCoronelLota() {
             Memoria Chilena · Carbón de Lota
           </SourceLink>
         </Sources>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Cobertura del visor">
-        <div className="rounded-md border bg-card p-3">
-          <div className="text-[12px] font-medium">Lo que sí está</div>
-          <ul className="mt-1 ml-5 list-disc space-y-0.5 text-[12px]">
-            <li>
-              <strong>L2 del Biotrén</strong> (Concepción ↔ Coronel), trazado y 14 estaciones desde OSM y horario del itinerario oficial de EFE. No depende del GTFS de
-              buses. Ver{' '}
-              <a href="/wiki/biotren" className="underline underline-offset-2">
-                Biotrén
-              </a>
-              .
-            </li>
-            <li>
-              <strong>302 y 304</strong> (Lota ↔ Concepción por Coronel y la
-              Ruta 160), desde el GTFS oficial de la DTPR, rotulados
-              «Interurbano Lota»: trazado de cada sentido, paraderos y
-              horario programado. Sin llegadas en vivo.
-            </li>
-            <li>
-              Algunos servicios del PE Gran Concepción que entran a San
-              Pedro (UN23, UN24), terminan en San Pedro, no siguen a
-              Coronel ni Lota.
-            </li>
-          </ul>
-        </div>
-        <div className="rounded-md border bg-card p-3">
-          <div className="text-[12px] font-medium">Lo que NO está</div>
-          <p className="mt-1 text-[12px] text-muted-foreground">
-            El resto de los troncales del corredor sur, que operan bajo la
-            Res. Ex. 457 y no tienen GTFS publicado. A diferencia de Tomé
-            (operador único, todos sus servicios en el GTFS), aquí la
-            fragmentación operacional deja fuera la mayor parte del
-            corredor. Cuando se adjudique el PE formal y la DTPR publique
-            su programa, la sincronización diaria propondrá sumarlo al
-            visor en una solicitud de cambios.
-          </p>
-        </div>
+      <CollapsibleSection title="Alcance geográfico">
+        <KeyValueList
+          items={[
+            ['Comunas', 'Concepción (salida sur por Bicentenario / Llacolén), San Pedro de la Paz (Boca Sur, Candelaria, Michaihue, Lomas, San Pedro del Mar), Coronel (urbano, Yobilo, Maule, Lagunillas, Escuadrón) y Lota (Bajo y Alto).'],
+            [
+              'Eje vial',
+              <>
+                <strong>Ruta 160</strong> (OSM relation 9239557,{' '}
+                <code className="font-mono">ref=160</code>): doble vía
+                concesionada con peaje troncal en Coronel.
+              </>,
+            ],
+            ['Distancia y tiempo', 'Concepción → Lota ~38 km; ~55-80 min en bus según hora y trazado.'],
+            ['Vías secundarias', 'Av. Las Industrias / Costanera (San Pedro), camino antiguo Coronel-Lota Alto, accesos a Yobilo, Maule y Escuadrón.'],
+            ['Corte del artículo', 'Concepción ↔ Coronel ↔ Lota. El interurbano a Laraquete / Arauco queda fuera (régimen privado distinto).'],
+          ]}
+        />
         <Sources>
-          <SourceLink href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/">
-            DTPR · GTFS Gran Concepción (versión 20250228, incluye 302 y 304)
+          <SourceLink href="https://www.openstreetmap.org/relation/9239557">
+            OSM relation 9239557 · Ruta 160
+          </SourceLink>
+          <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8102">
+            BCN · Reportes comunales Coronel 2017, 116.262 hab.
+          </SourceLink>
+          <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8105">
+            BCN · Reportes comunales Lota 2017, 43.535 hab.
           </SourceLink>
         </Sources>
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Cronología">
+      <CollapsibleSection title="Cronología">
         <Timeline
           items={[
             {
               date: '14-abr-1997',
-              event: 'Cierre de Enacar y Lota Verde. Fin del ciclo carbonífero; el corredor pasa de obrero-industrial a pendular residencial.',
+              event: 'Cierre de Enacar y Lota Verde; el corredor pasa de obrero a pendular residencial.',
               source: { href: 'https://es.wikipedia.org/wiki/Lota', label: 'Wikipedia · Lota' },
             },
             {
               date: '2009',
-              event: 'Apertura del Biotrén L2 (Concepción ↔ Coronel) sobre el ramal histórico. El tren no llega a Lota urbano.',
+              event: 'Apertura del Biotrén L2 (Concepción ↔ Coronel); no llega a Lota.',
               source: { href: 'https://es.wikipedia.org/wiki/Biotr%C3%A9n', label: 'Wikipedia · Biotrén' },
             },
-            {
-              date: '2012-2013',
-              event: 'MTT emite la Res. Ex. 457, regulación especial para Coronel y Lota "aproximada a un PE", sin contrato de largo plazo.',
-            },
+            { date: '2012-2013', event: 'El MTT emite la Res. Ex. 457, regulación especial «aproximada a un PE».' },
             {
               date: '13-nov-2024',
-              event: 'CGR visa licitaciones MOP de corredores Ruta 150 / 160 / Autopista Concepción-Talcahuano.',
+              event: 'CGR visa las licitaciones MOP de corredores Ruta 150 / 160 / Autopista Concepción-Talcahuano.',
               source: { href: 'https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html', label: 'Diario Concepción' },
             },
             {
               date: '15-jul-2025',
-              event: 'Bases del PE Coronel-Lota en Contraloría. Se anuncian 80 buses nuevos.',
+              event: 'Bases del PE Coronel-Lota en Contraloría; se anuncian 80 buses nuevos.',
               source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html', label: 'Diario Concepción · 15-jul-2025' },
             },
             {
+              date: '12-sep-2025',
+              event: 'Se abre la licitación del PE: 50 buses eléctricos y 30 diésel.',
+              source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/09/12/abren-licitacion-de-nuevo-sistema-de-transporte-a-coronel-y-lota-con-80-buses-de-alto-estandar.html', label: 'Diario Concepción · 12-sep-2025' },
+            },
+            {
               date: '5-nov-2025',
-              event: 'MOP recibe oferta única del Consorcio Electro-Cointer para Ruta 160 (UF 4.414.000, 14 km, 25 años).',
+              event: 'El MOP recibe la oferta única de Electro-Cointer para Ruta 160 (UF 4.414.000, 14 km, 25 años); apertura económica el 3-dic-2025.',
               source: { href: 'https://www.mop.gob.cl/consorcio-electro-cointer-presento-oferta-para-proyecto-concesion-corredor-de-transporte-publico-ruta-160/', label: 'MOP · 5-nov-2025' },
             },
             {
-              date: '3-dic-2025',
-              event: 'Apertura económica Electro-Cointer, único postulante.',
-            },
-            {
               date: '28-ene-2026',
-              event: 'MTT adjudica BusPay al Consorcio Buspay (operador técnico Busmatick), cobertura incluye Coronel y Lota.',
+              event: 'El MTT adjudica BusPay al Consorcio Buspay (operador técnico Busmatick).',
               source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml', label: 'BioBioChile · 28-ene-2026' },
             },
-            { date: 'Q3 2026 (proyectado)', event: 'Marcha blanca BusPay. Validadores en operadores Res. Ex. 457.' },
-            { date: 'Post-2026 (proyectado)', event: 'Adjudicación del PE formal con 80 buses nuevos. Hereda infraestructura BusPay.' },
-            { date: '2031-2032 (proyectado)', event: 'Puesta en servicio del electrocorredor MOP Ruta 160 (San Pedro ↔ Coronel). Lota sigue en vialidad mixta.' },
+            {
+              date: '4-ago-2026',
+              event: 'Hacienda congela la adjudicación del electrocorredor Ruta 160.',
+              source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/08/04/gobierno-frena-corredores-de-transporte-publico-en-gran-concepcion-en-que-invertirian-us400-millones.shtml', label: 'BioBioChile · 4-ago-2026' },
+            },
+            {
+              date: '18-nov-2026',
+              event: 'Quinta prórroga de la admisibilidad de la licitación de buses, hasta el 3-dic-2026.',
+              source: { href: 'https://www.canal9.cl/episodios/2026/11/18/emplazan-a-de-grange-por-quinta-prorroga-en-licitacion-de-transporte-coronel-lota-debera-responder', label: 'Canal 9' },
+            },
           ]}
         />
-      </Section>
+      </CollapsibleSection>
 
-      <Section title="Vínculos con otros artículos">
+      <CollapsibleSection title="Datos pendientes y vínculos">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>
-            <a href="/wiki/seremitt-dtpr-biobio" className="underline underline-offset-2">
-              SEREMITT Biobío y la DTPR
-            </a>{' '}, autoridad que fiscaliza Res. Ex. 457 y tramita el PE formal.
-          </li>
-          <li>
-            <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
-              PE Gran Concepción 2024
-            </a>{' '}
-            y{' '}
-            <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
-              PE Tomé
-            </a>{' '}, los otros regímenes metropolitanos para comparación.
-          </li>
-          <li>
-            <a href="/wiki/buspay" className="underline underline-offset-2">
-              BusPay 2026
-            </a>{' '}, pago electrónico que cruza los tres regímenes + 201 Santa
-            Juana.
-          </li>
-          <li>
-            <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
-              Electrocorredores MOP del Biobío
-            </a>{' '}, infraestructura vial que reemplazará parte del corredor
-            desde 2031-2032.
-          </li>
-          <li>
-            <a href="/wiki/biotren" className="underline underline-offset-2">
-              Biotrén
-            </a>{' '}, modo competidor por el mismo eje.
-          </li>
-          <li>
-            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-              GTFS Gran Concepción
-            </a>{' '}, qué trae el feed oficial (302 y 304) y por qué el resto
-            de los troncales del corredor sur no está.
-          </li>
-          <li>
-            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
-              Concepción ↔ Florida
-            </a>{' '}
-            y{' '}
-            <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
-              Recorridos interurbanos
-            </a>{' '}, operadores con presencia cruzada (Las Galaxias / Línea 80).
-          </li>
-        </ul>
-      </Section>
-
-      <Section title="Datos pendientes">
-        <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Número, fecha y texto íntegro de la Res. Ex. 457 MTT (citada "2012-2013" sin link al expediente).</li>
-          <li>Estado de las bases del PE Coronel-Lota en Contraloría (visadas / observaciones).</li>
-          <li>Razón social, RUT, padrón de flota y terminal de Las Galaxias y Buses J. Ewert.</li>
-          <li>Códigos de línea canónicos bajo Res. Ex. 457.</li>
-          <li>Tarifa adulto 2026 por operador y tramo (Concepción ↔ Coronel vs ↔ Lota).</li>
-          <li>Tabla horaria lun-vie / sáb / dom de las troncales.</li>
-          <li>Cronología de paros, huelgas y alzas tarifarias (1997-2025).</li>
-          <li>Paraderos y trazado de los troncales que no están en el GTFS (San Pedro, Coronel, Lota Bajo/Alto).</li>
-          <li>Operador de la 302 y la 304 (el GTFS no lo nombra).</li>
-          <li>Integración tarifaria Conecta ↔ BusPay.</li>
-          <li>Decreto MTT de adjudicación del PE formal.</li>
+          <li>Número, fecha y texto íntegro de la Res. Ex. 457 MTT.</li>
+          <li>Adjudicación del PE Coronel-Lota (resultado de la admisibilidad, decreto) y fecha de operación.</li>
+          <li>Razón social, RUT, padrón y terminal de Las Galaxias y Buses J. Ewert; operador de la 302 y la 304.</li>
+          <li>Códigos de línea canónicos, tarifa adulto 2026 por operador y tramo, y tabla horaria de los troncales.</li>
+          <li>Paraderos y trazado de los troncales fuera del GTFS (San Pedro, Coronel, Lota Bajo/Alto).</li>
+          <li>Cobertura real de BusPay en Coronel y Lota; integración Conecta ↔ BusPay.</li>
+          <li>Cronología de paros, huelgas y alzas (1997-2025).</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
           Cierre: Ley de Transparencia (Ley 20.285) a SUBTRANS y DTPR
-          Biobío; consulta a Contraloría; archivo BioBioChile / Diario
-          Concepción / El Sur; foto de carteles en terminales.
+          Biobío, consulta a Contraloría, archivo de prensa y fotos de
+          carteles.
         </p>
-      </Section>
+        <p className="text-[13px]">
+          Ver también:{' '}
+          <a href="/wiki/seremitt-dtpr-biobio" className={LINK}>SEREMITT y DTPR</a>,{' '}
+          <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className={LINK}>PE Gran Concepción</a>,{' '}
+          <a href="/wiki/perimetro-exclusion-tome" className={LINK}>PE Tomé</a>,{' '}
+          <a href="/wiki/buspay" className={LINK}>BusPay</a>,{' '}
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className={LINK}>corredores MOP</a>,{' '}
+          <a href="/wiki/biotren" className={LINK}>Biotrén</a>,{' '}
+          <a href="/wiki/gtfs-gran-concepcion" className={LINK}>GTFS Gran Concepción</a>,{' '}
+          <a href="/wiki/concepcion-florida" className={LINK}>Concepción ↔ Florida</a> y{' '}
+          <a href="/wiki/recorridos-interurbanos" className={LINK}>recorridos interurbanos</a>.
+        </p>
+      </CollapsibleSection>
 
-      <Section title="Bibliografía">
+      <CollapsibleSection title="Bibliografía y cómo contribuir">
         <ul className="ml-5 list-disc space-y-1 text-[12px]">
+          <li><SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">Diario Concepción · 15-jul-2025, Bases PE Coronel-Lota / 80 buses</SourceLink></li>
+          <li><SourceLink href="https://www.diarioconcepcion.cl/politica/2026/10/21/retraso-licitacion-buses-lota-coronel.html">Diario Concepción · 21-oct-2026, Retraso de la licitación</SourceLink></li>
+          <li><SourceLink href="https://www.canal9.cl/episodios/2026/11/18/emplazan-a-de-grange-por-quinta-prorroga-en-licitacion-de-transporte-coronel-lota-debera-responder">Canal 9 · 18-nov-2026, Quinta prórroga</SourceLink></li>
+          <li><SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">Subtrans · 30-ene-2026, Adjudicación BusPay</SourceLink></li>
+          <li><SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">BioBioChile · 28-ene-2026, Consorcio Buspay</SourceLink></li>
+          <li><SourceLink href="https://concesiones.mop.gob.cl/project/corredor-de-transporte-publico-ruta-160/">MOP Concesiones · Corredor Ruta 160</SourceLink></li>
+          <li><SourceLink href="https://www.mop.gob.cl/consorcio-electro-cointer-presento-oferta-para-proyecto-concesion-corredor-de-transporte-publico-ruta-160/">MOP · 5-nov-2025, Oferta Electro-Cointer</SourceLink></li>
+          <li><SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html">Diario Concepción · 13-nov-2024, CGR visa Ruta 160 / 150</SourceLink></li>
+          <li><SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">Wikipedia · PE Gran Concepción (sección Coronel-Lota)</SourceLink></li>
+          <li><SourceLink href="https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n">Wikipedia · Buses licitados del Gran Concepción</SourceLink></li>
+          <li><SourceLink href="https://es.wikipedia.org/wiki/Biotr%C3%A9n">Wikipedia · Biotrén (L2)</SourceLink></li>
           <li>
-            <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/07/15/80-buses-nuevos-para-lota-y-coronel-las-bases-de-la-licitacion-estan-en-contraloria.html">
-              Diario Concepción · 15-jul-2025, Bases PE Coronel-Lota / 80 buses
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://www.subtrans.gob.cl/mtt-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion/">
-              Subtrans · 30-ene-2026, Adjudicación BusPay
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
-              BioBioChile · 28-ene-2026, Consorcio Buspay
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://concesiones.mop.gob.cl/project/corredor-de-transporte-publico-ruta-160/">
-              MOP Concesiones · Corredor Ruta 160
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://www.mop.gob.cl/consorcio-electro-cointer-presento-oferta-para-proyecto-concesion-corredor-de-transporte-publico-ruta-160/">
-              MOP · 5-nov-2025, Oferta Electro-Cointer
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/11/13/visan-licitaciones-para-convertir-rutas-160-150-y-autopista-concepcion-talcahuano-en-corredores-de-transporte-publico.html">
-              Diario Concepción · 13-nov-2024, CGR visa Ruta 160 / 150
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://es.wikipedia.org/wiki/Per%C3%ADmetro_de_Exclusi%C3%B3n_del_Gran_Concepci%C3%B3n">
-              Wikipedia · PE Gran Concepción (sección Coronel-Lota)
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://es.wikipedia.org/wiki/Buses_licitados_del_Gran_Concepci%C3%B3n">
-              Wikipedia · Buses licitados del Gran Concepción
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://es.wikipedia.org/wiki/Biotr%C3%A9n">
-              Wikipedia · Biotrén (L2)
-            </SourceLink>
-          </li>
-          <li>
-            <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8102">
-              BCN · Coronel 2017
-            </SourceLink>
+            <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8102">BCN · Coronel 2017</SourceLink>
             {' '}·{' '}
-            <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8105">
-              BCN · Lota 2017
-            </SourceLink>
+            <SourceLink href="https://www.bcn.cl/siit/reportescomunales/comunas_v.html?anno=2017&idcom=8105">BCN · Lota 2017</SourceLink>
           </li>
           <li>
-            <SourceLink href="https://es.wikipedia.org/wiki/Lota">
-              Wikipedia · Lota (cierre Enacar 1997)
-            </SourceLink>
+            <SourceLink href="https://es.wikipedia.org/wiki/Lota">Wikipedia · Lota (cierre Enacar 1997)</SourceLink>
             {' '}·{' '}
-            <SourceLink href="https://www.memoriachilena.gob.cl/602/w3-article-3611.html">
-              Memoria Chilena · Carbón de Lota
-            </SourceLink>
+            <SourceLink href="https://www.memoriachilena.gob.cl/602/w3-article-3611.html">Memoria Chilena · Carbón de Lota</SourceLink>
           </li>
           <li>
-            <SourceLink href="https://www.openstreetmap.org/relation/9239557">
-              OSM relation 9239557 · Ruta 160
-            </SourceLink>
+            <SourceLink href="https://www.openstreetmap.org/relation/9239557">OSM relation 9239557 · Ruta 160</SourceLink>
             {' '}·{' '}
-            <SourceLink href="https://dprbiobio.dpr.gob.cl/">
-              DTPR Biobío
-            </SourceLink>
+            <SourceLink href="https://dprbiobio.dpr.gob.cl/">DTPR Biobío</SourceLink>
           </li>
         </ul>
-      </Section>
-
-      <Section title="Para contribuir">
-        <p>
-          Copia de la Res. Ex. 457 MTT, expediente del PE Coronel-Lota en
-          Contraloría, foto de carteles de horarios o razón social y RUT
-          de los operadores → pull request en{' '}
+        <p className="mt-2 text-[12px]">
+          ¿Tienes la Res. Ex. 457, el expediente de la licitación o fotos de
+          carteles de horarios? Abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/concepcion-coronel-lota.tsx">
-            github.com/marcorojasb/conce.patagua.dev
+            concepcion-coronel-lota.tsx
           </SourceLink>
           .
         </p>
-      </Section>
+      </CollapsibleSection>
     </div>
   );
 }

@@ -1,24 +1,17 @@
-// SEREMITT Biobío y DTPR, ficha institucional de la autoridad
-// regional de transportes. SEREMITT = representación política del MTT
-// (encabeza un SEREMI de confianza presidencial). DTPR = dependencia
-// técnica de Subtrans que ejecuta licitaciones, gestiona subsidios y
-// fiscaliza. Equivalente metropolitano: DTPM (solo RM). 3CV certifica
-// vehículos a nivel nacional.
+// SEREMITT Biobío y DTPR, ficha institucional de la autoridad regional de
+// transportes. SEREMITT = instancia política del MTT (la encabeza un SEREMI
+// de confianza presidencial). DTPR = brazo técnico de Subtrans: licita,
+// paga subsidios y fiscaliza. DTPM solo opera en la Región Metropolitana.
 //
-// Sucesión SEREMI: Héctor Silva (2023-2024) → Patricio Fierro
-// (10-ene-2025 ↔ 28-nov-2025) → Henry Campos Coa (desde ~27-mar-2026;
-// Subtrans + Diario Concepción). Cautivo: documentado como SEREMI MOP
-// en 2025-2026; el tramo Transportes nov-2025–mar-2026 queda con
-// PendingBanner (fuentes abiertas incompletas). Marcos: DFL 343,
-// Ley 18.059, 18.696, 20.378, 19.880, 20.285.
+// Sucesión SEREMI: Héctor Silva (2023-2024) → Patricio Fierro (10-ene-2025
+// a nov-2025) → Henry Campos Coa (desde ~27-mar-2026). Tramo nov-2025 a
+// mar-2026 sin fuente primaria cerrada: ver PendingBanner.
 
 import {
   ArticleSummary,
   CollapsibleSection,
   DataTable,
   FactStrip,
-  IssueNotice,
-  KeyValueList,
   NewsPulse,
   PendingBanner,
   Section,
@@ -33,45 +26,43 @@ export default function SeremittDtprBiobio() {
   return (
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
-        <strong>Verificado parcialmente (snapshot 17-jul-2026).</strong>{' '}
-        Estructura SEREMITT/DTPR/DTPM, marcos legales y titular actual{' '}
-        <strong>Henry Campos Coa</strong> (Subtrans regional + Diario
-        Concepción 27-mar-2026). Sucesión Silva → Fierro documentada.{' '}
-        <strong>Pendientes</strong>: director(a) DTPR Biobío, organigrama,
-        sede exacta, dotación, presupuesto; tramo Cautivo en Transportes
-        (posible confusión con su cargo MOP).
+        <strong>Verificado parcialmente.</strong> Estructura SEREMITT/DTPR,
+        marcos legales, sucesión de SEREMIs y cartera 2026 con fuentes
+        primarias o prensa regional con nombre. El último dato confirmado
+        del titular es de jul-2026.{' '}
+        <strong>Pendientes</strong>: director(a) regional de la DTPR
+        Biobío, sede, dotación y presupuesto ejecutado.
       </VerifiedBanner>
 
       <FactStrip
-        snapshot="2026-07-17"
+        snapshot="2026-11-25"
         items={[
           { label: 'SEREMI', value: 'Henry Campos Coa' },
           { label: 'Desde', value: '~27-mar-2026' },
           { label: 'Brazo técnico', value: 'DTPR / DPR Biobío' },
+          { label: 'Subsidios 2026', value: '> $93 mil millones' },
           { label: 'Portal', value: 'dprbiobio.dpr.gob.cl' },
-          { label: 'Cartera', value: 'PE · BusPay · interurbanos' },
         ]}
       />
 
       <ArticleSummary
         bullets={[
           <>
-            <strong>SEREMITT</strong> = vocería y resoluciones políticas
-            regionales del MTT; <strong>DTPR</strong> = brazo técnico
-            (licitaciones, subsidios, fiscalización). No confundir con DTPM
-            (solo RM).
+            <strong>SEREMITT</strong> pone la vocería y las resoluciones
+            regionales. <strong>DTPR</strong> licita, paga subsidios y
+            fiscaliza. Son dos caras del MTT en la región.
           </>,
           <>
-            Titular actual: <strong>Henry Campos Coa</strong> (exalcalde de
-            Talcahuano), según Subtrans Biobío y prensa regional (mar-2026).
+            Titular: <strong>Henry Campos Coa</strong>, exalcalde de
+            Talcahuano, desde ~27-mar-2026 (Subtrans y Diario Concepción).
           </>,
           <>
-            Toda ficha del wiki (PE GC, BusPay, 201, Florida, GTFS) pasa
-            por una o ambas instancias.
+            Casi toda decisión de transporte del wiki pasa por una de las
+            dos: perímetros, BusPay, subsidios y licitaciones.
           </>,
           <>
-            Director(a) DTPR Biobío, sede y presupuesto regional siguen
-            pendientes de transparencia activa.
+            Sin publicar todavía: director(a) regional de la DTPR, sede,
+            dotación y presupuesto ejecutado.
           </>,
         ]}
       />
@@ -79,13 +70,23 @@ export default function SeremittDtprBiobio() {
       <NewsPulse
         items={[
           {
-            date: '27-mar-2026',
-            title: 'Henry Campos Coa asume como SEREMI de Transportes Biobío',
+            date: 'ago-2026',
+            title: 'Corredores Ruta 160 y Ruta 150 pasan de concesión a obra pública',
             detail:
-              'Designación anunciada junto a otras SEREMI regionales; listado en el portal Subtrans de la SEREMITT Biobío.',
+              'El decreto de adjudicación nunca se firmó. El Gobierno anuncia ejecución por Vialidad del MOP; falta confirmar si habrá licitación de obras. Ver Electrocorredores MOP.',
             source: {
-              href: 'https://www.diarioconcepcion.cl/politica/2026/03/27/biobio-suma-nuevas-autoridades-henry-campos-y-daniel-manchileo-asumen-como-seremis.html',
-              label: 'Diario Concepción · 27-mar-2026',
+              href: 'https://www.biobiochile.cl/noticias/bbcl-explica/bbcl-explica-notas/2026/08/07/de-concesion-a-obra-publica-el-nuevo-escenario-de-los-corredores-de-transporte-para-gran-concepcion.shtml',
+              label: 'BioBioChile · 7-ago-2026',
+            },
+          },
+          {
+            date: '1-dic-2026',
+            title: 'Marcha blanca del pago electrónico en micros',
+            detail:
+              'Efectivo, tarjetas bancarias y tarjeta de transporte conviven durante unos tres meses. Ver BusPay.',
+            source: {
+              href: 'https://www.canal9.cl/episodios/2026/11/23/pago-electronico-en-micros-del-gran-concepcion-comienza-el-1-de-diciembre-conozca-donde-comprar-y-cargar-la-tarjeta',
+              label: 'Canal 9 · 23-nov-2026',
             },
           },
         ]}
@@ -93,107 +94,59 @@ export default function SeremittDtprBiobio() {
 
       <Section title="Qué es y por qué importa">
         <p>
-          La <strong>SEREMITT Biobío</strong> y la <strong>DTPR Biobío</strong>{' '}
-          son las dos caras del MTT en la región. Toda decisión que aparece
-          en este wiki — el{' '}
-          <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">PE Gran Concepción 2024</a>,
-          la <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">licitación Santa Juana</a>,{' '}
-          <a href="/wiki/buspay" className="underline underline-offset-2">BusPay 2026</a>,
-          los subsidios a{' '}
-          <a href="/wiki/concepcion-florida" className="underline underline-offset-2">Concepción ↔ Florida</a>,
-          los{' '}
-          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">Electrocorredores MOP</a>{' '}
-          y el feed{' '}
-          <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS Gran Concepción</a> — pasa por una o ambas instancias.
+          Toda decisión del wiki sobre transporte público regional pasa por
+          la SEREMITT o la DTPR. Ejemplos:{' '}
+          <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">PE Gran Concepción 2024</a>,{' '}
+          <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">licitación Santa Juana</a>,{' '}
+          <a href="/wiki/buspay" className="underline underline-offset-2">BusPay</a>,{' '}
+          <a href="/wiki/concepcion-florida" className="underline underline-offset-2">subsidios a Florida</a> y{' '}
+          <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">Electrocorredores MOP</a>.
         </p>
         <p>
           Distinción clave: <strong>la SEREMITT no licita ni paga
-          subsidios directamente</strong>. Eso lo hace la DTPR. La
-          SEREMITT coordina, comunica y firma resoluciones regionales;
-          la DTPR ejecuta el contrato y paga la liquidación mensual.
+          subsidios</strong>. Coordina, comunica y firma resoluciones
+          regionales. La DTPR ejecuta los contratos y paga la liquidación
+          mensual.
         </p>
       </Section>
 
-      <Section title="Estructura: SEREMITT vs DTPR vs DTPM">
-        <p>
-          En Chile coexisten tres siglas distintas que la prensa
-          regional usa como sinónimos pero que tienen funciones
-          separadas. Importante no confundirlas:
+      <Section title="SEREMITT y DTPR en 2026">
+        <DataTable columns={['', 'SEREMITT Biobío', 'DTPR Biobío']} bodyClassName="divide-y align-top text-[13px]">
+          <tr>
+            <td className="px-3 py-2 font-medium">Naturaleza</td>
+            <td className="px-3 py-2">Instancia política. La encabeza un SEREMI nombrado por el Presidente a propuesta del ministro.</td>
+            <td className="px-3 py-2">Dependencia técnica de la Subsecretaría de Transportes. Ejecuta licitaciones, contratos, subsidios y fiscalización.</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Titular</td>
+            <td className="px-3 py-2">
+              <strong>Henry Campos Coa</strong> (desde ~27-mar-2026). Antes: Héctor Silva (2023-2024) y Patricio Fierro (10-ene-2025 a nov-2025).
+            </td>
+            <td className="px-3 py-2">Director(a) regional no nombrado en los comunicados. Pendiente.</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Reporta a</td>
+            <td className="px-3 py-2">Ministro(a) de Transportes en Santiago. Ministro actual: Louis de Grange Concha (desde 11-mar-2026).</td>
+            <td className="px-3 py-2">Subsecretaría de Transportes → DTPR nacional → DPR Biobío.</td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Sede y portal</td>
+            <td className="px-3 py-2">Concepción. Dirección exacta pendiente.</td>
+            <td className="px-3 py-2">Concepción. <code className="font-mono text-[11px]">dprbiobio.dpr.gob.cl</code></td>
+          </tr>
+        </DataTable>
+        <p className="text-[13px]">
+          Los nombres de DTPM (solo Región Metropolitana) y 3CV (certificación
+          vehicular, nacional) suelen confundirse con estas dos. No tienen
+          jurisdicción en el Biobío.
         </p>
-        <DataTable columns={['Sigla', 'Nombre', 'Naturaleza', 'Jurisdicción']}>
-              <tr>
-                <td className="px-3 py-2 font-medium">SEREMITT</td>
-                <td className="px-3 py-2">Secretaría Regional Ministerial de Transportes y Telecomunicaciones</td>
-                <td className="px-3 py-2">Instancia política. La encabeza un(a) SEREMI nombrado(a) por el(la) Presidente(a) a propuesta del(la) ministro(a) de Transportes.</td>
-                <td className="px-3 py-2">Una por cada región del país (16 SEREMITT). En el Biobío, sede en Concepción.</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">DTPR</td>
-                <td className="px-3 py-2">División de Transporte Público Regional</td>
-                <td className="px-3 py-2">Dependencia técnica de la Subsecretaría de Transportes. Brazo ejecutor: licitaciones, contratos, subsidios, fiscalización operativa.</td>
-                <td className="px-3 py-2">Tiene oficinas regionales propias. DPR Biobío opera en <code className="font-mono text-[11px]">dprbiobio.dpr.gob.cl</code> y cubre toda la región.</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">DTPM</td>
-                <td className="px-3 py-2">Dirección de Transporte Público Metropolitano</td>
-                <td className="px-3 py-2">Equivalente metropolitano de la DTPR, pero con personalidad jurídica propia y un director(a) nombrado(a) por el(la) ministro(a).</td>
-                <td className="px-3 py-2"><strong>SOLO Región Metropolitana</strong>. Administra RED (ex Transantiago). No tiene jurisdicción en el Biobío.</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">3CV</td>
-                <td className="px-3 py-2">Centro de Control y Certificación Vehicular</td>
-                <td className="px-3 py-2">Servicio dependiente del MTT a nivel nacional. Certifica buses, vehículos pesados y normas de emisión.</td>
-                <td className="px-3 py-2">Nacional con sedes regionales. La SEREMITT y la DTPR articulan con el 3CV los procedimientos de inspección y certificación de flota.</td>
-              </tr>
-            </DataTable>
-        <p className="text-[12px] text-muted-foreground">
-          Cuando una nota dice "el SEREMI anunció", habla de la
-          instancia política (SEREMITT); cuando un decreto dice "DTPR
-          adjudica" o un comunicado sale en
-          <code className="font-mono"> dprbiobio.dpr.gob.cl</code>, habla
-          del brazo técnico. Ambos coordinan.
-        </p>
-        <Sources>
-          <SourceLink href="https://www.subtrans.gob.cl/">
-            Subsecretaría de Transportes · sitio oficial
-          </SourceLink>
-          <SourceLink href="https://www.dtpm.cl/">
-            DTPM · Dirección de Transporte Público Metropolitano (referencia comparativa)
-          </SourceLink>
-          <SourceLink href="https://dprbiobio.dpr.gob.cl/">
-            DPR Biobío · portal oficial
-          </SourceLink>
-          <SourceLink href="https://www.3ctsx.cl/">
-            3CV · Centro de Control y Certificación Vehicular (operador técnico)
-          </SourceLink>
-        </Sources>
-      </Section>
-
-      <Section title="SEREMITT Biobío en 2026">
-        <p>
-          La instancia política se encarna en una persona y un
-          equipo de gabinete:
-        </p>
-        <KeyValueList
-          items={[
-            ['SEREMI titular', 'Henry Campos Coa (exalcalde de Talcahuano). Asumió como SEREMI de Transportes y Telecomunicaciones del Biobío hacia el 27-mar-2026. Listado en el portal Subtrans de la SEREMITT Biobío (snapshot 17-jul-2026).'],
-            ['Ministro de Transportes (actual)', 'Louis de Grange Concha: ministro de Transportes y Telecomunicaciones desde el 11-mar-2026 y biministro de Obras Públicas y Transportes y Telecomunicaciones desde el 19-may-2026, bajo el gobierno de José Antonio Kast (directorio oficial MOP/MTT).'],
-            ['SEREMI anterior (Fierro)', 'Patricio Fierro Cifuentes (titular 10-ene-2025 ↔ al menos nov-2025; nombrado bajo gobierno Boric a propuesta del ministro Juan Carlos Muñoz). Bajo su gestión: segundo ajuste polinómico ($580 adulto, feb-2025), ofertas BusPay (sep-2025), ofertas electrocorredores MOP (nov-2025).'],
-            ['SEREMI anterior (Silva)', 'Héctor Silva (titular 2023-2024). Arranque del PE 1-ene-2024 y acuerdo gremial 22-nov-2023.'],
-            ['Sucesión (cotejada)', 'Silva (2023-2024) → Fierro (ene-2025) → Campos (mar-2026).'],
-            ['Sede', 'Concepción. Dirección exacta pendiente de cotejo en transparencia activa.'],
-            ['Funciones políticas', 'Vocería · resoluciones regionales · coordinación GORE / MOP / municipios · representación ante CORE'],
-            ['Reportabilidad', 'Reporta al Ministro(a) de Transportes en Santiago. No depende del Gobernador Regional electo.'],
-          ]}
-        />
         <PendingBanner>
-          <strong>Tramo nov-2025 – mar-2026.</strong> Versiones previas
-          de esta ficha citaban a Hugo Cautivo como SEREMI de Transportes
-          desde el 28-nov-2025. En 2025-2026 Cautivo aparece de forma
-          consistente como <strong>SEREMI de Obras Públicas (MOP)</strong>{' '}
-          en prensa regional; el tramo exacto en Transportes no tiene
-          aún URL primaria cerrada. No se borra el hilo Fierro→Campos;
-          se marca la laguna.
+          <strong>Tramo nov-2025 a mar-2026.</strong> Versiones previas de
+          esta ficha citaban a Hugo Cautivo como SEREMI de Transportes desde
+          el 28-nov-2025. En 2025-2026 aparece como <strong>SEREMI de Obras
+          Públicas (MOP)</strong> en prensa regional. No hay URL primaria que
+          cierre su paso por Transportes. El hilo Fierro → Campos se mantiene
+          y la laguna queda marcada.
         </PendingBanner>
         <Sources>
           <SourceLink href="https://www.subtrans.gob.cl/secretarias/secretaria-regional-ministerial-del-biobio/">
@@ -203,39 +156,11 @@ export default function SeremittDtprBiobio() {
             Diario Concepción · 27-mar-2026, Henry Campos asume SEREMI Transportes
           </SourceLink>
           <SourceLink href="https://www.diarioconcepcion.cl/politica/2025/01/10/nombran-nuevo-seremi-de-transportes-y-telecomunicaciones-en-biobio.html">
-            Diario Concepción · 10-ene-2025, Nombramiento de Patricio Fierro
+            Diario Concepción · 10-ene-2025, nombramiento de Patricio Fierro
           </SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/">
-            DPR Biobío · 3-ene-2024, Cita Héctor Silva como SEREMI 2024
+            DPR Biobío · 3-ene-2024, cita a Héctor Silva como SEREMI
           </SourceLink>
-        </Sources>
-      </Section>
-
-      <Section title="DTPR Biobío en 2026">
-        <p>
-          El brazo técnico tiene una estructura más estable y
-          menos sujeta a la rotación política:
-        </p>
-        <KeyValueList
-          items={[
-            ['Dependencia jerárquica', 'Subsecretaría de Transportes (Santiago) → División de Transporte Público Regional (DTPR nacional) → DPR Biobío (sede regional).'],
-            ['Sede', 'Concepción. Sitio web: dprbiobio.dpr.gob.cl'],
-            ['Funciones centrales', 'Licitaciones DTPR (ej. ELC0007 Santa Juana) · pagos de subsidio Ley 20.378 · fiscalización operativa con apoyo del 3CV y Carabineros · trato directo con operadores en régimen de perímetro · autorización de servicios urbanos e interurbanos'],
-            ['Padrón regional', 'Lleva el padrón de operadores autorizados del Registro Nacional de Servicios de Transporte de Pasajeros (RNSTP) en el Biobío.'],
-            ['Datos abiertos', 'La DTPR (nivel nacional) publica en dtpr.gob.cl el GTFS oficial del Gran Concepción (versión 20250228, programa del 28-feb-2025) y uno propio del PE Tomé. El feed anterior, de 2019, estaba catalogado en datos.gob.cl por la Subsecretaría de Transportes.'],
-            ['Comisión evaluadora', 'En licitaciones grandes (BusPay 2026, Santa Juana 2024) la Comisión Evaluadora de la DTPR puntúa ofertas técnicas y económicas según las bases.'],
-          ]}
-        />
-        <PendingBanner>
-          <strong>Nombre del(la) director(a) regional DTPR Biobío
-          pendiente.</strong> Los comunicados oficiales del portal
-          DPR Biobío no nombran rutinariamente al(la) responsable
-          regional , se identifica con frecuencia al(la) SEREMITT
-          como vocero(a) político(a), . La nómina actual del cargo
-          es consultable por Ley 20.285 (transparencia activa) o
-          en el directorio del MTT.
-        </PendingBanner>
-        <Sources>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/">
             DPR Biobío · portal regional oficial
           </SourceLink>
@@ -245,168 +170,186 @@ export default function SeremittDtprBiobio() {
           <SourceLink href="https://www.mtt.gob.cl/">
             MTT · ministerio matriz
           </SourceLink>
+          <SourceLink href="https://www.3ctsx.cl/">
+            3CV · Centro de Control y Certificación Vehicular
+          </SourceLink>
+          <SourceLink href="https://www.dtpm.cl/">
+            DTPM · referencia comparativa (solo RM)
+          </SourceLink>
         </Sources>
       </Section>
 
-      <Section title="Funciones principales">
-        <KeyValueList
-          items={[
-            ['Licitar perímetros', 'Diseña, licita y administra los perímetros de exclusión bajo el art. 3° de la Ley 18.696. En el Biobío: PE Gran Concepción 2024, PE Tomé (2016 / operativo 2022) y PE Coronel-Lota (2013).'],
-            ['Licitaciones DTPR', 'Llama y administra las licitaciones públicas de servicios urbanos e interurbanos bajo el Estatuto. Ejemplo regional: licitación ELC0007 (Ruta 201 Santa Juana, jul-2024).'],
-            ['Subsidios Ley 20.378', 'Paga el subsidio nacional al transporte público y los subsidios complementarios al transporte escolar, zonas aisladas y transporte rural. Liquidaciones mensuales.'],
-            ['Autorizaciones', 'Otorga, modifica y revoca autorizaciones de servicios urbanos e interurbanos. Lleva el padrón regional del Registro Nacional de Servicios de Transporte de Pasajeros (RNSTP).'],
-            ['Fiscalización', 'Con apoyo del 3CV (certificación vehicular) y Carabineros (control en ruta). Sanciones administrativas: multas, suspensiones, caducidad de autorizaciones.'],
-            ['Tarifas y polinomio', 'Aplica el polinomio de ajuste tarifario de los contratos de perímetro. En el Gran Concepción la tarifa adulto pasó de $550 (feb-2024) a $560 (dic-2024) a $580 (feb-2025).'],
-            ['Pago electrónico', 'Llama y administra la licitación del sistema de recaudo electrónico. BusPay adjudicado al Consorcio Buspay el 28-ene-2026.'],
-            ['Coordinación interagencias', 'Con MOP (electrocorredores), GORE Biobío (subsidios complementarios), MINVU (paraderos urbanos), municipios (rutas locales), EFE (Biotrén) y MTT central (políticas nacionales).'],
-            ['Atención ciudadana', 'OIRS (Oficina de Información, Reclamos y Sugerencias) del MTT. Recibe consultas, reclamos y solicitudes ciudadanas Ley 20.285.'],
-          ]}
-        />
+      <Section title="Funciones">
+        <ul className="ml-5 list-disc space-y-1 text-[13px]">
+          <li><strong>Perímetros de exclusión</strong> (Ley 18.696, art. 3°): diseño, licitación y administración.</li>
+          <li><strong>Licitaciones de servicios</strong> urbanos e interurbanos: ej. ELC0007, Ruta 201 Santa Juana.</li>
+          <li><strong>Subsidios</strong> de la Ley 20.378 y pagos mensuales a operadores.</li>
+          <li><strong>Tarifas</strong>: aplica el polinomio de ajuste de los contratos de perímetro.</li>
+          <li><strong>Autorizaciones</strong> de servicios y padrón regional (RNSTP).</li>
+          <li><strong>Fiscalización</strong> con el 3CV y Carabineros. Sanciones: multas, suspensiones, caducidad.</li>
+          <li><strong>Pago electrónico</strong>: licitación y seguimiento de BusPay.</li>
+        </ul>
+        <p className="text-[13px]">
+          Las decisiones se formalizan en <strong>decretos</strong> (firma el
+          Subsecretario), <strong>resoluciones exentas</strong> (sin visa
+          CGR) y <strong>resoluciones afectas</strong> (con visa CGR). La
+          Resolución Afecta 29/2023, visada en may-2023, fue la base del PE
+          Gran Concepción 2024.
+        </p>
       </Section>
 
       <Section title="Marco legal">
-        <p>
-          La autoridad regional opera sobre seis cuerpos legales
-          que se citan en este wiki cada vez que aparece la
-          palabra "perímetro", "licitación", "subsidio" o
-          "fiscalización":
-        </p>
-        <KeyValueList
-          items={[
-            ['DFL 343/1953', 'Ley orgánica del Ministerio de Obras Públicas, Transportes y Telecomunicaciones (después dividido). Base histórica de la organización del MTT.'],
-            ['Ley 18.059 (1981)', 'Otorga al MTT el carácter de organismo rector nacional del transporte terrestre. Atribuciones generales de fiscalización, normativa y planificación.'],
-            ['Ley 18.696 (1988)', 'Crea el régimen de subsidio al transporte mayor. El art. 3° faculta al MTT a definir perímetros de exclusión con tarifa, frecuencia, antigüedad y tecnología regulada (base legal del PE Gran Concepción 2024, PE Tomé y PE Coronel-Lota).'],
-            ['Ley 20.378 (2009)', 'Crea el subsidio nacional al transporte público. El art. 4° habilita los subsidios a zonas aisladas y transporte rural (base legal de la licitación ELC0007 Santa Juana y de las capas subsidiadas Florida).'],
-            ['Ley 19.880 (2003)', 'Procedimientos administrativos. Rige los actos resolutivos de la SEREMITT y la DTPR.'],
-            ['Ley 20.285 (2008)', 'Transparencia activa y derecho de acceso a la información pública. Base normativa para solicitar expedientes de licitación, contratos y rankings de cumplimiento.'],
-          ]}
-        />
-        <p className="text-[12px] text-muted-foreground">
-          Las decisiones se materializan en <strong>decretos</strong>{' '}
-          (firmados por el Subsecretario), <strong>resoluciones exentas</strong>{' '}
-          (sin visa CGR) y <strong>resoluciones afectas</strong> (con visa
-          CGR). La Resolución Afecta 29/2023, visada en may-2023, fue la
-          base regulatoria del PE Gran Concepción 2024.
-        </p>
+        <ul className="ml-5 list-disc space-y-1 text-[13px]">
+          <li><strong>DFL 343/1953</strong>: ley orgánica del antiguo MOP-Transportes; base histórica del MTT.</li>
+          <li><strong>Ley 18.059 (1981)</strong>: el MTT como organismo rector del transporte terrestre.</li>
+          <li><strong>Ley 18.696 (1988)</strong>: art. 3° habilita los perímetros de exclusión (PE GC 2024, Tomé, Coronel-Lota).</li>
+          <li><strong>Ley 20.378 (2009)</strong>: subsidio nacional; art. 4° cubre zonas aisladas y servicios licitados (ver <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">subsidio</a>).</li>
+          <li><strong>Ley 19.880 (2003)</strong>: procedimiento administrativo de los actos de la SEREMITT y la DTPR.</li>
+          <li><strong>Ley 20.285 (2008)</strong>: transparencia activa y acceso a la información.</li>
+        </ul>
         <Sources>
-          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=29742">
-            BCN · Ley 18.059 (atribuciones MTT en transporte terrestre)
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=30190">
-            BCN · Ley 18.696 (perímetros de exclusión y subsidios)
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">
-            BCN · Ley 20.378 (subsidio nacional al transporte público)
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=210676">
-            BCN · Ley 19.880 (procedimientos administrativos)
-          </SourceLink>
-          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=276363">
-            BCN · Ley 20.285 (transparencia y acceso a la información pública)
-          </SourceLink>
+          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=29742">BCN · Ley 18.059</SourceLink>
+          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=30190">BCN · Ley 18.696</SourceLink>
+          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=1005871">BCN · Ley 20.378</SourceLink>
+          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=210676">BCN · Ley 19.880</SourceLink>
+          <SourceLink href="https://www.bcn.cl/leychile/navegar?idNorma=276363">BCN · Ley 20.285</SourceLink>
         </Sources>
       </Section>
 
       <Section title="Cartera regional 2024-2026">
-        <p>
-          Hitos materiales que la SEREMITT Biobío y la DTPR han
-          ejecutado, anunciado o están tramitando en el periodo de
-          cobertura del wiki:
-        </p>
-        <KeyValueList
-          items={[
-            ['PE Gran Concepción 2024', 'Operativo 1-ene-2024 → 31-dic-2028. 7 comunas, 36 unidades de negocio, ~35 empresas. Tarifa $580 adulto. Reemplazó la licitación 2002.'],
-            ['PE Tomé', 'Decreto MTT jul-2016, operativo 10-mar-2022. Operador único Transportes Tomé. Líneas 401 / 411 / 421.'],
-            ['PE Coronel-Lota', 'Implementado en 2013. Históricamente subfinanciado. Operadores locales (Las Galaxias, Buses J. Ewert, otros).'],
-            ['Licitación ELC0007 Santa Juana', 'Adjudicada en 2024 a Sociedad de Transporte de Pasajeros Santa Juana SpA. 23 buses Agrale Euro V, tarifa $1.000, operativo desde 15-jul-2024. Primera licitación pública del Biobío en 10+ años.'],
-            ['BusPay 2026', 'Adjudicado al Consorcio Buspay el 28-ene-2026. ~$750 millones/año, 1.800-2.000 validadores en 11 comunas (las 7 del PE GC + Tomé + Coronel + Lota + Santa Juana). Marcha blanca Q3 2026, régimen 100% electrónico fines 2026.'],
-            ['Electrocorredores MOP', 'Coordinación con MOP Concesiones en tres proyectos sobre la Ruta 160 (San Pedro-Coronel), Ruta 150 (Concepción-Penco) y Autopista Concepción-Talcahuano Tramo II. Inversión ~USD 250M, plazo concesión 25 años, ofertas únicas Electro-Cointer en 2025, adjudicación 1S 2026.'],
-            ['Subsidios Florida', 'Capa zona norte oct-2025, Rahuil, Poñén-Roa y servicio nocturno: nuevas líneas subsidiadas Ley 20.378 anunciadas por la SEREMITT desde 2025 sin licitar todavía el reemplazo del corredor troncal Concepción ↔ Florida.'],
-            ['GTFS Gran Concepción', 'Feed estático oficial publicado por la DTPR en dtpr.gob.cl (8-dic-2025, versión 20250228). Cubre la red urbana del PE Gran Concepción 2024 y los interurbanos 201/201-AU, 401/401Y/411/421 y 302/304. Calendario declarado vencido el 31-dic-2025, sin versión posterior al 24-nov-2026.'],
-          ]}
-        />
-        <p className="text-[12px] text-muted-foreground">
-          Cada uno de estos hitos tiene un artículo propio (o
-          aparece reflejado) en este wiki, accesible desde la
-          sección "Vínculos con otros artículos" más abajo.
-        </p>
+        <DataTable columns={['Proyecto', 'Estado con fecha', 'Artículo']}>
+          <tr>
+            <td className="px-3 py-2 font-medium">PE Gran Concepción 2024</td>
+            <td className="px-3 py-2">Operativo desde 1-ene-2024 hasta 31-dic-2028. 36 unidades de negocio. Tarifa adulto $580.</td>
+            <td className="px-3 py-2"><a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">Ver</a></td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">PE Tomé</td>
+            <td className="px-3 py-2">Decreto jul-2016. Operativo desde 10-mar-2022. Operador único Transportes Tomé.</td>
+            <td className="px-3 py-2"><a href="/wiki/concepcion-tome" className="underline underline-offset-2">Ver</a></td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Ruta 201 Santa Juana (ELC0007)</td>
+            <td className="px-3 py-2">Adjudicada en 2024. Operativa desde 15-jul-2024. 23 buses.</td>
+            <td className="px-3 py-2"><a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ver</a></td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">BusPay</td>
+            <td className="px-3 py-2">Adjudicado el 28-ene-2026. Marcha blanca desde el 1-dic-2026 según prensa.</td>
+            <td className="px-3 py-2"><a href="/wiki/buspay" className="underline underline-offset-2">Ver</a></td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Electrocorredores MOP</td>
+            <td className="px-3 py-2">Sin adjudicación. Desde ago-2026, anunciado como obra pública por Vialidad del MOP.</td>
+            <td className="px-3 py-2"><a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">Ver</a></td>
+          </tr>
+          <tr>
+            <td className="px-3 py-2 font-medium">Florida</td>
+            <td className="px-3 py-2">Capas subsidiadas desde oct-2025. Sin licitación del corredor troncal.</td>
+            <td className="px-3 py-2"><a href="/wiki/concepcion-florida" className="underline underline-offset-2">Ver</a></td>
+          </tr>
+        </DataTable>
+        <Sources>
+          <SourceLink href="https://www.canal9.cl/episodios/2026/11/23/pago-electronico-en-micros-del-gran-concepcion-comienza-el-1-de-diciembre-conozca-donde-comprar-y-cargar-la-tarjeta">
+            Canal 9 · marcha blanca BusPay (23-nov-2026)
+          </SourceLink>
+          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml">
+            BioBioChile · adjudicación BusPay (28-ene-2026)
+          </SourceLink>
+          <SourceLink href="https://www.diarioconcepcion.cl/politica/2026/08/14/apuran-entrega-corredores-transporte-biobio-2031.html">
+            Diario Concepción · corredores y plazo 2031 (14-ago-2026)
+          </SourceLink>
+        </Sources>
       </Section>
 
-      <Section title="Relación con el MTT central (Santiago)">
-        <p>
-          SEREMITT y DTPR Biobío no son autónomas: ejecutan la política
-          del MTT central. División del trabajo:
+      <Section title="Subsidios en la región 2026">
+        <p className="text-[13px]">
+          Según la DTPR (actualización jun-2026), el presupuesto regional
+          2026 supera los <strong>$93 mil millones</strong>. Incluye la Ley
+          20.378 y otras subpartidas (transporte de carga, rebaja adulto
+          mayor), así que no es el monto de la Ley 20.378 sola. Con cifras
+          del documento:
         </p>
-        <DataTable columns={['Decisión', 'Quién firma', 'Quién ejecuta']}>
-              <tr>
-                <td className="px-3 py-2 font-medium">Decreto de perímetro de exclusión</td>
-                <td className="px-3 py-2">Ministro(a) de Transportes / Subsecretario(a)</td>
-                <td className="px-3 py-2">DTPR Biobío (administra contratos)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Bases de licitación pública</td>
-                <td className="px-3 py-2">Subsecretario(a) (resolución afecta, visada por CGR)</td>
-                <td className="px-3 py-2">DTPR Biobío (publica, evalúa, adjudica)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Resolución afecta de adjudicación</td>
-                <td className="px-3 py-2">Subsecretario(a) + visa CGR</td>
-                <td className="px-3 py-2">DTPR Biobío (notifica al operador, firma contrato)</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Resolución exenta regional (autorizaciones, sanciones)</td>
-                <td className="px-3 py-2">SEREMI Biobío</td>
-                <td className="px-3 py-2">DTPR Biobío</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Ajuste tarifario polinómico</td>
-                <td className="px-3 py-2">Subsecretario(a) (resolución exenta)</td>
-                <td className="px-3 py-2">DTPR Biobío comunica a operadores</td>
-              </tr>
-              <tr>
-                <td className="px-3 py-2 font-medium">Pago mensual del subsidio</td>
-                <td className="px-3 py-2">Subsecretario(a) / Tesorería General de la República</td>
-                <td className="px-3 py-2">DTPR Biobío liquida</td>
-              </tr>
-            </DataTable>
-        <p className="text-[12px] text-muted-foreground">
-          Por eso la adjudicación BusPay (28-ene-2026) menciona a MTT,
-          Subtrans, DTPR Biobío y SEREMITT: cada actor cumple un rol en
-          el mismo acto administrativo.
-        </p>
+        <ul className="ml-5 list-disc space-y-1 text-[13px]">
+          <li>Gran Concepción: flota de 1.894 buses bajo perímetro de exclusión.</li>
+          <li>Zonas aisladas y rurales: 75 servicios, más de 35 mil personas.</li>
+          <li>Renueva Tu Micro: 1.095 buses reemplazados. Renueva Tu Colectivo: 1.063 automóviles (2016-2023).</li>
+          <li>Rebaja adulto mayor: 50% desde los 65 años en todos los buses de la región.</li>
+        </ul>
+        <Sources>
+          <SourceLink href="https://dtpr.gob.cl/wp-content/uploads/2026/06/Ficha-Biobio-2026-vdef.pdf">
+            DTPR · Subsidios al transporte público, Región del Biobío 2026
+          </SourceLink>
+        </Sources>
       </Section>
 
-      <Section title="Relación con otras instituciones regionales">
-        <KeyValueList
-          items={[
-            ['GORE Biobío', 'Gobierno Regional. Cofinancia subsidios complementarios al transporte rural y escolar a través del FNDR. Coordinación a través del Consejo Regional (CORE) y el Gobernador Regional electo.'],
-            ['MOP Biobío', 'Ministerio de Obras Públicas. Licita y supervisa los Electrocorredores (Ruta 160, Ruta 150, Autopista Concepción-Talcahuano Tramo II). La SEREMITT MTT aporta la operación de buses; el MOP, la infraestructura vial.'],
-            ['MINVU Biobío', 'Ministerio de Vivienda y Urbanismo. Coordina paraderos urbanos, infraestructura peatonal y planes maestros de transporte urbano (PMTU).'],
-            ['Municipios', 'Las 33 comunas de la región. Permisos de uso de vías locales, terminales municipales, mantención de paraderos. La SEREMITT coordina con cada municipio cuando el régimen toca su comuna (en el AMC, 11 comunas con coordinación activa).'],
-            ['EFE Trenes Metropolitanos', 'Empresa de los Ferrocarriles del Estado, operadora del Biotrén. Coordinación tarifaria e intermodal (Conecta, Biobús) con la SEREMITT y la DTPR.'],
-            ['Carabineros de Chile', 'Apoya la fiscalización en ruta de servicios autorizados. Sanciona en terreno; la DTPR procesa administrativamente.'],
-            ['Contraloría General de la República', 'Visa las resoluciones afectas del MTT que afectan recursos públicos sustanciales. Visa CGR a la Res. 29/2023 (PE Gran Concepción) en mayo 2023; visa CGR a bases de electrocorredores 13-nov-2024.'],
-            ['Servicio de Impuestos Internos', 'Padrón tributario de operadores. La DTPR cruza datos de RNSTP con SII para verificar regularidad.'],
-          ]}
-        />
+      <Section title="Relación con el MTT central y otras instituciones">
+        <p className="text-[13px]">
+          La SEREMITT y la DTPR ejecutan la política del MTT central. Las
+          decisiones de perímetro, bases de licitación y tarifa las firma el
+          Subsecretario. La DTPR Biobío administra contratos y paga. Con otras
+          instituciones:
+        </p>
+        <ul className="ml-5 list-disc space-y-1 text-[13px]">
+          <li><strong>GORE Biobío</strong>: cofinancia subsidios complementarios vía FNDR y el Consejo Regional.</li>
+          <li><strong>MOP</strong>: licita y ejecuta la infraestructura de los electrocorredores.</li>
+          <li><strong>MINVU, municipios y EFE</strong>: paraderos, permisos de vía y coordinación intermodal con el Biotrén.</li>
+          <li><strong>Contraloría</strong>: visa resoluciones afectas (Res. 29/2023; bases de electrocorredores, 13-nov-2024).</li>
+          <li><strong>Carabineros y SII</strong>: fiscalización en ruta y cruce de padrones tributarios.</li>
+        </ul>
       </Section>
 
-      <Section title="Transparencia y datos abiertos">
-        <p>
-          La SEREMITT y la DTPR están sujetas al régimen general de
-          transparencia activa (Ley 20.285) y al portal de datos
-          abiertos del Estado:
-        </p>
-        <KeyValueList
+      <Section title="Críticas y desafíos">
+        <ul className="ml-5 list-disc space-y-1 text-[13px]">
+          <li><strong>Atraso histórico</strong>: la licitación de 2002 operó 22 años. Santa Juana fue la primera licitación pública en más de 10 años.</li>
+          <li><strong>Corredor Concepción ↔ Florida</strong> sigue sin licitación moderna pese a subsidios anuales.</li>
+          <li><strong>Ranking de cumplimiento</strong> del PE 2024, la palanca más fuerte, no se publica desagregado.</li>
+          <li><strong>Sin GTFS-Realtime</strong>: el feed oficial es estático, aunque el PE 2024 exige GPS online.</li>
+          <li><strong>Rotación de SEREMIs</strong> (Silva → Fierro → Campos) y cambios de vocería. La continuidad recae en la DTPR.</li>
+        </ul>
+      </Section>
+
+      <CollapsibleSection title="Cronología">
+        <Timeline
           items={[
-            ['Transparencia activa', 'Publicación obligatoria de adquisiciones, contratos, viáticos, dotación, organigrama y normativa. Accesible vía transparencia.gob.cl filtrando por MTT.'],
-            ['Solicitudes Ley 20.285', 'Vía portal "Solicitud de Acceso a la Información Pública". Plazo de respuesta legal: 20 días hábiles, prorrogables.'],
-            ['Datos abiertos', 'GTFS oficial de Gran Concepción publicado en dtpr.gob.cl, sin licencia de datos declarada (el feed 2019 estaba en datos.gob.cl, cuya licencia por defecto es CC BY 4.0). Ver artículo dedicado.'],
-            ['Diario Oficial', 'Publicación de decretos del MTT que crean perímetros, adjudican licitaciones o ajustan tarifas (DO requerido para actos administrativos generales).'],
-            ['OIRS regional', 'Oficina de Información, Reclamos y Sugerencias del MTT. Atiende consultas ciudadanas presenciales y telefónicas.'],
-            ['Ranking de cumplimiento', 'El PE Gran Concepción 2024 prevé la publicación de un ranking de cumplimiento por unidad de negocio. Su periodicidad y desagregación específica no han sido cotejadas en fuente abierta, pendiente.'],
+            { date: '1953', event: 'DFL 343 organiza el MOP-Transportes, antecedente del MTT actual.', source: { href: 'https://www.bcn.cl/leychile', label: 'BCN' } },
+            { date: '1981', event: 'Ley 18.059 otorga al MTT el rol rector nacional del transporte terrestre.', source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=29742', label: 'BCN Ley 18.059' } },
+            { date: '1988', event: 'Ley 18.696 crea el régimen de subsidio y habilita los perímetros de exclusión (art. 3°).', source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=30190', label: 'BCN Ley 18.696' } },
+            { date: '2002', event: 'Contratos de la licitación regional con 37 empresas operadoras.' },
+            { date: '2009', event: 'Ley 20.378 crea el subsidio nacional. Art. 4° habilita subsidios a zonas aisladas y rurales.', source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=1005871', label: 'BCN Ley 20.378' } },
+            { date: '2013', event: 'Implementación del Perímetro de Exclusión Coronel-Lota.' },
+            { date: 'jul-2016', event: 'Decreto MTT crea el PE de Tomé (operativo desde 10-mar-2022).' },
+            { date: '27-abr-2017', event: 'Resolución exenta del MTT (archivo Resex_1005.2017), marco normativo del PE del Gran Concepción.', source: { href: 'https://www.mtt.gob.cl/wp-content/uploads/2017/10/Resex_1005.2017.pdf', label: 'MTT' } },
+            { date: 'may-2023', event: 'Contraloría visa la Resolución Afecta 29/2023, que aprueba el PE Gran Concepción.' },
+            { date: '22-nov-2023', event: 'SEREMITT facilita el acuerdo con las cinco federaciones gremiales del Gran Concepción. Vocería: Héctor Silva.', source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2023/11/22/perimetro-de-exclusion-gremios-del-gran-concepcion-llegan-a-acuerdo-con-ministerio-de-transportes.shtml', label: 'BioBioChile · 22-nov-2023' } },
+            { date: '1-ene-2024', event: 'Entra en vigor el PE Gran Concepción 2024. Silva anuncia GPS obligatorio, fiscalización online y ranking.', source: { href: 'https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/', label: 'DPR Biobío · 3-ene-2024' } },
+            { date: '15-jul-2024', event: 'Inicia operación la Ruta 201 Santa Juana (licitación ELC0007).', source: { href: 'https://dprbiobio.dpr.gob.cl/2024/07/22/santa-juana-cuenta-con-nuevo-sistema-de-transporte-publico-licitado-y-renovada-flota-de-buses/', label: 'DPR Biobío · 22-jul-2024' } },
+            { date: '13-nov-2024', event: 'Contraloría visa las bases de los Electrocorredores MOP (Rutas 150 y 160; Autopista Concepción-Talcahuano).' },
+            { date: '9-dic-2024', event: 'Primer ajuste polinómico del perímetro: tarifa adulto de $550 a $560.' },
+            { date: '10-ene-2025', event: 'Patricio Fierro asume como SEREMI de Transportes del Biobío, en reemplazo de Héctor Silva.', source: { href: 'https://www.diarioconcepcion.cl/politica/2025/01/10/nombran-nuevo-seremi-de-transportes-y-telecomunicaciones-en-biobio.html', label: 'Diario Concepción · 10-ene-2025' } },
+            { date: '23-feb-2025', event: 'Segundo ajuste polinómico: tarifa adulto $580, escolar $190, adulto mayor $290.', source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html', label: 'Diario Concepción · 14-feb-2025' } },
+            { date: '23-sep-2025', event: 'La DTPR recibe 6 ofertas para el sistema de pago electrónico BusPay.', source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/09/23/gran-concepcion-avanza-hacia-el-pago-electronico-en-buses-mtt-recibe-seis-ofertas.html', label: 'Diario Concepción · 23-sep-2025' } },
+            { date: 'oct-2025', event: 'SEREMITT anuncia la capa subsidiada Concepción ↔ Florida zona norte (Ley 20.378).' },
+            { date: '28-ene-2026', event: 'MTT adjudica BusPay al Consorcio Buspay: ~$750 millones/año, 11 comunas.', source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml', label: 'BioBioChile · 28-ene-2026' } },
+            { date: '27-mar-2026', event: 'Henry Campos Coa asume como SEREMI de Transportes y Telecomunicaciones del Biobío.', source: { href: 'https://www.diarioconcepcion.cl/politica/2026/03/27/biobio-suma-nuevas-autoridades-henry-campos-y-daniel-manchileo-asumen-como-seremis.html', label: 'Diario Concepción · 27-mar-2026' } },
+            { date: 'ago-2026', event: 'Gobierno pasa los corredores Ruta 160 y 150 a obra pública (Vialidad MOP). No hubo adjudicación.', source: { href: 'https://www.biobiochile.cl/noticias/bbcl-explica/bbcl-explica-notas/2026/08/07/de-concesion-a-obra-publica-el-nuevo-escenario-de-los-corredores-de-transporte-para-gran-concepcion.shtml', label: 'BioBioChile · 7-ago-2026' } },
           ]}
         />
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Transparencia, datos abiertos y contacto">
+        <ul className="ml-5 list-disc space-y-1 text-[13px]">
+          <li><strong>Transparencia activa</strong>: contratos, viáticos, dotación y normativa en transparencia.gob.cl (filtrar por MTT).</li>
+          <li><strong>Solicitud Ley 20.285</strong>: portaltransparencia.cl. Plazo: 20 días hábiles, prorrogables. Útil para expedientes de licitación, padrón y ranking.</li>
+          <li><strong>Datos abiertos</strong>: GTFS oficial del Gran Concepción en dtpr.gob.cl (ver <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS</a>).</li>
+          <li><strong>Diario Oficial</strong>: publica decretos de perímetros, adjudicaciones y tarifas.</li>
+          <li><strong>OIRS MTT</strong>: consultas y reclamos presenciales en Concepción y por formulario en mtt.gob.cl.</li>
+          <li><strong>Subtrans</strong>: comunicados centrales y licitaciones grandes que afectan al Biobío.</li>
+        </ul>
+        <PendingBanner>
+          <strong>Dirección física y teléfono de la sede en Concepción sin cotejar.</strong>{' '}
+          Consultar en transparencia.gob.cl o en el call center del MTT.
+        </PendingBanner>
         <Sources>
           <SourceLink href="https://www.portaltransparencia.cl/PortalPdT/web/ministerio-de-transportes-y-telecomunicaciones">
             Portal de Transparencia · MTT
@@ -415,287 +358,42 @@ export default function SeremittDtprBiobio() {
             dtpr.gob.cl · GTFS Gran Concepción
           </SourceLink>
           <SourceLink href="https://datos.gob.cl/">
-            datos.gob.cl · Portal de Datos Abiertos del Estado
+            datos.gob.cl · Portal de Datos Abiertos
           </SourceLink>
           <SourceLink href="https://www.diariooficial.interior.gob.cl/">
             Diario Oficial de la República de Chile
           </SourceLink>
         </Sources>
-      </Section>
-
-      <Section title="Críticas y desafíos">
-        <div className="space-y-2">
-          <IssueNotice title="Atraso histórico en licitar">
-            La licitación 2002 operó 22 años antes del PE 2024.
-            ELC0007 Santa Juana fue la primera licitación pública en{' '}
-            <strong>más de 10 años</strong> en el Biobío. Conce ↔
-            Florida sigue sin licitación moderna en 2026 pese a
-            recibir subsidios anuales.
-          </IssueNotice>
-          <IssueNotice title="Capacidad sancionatoria limitada">
-            Sanciones administrativas en plazos largos. El ranking de
-            cumplimiento del PE 2024 , la palanca más fuerte, no se
-            publica desagregado.
-          </IssueNotice>
-          <IssueNotice title="Falta de GTFS-Realtime">
-            El feed es estático. No hay GTFS-Realtime publicado pese a
-            que el PE 2024 exige GPS online; el dato existe en la
-            DTPR pero no se abre como feed oficial. Lo más cercano es
-            la fuente que usa la app de Transapp para la DTPR, no
-            oficial ni documentada, que el visor consulta paradero por
-            paradero.
-          </IssueNotice>
-          <IssueNotice title="Recorridos interurbanos sin licitación y rotación SEREMITT">
-            Conce ↔ Florida (El Pimentón) y Conce ↔ Yumbel siguen bajo
-            régimen privado con autorización individual; SEREMITT sumó
-            capas subsidiadas en Florida pero no licitó. Dos
-            rotaciones SEREMI en 2025 (Silva→Fierro→Cautivo) generan
-            discontinuidades de vocería; la continuidad recae en la
-            DTPR.
-          </IssueNotice>
-        </div>
-      </Section>
-
-      <CollapsibleSection title="Cronología">
-        <Timeline
-          items={[
-            {
-              date: '1953',
-              event: 'DFL 343 organiza el Ministerio de Obras Públicas, Transportes y Telecomunicaciones, antecedente histórico del MTT actual.',
-              source: { href: 'https://www.bcn.cl/leychile', label: 'BCN' },
-            },
-            {
-              date: '1981',
-              event: 'Ley 18.059 otorga al MTT el carácter de organismo rector nacional del transporte terrestre.',
-              source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=29742', label: 'BCN Ley 18.059' },
-            },
-            {
-              date: '1988',
-              event: 'Ley 18.696 crea el régimen de subsidio al transporte mayor. El art. 3° habilita los perímetros de exclusión.',
-              source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=30190', label: 'BCN Ley 18.696' },
-            },
-            {
-              date: '2000-2002',
-              event: 'La SEREMITT Biobío diseña la primera licitación moderna del Gran Concepción. Se adjudican contratos a 37 empresas operadoras en 2002.',
-            },
-            {
-              date: '2009',
-              event: 'Ley 20.378 crea el subsidio nacional al transporte público. El art. 4° habilita los subsidios a zonas aisladas y transporte rural.',
-              source: { href: 'https://www.bcn.cl/leychile/navegar?idNorma=1005871', label: 'BCN Ley 20.378' },
-            },
-            {
-              date: '2013',
-              event: 'Implementación del Perímetro de Exclusión Coronel-Lota.',
-            },
-            {
-              date: 'Jul-2016',
-              event: 'Decreto MTT crea el Perímetro de Exclusión de Tomé (operativo desde 10-mar-2022).',
-            },
-            {
-              date: '27-abr-2017',
-              event: 'Resolución N° 1006 del MTT, marco normativo del perímetro de exclusión del Gran Concepción (base regulatoria que recién se ejecutó en 2024).',
-              source: { href: 'https://www.mtt.gob.cl/wp-content/uploads/2017/10/Resex_1005.2017.pdf', label: 'MTT' },
-            },
-            {
-              date: 'May-2023',
-              event: 'Contraloría visa la Resolución Afecta N° 29/2023 del MTT, que aprueba el PE Gran Concepción y faculta la negociación directa con operadores existentes.',
-            },
-            {
-              date: '22-nov-2023',
-              event: 'SEREMITT Biobío facilita el acuerdo entre el MTT y las cinco federaciones gremiales del Gran Concepción. Desactiva paros previstos para fin de año. Vocería política a cargo del SEREMI Héctor Silva.',
-              source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2023/11/22/perimetro-de-exclusion-gremios-del-gran-concepcion-llegan-a-acuerdo-con-ministerio-de-transportes.shtml', label: 'BioBioChile · 22-nov-2023' },
-            },
-            {
-              date: '1-ene-2024',
-              event: 'Entra en vigor el Perímetro de Exclusión del Gran Concepción 2024. SEREMI Héctor Silva anuncia GPS obligatorio, fiscalización online y ranking de cumplimiento.',
-              source: { href: 'https://dprbiobio.dpr.gob.cl/2024/01/03/transporte-publico-del-gran-concepcion-opera-bajo-nueva-normativa-de-perimetro-de-exclusion/', label: 'DPR Biobío · 3-ene-2024' },
-            },
-            {
-              date: '15-jul-2024',
-              event: 'Inicio operativo de la Ruta 201 Santa Juana bajo licitación DTPR ELC0007, primera licitación pública del Biobío en más de una década.',
-              source: { href: 'https://dprbiobio.dpr.gob.cl/2024/07/22/santa-juana-cuenta-con-nuevo-sistema-de-transporte-publico-licitado-y-renovada-flota-de-buses/', label: 'DPR Biobío · 22-jul-2024' },
-            },
-            {
-              date: '13-nov-2024',
-              event: 'Contraloría visa las bases de los Electrocorredores MOP (Rutas 150, 160 y Autopista Concepción-Talcahuano Tramo II). Coordinación SEREMITT-MOP.',
-            },
-            {
-              date: '9-dic-2024',
-              event: 'Primer ajuste polinómico bajo el perímetro: tarifa adulto sube de $550 a $560.',
-            },
-            {
-              date: '10-ene-2025',
-              event: 'Patricio Fierro Cifuentes asume como SEREMI de Transportes y Telecomunicaciones del Biobío, en reemplazo de Héctor Silva.',
-              source: { href: 'https://www.diarioconcepcion.cl/politica/2025/01/10/nombran-nuevo-seremi-de-transportes-y-telecomunicaciones-en-biobio.html', label: 'Diario Concepción · 10-ene-2025' },
-            },
-            {
-              date: '23-feb-2025',
-              event: 'Segundo ajuste polinómico bajo el régimen 2024: tarifa adulto $580, escolar $190, adulto mayor $290. Vocería del SEREMI Patricio Fierro.',
-              source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/02/14/anuncian-alza-en-las-tarifas-del-transporte-publico-en-el-gran-concepcion-y-tome.html', label: 'Diario Concepción · 14-feb-2025' },
-            },
-            {
-              date: '23-sep-2025',
-              event: 'La DTPR Biobío recibe 6 ofertas para operar el sistema de pago electrónico BusPay. Comisión Evaluadora puntúa según las bases.',
-              source: { href: 'https://www.diarioconcepcion.cl/ciudad/2025/09/23/gran-concepcion-avanza-hacia-el-pago-electronico-en-buses-mtt-recibe-seis-ofertas.html', label: 'Diario Concepción · 23-sep-2025' },
-            },
-            {
-              date: 'Oct-2025',
-              event: 'SEREMITT anuncia capa subsidiada Concepción ↔ Florida zona norte bajo Ley 20.378 (sin licitación integral del corredor todavía).',
-            },
-            {
-              date: '5-nov-2025',
-              event: 'Apertura de ofertas técnicas del Electrocorredor Ruta 160: oferente único Electro-Cointer (Grupo Azvi).',
-            },
-            {
-              date: '28-ene-2026',
-              event: 'MTT adjudica BusPay al Consorcio Buspay. ~$750 millones/año, 1.800-2.000 validadores, 11 comunas. Vocería MTT/SEREMITT regional; DTPR ejecuta.',
-              source: { href: 'https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2026/01/28/gobierno-adjudica-operacion-del-sistema-de-pago-electronico-en-micros-del-gran-concepcion.shtml', label: 'BioBioChile · 28-ene-2026' },
-            },
-            {
-              date: '27-mar-2026',
-              event: 'Henry Campos Coa (exalcalde de Talcahuano) asume como SEREMI de Transportes y Telecomunicaciones del Biobío.',
-              source: { href: 'https://www.diarioconcepcion.cl/politica/2026/03/27/biobio-suma-nuevas-autoridades-henry-campos-y-daniel-manchileo-asumen-como-seremis.html', label: 'Diario Concepción · 27-mar-2026' },
-            },
-          ]}
-        />
       </CollapsibleSection>
 
-      <Section title="Cómo contactar y consultar">
-        <p>
-          Canales formales para reclamos, consultas y solicitudes de
-          información:
-        </p>
-        <KeyValueList
-          items={[
-            ['OIRS MTT', 'Oficina de Información, Reclamos y Sugerencias del Ministerio. Atención presencial en la sede SEREMITT de Concepción y vía formulario en mtt.gob.cl.'],
-            ['Portal DPR Biobío', 'dprbiobio.dpr.gob.cl, comunicados regionales, anuncios y direcciones de contacto del brazo técnico.'],
-            ['Transparencia activa', 'transparencia.gob.cl filtrando "Ministerio de Transportes y Telecomunicaciones". Allí encuentras contratos, viáticos, dotación y normativa publicada.'],
-            ['Solicitudes Ley 20.285', 'Vía portaltransparencia.cl → "Solicitud de Acceso a la Información Pública". Plazo de respuesta: 20 días hábiles. Útil para pedir expedientes de licitación, padrón de operadores, ranking de cumplimiento.'],
-            ['Diario Oficial', 'diariooficial.interior.gob.cl, texto íntegro de decretos del MTT que crean perímetros, adjudican licitaciones o ajustan tarifas.'],
-            ['BCN Ley Chile', 'leychile.cl, texto consolidado de leyes citadas (18.059, 18.696, 20.378, 19.880, 20.285).'],
-            ['Subtrans', 'subtrans.gob.cl, comunicados centrales de la Subsecretaría matriz, incluyendo licitaciones grandes que afectan al Biobío.'],
-            ['Datos abiertos', 'dtpr.gob.cl, GTFS oficial de Gran Concepción y de Tomé; datos.gob.cl, otros datasets del MTT.'],
-          ]}
-        />
-        <PendingBanner>
-          <strong>Dirección física y teléfono de la sede SEREMITT
-          en Concepción pendientes de cotejo.</strong> Consultables
-          en la sección "Contacto" de transparencia.gob.cl o
-          llamando al call center central del MTT. No publicamos
-          datos sin cotejar.
-        </PendingBanner>
-      </Section>
-
       <Section title="Vínculos con otros artículos">
-        <p>
-          Este artículo es el marco institucional detrás de cada ficha
-          del wiki. Los enlaces siguientes son los puntos donde la
-          actuación de la autoridad se materializa:
-        </p>
-        <ul className="ml-5 list-disc space-y-1.5 text-[13px]">
-          <li>
-            <a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">
-              Perímetro de Exclusión del Gran Concepción 2024
-            </a>{' '}, el régimen mayor que la SEREMITT (vocería Silva en
-            2023-2024, Fierro en 2025, Cautivo desde fines de 2025)
-            anunció y la DTPR ejecuta. Tarifa $580, 36 unidades de
-            negocio, contrato hasta 31-dic-2028.
-          </li>
-          <li>
-            <a href="/wiki/buspay" className="underline underline-offset-2">
-              BusPay 2026
-            </a>{' '}, el sistema de pago electrónico que la DTPR licitó y
-            adjudicó al Consorcio Buspay el 28-ene-2026. Marcha
-            blanca Q3 2026.
-          </li>
-          <li>
-            <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">
-              Ruta 201 Santa Juana
-            </a>{' '}, la primera licitación pública moderna de la DTPR en el
-            Biobío en más de 10 años. ELC0007, Ley 20.378 art. 4°.
-          </li>
-          <li>
-            <a href="/wiki/concepcion-tome" className="underline underline-offset-2">
-              Concepción ↔ Tomé
-            </a>{' '}, el primer perímetro regional (jul-2016, operativo
-            mar-2022) bajo administración de la DTPR Biobío.
-          </li>
-          <li>
-            <a href="/wiki/concepcion-florida" className="underline underline-offset-2">
-              Concepción ↔ Florida
-            </a>{' '}, el caso donde la SEREMITT ha sumado capas subsidiadas
-            (zona norte oct-2025, Rahuil, Poñén-Roa, nocturno) sin
-            licitar todavía el reemplazo del corredor troncal.
-          </li>
-          <li>
-            <a href="/wiki/concepcion-yumbel" className="underline underline-offset-2">
-              Concepción ↔ Yumbel
-            </a>{' '}, corredor privado puro sin perímetro ni licitación
-            DTPR. La SEREMITT solo otorga autorizaciones
-            individuales a cada operador.
-          </li>
-          <li>
-            <a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">
-              Recorridos interurbanos del Gran Concepción
-            </a>{' '}, índice general de los servicios interurbanos, los que
-            vienen en el GTFS oficial (201, 401/411/421, 302/304) y los que
-            no (Florida, Yumbel).
-          </li>
-          <li>
-            <a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">
-              Electrocorredores MOP del Biobío
-            </a>{' '}, proyectos de infraestructura del MOP donde la
-            SEREMITT MTT coordina el componente de operación de
-            buses. SEREMI Patricio Fierro aclaró en nov-2025 que
-            la concesión no obliga a flota 100% eléctrica.
-          </li>
-          <li>
-            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
-              Biotrén y sus extensiones
-            </a>{' '}, la SEREMITT coordina con EFE la integración
-            intermodal y la discusión sobre las extensiones a Penco,
-            Tomé, Lota y Carriel Sur.
-          </li>
-          <li>
-            <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
-              GTFS Gran Concepción
-            </a>{' '}, el feed estático oficial que publica la DTPR en
-            dtpr.gob.cl y que usa el visor.
-          </li>
-          <li>
-            <a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">
-              Subsidio Nacional al Transporte Público (Ley 20.378)
-            </a>{' '}, el marco nacional de financiamiento (art. 2° subsidio
-            base, art. 4° servicios licitados) que la SEREMITT y la
-            DTPR usan para sostener tarifa social en el PE Gran
-            Concepción ($580) y para licitar servicios subsidiados
-            como la Ruta 201 Santa Juana.
-          </li>
-          <li>
-            <a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">
-              Sobre este wiki
-            </a>{' '}, el modelo editorial: por qué citamos a la SEREMITT y a
-            la DTPR como autoridades regionales y por qué marcamos
-            como pendiente lo que no podemos verificar sin
-            transparencia activa.
-          </li>
+        <ul className="ml-5 list-disc space-y-1 text-[13px]">
+          <li><a href="/wiki/perimetro-exclusion-gran-concepcion-2024" className="underline underline-offset-2">Perímetro de Exclusión del Gran Concepción 2024</a>: el régimen mayor de buses urbanos.</li>
+          <li><a href="/wiki/buspay" className="underline underline-offset-2">BusPay</a>: pago electrónico adjudicado en ene-2026.</li>
+          <li><a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ruta 201 Santa Juana</a>: licitación ELC0007, art. 4° Ley 20.378.</li>
+          <li><a href="/wiki/concepcion-tome" className="underline underline-offset-2">Concepción ↔ Tomé</a>: primer perímetro regional bajo la DTPR.</li>
+          <li><a href="/wiki/concepcion-florida" className="underline underline-offset-2">Concepción ↔ Florida</a>: capas subsidiadas sin licitar el troncal.</li>
+          <li><a href="/wiki/concepcion-yumbel" className="underline underline-offset-2">Concepción ↔ Yumbel</a>: corredor privado; solo autorizaciones individuales.</li>
+          <li><a href="/wiki/recorridos-interurbanos" className="underline underline-offset-2">Recorridos interurbanos</a>: índice de servicios, con y sin GTFS.</li>
+          <li><a href="/wiki/corredores-transporte-publico-mop-biobio" className="underline underline-offset-2">Electrocorredores MOP</a>: infraestructura del MOP; operación de buses coordinada por la SEREMITT.</li>
+          <li><a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">Biotrén y sus extensiones</a>: integración intermodal con EFE.</li>
+          <li><a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">GTFS Gran Concepción</a>: feed estático que publica la DTPR.</li>
+          <li><a href="/wiki/subsidio-ley-20378" className="underline underline-offset-2">Subsidio Ley 20.378</a>: el marco de financiamiento.</li>
+          <li><a href="/wiki/sobre-este-wiki" className="underline underline-offset-2">Sobre este wiki</a>: por qué marcamos lo que no verificamos.</li>
         </ul>
       </Section>
 
       <CollapsibleSection title="Datos pendientes y contribución">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Nombre y antecedentes del(la) director(a) regional DTPR Biobío vigente.</li>
-          <li>Organigrama interno de la SEREMITT y la DTPR Biobío.</li>
-          <li>Dotación exacta (número de funcionarios).</li>
-          <li>Dirección física actualizada de la SEREMITT en Concepción.</li>
-          <li>Presupuesto regional ejecutado 2024-2026 desagregado por programa.</li>
-          <li>Ranking de cumplimiento del PE Gran Concepción 2024 (¿se publica?).</li>
-          <li>Tramo exacto Fierro → Campos (¿hubo titular intermedio en Transportes?).</li>
-          <li>Número y texto de los decretos MTT del PE GC 2024 y PE Tomé 2016.</li>
+          <li>Nombre y antecedentes del director(a) regional DTPR Biobío.</li>
+          <li>Organigrama, dotación y dirección física de la SEREMITT y la DTPR Biobío.</li>
+          <li>Presupuesto regional ejecutado 2024-2026, por programa.</li>
+          <li>Ranking de cumplimiento del PE Gran Concepción 2024: ¿se publica?</li>
+          <li>Tramo exacto Fierro → Campos (titular intermedio en Transportes).</li>
+          <li>Decretos MTT del PE GC 2024 y PE Tomé 2016: número y texto.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          Vía de cierre: <strong>Ley 20.285</strong> +{' '}
-          <code className="font-mono">transparencia.gob.cl</code>.
+          Vía de cierre: <strong>Ley 20.285</strong> y transparencia.gob.cl.
         </p>
         <p className="text-[13px]">
           Aportes: PR en{' '}
