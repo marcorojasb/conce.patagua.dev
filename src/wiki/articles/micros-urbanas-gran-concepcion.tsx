@@ -184,11 +184,13 @@ export default function MicrosUrbanasGranConcepcion() {
           <li>
             <strong>Líneas y sentido.</strong> Se elige una línea (por ejemplo{' '}
             <MapLink route="30QE">30QE</MapLink>) y un sentido; el mapa dibuja el trazado
-            y sus paraderos. La ficha muestra el horario programado y la frecuencia.
+            y sus paraderos. La ficha muestra la frecuencia y la ventana del programa
+            oficial (no es un itinerario).
           </li>
           <li>
-            <strong>Modo Horario.</strong> Micros estimadas según el horario
-            programado, nunca GPS; la interfaz las rotula como estimación.
+            <strong>Modo Horario.</strong> Micros estimadas según el programa
+            oficial, nunca GPS; la interfaz las rotula como estimación. Donde se
+            conoce la flota, no se dibujan más micros que buses tiene la línea.
           </li>
           <li>
             <strong>Modo GPS en vivo.</strong> Solo posiciones GPS reales. El mapa

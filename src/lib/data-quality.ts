@@ -4,8 +4,12 @@ import { GTFS_BUS_ROUTES } from '../data/gtfs-bus-routes.generated.ts';
 import { GTFS_STOPS } from '../data/gtfs-stops.generated.ts';
 import { ROUTE_DIRECTION_SCHEDULES } from '../data/gtfs-schedule.generated.ts';
 import { STATIC_SERVICE_PATTERNS } from '../data/static-service-patterns.ts';
+import { KNOWN_FLEETS, URBAN_PERIMETER_FLEET, knownFleetOfRoute } from '../data/fleets.ts';
+import { OPERATOR_TIMETABLES } from '../data/operator-timetables.ts';
 import { densifyPath, distanceToPathMeters, maxSegmentMeters } from './geo.ts';
-import type { LatLngTuple, Stop } from '../types/transport.ts';
+import { compareRouteCodes } from './route-labels.ts';
+import { fixedIntervalProgram, peakInTransit } from './schedule-program.ts';
+import type { LatLngTuple, ScheduledTrip, Stop } from '../types/transport.ts';
 
 export type DataQualitySeverity = 'error' | 'warning' | 'info';
 export type DataQualityCategory = 'routes' | 'stops' | 'schedules' | 'geometry' | 'simulation';
@@ -19,6 +23,20 @@ export interface DataQualityIssue {
   stopId?: string;
 }
 
+export interface FixedIntervalRouteRow {
+  routeId: string;
+  /** route.ref */
+  code: string;
+  /** [menor, mayor] intervalo de programa entre sus sentidos; null si ese día ninguno es programa. */
+  headways: Record<'weekday' | 'saturday' | 'sunday', [number, number] | null>;
+  /** Salidas del GTFS en día hábil, ambos sentidos. */
+  weekdayTrips: number;
+  /** peakInTransit de esas salidas. */
+  weekdayPeak: number;
+  /** groupPeak: pico en día hábil de todos los recorridos de la flota. */
+  fleet: { id: string; buses: number; groupPeak: number } | null;
+}
+
 export interface DataQualityReport {
   issues: DataQualityIssue[];
   summary: Record<DataQualitySeverity, number>;
@@ -26,6 +44,19 @@ export interface DataQualityReport {
   stopCount: number;
   scheduledRouteCount: number;
   simulatedRouteCount: number;
+  /** Recorridos con algún día de programa a intervalo fijo, en orden de código. */
+  programs: FixedIntervalRouteRow[];
+}
+
+const PROGRAM_DAYS = { weekday: 0, saturday: 5, sunday: 6 } as const;
+
+function clock(minutes: number): string {
+  const m = ((minutes % 1440) + 1440) % 1440;
+  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function issue(
@@ -226,6 +257,8 @@ export function buildDataQualityReport(): DataQualityReport {
     `${simulatedRouteCount} rutas tienen horarios GTFS o patrones estáticos para servicios en curso.`,
   );
 
+  const programs = checkFixedIntervalPrograms(issues, gtfsRouteIds, directionScheduleIds);
+
   return {
     issues,
     summary: summarizeIssues(issues),
@@ -233,5 +266,152 @@ export function buildDataQualityReport(): DataQualityReport {
     stopCount: stopIds.size,
     scheduledRouteCount: scheduleRouteIds.size,
     simulatedRouteCount,
+    programs,
   };
+}
+
+/**
+ * El GTFS es un programa a intervalo fijo, no un itinerario (ver
+ * schedule-program.ts): cuántos sentidos lo son, cuántas micros pondría en
+ * ruta a la vez contra la flota real y qué datos curados lo reemplazan. Todo
+ * sobre el GTFS crudo: diagnostica el feed, no lo que muestra el visor.
+ */
+function checkFixedIntervalPrograms(
+  issues: DataQualityIssue[],
+  gtfsRouteIds: ReadonlySet<string>,
+  directionScheduleIds: ReadonlySet<string>,
+): FixedIntervalRouteRow[] {
+  const keysByRoute = new Map<string, string[]>();
+  for (const key of directionScheduleIds) {
+    const routeId = key.slice(0, key.lastIndexOf('#'));
+    keysByRoute.set(routeId, [...(keysByRoute.get(routeId) ?? []), key]);
+  }
+  const tripsOf = (routeIds: readonly string[], day: number): ScheduledTrip[] =>
+    routeIds.flatMap((routeId) => (keysByRoute.get(routeId) ?? []).flatMap((key) => ROUTE_DIRECTION_SCHEDULES[key][day]));
+
+  let weekdayDirections = 0;
+  let programDirections = 0;
+  let weekdayTrips = 0;
+  let programTrips = 0;
+  for (const key of directionScheduleIds) {
+    const trips = ROUTE_DIRECTION_SCHEDULES[key][PROGRAM_DAYS.weekday];
+    if (trips.length === 0) continue;
+    weekdayDirections += 1;
+    weekdayTrips += trips.length;
+    if (fixedIntervalProgram(trips)) {
+      programDirections += 1;
+      programTrips += trips.length;
+    }
+  }
+  if (programDirections > 0) {
+    const pct = ((programTrips / weekdayTrips) * 100).toLocaleString('es-CL', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    });
+    issue(
+      issues,
+      'warning',
+      'schedules',
+      'Programa a intervalo fijo',
+      `${programDirections} de ${weekdayDirections} sentidos de día hábil salen a intervalo fijo de la primera a la última salida (${pct} % de los viajes). El GTFS es un programa, no un itinerario: las fichas muestran su frecuencia y su ventana, no cuentan salidas.`,
+    );
+  }
+
+  const urbanRouteIds = GTFS_BUS_ROUTES.filter((route) => route.network === URBAN_PERIMETER_FLEET.network).map(
+    (route) => route.id,
+  );
+  const urban = peakInTransit(tripsOf(urbanRouteIds, PROGRAM_DAYS.weekday));
+  const urbanOver = urban.peak > URBAN_PERIMETER_FLEET.buses;
+  issue(
+    issues,
+    urbanOver ? 'warning' : 'info',
+    'simulation',
+    'Flota implícita de la red urbana',
+    `En día hábil el programa pone ${urban.peak.toLocaleString('es-CL')} micros urbanas en ruta a la vez (${clock(urban.at ?? 0)}); la flota inscrita del perímetro es ${URBAN_PERIMETER_FLEET.buses.toLocaleString('es-CL')} (${URBAN_PERIMETER_FLEET.sourceLabel}).`,
+  );
+
+  const groupPeaks = new Map<string, number>();
+  for (const fleet of KNOWN_FLEETS) {
+    for (const routeId of fleet.routeIds) {
+      if (!gtfsRouteIds.has(routeId)) {
+        issue(
+          issues,
+          'error',
+          'simulation',
+          'Flota curada con recorrido inexistente',
+          `${capitalize(fleet.label)}: ${routeId} no existe en GTFS_BUS_ROUTES (src/data/fleets.ts).`,
+        );
+      }
+    }
+    const [weekday, saturday, sunday] = [PROGRAM_DAYS.weekday, PROGRAM_DAYS.saturday, PROGRAM_DAYS.sunday].map(
+      (day) => peakInTransit(tripsOf(fleet.routeIds, day)).peak,
+    );
+    groupPeaks.set(fleet.id, weekday);
+    const over = weekday > fleet.buses;
+    issue(
+      issues,
+      over ? 'warning' : 'info',
+      'simulation',
+      over ? 'Flota implícita sobre la real' : 'Flota implícita dentro de la real',
+      `${capitalize(fleet.label)}: el GTFS pone ${weekday} micros en ruta a la vez en día hábil (sábado ${saturday}, domingo ${sunday}); flota real ${fleet.buses} (${fleet.sourceLabel}).` +
+        (over ? ' En el mapa se ralean sus salidas de programa hasta caber.' : ''),
+      { routeId: fleet.routeIds[0] },
+    );
+  }
+
+  const timetablesByRoute = new Map<string, typeof OPERATOR_TIMETABLES>();
+  for (const timetable of OPERATOR_TIMETABLES) {
+    if (!directionScheduleIds.has(timetable.scheduleKey)) {
+      issue(
+        issues,
+        'error',
+        'schedules',
+        'Itinerario del operador sin sentido GTFS',
+        `${timetable.label}: ${timetable.scheduleKey} no existe en ROUTE_DIRECTION_SCHEDULES (src/data/operator-timetables.ts).`,
+      );
+      continue;
+    }
+    const routeId = timetable.scheduleKey.slice(0, timetable.scheduleKey.lastIndexOf('#'));
+    timetablesByRoute.set(routeId, [...(timetablesByRoute.get(routeId) ?? []), timetable]);
+  }
+  for (const [routeId, timetables] of timetablesByRoute) {
+    const code = GTFS_BUS_ROUTES.find((route) => route.id === routeId)?.ref ?? routeId;
+    const operatorTrips = timetables.reduce((sum, t) => sum + t.trips.length, 0);
+    const gtfsTrips = timetables.reduce((sum, t) => sum + ROUTE_DIRECTION_SCHEDULES[t.scheduleKey][PROGRAM_DAYS.weekday].length, 0);
+    // "kupos.cl, 25-11-2026": sitio de la lista y fecha en que se leyó.
+    const [{ sourceUrl, sourceLabel }] = timetables;
+    const readOn = [new URL(sourceUrl).hostname.replace(/^www\./, ''), sourceLabel.match(/\d{2}-\d{2}-\d{4}/)?.[0]]
+      .filter(Boolean)
+      .join(', ');
+    issue(
+      issues,
+      'info',
+      'schedules',
+      'Itinerario del operador',
+      `${code}: de lunes a viernes el visor usa la lista de venta del operador (${operatorTrips} salidas, ${readOn}) en vez de las ${gtfsTrips} del programa GTFS.`,
+      { routeId },
+    );
+  }
+
+  const rows: FixedIntervalRouteRow[] = [];
+  for (const route of GTFS_BUS_ROUTES) {
+    const keys = keysByRoute.get(route.id) ?? [];
+    const headways = {} as FixedIntervalRouteRow['headways'];
+    for (const [name, day] of Object.entries(PROGRAM_DAYS) as [keyof typeof PROGRAM_DAYS, number][]) {
+      const intervals = keys.flatMap((key) => fixedIntervalProgram(ROUTE_DIRECTION_SCHEDULES[key][day])?.headwayMin ?? []);
+      headways[name] = intervals.length > 0 ? [Math.min(...intervals), Math.max(...intervals)] : null;
+    }
+    if (!headways.weekday && !headways.saturday && !headways.sunday) continue;
+    const weekdayRouteTrips = tripsOf([route.id], PROGRAM_DAYS.weekday);
+    const fleet = knownFleetOfRoute(route.id);
+    rows.push({
+      routeId: route.id,
+      code: route.ref,
+      headways,
+      weekdayTrips: weekdayRouteTrips.length,
+      weekdayPeak: peakInTransit(weekdayRouteTrips).peak,
+      fleet: fleet ? { id: fleet.id, buses: fleet.buses, groupPeak: groupPeaks.get(fleet.id) ?? 0 } : null,
+    });
+  }
+  return rows.sort((a, b) => compareRouteCodes(a.code, b.code));
 }

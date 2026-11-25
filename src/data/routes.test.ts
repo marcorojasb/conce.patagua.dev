@@ -73,6 +73,17 @@ describe('operating hours from the official schedules', () => {
     expect(isRouteOperatingAt(route11C, at('28', '18:00'))).toBe(false);
   });
 
+  it('follows the operator list for the 201 on weekdays, not the GTFS program', () => {
+    const route201 = routes.ROUTES_BY_ID.get('gtfs-route-949')!;
+    // Lista de kupos: 06:15 a 23:05 + 1 h 57 min = 01:02. El programa iba de 05:38 a 02:33.
+    expect(isRouteOperatingAt(route201, at('25', '06:00'))).toBe(false);
+    expect(isRouteOperatingAt(route201, at('25', '06:15'))).toBe(true);
+    expect(isRouteOperatingAt(route201, at('26', '01:00'))).toBe(true);
+    expect(isRouteOperatingAt(route201, at('26', '02:00'))).toBe(false);
+    // Sábado sin lista: sigue el programa (desde las 05:53).
+    expect(isRouteOperatingAt(route201, at('28', '06:00'))).toBe(true);
+  });
+
   it('follows the EFE itineraries for Biotrén, including the L1 midday gap', () => {
     const l1 = routes.ROUTES_BY_ID.get('bt-l1')!;
     expect(isRouteOperatingAt(l1, at('23', '08:30'))).toBe(true);

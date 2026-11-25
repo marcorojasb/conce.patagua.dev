@@ -10,6 +10,11 @@
 //   - Conteos (102 recorridos, 188 sentidos, 2.239 paraderos, 57.019 viajes,
 //     3 calendarios, calendar_dates vacío, 1 agencia): leídos del zip con
 //     scripts/sync-gtfs-official.ts.
+//   - Programa a intervalo fijo (25-nov-2026): trip_id «POT-…» en los 57.019
+//     viajes, block_id vacío, sin frequencies.txt; 182 de 188 sentidos de día
+//     hábil con un solo intervalo (regla de src/lib/schedule-program.ts). Se
+//     contrastó con la flota de la ficha DTPR Biobío 2026, la ficha UN65
+//     (sep-2026), la Seremi (feb-2026) y la lista del operador de la 201.
 //   - Feed anterior del visor: Subsecretaría de Transportes, 1-may-2019
 //     (mirror AmeriGEOSS de datos.gob.cl).
 //   - Contraste con la fuente de llegadas en vivo (no oficial): respuestas del
@@ -62,7 +67,7 @@ export default function GtfsGranConcepcion() {
           { label: 'Vigencia declarada', value: '1-ene-2024 a 31-dic-2025 (vencida)' },
           { label: 'Recorridos', value: '102 · 188 sentidos' },
           { label: 'Paraderos', value: '2.239' },
-          { label: 'Viajes', value: '57.019' },
+          { label: 'Viajes', value: '57.019 (programa)' },
         ]}
       />
 
@@ -85,7 +90,9 @@ export default function GtfsGranConcepcion() {
             Desde el 24-nov-2026 reemplazó al feed 2019 de la Subsecretaría (169 servicios, uno por letra).
           </>,
           <>
-            Es un horario <strong>programado</strong>, sin posiciones en vivo. Las llegadas en vivo vienen de otra fuente, no oficial.
+            Es un <strong>programa a intervalo fijo</strong>, no un itinerario: reparte las salidas cada 5 min (en la
+            mayoría de los sentidos) de la primera a la última. El visor muestra su frecuencia y su ventana, no cuenta
+            salidas. Las llegadas en vivo vienen de otra fuente, no oficial.
           </>,
         ]}
       />
@@ -187,7 +194,7 @@ export default function GtfsGranConcepcion() {
           </tr>
           <tr>
             <td className="px-3 py-2 font-mono text-[12px]">trips.txt</td>
-            <td className="px-3 py-2 text-[12px]">57.019 viajes con <code className="font-mono">direction_id</code>, <code className="font-mono">shape_id</code> y letrero. 29.240 en día hábil, 14.405 sábado, 13.374 domingo.</td>
+            <td className="px-3 py-2 text-[12px]">57.019 viajes con <code className="font-mono">direction_id</code>, <code className="font-mono">shape_id</code> y letrero. 29.240 en día hábil, 14.405 sábado, 13.374 domingo. Son los viajes de un programa a intervalo fijo (ver Limitaciones), no salidas reales.</td>
           </tr>
           <tr>
             <td className="px-3 py-2 font-mono text-[12px]">stops.txt · shapes.txt</td>
@@ -220,7 +227,7 @@ export default function GtfsGranConcepcion() {
         </p>
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>Arma los <strong>dos sentidos</strong> de cada recorrido desde su secuencia de paraderos, su shape y su letrero.</li>
-          <li>Calcula horarios por recorrido, sentido y día, y frecuencias por paradero.</li>
+          <li>Calcula horarios por recorrido, sentido y día, y frecuencias por paradero. Son el programa tal cual: el visor detecta al mostrarlos los sentidos a intervalo fijo.</li>
           <li>Un workflow corre cada día a las 06:30 UTC y abre un pull request si el feed cambió. Si dtpr.gob.cl falla, los datos anteriores quedan.</li>
         </ul>
         <CollapsibleSection title="Pipeline de sincronización">
@@ -239,12 +246,15 @@ export default function GtfsGranConcepcion() {
               <code className="font-mono">scripts/lib/simplify.ts</code>).
             </li>
             <li>
-              <strong>Horarios.</strong> Salidas y duración por recorrido, sentido y día; tramos con servicio por día. Por
-              paradero: pasadas por hora, primera y última pasada, intervalo mediano y número de pasadas.
+              <strong>Horarios.</strong> Salidas y duración por recorrido, sentido y día, tal como vienen en el programa;
+              tramos con servicio por día. Por paradero: pasadas por hora, primera y última pasada, intervalo mediano y
+              número de pasadas. El visor detecta en tiempo de ejecución los sentidos a intervalo fijo (
+              <code className="font-mono">src/lib/schedule-program.ts</code>) y en ellos muestra frecuencia y ventana; donde
+              conoce la flota, ralea las micros estimadas.
             </li>
             <li>
               <strong>Escritura.</strong> Paraderos (carga inmediata), recorridos (diferida) y horarios (al abrir una ficha
-              o mostrar micros según horario). Después recalcula la grilla de cobertura.
+              o mostrar micros según el programa). Después recalcula la grilla de cobertura.
             </li>
           </ol>
           <p className="text-[12px] text-muted-foreground">
@@ -276,9 +286,44 @@ export default function GtfsGranConcepcion() {
             se muestra con el horario de su día de la semana.
           </li>
           <li>
-            <strong>Frecuencias que parecen nominales.</strong> La 201 figura cada 5 min de 05:38 a 23:53 en día hábil, con viajes
-            de ~2 h 45 min, más de lo que permite una flota de 23 buses. Hipótesis editorial: parte del programa declara
-            frecuencias máximas.
+            <strong>Programa a intervalo fijo, no itinerario.</strong> Las salidas del feed salen de un programa de operación
+            repartido a intervalo parejo, no de una tabla horaria. La evidencia:
+            <ul className="ml-5 mt-1 list-[circle] space-y-1 text-[13px]">
+              <li>
+                Los 57.019 viajes tienen <code className="font-mono">trip_id</code> «POT-…», sin{' '}
+                <code className="font-mono">block_id</code> ni <code className="font-mono">frequencies.txt</code> (
+                <SourceLink href={DTPR_GTFS_ZIP}>granconcepcion.zip</SourceLink>).
+              </li>
+              <li>
+                En día hábil, 182 de 188 sentidos salen a un solo intervalo de la primera a la última salida; 141 de
+                ellos, cada 5 min (cálculo del visor sobre el zip).
+              </li>
+              <li>
+                En día hábil el programa pone más de 3.000 micros urbanas en ruta a la vez; el perímetro tiene 1.894
+                inscritas (<SourceLink href="https://dtpr.gob.cl/wp-content/uploads/2026/06/Ficha-Biobio-2026-vdef.pdf">DTPR · Ficha Biobío 2026</SourceLink>).
+              </li>
+              <li>
+                La línea 65 tiene 1.062 salidas de día hábil en el GTFS; su programa de operación normal, 342 expediciones (
+                <SourceLink href="https://dtpr.gob.cl/wp-content/uploads/2026/09/UN65-FICHA-MODIFICACION-2026-09.pdf">DTPR · ficha UN65, sep-2026</SourceLink>).
+              </li>
+              <li>
+                Entre las 07:00 y las 09:00 de un día hábil el GTFS trae 3.797 salidas en el Gran Concepción, Santa Juana y
+                Tomé (3.869 con la 302 y la 304 a Lota); para ese mismo alcance la Seremi anunció 1.771 (
+                <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2026/02/25/informan-aumento-del-11-de-la-oferta-de-transporte-publico-a-partir-del-2-de-marzo.html">Diario Concepción, 25-feb-2026</SourceLink>).
+              </li>
+              <li>
+                La 201 trae 420 salidas en día hábil (y 84 la 201-AU); el operador vende 113 (
+                <SourceLink href="https://kupos.cl/en/bus/tickets/santa-juana/concepcion">kupos.cl</SourceLink>, 25-nov-2026). Ver{' '}
+                <a href="/wiki/ruta-201-santa-juana" className="underline underline-offset-2">Ruta 201</a>.
+              </li>
+            </ul>
+            <p className="mt-1">
+              Qué hace el visor: en los días en que un sentido es programa (12 salidas o más y 80 % de los intervalos
+              iguales, ±1 min), la ficha muestra su frecuencia y su ventana, sin contar salidas ni dibujar salidas por hora. La
+              201 usa de lunes a viernes la lista del operador. En el mapa, las líneas con flota oficial conocida no
+              dibujan más micros que buses. Detalle en{' '}
+              <SourceLink href={`${REPO}/src/lib/schedule-program.ts`}>schedule-program.ts</SourceLink>.
+            </p>
           </li>
           <li>
             <strong>Paraderos lejos de su trazado.</strong> En sentido 1, los paraderos 39514 (63FH, 63LB) y 40344 (70F)
@@ -315,7 +360,8 @@ export default function GtfsGranConcepcion() {
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
-          Las micros del modo <strong>Horario</strong> son una estimación según el horario programado, nunca GPS. El visor la rotula así.
+          Las micros del modo <strong>Horario</strong> son una estimación según el programa, nunca GPS. El visor la rotula así
+          y avisa que en la calle puede haber otra cantidad de micros, casi siempre menos.
         </p>
       </Section>
 
@@ -416,7 +462,7 @@ export default function GtfsGranConcepcion() {
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>Licencia de datos del feed publicado en dtpr.gob.cl.</li>
           <li>Cadencia de republicación y si habrá una versión con calendario 2026.</li>
-          <li>Si el programa de algunos servicios (la 201, entre otros) declara frecuencias máximas en vez de salidas reales.</li>
+          <li>Programas de operación vigentes por servicio (salidas por hora) para reemplazar el programa a intervalo fijo.</li>
           <li>Si existe un GTFS-Realtime oficial para Gran Concepción.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">

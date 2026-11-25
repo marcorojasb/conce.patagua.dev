@@ -1,8 +1,10 @@
 // Ruta 201 / 201 AU · Concepción ↔ Santa Juana
 //
 // Servicio inaugurado el 15-jul-2024 bajo la licitación DTPR ELC0007,
-// primera del Biobío en más de 10 años. Trazado y horario programado del
-// visor: GTFS oficial DTPR (versión 20250228), cotejado el 24-nov-2026.
+// primera del Biobío en más de 10 años. Trazado del visor: GTFS oficial DTPR
+// (versión 20250228), cotejado el 24-nov-2026. Salidas cotejadas el
+// 25-nov-2026 con la lista de venta del operador en kupos.cl: el GTFS trae un
+// programa a intervalo fijo (420 salidas en día hábil), no un itinerario.
 // Hechos vigentes cotejados el 25-nov-2026 (ficha DTPR Biobío 2026, jun-2026,
 // y prensa sobre BusPay).
 
@@ -30,8 +32,10 @@ export default function Ruta201SantaJuana() {
       <VerifiedBanner>
         <strong>Verificado con fuentes primarias.</strong> Licitación DTPR
         ELC0007, decreto MTT N°93/2023, ficha DTPR Biobío 2026 y prensa
-        regional. <strong>Pendientes</strong>: tabla horaria real, duración
-        del contrato y tarifa vigente en 2026 (ver "Datos pendientes").
+        regional; salidas de lunes a viernes según la lista de venta del
+        operador (kupos.cl, 25-nov-2026). <strong>Pendientes</strong>: salidas
+        de sábado, domingo y festivos, duración del contrato y tarifa vigente
+        en 2026 (ver "Datos pendientes").
       </VerifiedBanner>
 
       <FactStrip
@@ -41,6 +45,7 @@ export default function Ruta201SantaJuana() {
           { label: 'Operador', value: 'Transportes Santa Juana SpA' },
           { label: 'Tarifa adulto', value: '$1.000 (jul-2024)' },
           { label: 'Flota', value: '23 buses (6 AU)' },
+          { label: 'Salidas lun–vie', value: '113 (operador)' },
           { label: 'Desde', value: '15-jul-2024' },
           { label: 'Mapa', value: <MapLink route="201">201</MapLink> },
         ]}
@@ -59,8 +64,9 @@ export default function Ruta201SantaJuana() {
             <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
               GTFS oficial
             </a>
-            : el visor dibuja trazado, paraderos y horario programado de la 201
-            y la 201 AU.
+            : el visor dibuja trazado y paraderos de la 201 y la 201 AU. De
+            lunes a viernes usa las 113 salidas que vende el operador, porque
+            el GTFS trae un programa a intervalo fijo (420), no un itinerario.
           </>,
           <>
             Tarifa adulto $1.000 desde el inicio; adultos mayores, personas con
@@ -99,37 +105,49 @@ export default function Ruta201SantaJuana() {
         ]}
       />
 
-      <Section title="En el visor (GTFS oficial)">
+      <Section title="En el visor">
         <p>
           La 201 y la 201 AU vienen en el GTFS oficial de la DTPR (programa
           del 28-feb-2025; su calendario venció el 31-dic-2025, pero es la
           última publicación). El visor las rotula «Interurbano Santa Juana» y
-          las muestra con trazado y paraderos por sentido y horario programado
-          por día. El modo <strong>Micros en el mapa · Horario</strong> estima
-          dónde debería ir cada bus según ese horario: no es GPS.
+          toma del GTFS el trazado y los paraderos por sentido. Las salidas no:
+          el GTFS trae un programa a intervalo fijo, no un itinerario. De lunes
+          a viernes la ficha de la 201 usa la lista que vende el operador. El
+          modo <strong>Micros en el mapa · Horario</strong> estima dónde
+          debería ir cada bus según esas salidas, sin pasar de los 23 buses de
+          la flota: no es GPS.
         </p>
         <KeyValueList
           items={[
-            ['201, lunes a viernes', '220 salidas hacia Concepción (05:38 a 23:53) y 200 hacia Santa Juana (06:54 a 23:29); una cada ~5 min; ~2 h 46 min de viaje programado.'],
-            ['201, fin de semana', 'Sábado 92 salidas por sentido; domingo 82 hacia Concepción y 88 hacia Santa Juana; una cada ~10 min.'],
-            ['201-AU', 'Lunes a viernes 55 salidas hacia Concepción y 29 hacia Santa Juana; sábado 7 y 6; domingo 1 y 2.'],
-            ['Festivos', 'El GTFS no los declara: un feriado se muestra con el horario normal de ese día.'],
+            ['201, lunes a viernes', '53 salidas desde Santa Juana (06:30 a 22:01) y 60 desde Concepción (06:15 a 23:05): de día, casi siempre cada 10 a 20 min y hasta 6 por hora en punta; de noche, huecos de 25 a 60 min. Viaje declarado de 1 h 54 min a 1 h 57 min. Es la lista de kupos.cl del miércoles 25-nov-2026: se asume igual de lunes a viernes y no separa la 201 AU.'],
+            ['201, fin de semana', 'Sin lista del operador: la ficha muestra el programa del GTFS como frecuencia (cada 10 min), sin contar salidas. La prensa habla de la mitad de las salidas de día hábil.'],
+            ['GTFS (programa)', '220 + 200 salidas de la 201 y 55 + 29 de la 201 AU en día hábil, a intervalo fijo (cada 5, 15 y 30 min), de ~2 h 46 min cada una. Pondrían 86 buses en ruta a la vez, contra 23.'],
+            ['201-AU en el visor', 'Sin datos propios: queda con el programa del GTFS, como frecuencia, y en el mapa se ralea para no pasar de la flota.'],
+            ['Festivos', 'Ni el GTFS ni la lista del operador los declaran: un feriado se muestra como un día normal.'],
           ]}
         />
         <p className="text-[12px] text-muted-foreground">
-          Una salida cada 5 min con viajes de casi tres horas exigiría muchos
-          más buses que los 23 del contrato. Hipótesis editorial: el programa
-          declara frecuencias máximas, no salidas reales (ver{' '}
+          Con 23 buses y viajes de casi 2 h, la lista del operador pone hasta
+          20 buses en ruta a la vez: cabe en la flota. Calza con la prensa:
+          «hasta 60 frecuencias diarias en ambas direcciones» entre lunes y
+          viernes al partir (BioBioChile, jul-2024) y 63 salidas desde Santa
+          Juana en jul-2024 contra 46 en ene-2025 (Sabes.cl). Detalle del
+          programa en{' '}
           <a href="/wiki/gtfs-gran-concepcion" className="underline underline-offset-2">
             GTFS Gran Concepción · Limitaciones
           </a>
-          ).
+          .
         </p>
         <p className="text-[12px]">
           <MapLink route="201">Ver la 201 en el mapa →</MapLink>
         </p>
         <Sources>
+          <SourceLink href="https://kupos.cl/en/bus/tickets/santa-juana/concepcion">kupos.cl · Santa Juana → Concepción (25-nov-2026)</SourceLink>
+          <SourceLink href="https://kupos.cl/en/bus/tickets/concepcion/santa-juana">kupos.cl · Concepción → Santa Juana (25-nov-2026)</SourceLink>
           <SourceLink href="https://dtpr.gob.cl/pe/gran-concepcion/gtfs-2/">DTPR · GTFS Gran Concepción (versión 20250228)</SourceLink>
+          <SourceLink href="https://dtpr.gob.cl/wp-content/uploads/2026/06/Ficha-Biobio-2026-vdef.pdf">DTPR · Ficha Biobío 2026 (jun-2026), 23 buses</SourceLink>
+          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2024/07/15/importante-hito-en-santa-juana-inauguran-primer-servicio-de-transporte-subsidiado-en-la-comuna.shtml">BioBioChile 15-jul-2024</SourceLink>
+          <SourceLink href="https://sabes.cl/2025/01/16/santa-juana-acusa-disminucion-frecuencias-transporte-publico-comuna/">Sabes.cl 16-ene-2025</SourceLink>
         </Sources>
       </Section>
 
@@ -164,17 +182,24 @@ export default function Ruta201SantaJuana() {
       <Section title="Horario y frecuencia">
         <KeyValueList
           items={[
-            ['Santa Juana → Concepción', 'Primera salida 05:30, última 23:45.'],
-            ['Concepción → Santa Juana', 'Primera salida 06:45, última 23:20.'],
-            ['Frecuencia máxima', 'Hasta 10 buses por hora en punta (ministro Juan Carlos Muñoz, 2024).'],
-            ['Salidas diarias', 'Prensa: sin cifra exacta (más de 80). GTFS: 420 de la 201 y 84 de la 201 AU de lunes a viernes.'],
-            ['Fin de semana y festivos', 'Hay tabla diferenciada para sábado y domingo en el GTFS; los festivos no están publicados.'],
+            ['Santa Juana → Concepción', 'Jul-2024 (MTT): primera 05:30, última 23:45. Lista del operador, nov-2026: 06:30 a 22:01, aunque la página de la empresa en kupos.cl dice que desde Santa Juana la primera sale a las 05:30.'],
+            ['Concepción → Santa Juana', 'Jul-2024 (MTT): primera 06:45, última 23:20. Lista del operador, nov-2026: 06:15 a 23:05.'],
+            ['Frecuencia máxima', '«La frecuencia máxima va a ser de 10 buses a la hora» (ministro Juan Carlos Muñoz, firma del contrato, 31-ene-2024). En la lista de nov-2026, hasta 6 por hora y sentido.'],
+            ['Salidas diarias', 'Operador (kupos.cl, 25-nov-2026): 53 desde Santa Juana y 60 desde Concepción, de lunes a viernes. Prensa: «hasta 60 frecuencias diarias en ambas direcciones» al partir (jul-2024); desde Santa Juana, 63 en jul-2024 y 46 en ene-2025. Las 420 + 84 del GTFS son un programa a intervalo fijo, no salidas reales.'],
+            ['Fin de semana y festivos', 'Sin tabla legible: la prensa habla de la mitad de las salidas de día hábil, y el GTFS solo trae un programa cada 10 min. Los festivos no están publicados.'],
+            ['Tiempo de viaje', '1 h 54 min a 1 h 57 min según el operador (la de 07:01 desde Santa Juana, 2 h 23 min); ~2 h 46 min en el GTFS.'],
             ['Tiempo real', 'App Red Regional de Movilidad (buscar "201").'],
           ]}
         />
         <Sources>
           <SourceLink href="https://sabes.cl/2024/07/16/nuevo-transporte-publico-concepcion-santa-juana-esta-operativo-revisa-horarios-y-valores/">Sabes.cl, Comunicado MTT con ventana operativa</SourceLink>
           <SourceLink href="https://www.gob.cl/noticias/nuevo-servicio-transporte-publico-santa-juana-concepcion-buses-caracteristicas-tarifas-rebajadas/">Gob.cl, Frecuencia y app Red Regional</SourceLink>
+          <SourceLink href="https://dtpr.gob.cl/ministro-juan-carlos-munoz-y-empresa-de-buses-firman-contrato-para-nuevo-servicio-santa-juana-concepcion/">DTPR 31-ene-2024, Frecuencia máxima</SourceLink>
+          <SourceLink href="https://kupos.cl/en/bus/tickets/santa-juana/concepcion">kupos.cl · Santa Juana → Concepción</SourceLink>
+          <SourceLink href="https://kupos.cl/en/bus/tickets/concepcion/santa-juana">kupos.cl · Concepción → Santa Juana</SourceLink>
+          <SourceLink href="https://kupos.cl/es/pasajes/bus/transportes-santa-juana">kupos.cl · Transportes Santa Juana (página de la empresa, primera salida 05:30)</SourceLink>
+          <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2024/07/15/importante-hito-en-santa-juana-inauguran-primer-servicio-de-transporte-subsidiado-en-la-comuna.shtml">BioBioChile 15-jul-2024, Salidas diarias</SourceLink>
+          <SourceLink href="https://sabes.cl/2025/01/16/santa-juana-acusa-disminucion-frecuencias-transporte-publico-comuna/">Sabes.cl 16-ene-2025, Baja de salidas</SourceLink>
         </Sources>
       </Section>
 
@@ -287,6 +312,7 @@ export default function Ruta201SantaJuana() {
         <KeyValueList
           items={[
             ['Buses', '23 nuevos Agrale MT9000 (Euro V), representados por Andes Motor: 17 estándar y 6 con estándar RED (piso bajo, rampa).'],
+            ['2026', 'La DTPR sigue declarando 23 buses, 6 de alto estándar (ficha Biobío 2026, jun-2026).'],
             ['Distinción', 'Primeros buses RED entregados en el Biobío.'],
             ['Equipamiento', 'GPS, cámaras, contadores de pasajeros, letrero LED, WiFi, USB y aire acondicionado.'],
             ['Conductoras', '8 mujeres (las bases exigían 2).'],
@@ -295,6 +321,7 @@ export default function Ruta201SantaJuana() {
         <Sources>
           <SourceLink href="https://www.andesmotor.cl/-/entregan-primeros-buses-con-estandar-red-para-la-region-del-biobio-conectaran-santa-juana-con-concepcion">Andes Motor, Entrega de flota</SourceLink>
           <SourceLink href="https://dprbiobio.dpr.gob.cl/2024/07/22/santa-juana-cuenta-con-nuevo-sistema-de-transporte-publico-licitado-y-renovada-flota-de-buses/">DPR Biobío, Equipamiento y compromiso laboral</SourceLink>
+          <SourceLink href="https://dtpr.gob.cl/wp-content/uploads/2026/06/Ficha-Biobio-2026-vdef.pdf">DTPR · Ficha Biobío 2026 (jun-2026)</SourceLink>
         </Sources>
       </CollapsibleSection>
 
@@ -350,16 +377,18 @@ export default function Ruta201SantaJuana() {
 
       <CollapsibleSection title="Datos pendientes">
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
-          <li>Tabla horaria real y horario de festivos (el GTFS no los declara; consulta a la DTPR Biobío).</li>
-          <li>Si las ~420 salidas diarias del GTFS son reales o frecuencias máximas.</li>
-          <li>Tiempo de viaje real (el GTFS programa ~2 h 46 min).</li>
+          <li>Salidas de sábado, domingo y festivos (la lista del operador leída es de un miércoles; el GTFS solo trae un programa a intervalo fijo).</li>
+          <li>Si la lista del operador incluye la 201 AU (no la separa).</li>
+          <li>Salidas desde Santa Juana antes de las 06:30 (la página de la empresa en kupos.cl dice 05:30; la lista del día empieza a las 06:30).</li>
+          <li>Tiempo de viaje medido en la calle (el operador declara 1 h 54 min a 1 h 57 min).</li>
+          <li>Flota tras jul-2026: la prensa habla de 25 buses en operación, pero no encontramos una fuente verificable; el visor usa los 23 de la DTPR.</li>
           <li>Tarifa vigente en 2026 y fecha exacta en que la 201 empiece a cobrar con BusPay.</li>
           <li>Duración del contrato (decreto N°93/2023 íntegro) y RUT de la sociedad.</li>
           <li>Cumplimiento del compromiso de espacio entre asientos.</li>
         </ul>
         <p className="text-[12px] text-muted-foreground">
-          ¿Tienes una foto del cartel de horarios, el tiempo de viaje observado
-          o una tarifa pagada con fecha? Abre un pull request en{' '}
+          ¿Tienes una foto del cartel de horarios de fin de semana, el tiempo
+          de viaje observado o una tarifa pagada con fecha? Abre un pull request en{' '}
           <SourceLink href="https://github.com/marcorojasb/conce.patagua.dev/edit/main/src/wiki/articles/ruta-201-santa-juana.tsx">ruta-201-santa-juana.tsx</SourceLink>
           .
         </p>

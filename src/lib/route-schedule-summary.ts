@@ -10,8 +10,13 @@
 // Las salidas después de medianoche (>= 1440) pertenecen al día de servicio
 // anterior: cuentan en las cifras de ese día y, de madrugada, como servicio
 // "de ayer" todavía en curso.
+//
+// El GTFS de la DTPR es un programa a intervalo fijo, no un itinerario (ver
+// schedule-program.ts): en los días en que un sentido lo es, la ficha muestra
+// su frecuencia y su ventana (summarizeProgramDay) y no cuenta salidas.
 
 import { chileClock } from '@/lib/chile-time';
+import { fixedIntervalProgram, type FixedIntervalProgram } from '@/lib/schedule-program';
 import type { RouteSchedule } from '@/types/transport';
 
 const DAY_MIN = 1440;
@@ -173,4 +178,40 @@ export function isEvenlySpaced(schedules: readonly RouteSchedule[], day: number)
     const dayGaps = gaps(schedule[day].map(([start]) => start));
     return dayGaps.length === 0 || Math.max(...dayGaps) - Math.min(...dayGaps) <= 1;
   });
+}
+
+/** Programa de un sentido ese día: sus horarios (Biotrén: sus patrones) juntos. */
+export function directionProgram(schedules: readonly RouteSchedule[], day: number): FixedIntervalProgram | null {
+  return fixedIntervalProgram(schedules.flatMap((schedule) => schedule[day]));
+}
+
+export interface ProgramDaySummary {
+  /** Menor intervalo de programa entre los sentidos a intervalo fijo. */
+  headwayMin: number;
+  /** Mayor. */
+  headwayMax: number;
+  /** Primera salida del día entre todos los sentidos (programa o no). */
+  first: number;
+  /** Última; puede pasar de 1440. */
+  last: number;
+}
+
+/** Cada elemento son los horarios de un sentido. null si ningún sentido es programa ese día. */
+export function summarizeProgramDay(
+  directions: readonly (readonly RouteSchedule[])[],
+  day: number,
+): ProgramDaySummary | null {
+  const headways = directions.flatMap((schedules) => directionProgram(schedules, day)?.headwayMin ?? []);
+  if (headways.length === 0) return null;
+  let first = Infinity;
+  let last = -Infinity;
+  for (const schedules of directions) {
+    for (const schedule of schedules) {
+      for (const [start] of schedule[day]) {
+        first = Math.min(first, start);
+        last = Math.max(last, start);
+      }
+    }
+  }
+  return { headwayMin: Math.min(...headways), headwayMax: Math.max(...headways), first, last };
 }

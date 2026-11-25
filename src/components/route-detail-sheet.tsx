@@ -30,7 +30,9 @@ import { StatTile } from '@/components/ui/stat-tile';
 import { StatusChip } from '@/components/ui/status-chip';
 import { StatusDot } from '@/components/ui/status-dot';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { knownFleetOfRoute } from '@/data/fleets';
 import { GTFS_CONCEPCION_SOURCE } from '@/data/gtfs-stops.generated';
+import { operatorTimetablesOfRoute, type OperatorTimetable } from '@/data/operator-timetables';
 import { ROUTE_TYPES } from '@/data/routes';
 import { STATIC_SERVICE_PATTERNS, type StaticServicePattern } from '@/data/static-service-patterns';
 import { WikiLinkButton } from '@/components/wiki-link';
@@ -38,35 +40,31 @@ import { chileClock } from '@/lib/chile-time';
 import { isRouteOperatingAt } from '@/lib/operating-hours';
 import {
   departuresByHour,
+  directionProgram,
   isEvenlySpaced,
   summarizeDay,
+  summarizeProgramDay,
   summarizeToday,
   type NextDeparture,
+  type ProgramDaySummary,
 } from '@/lib/route-schedule-summary';
 import { formatServiceClock } from '@/lib/stop-services';
 import { routeColorVars } from '@/lib/route-colors';
 import { directionCode, isInterurban, routePillCode, routeShortName } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
+import { loadScheduleIndex } from '@/realtime/schedule-index';
 import type { LatLngTuple, Route, RouteSchedule, Stop } from '@/types/transport';
 import type { DirectionId, RouteDetailSheetProps, RouteTab } from '@/types/ui-contracts';
 
 const REPORT_URL = 'https://github.com/marcorojasb/conce.patagua.dev/issues';
 
-// Mismo import() que la capa de servicios en curso (activa al iniciar): el
-// chunk de horarios suele estar ya en caché al abrir la ficha y no pesa en la
-// carga inicial. Las micros se leen por sentido ("gtfs-route-835#0") y
-// Biotrén por patrón EFE (un id por sentido y tipo de día).
-let schedulesPromise: Promise<Record<string, RouteSchedule>> | null = null;
-function loadSchedules(): Promise<Record<string, RouteSchedule>> {
-  schedulesPromise ??= Promise.all([
-    import('@/data/gtfs-schedule.generated'),
-    import('@/realtime/static-service-schedules'),
-  ]).then(([gtfs, staticSchedules]) => ({
-    ...gtfs.ROUTE_DIRECTION_SCHEDULES,
-    ...staticSchedules.STATIC_ROUTE_SCHEDULES,
-  }));
-  return schedulesPromise;
-}
+// Los horarios salen del mismo índice que el modo Horario del mapa (GTFS con
+// las listas del operador y el Biotrén), pero sin ralear: la ficha muestra el
+// programa tal cual, como frecuencia. Las micros se leen por sentido
+// ("gtfs-route-835#0") y Biotrén por patrón EFE (un id por sentido y tipo de día).
+
+const PROGRAM_SENTENCE =
+  'El GTFS de la DTPR reparte las salidas a intervalo fijo entre la primera y la última: es un programa, no un itinerario. Las salidas reales pueden ser otras, casi siempre menos, y variar según la hora.';
 
 const PATTERNS_BY_ROUTE = new Map<string, StaticServicePattern[]>();
 for (const pattern of STATIC_SERVICE_PATTERNS) {
@@ -132,6 +130,8 @@ interface RouteScheduleData {
   byDirection: Map<string, RouteSchedule[]>;
   /** Reconstruido desde una frecuencia anunciada, no salidas publicadas una a una. */
   estimated: boolean;
+  /** Listas del operador que reemplazan al GTFS algunos días (la 201 de lunes a viernes). */
+  operatorTimetables: OperatorTimetable[];
 }
 
 function scheduleForRoute(
@@ -155,6 +155,7 @@ function scheduleForRoute(
     all: [...byDirection.values()].flat(),
     byDirection,
     estimated: patterns?.some((p) => !p.trips) ?? false,
+    operatorTimetables: operatorTimetablesOfRoute(route.id),
   };
 }
 
@@ -170,12 +171,11 @@ function useRouteSchedule(route: Route): ScheduleState {
   useEffect(() => {
     if (index || failed) return undefined;
     let cancelled = false;
-    loadSchedules()
+    loadScheduleIndex()
       .then((loaded) => {
         if (!cancelled) setIndex(loaded);
       })
       .catch(() => {
-        schedulesPromise = null;
         if (!cancelled) setFailed(true);
       });
     return () => {
@@ -226,6 +226,21 @@ function formatHeadway(minutes: number): string {
   const m = Math.round(minutes);
   if (m < 60) return `${m} min`;
   return m % 60 === 0 ? `${m / 60} h` : `${Math.floor(m / 60)} h ${m % 60} min`;
+}
+
+/** "cada 5 min"; "cada 15–30 min" si los sentidos salen a distinto intervalo. */
+function formatProgramHeadway({ headwayMin, headwayMax }: ProgramDaySummary): string {
+  if (headwayMin === headwayMax) return `cada ${formatHeadway(headwayMin)}`;
+  if (headwayMax < 60) return `cada ${headwayMin}–${headwayMax} min`;
+  return `cada ${formatHeadway(headwayMin)}–${formatHeadway(headwayMax)}`;
+}
+
+/** Frase del programa más, si se conoce, la flota real de la línea. */
+function programNote(route: Route): string {
+  const fleet = knownFleetOfRoute(route.id);
+  return fleet
+    ? `${PROGRAM_SENTENCE} Flota real de ${fleet.label}: ${fleet.buses} buses (${fleet.sourceLabel}).`
+    : PROGRAM_SENTENCE;
 }
 
 function formatNext(next: NextDeparture, today: number): string {
@@ -803,10 +818,13 @@ function TodayCards({
   routeCard: ReactNode;
 }) {
   const summary = summarizeToday(data.all, now);
+  const operatorToday = data.operatorTimetables.some((t) => t.days.includes(groupOfDay(summary.day)));
   // Misma regla que el punto "operando ahora" de la barra lateral y la ficha
-  // de paradero; sin tramos calculados se usa el viaje en curso del horario.
+  // de paradero (los tramos ya siguen la lista del operador los días que la
+  // hay); sin tramos calculados se usa el viaje en curso del horario.
   const operatingNow = route.serviceSpans ? isRouteOperatingAt(route, now) : summary.operatingNow;
-  const range = formatRange(summary.first, summary.last);
+  const program = summarizeProgramDay([...data.byDirection.values()], summary.day);
+  const range = program ? formatRange(program.first, program.last) : formatRange(summary.first, summary.last);
   const bothWays = data.byDirection.size > 1;
   const next = summary.nextDeparture ? formatNext(summary.nextDeparture, summary.day) : null;
 
@@ -815,6 +833,9 @@ function TodayCards({
   if (operatingNow && summary.nextDeparture && summary.nextDeparture.dayOffset > 0) {
     nowValue = 'Últimos viajes';
     nowDetail = next ? `próxima salida ${next}` : 'sin más salidas';
+  } else if (operatingNow && program) {
+    nowValue = 'En servicio';
+    nowDetail = `última salida ${formatServiceClock(program.last)}`;
   } else if (operatingNow) {
     nowValue = summary.headwayNow ? `cada ~${formatHeadway(summary.headwayNow)}` : 'En servicio';
     nowDetail = next ? `próxima ${next}` : 'sin más salidas';
@@ -824,6 +845,43 @@ function TodayCards({
     nowDetail = next ? `próxima ${next}` : 'sin salidas programadas';
   }
 
+  const nowTile = (
+    <StatTile
+      label={
+        <span className="inline-flex items-center gap-1.5">
+          <StatusDot on={operatingNow} label={operatingNow ? 'Operando ahora' : 'Fuera de horario ahora'} />
+          Ahora
+        </span>
+      }
+      value={nowValue}
+      detail={nowDetail}
+    />
+  );
+
+  // Programa a intervalo fijo: su frecuencia y su ventana, nunca un conteo de salidas.
+  if (program) {
+    return (
+      <div>
+        <div className="grid grid-cols-2 gap-2">
+          <StatTile label="Horario" value={range} detail="ventana del programa" />
+          <StatTile
+            label="Frecuencia"
+            value={formatProgramHeadway(program)}
+            detail={bothWays ? 'programa oficial, por sentido' : 'programa oficial DTPR'}
+          />
+          {nowTile}
+          {routeCard}
+        </div>
+        <p className="mt-2 text-[11px] leading-snug text-muted-foreground">{programNote(route)}</p>
+      </div>
+    );
+  }
+
+  let departuresDetail: string;
+  if (operatorToday) departuresDetail = bothWays ? 'según el operador, 2 sentidos' : 'según el operador';
+  else if (data.estimated) departuresDetail = bothWays ? 'estimadas, 2 sentidos' : 'estimadas hoy';
+  else departuresDetail = bothWays ? 'en ambos sentidos' : 'programadas hoy';
+
   return (
     <div className="grid grid-cols-2 gap-2">
       <StatTile
@@ -831,29 +889,8 @@ function TodayCards({
         value={range ?? 'Sin servicio'}
         detail={range ? 'primera y última salida' : 'no hay salidas hoy'}
       />
-      <StatTile
-        label="Salidas"
-        value={summary.departures}
-        detail={
-          bothWays
-            ? data.estimated
-              ? 'estimadas, 2 sentidos'
-              : 'en ambos sentidos'
-            : data.estimated
-              ? 'estimadas hoy'
-              : 'programadas hoy'
-        }
-      />
-      <StatTile
-        label={
-          <span className="inline-flex items-center gap-1.5">
-            <StatusDot on={operatingNow} label={operatingNow ? 'Operando ahora' : 'Fuera de horario ahora'} />
-            Ahora
-          </span>
-        }
-        value={nowValue}
-        detail={nowDetail}
-      />
+      <StatTile label="Salidas" value={summary.departures} detail={departuresDetail} />
+      {nowTile}
       {routeCard}
     </div>
   );
@@ -866,8 +903,8 @@ function SourceNote({ route, schedule }: { route: Route; schedule: ScheduleState
   const patterns = PATTERNS_BY_ROUTE.get(route.id);
   if (patterns) return <PatternSourceNote route={route} patterns={patterns} />;
   if (route.id.startsWith('gtfs-route-')) {
-    const hasSchedule = schedule.status === 'ready' && schedule.data !== null;
-    return <GtfsSourceNote hasSchedule={hasSchedule} />;
+    const data = schedule.status === 'ready' ? schedule.data : null;
+    return <GtfsSourceNote hasSchedule={data !== null} operatorTimetables={data?.operatorTimetables ?? []} />;
   }
   return (
     <Notice icon={<Info />}>
@@ -877,13 +914,19 @@ function SourceNote({ route, schedule }: { route: Route; schedule: ScheduleState
   );
 }
 
-function GtfsSourceNote({ hasSchedule }: { hasSchedule: boolean }) {
+function GtfsSourceNote({
+  hasSchedule,
+  operatorTimetables,
+}: {
+  hasSchedule: boolean;
+  operatorTimetables: OperatorTimetable[];
+}) {
   const feed = GTFS_CONCEPCION_SOURCE;
   const expired = Date.parse(`${feed.feedEndDate}T23:59:59-03:00`) < Date.now();
   return (
     <Notice icon={<Info />}>
       <p>
-        {hasSchedule ? 'Recorrido, paraderos y horario programado' : 'Recorrido y paraderos'} del
+        {hasSchedule ? 'Recorrido, paraderos y programa de salidas' : 'Recorrido y paraderos'} del
         GTFS oficial de la DTPR
         {FEED_PROGRAM_DATE ? `, programa del ${FEED_PROGRAM_DATE}` : ''} (versión «
         {feed.feedVersion}»).
@@ -893,7 +936,7 @@ function GtfsSourceNote({ hasSchedule }: { hasSchedule: boolean }) {
           ? `Su calendario declarado (${formatIsoDate(feed.feedStartDate)} a ${formatIsoDate(feed.feedEndDate)}) ya venció, pero es la última programación publicada: puede no reflejar cambios posteriores.`
           : `Calendario declarado vigente hasta el ${formatIsoDate(feed.feedEndDate)}.`}
         {hasSchedule &&
-          ' Cada salida es un viaje planificado desde su cabecera; no son llegadas en vivo.'}
+          ' Ese programa reparte las salidas a intervalo fijo; no es un itinerario ni son llegadas en vivo.'}
       </p>
       <p className="mt-1">
         Fuente:{' '}
@@ -902,7 +945,52 @@ function GtfsSourceNote({ hasSchedule }: { hasSchedule: boolean }) {
           <ExternalLink className="size-3" />
         </a>
       </p>
+      {operatorTimetables.length > 0 && (
+        <>
+          <p className="mt-1">
+            De lunes a viernes, las salidas son las que vende el operador (kupos.cl, lista del
+            25-11-2026), no las del GTFS.
+          </p>
+          {/* Una página por sentido con el mismo rótulo: el sentido las distingue. */}
+          <SourceDetails
+            summary="Fuentes y notas de las salidas del operador"
+            items={operatorTimetables.map((t) => ({ ...t, sourceLabel: `${t.label}: ${t.sourceLabel}` }))}
+          />
+
+        </>
+      )}
     </Notice>
+  );
+}
+
+/** Enlaces y notas, sin repetir, bajo un desplegable. */
+function SourceDetails({
+  summary,
+  items,
+}: {
+  summary: string;
+  items: ReadonlyArray<{ sourceUrl: string; sourceLabel: string; note: string }>;
+}) {
+  const notes = [...new Set(items.map((item) => item.note))];
+  const sources = new Map<string, string>();
+  for (const item of items) if (!sources.has(item.sourceUrl)) sources.set(item.sourceUrl, item.sourceLabel);
+  return (
+    <details className="mt-1">
+      <summary className="cursor-pointer rounded-sm hover:text-foreground focus-ring">{summary}</summary>
+      <ul className="mt-1 list-disc space-y-0.5 pl-4">
+        {[...sources].map(([url, label]) => (
+          <li key={url}>
+            <a href={url} target="_blank" rel="noopener noreferrer" className={linkClass}>
+              {label}
+              <ExternalLink className="size-3" />
+            </a>
+          </li>
+        ))}
+        {notes.map((note) => (
+          <li key={note}>{note}</li>
+        ))}
+      </ul>
+    </details>
   );
 }
 
@@ -914,9 +1002,6 @@ function PatternSourceNote({
   patterns: StaticServicePattern[];
 }) {
   const official = patterns.every((p) => p.confidence === 'official' && p.trips);
-  const notes = [...new Set(patterns.map((p) => p.note))];
-  const sources = new Map<string, string>();
-  for (const p of patterns) if (!sources.has(p.sourceUrl)) sources.set(p.sourceUrl, p.sourceLabel);
   const operator = route.type === 'biotren' ? 'EFE' : 'el operador';
 
   return (
@@ -927,24 +1012,7 @@ function PatternSourceNote({
           : 'Horario estimado desde una frecuencia publicada; no es el itinerario oficial.'}
         {route.type === 'biotren' && ' Estaciones y vía: OpenStreetMap.'}
       </p>
-      <details className="mt-1">
-        <summary className="cursor-pointer rounded-sm hover:text-foreground focus-ring">
-          Fuentes y notas del itinerario
-        </summary>
-        <ul className="mt-1 list-disc space-y-0.5 pl-4">
-          {[...sources].map(([url, label]) => (
-            <li key={url}>
-              <a href={url} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                {label}
-                <ExternalLink className="size-3" />
-              </a>
-            </li>
-          ))}
-          {notes.map((note) => (
-            <li key={note}>{note}</li>
-          ))}
-        </ul>
-      </details>
+      <SourceDetails summary="Fuentes y notas del itinerario" items={patterns} />
     </Notice>
   );
 }
@@ -995,6 +1063,7 @@ function ScheduleTab({
   const day = representativeDay(group, clock.day);
   const isToday = day === clock.day;
   const summary = summarizeDay(data.all, day);
+  const program = summarizeProgramDay([...data.byDirection.values()], day);
   const currentHour = isToday ? Math.floor(clock.minutes / 60) : null;
   const dayLabel = isToday ? `hoy, ${DAY_NAMES[day]}` : DAY_NAMES[day];
   const scheduledDirections = directions.filter((d) => data.byDirection.has(d.key));
@@ -1023,16 +1092,25 @@ function ScheduleTab({
         <Notice icon={<Info />}>Sin salidas el {DAY_NAMES[day]}.</Notice>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-2">
-            <StatTile compact label="Primera" value={formatServiceClock(summary.first ?? 0)} />
-            <StatTile compact label="Última" value={formatServiceClock(summary.last ?? 0)} />
-            <StatTile compact label="Salidas" value={summary.departures} />
-            <StatTile
-              compact
-              label="Intervalo"
-              value={summary.medianHeadway ? `~${formatHeadway(summary.medianHeadway)}` : '—'}
-            />
-          </div>
+          {program ? (
+            // Programa a intervalo fijo: ventana y frecuencia, sin conteo ni gráfico por hora.
+            <div className="grid grid-cols-3 gap-2">
+              <StatTile compact label="Primera" value={formatServiceClock(program.first)} />
+              <StatTile compact label="Última" value={formatServiceClock(program.last)} />
+              <StatTile compact label="Frecuencia" value={formatProgramHeadway(program)} />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <StatTile compact label="Primera" value={formatServiceClock(summary.first ?? 0)} />
+              <StatTile compact label="Última" value={formatServiceClock(summary.last ?? 0)} />
+              <StatTile compact label="Salidas" value={summary.departures} />
+              <StatTile
+                compact
+                label="Intervalo"
+                value={summary.medianHeadway ? `~${formatHeadway(summary.medianHeadway)}` : '—'}
+              />
+            </div>
+          )}
 
           {scheduledDirections.length > 1 && (
             <section aria-label="Por sentido">
@@ -1041,8 +1119,10 @@ function ScheduleTab({
               </SectionLabel>
               <ul className="divide-y rounded-md border bg-card">
                 {scheduledDirections.map((direction) => {
-                  const s = summarizeDay(data.byDirection.get(direction.key) ?? [], day);
+                  const schedules = data.byDirection.get(direction.key) ?? [];
+                  const s = summarizeDay(schedules, day);
                   const range = formatRange(s.first, s.last);
+                  const directionHeadway = directionProgram(schedules, day)?.headwayMin;
                   return (
                     <li key={direction.key} className="px-3 py-2">
                       <DirectionSign
@@ -1055,8 +1135,12 @@ function ScheduleTab({
                           ? [
                               direction.origin ? `sale de ${direction.origin}` : null,
                               range,
-                              `${s.departures} ${s.departures === 1 ? 'salida' : 'salidas'}`,
-                              s.medianHeadway ? `cada ~${formatHeadway(s.medianHeadway)}` : null,
+                              ...(directionHeadway
+                                ? [`programa cada ${formatHeadway(directionHeadway)}`]
+                                : [
+                                    `${s.departures} ${s.departures === 1 ? 'salida' : 'salidas'}`,
+                                    s.medianHeadway ? `cada ~${formatHeadway(s.medianHeadway)}` : null,
+                                  ]),
                             ]
                               .filter(Boolean)
                               .join(' · ')
@@ -1069,17 +1153,23 @@ function ScheduleTab({
             </section>
           )}
 
-          <section>
-            <SectionLabel icon={<BarChart3 />} aside={dayLabel}>
-              {scheduledDirections.length > 1 ? 'Salidas por hora · ambos sentidos' : 'Salidas por hora'}
-            </SectionLabel>
-            <HourlyChart
-              hourly={departuresByHour(data.all, day)}
-              currentHour={currentHour}
-              dayName={DAY_NAMES[day]}
-              evenlySpaced={data.estimated || isEvenlySpaced(data.all, day)}
-            />
-          </section>
+          {program ? (
+            <div data-schedule-program>
+              <Notice icon={<Info />}>{programNote(route)}</Notice>
+            </div>
+          ) : (
+            <section>
+              <SectionLabel icon={<BarChart3 />} aside={dayLabel}>
+                {scheduledDirections.length > 1 ? 'Salidas por hora · ambos sentidos' : 'Salidas por hora'}
+              </SectionLabel>
+              <HourlyChart
+                hourly={departuresByHour(data.all, day)}
+                currentHour={currentHour}
+                dayName={DAY_NAMES[day]}
+                evenlySpaced={data.estimated || isEvenlySpaced(data.all, day)}
+              />
+            </section>
+          )}
         </>
       )}
 

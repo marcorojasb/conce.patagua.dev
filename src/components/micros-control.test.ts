@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gpsMeta, scheduleMeta } from '@/components/micros-control';
+import { gpsMeta, scheduleMeta, scheduleProgramNote } from '@/components/micros-control';
 import type { GpsLineStatus, GpsModeView } from '@/types/ui-contracts';
 
 const line = (status: GpsLineStatus['status'], vehicles = 0): GpsLineStatus => ({
@@ -22,7 +22,7 @@ const view = (patch: Partial<GpsModeView>): GpsModeView => ({
 });
 
 describe('scheduleMeta', () => {
-  const idle = { loading: false, error: null, count: 0, nonGtfsCount: 0 };
+  const idle = { loading: false, error: null, count: 0, nonGtfsCount: 0, urbanCount: 0 };
 
   it('cuenta las estimadas, en singular y con separador de miles', () => {
     expect(scheduleMeta({ ...idle, count: 171 }, false)).toBe('171 estimadas');
@@ -35,6 +35,30 @@ describe('scheduleMeta', () => {
     expect(scheduleMeta({ ...idle, error: 'x', loading: true }, true)).toBe('sin líneas');
     expect(scheduleMeta({ ...idle, error: 'x', loading: true }, false)).toBe('sin horario');
     expect(scheduleMeta({ ...idle, loading: true }, false)).toBe('cargando…');
+  });
+});
+
+describe('scheduleProgramNote', () => {
+  const idle = { loading: false, error: null, count: 0, nonGtfsCount: 0, urbanCount: 0 };
+
+  it('sin micros del GTFS no hay aviso (el Biotrén va por itinerario de EFE)', () => {
+    expect(scheduleProgramNote(idle)).toBeNull();
+    expect(scheduleProgramNote({ ...idle, count: 12, nonGtfsCount: 12 })).toBeNull();
+  });
+
+  it('con pocas micros dice que puede haber otra cantidad, casi siempre menos, y que solo se recortan las de flota conocida', () => {
+    const note = scheduleProgramNote({ ...idle, count: 40, nonGtfsCount: 6, urbanCount: 20 });
+    expect(note).toMatch(/puede haber otra cantidad de micros, casi siempre menos/);
+    expect(note).toMatch(/Solo las líneas con flota conocida/);
+  });
+
+  it('si las urbanas pasan de la flota inscrita del perímetro lo dice con la cifra', () => {
+    const note = scheduleProgramNote({ ...idle, count: 2981, nonGtfsCount: 12, urbanCount: 2800 });
+    expect(note).toMatch(/más micros urbanas que las 1\.894 inscritas en el perímetro: en la calle hay menos/);
+    // El total puede pasar de 1.894 con interurbanos sin que las urbanas lo hagan.
+    expect(scheduleProgramNote({ ...idle, count: 1950, nonGtfsCount: 12, urbanCount: 1850 })).toMatch(
+      /casi siempre menos/,
+    );
   });
 });
 

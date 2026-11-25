@@ -78,7 +78,7 @@ describe('toMapVehicles', () => {
       color: '#ff0000',
       code: '30E',
       stale: false,
-      tooltip: '30E hacia Centro · estimado según horario',
+      tooltip: '30E hacia Centro · estimado según el programa',
     });
   });
 
@@ -93,7 +93,7 @@ describe('toMapVehicles', () => {
     expect(v.directionId).toBeNull();
     expect(v.code).toBe('L1');
     expect(v.color).toBe('#e11d48');
-    expect(v.tooltip).toBe('L1 hacia Mercado Talcahuano · estimado según horario');
+    expect(v.tooltip).toBe('L1 hacia Mercado Talcahuano · estimado según el programa');
   });
 
   it('sin letrero ni recorrido cae al id, con color por defecto', () => {

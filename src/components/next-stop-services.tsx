@@ -62,7 +62,7 @@ function serviceDetail(service: NextStopService, route: Route | undefined): stri
   if (service.source === 'gtfs-window') {
     const passes = service.passesInDay ?? 0;
     if (service.windowEdge === 'first') {
-      return passes > 1 ? `primera de ${passes} pasadas del día` : 'única pasada del día';
+      return passes > 1 ? 'primera pasada del día' : 'única pasada del día';
     }
     if (service.windowEdge === 'last') return 'última pasada del día';
     return service.headwayMin ? 'en servicio · intervalo según el programa' : 'aprox.';
@@ -73,7 +73,8 @@ function serviceDetail(service: NextStopService, route: Route | undefined): stri
     return `${departure} · paso ${published ? 'aprox.' : 'estimado'}`;
   }
   if (!published) return 'estimada según frecuencia publicada';
-  return route?.type === 'biotren' ? 'sale de aquí · itinerario EFE' : 'sale de aquí · itinerario oficial';
+  // Fuera del Biotrén, la única lista salida por salida es la del operador de la 201.
+  return route?.type === 'biotren' ? 'sale de aquí · itinerario EFE' : 'sale de aquí · lista del operador';
 }
 
 export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
@@ -179,7 +180,7 @@ export function NextStopServicesBlock({ stopId, routes, enabled }: Props) {
         </ul>
         <p className="mt-2 text-[11px] leading-snug text-muted-foreground">
           Hora de Chile según el programa publicado (GTFS oficial DTPR en micros, itinerario EFE
-          en Biotrén); no vienen del GPS. Una fila por línea y sentido. Si la línea está en servicio
+          en Biotrén y, de lunes a viernes, la lista de venta del operador en la 201); no vienen del GPS. Una fila por línea y sentido. Si la línea está en servicio
           se muestra cada cuánto pasa según el programa, no una hora exacta; las marcadas aprox. o
           estimado se calculan desde la distancia a la cabecera.
         </p>

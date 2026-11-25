@@ -31,7 +31,7 @@ export default function ConcepcionTome() {
     <div className="space-y-5 text-[14px] leading-relaxed">
       <VerifiedBanner>
         <strong>Verificado parcialmente con fuentes primarias.</strong>{' '}
-        Trazado, paraderos y horario programado de 401, 401Y, 411 y 421 salen
+        Trazado, paraderos y programa de salidas de 401, 401Y, 411 y 421 salen
         del GTFS oficial de la DTPR (programa del 28-feb-2025, cotejado el
         24-nov-2026). El régimen (decreto MTT, operador, tarifa, BusPay) está
         en{' '}
@@ -68,7 +68,8 @@ export default function ConcepcionTome() {
           </>,
           <>
             El visor los dibuja desde el GTFS oficial: trazado, paraderos y
-            horario programado (estimación, no GPS). Sin llegadas en vivo.
+            programa de salidas (a intervalo fijo, no un itinerario). Sin
+            llegadas en vivo.
           </>,
           <>
             Tarifa vigente conocida: <strong>$780</strong> a Tomé y{' '}
@@ -133,7 +134,7 @@ export default function ConcepcionTome() {
             </a>{' '}
             que usa el visor (versión del 28-feb-2025). Aparecen rotulados
             «Interurbano Tomé», con sus dos sentidos (la 401Y, uno solo),
-            paraderos y horario programado. La DTPR publica además un GTFS
+            paraderos y programa de salidas. La DTPR publica además un GTFS
             propio del PE Tomé (versión Tomé20230308) con los mismos cuatro
             códigos. Antes del 24-nov-2026 se dibujaban desde trazados OSM
             hechos a mano. Contexto institucional en{' '}
@@ -177,17 +178,22 @@ export default function ConcepcionTome() {
         </Sources>
       </Section>
 
-      <Section title="Horario programado (GTFS oficial)">
+      <Section title="Programa del GTFS oficial">
         <p>
           Salidas del programa de la DTPR (28-feb-2025; su calendario venció
-          el 31-dic-2025, pero es la última publicación). El visor las usa en
-          la ficha de cada recorrido y en <strong>Servicios en curso</strong>,
+          el 31-dic-2025, pero es la última publicación). Es un programa a
+          intervalo fijo: reparte las salidas cada 10 min de la primera a la
+          última, así que las cifras de la tabla son las que reparte el
+          programa, no las reales. La prensa habla de una cada 3 a 4 min en la
+          punta de la tarde (ver «Frecuencias y refuerzo de mayo de 2025»). El
+          visor muestra la frecuencia y la ventana en la ficha de cada
+          recorrido y lo usa en <strong>Micros en el mapa · Horario</strong>,
           que estima dónde debería ir cada bus: no es GPS.
         </p>
         <DataTable columns={['Servicio', 'Lunes a viernes', 'Sábado', 'Domingo']} bodyClassName="divide-y align-top text-[12px]">
           <tr>
             <td className="px-3 py-2 font-medium">401 Tomé</td>
-            <td className="px-3 py-2">100 salidas hacia Concepción (05:25 a 21:58) y 103 hacia Tomé (06:25 a 23:30), cada ~10 min, ~1 h 26 min de viaje</td>
+            <td className="px-3 py-2">100 salidas hacia Concepción (05:25 a 21:58) y 103 hacia Tomé (06:25 a 23:30), programa cada 10 min, ~1 h 26 min de viaje</td>
             <td className="px-3 py-2">99 y 103 salidas</td>
             <td className="px-3 py-2">99 y 101 salidas</td>
           </tr>
@@ -199,7 +205,7 @@ export default function ConcepcionTome() {
           </tr>
           <tr>
             <td className="px-3 py-2 font-medium">411 Dichato</td>
-            <td className="px-3 py-2">85 salidas hacia Concepción (05:55 a 19:58) y 78 hacia Dichato (07:12 a 20:08), ~1 h 45 min de viaje</td>
+            <td className="px-3 py-2">85 salidas hacia Concepción (05:55 a 19:58) y 78 hacia Dichato (07:12 a 20:08), programa cada 10 min, ~1 h 45 min de viaje</td>
             <td className="px-3 py-2">73 y 69 salidas</td>
             <td className="px-3 py-2">67 y 72 salidas</td>
           </tr>
@@ -671,7 +677,15 @@ export default function ConcepcionTome() {
         <ul className="ml-5 list-disc space-y-1 text-[13px]">
           <li>Horario oficial 2026 lun-vie / sáb / dom / festivos de 401, 411 y 421. Los festivos 2026 no se pudieron verificar.</li>
           <li>Tarifa 2026 reconfirmada (la última fuente es de feb-2025).</li>
-          <li>Flota verificada (marca, año, norma Euro): los 71 buses declarados requieren cotejo con el padrón DTPR. Un buscador citó 64 vehículos en la ficha de subsidios 2026 del MTT, no leída.</li>
+          <li>
+            Flota verificada (marca, año, norma Euro): los 71 buses declarados
+            requieren cotejo con el padrón DTPR. La ficha DTPR Biobío 2026
+            (jun-2026) dice 65 (
+            <SourceLink href="https://dtpr.gob.cl/wp-content/uploads/2026/06/Ficha-Biobio-2026-vdef.pdf">
+              DTPR · Ficha Biobío 2026
+            </SourceLink>
+            ); un buscador citó 64 en una versión anterior, no leída.
+          </li>
           <li>Licitación DTPR 2024-2025 de Tomé (oferta única, adjudicación): no apareció en fuentes primarias; el contrato vigente es el del Decreto Exento 1235/2022.</li>
           <li>Conductores, refuerzo de temporada alta observado, reclamos OIRS y conteo de pasajeros posterior a may-2025.</li>
           <li>Quién compra los 8 buses eléctricos anunciados para 2027.</li>

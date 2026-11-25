@@ -17,6 +17,7 @@ import { GpsStatusList } from '@/components/gps-status-list';
 import { VehicleSwatch } from '@/components/map/map-swatches';
 import { SectionLabel } from '@/components/ui/section-label';
 import { SegmentedControl, type SegmentedOption } from '@/components/ui/segmented-control';
+import { URBAN_PERIMETER_FLEET } from '@/data/fleets';
 import { ROUTES_BY_ID } from '@/data/routes';
 import { useClock } from '@/hooks/use-clock';
 import { routePillCode } from '@/lib/route-labels';
@@ -88,6 +89,21 @@ export function scheduleMeta(simulation: SimulationStatus, noLines: boolean): st
   if (simulation.error) return 'sin horario';
   if (simulation.loading) return 'cargando…';
   return plural(simulation.count, 'estimada', 'estimadas');
+}
+
+/**
+ * Aviso del modo Horario sobre el programa del GTFS, o null sin micros del
+ * GTFS (el Biotrén sale de los itinerarios de EFE). Si las urbanas pasan de la
+ * flota inscrita del perímetro, lo dice con la cifra: en la calle hay menos.
+ * Si no, no asegura una sola dirección: en Tomé la prensa cuenta en la punta
+ * de la tarde un poco más de salidas que el programa.
+ */
+export function scheduleProgramNote(simulation: SimulationStatus): string | null {
+  if (simulation.count <= simulation.nonGtfsCount) return null;
+  if (simulation.urbanCount > URBAN_PERIMETER_FLEET.buses) {
+    return `El programa oficial de la DTPR reparte salidas a intervalo fijo y pone más micros urbanas que las ${URBAN_PERIMETER_FLEET.buses.toLocaleString('es-CL')} inscritas en el perímetro: en la calle hay menos.`;
+  }
+  return 'El programa oficial de la DTPR reparte salidas a intervalo fijo: en la calle puede haber otra cantidad de micros, casi siempre menos. Solo las líneas con flota conocida se recortan a ella.';
 }
 
 export interface GpsMeta {
@@ -179,6 +195,7 @@ function ScheduleStatus({
   onOpenLines: () => void;
 }) {
   const simulation = useSimulationStatus();
+  const programNote = scheduleProgramNote(simulation);
   let line: ReactNode;
   if (scope === 'visible' && linesOnMap === 0) {
     // Sin líneas no hay qué estimar: se dice eso, no que el horario esté vacío.
@@ -208,16 +225,23 @@ function ScheduleStatus({
     );
   } else {
     line = (
-      <StatusLine state="schedule">
-        {simulation.count > 0 ? (
-          <>
-            <span className="font-medium text-foreground">{plural(simulation.count, 'estimada', 'estimadas')}</span> ·
-            según horario, no es GPS
-          </>
-        ) : (
-          'Ninguna micro programada ahora · según horario, no es GPS'
+      <>
+        <StatusLine state="schedule">
+          {simulation.count > 0 ? (
+            <>
+              <span className="font-medium text-foreground">{plural(simulation.count, 'estimada', 'estimadas')}</span> ·
+              según el programa, no es GPS
+            </>
+          ) : (
+            'Ninguna micro programada ahora · según el programa, no es GPS'
+          )}
+        </StatusLine>
+        {programNote && (
+          <p data-micros-note="program" className="leading-snug">
+            {programNote}
+          </p>
         )}
-      </StatusLine>
+      </>
     );
   }
   return (

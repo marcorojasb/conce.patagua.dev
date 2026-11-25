@@ -1,12 +1,18 @@
 import { useMemo } from 'react';
-import { AlertTriangle, CheckCircle2, Info, Route as RouteIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronRight, Info, Route as RouteIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { StatTile } from '@/components/ui/stat-tile';
 import { StatusChip } from '@/components/ui/status-chip';
 import { useStickyState } from '@/hooks/use-sticky-state';
-import { buildDataQualityReport, type DataQualityIssue, type DataQualitySeverity } from '@/lib/data-quality';
+import {
+  buildDataQualityReport,
+  type DataQualityIssue,
+  type DataQualitySeverity,
+  type FixedIntervalRouteRow,
+} from '@/lib/data-quality';
+import { cn } from '@/lib/utils';
 
 interface Props {
   onSelectRoute: (id: string) => void;
@@ -49,6 +55,8 @@ export default function DataQualityTool({ onSelectRoute }: Props) {
         <StatTile compact label="simulables" value={report.simulatedRouteCount.toLocaleString('es-CL')} />
       </div>
 
+      <ProgramList programs={report.programs} onSelectRoute={onSelectRoute} />
+
       <SegmentedControl
         variant="toggle"
         size="sm"
@@ -84,6 +92,71 @@ export default function DataQualityTool({ onSelectRoute }: Props) {
         <Notice>Mostrando 80 de {visible.length} hallazgos para mantener el panel liviano.</Notice>
       )}
     </div>
+  );
+}
+
+function headwayRange([min, max]: [number, number]): string {
+  return min === max ? `${min} min` : `${min}–${max} min`;
+}
+
+/** "L 5 min · S/D 10 min": sábado y domingo juntos si coinciden; un día sin programa se omite. */
+function programHeadways({ weekday, saturday, sunday }: FixedIntervalRouteRow['headways']): string {
+  const parts: string[] = [];
+  if (weekday) parts.push(`L ${headwayRange(weekday)}`);
+  if (saturday && sunday && saturday[0] === sunday[0] && saturday[1] === sunday[1]) {
+    parts.push(`S/D ${headwayRange(saturday)}`);
+  } else {
+    if (saturday) parts.push(`S ${headwayRange(saturday)}`);
+    if (sunday) parts.push(`D ${headwayRange(sunday)}`);
+  }
+  return parts.join(' · ');
+}
+
+function ProgramList({
+  programs,
+  onSelectRoute,
+}: {
+  programs: FixedIntervalRouteRow[];
+  onSelectRoute: (id: string) => void;
+}) {
+  if (programs.length === 0) return null;
+  return (
+    <details className="rounded-md border">
+      <summary className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium focus-ring">
+        Programa a intervalo fijo · {programs.length} recorridos
+      </summary>
+      <p className="border-t px-3 py-2 text-[11px] leading-snug text-muted-foreground">
+        El GTFS reparte las salidas de estos recorridos a intervalo fijo de la primera a la última:
+        es un programa, no un itinerario. «Pico» es cuántas micros pondría en ruta a la vez en día
+        hábil.
+      </p>
+      <ul className="divide-y border-t">
+        {programs.map((row) => (
+          <li key={row.routeId}>
+            <button
+              type="button"
+              onClick={() => onSelectRoute(row.routeId)}
+              aria-label={`Ver la ficha del recorrido ${row.code}`}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring"
+            >
+              <span className="w-14 shrink-0 font-mono text-[12px] font-medium text-foreground">{row.code}</span>
+              <span className="min-w-0 flex-1 leading-snug">
+                {programHeadways(row.headways)} · pico {row.weekdayPeak}
+                {row.fleet && (
+                  <>
+                    {' · '}
+                    <span className={cn(row.fleet.groupPeak > row.fleet.buses && 'text-stale')}>
+                      flota {row.fleet.buses} (grupo {row.fleet.groupPeak})
+                    </span>
+                  </>
+                )}
+              </span>
+              <ChevronRight className="size-3.5 shrink-0" aria-hidden />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }
 

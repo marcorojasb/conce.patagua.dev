@@ -29,7 +29,7 @@ function vehicle(over: Partial<MapVehicle> = {}): MapVehicle {
     color: '#ff0000',
     code: '10A',
     stale: false,
-    tooltip: '10A hacia Centro · estimado según horario',
+    tooltip: '10A hacia Centro · estimado según el programa',
     ...over,
   };
 }

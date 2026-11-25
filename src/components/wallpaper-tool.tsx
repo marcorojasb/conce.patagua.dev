@@ -240,7 +240,7 @@ export default function WallpaperTool({
       showScale: styleId === 'technical',
       midpoint: midpointLayer,
       title: titleText.trim() || undefined,
-      subtitle: subtitleText.trim() || `${routesForRender.length} recorridos · ${vehiclesForRender.length} micros estimadas según horario`,
+      subtitle: subtitleText.trim() || `${routesForRender.length} recorridos · ${vehiclesForRender.length} micros estimadas según el programa`,
     });
   };
 
@@ -402,8 +402,8 @@ export default function WallpaperTool({
             />
           )}
           <LayerToggle
-            label="Micros según horario"
-            detail="Dónde deberían ir según el horario: estimadas, no GPS"
+            label="Micros según el programa"
+            detail="Dónde deberían ir según el programa: estimadas, no GPS"
             checked={layers.servicios}
             onChange={setLayer('servicios')}
           />
@@ -686,7 +686,7 @@ async function loadSchools(bbox: [[number, number], [number, number]]) {
   );
 }
 
-/** Micros estimadas ahora según horario (siempre estimadas: el PNG no lleva GPS). */
+/** Micros estimadas ahora según el programa (siempre estimadas: el PNG no lleva GPS). */
 async function loadWallpaperVehicles(scope: SimulationScope, visibleRouteIds: readonly string[]) {
   const schedules = await loadSimulationSchedules();
   const visible = new Set(visibleRouteIds);

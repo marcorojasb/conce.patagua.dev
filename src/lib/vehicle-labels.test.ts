@@ -33,9 +33,9 @@ describe('textos del tooltip de una micro', () => {
     );
   });
 
-  it('estimada: siempre dice que es según horario, nunca GPS', () => {
-    expect(estimateTooltipLine('24F', 'Hualpén')).toBe('24F hacia Hualpén · estimado según horario');
-    expect(estimateTooltipLine('L1', null)).toBe('L1 · estimado según horario');
+  it('estimada: siempre dice que es según el programa, nunca GPS', () => {
+    expect(estimateTooltipLine('24F', 'Hualpén')).toBe('24F hacia Hualpén · estimado según el programa');
+    expect(estimateTooltipLine('L1', null)).toBe('L1 · estimado según el programa');
     expect(estimateTooltipLine('24F', 'Hualpén')).not.toMatch(/GPS/);
   });
 });

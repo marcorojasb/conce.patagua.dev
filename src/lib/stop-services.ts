@@ -11,16 +11,22 @@
 // intermedia se interpola según la distancia recorrida hasta ella, y la fila
 // conserva la salida desde la cabecera para no presentarla como dato oficial.
 //
-// En ambos casos se muestra una fila por recorrido y sentido: la más próxima,
+// La 201 de lunes a viernes (lista de venta del operador, operator-timetables.ts):
+// sus ventanas son del programa a intervalo fijo del GTFS (cada 5 min), así
+// que esos días se reemplazan por las salidas de la lista, interpoladas hasta
+// el paradero igual que el Biotrén.
+//
+// En todos los casos se muestra una fila por recorrido y sentido: la más próxima,
 // sea de hoy o del día siguiente. Donde un sentido termina no se lista: el
 // vehículo llega, pero no sale hacia su destino.
 
+import { operatorTimetablesOfRoute } from '@/data/operator-timetables';
 import { STATIC_SERVICE_PATTERNS, type StaticServiceDay } from '@/data/static-service-patterns';
 import type { StopServiceWindow } from '@/data/gtfs-stop-services.generated';
 import { expandFrequencyWindow } from '@/realtime/static-service-schedules';
 import { chileClock } from '@/lib/chile-time';
 import { distanceMeters } from '@/lib/geo';
-import type { Route, Stop } from '@/types/transport';
+import type { Route, RouteDirection, Stop } from '@/types/transport';
 
 const DAY_MIN = 1440;
 
@@ -35,7 +41,7 @@ export interface NextStopService {
   minutesUntil: number;
   /**
    * gtfs-window: desde la ventana del paradero; aproximada salvo `windowEdge`.
-   * static-trips: salida publicada una a una (Biotrén/EFE).
+   * static-trips: salida publicada una a una (Biotrén/EFE, lista del operador de la 201).
    * static-frequency: salida reconstruida desde una frecuencia anunciada.
    */
   source: 'gtfs-window' | 'static-trips' | 'static-frequency';
@@ -90,6 +96,18 @@ export function endsAt(stops: readonly Stop[], stopId: string): boolean {
   return stops.length > 1 && stops[stops.length - 1].id === stopId;
 }
 
+function scheduleKeyOf(routeId: string, direction: RouteDirection): string {
+  return `${routeId}#${direction.directionId}`;
+}
+
+/** Ese día el sentido sale de la lista del operador, no del programa del GTFS. */
+function operatorRunsDay(routeId: string, direction: RouteDirection, day: number): boolean {
+  const key = scheduleKeyOf(routeId, direction);
+  return operatorTimetablesOfRoute(routeId).some(
+    (timetable) => timetable.scheduleKey === key && timetable.days.includes(dayKind(day)),
+  );
+}
+
 function windowServices(
   windows: readonly StopServiceWindow[],
   routes: ReadonlyMap<string, Route>,
@@ -102,9 +120,10 @@ function windowServices(
     if (!routes.has(routeId) || count <= 0) continue;
     const dayOffset = [-1, 0, 1].find((offset) => (day + offset + 7) % 7 === windowDay);
     if (dayOffset === undefined) continue;
+    const direction = routes.get(routeId)?.directions?.find((d) => d.headsign === headsign);
+    if (direction && operatorRunsDay(routeId, direction, windowDay)) continue;
     const next = nextFromWindow(first, last, headway, nowMin, dayOffset);
     if (next === null) continue;
-    const direction = routes.get(routeId)?.directions?.find((d) => d.headsign === headsign);
     if (direction && endsAt(direction.stops, stopId)) continue;
     const shift = dayOffset * DAY_MIN;
     keepEarliest(best, `${routeId}|${headsign}`, {
@@ -119,7 +138,43 @@ function windowServices(
       windowEdge: next === first + shift ? 'first' : next === last + shift ? 'last' : undefined,
     });
   }
+  for (const route of routes.values()) operatorServices(best, route, stopId, day, nowMin);
   return [...best.values()];
+}
+
+// Misma clave que las ventanas: una fila por sentido, sea de la lista o del
+// programa de otro día (sábado, domingo). Ayer cuenta por las salidas de la
+// noche que pasan por el paradero después de las 24:00.
+function operatorServices(
+  best: Map<string, NextStopService>,
+  route: Route,
+  stopId: string,
+  day: number,
+  nowMin: number,
+): void {
+  for (const timetable of operatorTimetablesOfRoute(route.id)) {
+    const direction = route.directions?.find((d) => scheduleKeyOf(route.id, d) === timetable.scheduleKey);
+    if (!direction || endsAt(direction.stops, stopId)) continue;
+    const fraction = stopPositionAlong(direction.stops, stopId);
+    if (fraction === null) continue;
+    for (const dayOffset of [-1, 0, 1]) {
+      if (!timetable.days.includes(dayKind((day + dayOffset + 7) % 7))) continue;
+      for (const [start, duration] of timetable.trips) {
+        const departure = start + dayOffset * DAY_MIN;
+        const pass = departure + Math.round(fraction * duration);
+        if (pass < nowMin) continue;
+        keepEarliest(best, `${route.id}|${direction.headsign}`, {
+          routeId: route.id,
+          variant: direction.variant,
+          destination: direction.destination ?? direction.headsign,
+          scheduledMin: pass,
+          minutesUntil: Math.max(0, Math.round(pass - nowMin)),
+          source: 'static-trips',
+          origin: fraction > 0 ? { name: timetable.origin, departureMin: departure } : undefined,
+        });
+      }
+    }
+  }
 }
 
 function dayKind(day: number): StaticServiceDay {
