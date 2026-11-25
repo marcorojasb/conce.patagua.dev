@@ -171,6 +171,15 @@ describe('buildGpsMapVehicles', () => {
     });
     expect(vehicles.some((v) => v.id.includes('PRUE99'))).toBe(false);
 
+    // Una que espera en la cabecera se dibuja en su GPS, y el rótulo dice cuándo sale.
+    const waiting = buildGpsMapVehicles(
+      input(lines, state, NOW, {
+        ...stop,
+        arrivals: [arrival({ route: '30E', direction: 'R', plate: 'PRUE50', departsAt: NOW + 15 * 60_000 })],
+      }),
+    ).find((v) => v.id === '30E:R#PRUE50');
+    expect(waiting?.tooltip).toMatch(/^30E hacia .+ · aún no sale \(sale 13:11\) · GPS hace 10 s · patente PRUE50$/);
+
     // Si el dato del paradero es más viejo, se queda la posición de /api/route-vehicles.
     const older = buildGpsMapVehicles(input(lines, state, NOW, { ...stop, ageMs: 60_000 }));
     expect(older.find((v) => v.id === '24F:R#PRUE51')).toMatchObject({ lat: -36.8221, bearing: 239 });

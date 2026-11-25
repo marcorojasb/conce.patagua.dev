@@ -21,7 +21,10 @@
 //   la reemplaza. El dato anterior sigue valiendo 10 min mostrando su edad.
 // - Una línea sin micros con alerta "Servicio X (Ida) … tiempo real" se
 //   muestra como "sin datos en vivo"; nunca se rellena con simuladas.
+// - Una micro cuyo viaje todavía no sale de la cabecera no trae minutos de
+//   llegada válidos (ver `tripDeparture`): se muestra su hora de salida.
 
+import { chileClock } from '@/lib/chile-time';
 import type { Route, RouteDirection } from '@/types/transport';
 
 export type LiveDirection = 'I' | 'R';
@@ -37,6 +40,8 @@ export interface LiveArrival {
   distanceM: number | null;
   plate: string | null;
   tripId: string | null;
+  /** Salida programada del viaje desde su cabecera (ms Unix), leída del `tripId`: ver `tripDeparture`. */
+  departsAt: number | null;
   position: { lat: number; lng: number } | null;
   /** `true` solo si la fuente marca la predicción con `realtime: true` (GPS). */
   realtime: boolean;
@@ -160,6 +165,7 @@ function parsePrediction(raw: unknown, fetchedAt: number): LiveArrival | null {
   }
   if (arrivalAt == null) return null;
   const distance = finiteNumber(p.distance);
+  const tripId = nonEmptyString(p.tripId);
   return {
     route,
     direction: explicitDirection ?? suffixDirection(route),
@@ -167,10 +173,54 @@ function parsePrediction(raw: unknown, fetchedAt: number): LiveArrival | null {
     timeLabel,
     distanceM: distance != null && distance >= 0 ? distance : null,
     plate: readPlate(p.licensePlate),
-    tripId: nonEmptyString(p.tripId),
+    tripId,
+    departsAt: tripDeparture(tripId, fetchedAt),
     position: readPosition(p),
     realtime: p.realtime === true,
   };
+}
+
+// ── Salida programada del viaje ─────────────────────────────────────────────
+// El tripId de la fuente es "<servicio>_<I|R>_<tipo de día>_<HHMM>", con la
+// salida programada desde la cabecera en hora de Chile ("201I_I_L_1900"). La
+// fuente da minutos de llegada también a micros que esperan en la cabecera,
+// como si ya vinieran: en el paradero P20318 (Camino El Patagual, 25-nov-2026,
+// 18:16) anunciaba en ~27 y ~32 min a las 201 de las 18:30 y las 19:00, que
+// seguían en Santa Juana, a más de 23 km por la ruta; la de 19:00 habría
+// llegado antes de su propia salida. Hasta que la micro sale, sus minutos no
+// valen.
+
+const TRIP_DEPARTURE = /^[0-9A-Z]+_[IR]_[A-Z]+_([01]\d|2[0-3])([0-5]\d)$/i;
+
+/**
+ * Salida programada (ms Unix) que trae el tripId, la más cercana a la
+ * consulta: "2350" leído a las 00:10 es de anoche, "0005" a las 23:55 es de
+ * mañana. null si el tripId no tiene esa forma.
+ */
+export function tripDeparture(tripId: string | null, fetchedAt: number): number | null {
+  const match = tripId ? TRIP_DEPARTURE.exec(tripId) : null;
+  if (!match) return null;
+  const departureMin = Number(match[1]) * 60 + Number(match[2]);
+  let delta = departureMin - chileClock(new Date(fetchedAt)).minutes;
+  if (delta > 720) delta -= 1440;
+  else if (delta <= -720) delta += 1440;
+  return Math.round(fetchedAt + delta * 60_000);
+}
+
+/** El viaje todavía no sale de su cabecera: sus minutos de llegada no valen. */
+export function notDepartedYet(arrival: Pick<LiveArrival, 'departsAt'>, now: number): boolean {
+  return arrival.departsAt != null && arrival.departsAt > now;
+}
+
+/** "19:00", hora de Chile. */
+export function formatDeparture(departsAt: number): string {
+  const minutes = Math.round(chileClock(new Date(departsAt)).minutes) % 1440;
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+}
+
+/** Orden de la lista: las que esperan en la cabecera no llegan antes de su salida. */
+function arrivalOrder(arrival: LiveArrival): number {
+  return arrival.departsAt != null ? Math.max(arrival.arrivalAt, arrival.departsAt) : arrival.arrivalAt;
 }
 
 // ── Nombres de servicio ─────────────────────────────────────────────────────
@@ -233,7 +283,7 @@ export function parseStopInfo(raw: unknown, fetchedAt: number): StopInfoParse {
     const arrival = parsePrediction(item, fetchedAt);
     if (arrival) arrivals.push(arrival);
   }
-  arrivals.sort((a, b) => a.arrivalAt - b.arrivalAt);
+  arrivals.sort((a, b) => arrivalOrder(a) - arrivalOrder(b));
 
   const routeInfo: LiveRouteInfo[] = [];
   if (Array.isArray(body.routeInfo)) {
@@ -263,8 +313,9 @@ export function parseStopInfo(raw: unknown, fetchedAt: number): StopInfoParse {
 
 // ── Reglas sobre el dato ya interpretado ────────────────────────────────────
 
+/** Ya pasó por el paradero; una micro que todavía no sale de la cabecera no. */
 export function isGone(arrival: LiveArrival, now: number): boolean {
-  return arrival.arrivalAt < now - PASSED_TOLERANCE_MS;
+  return arrival.arrivalAt < now - PASSED_TOLERANCE_MS && !notDepartedYet(arrival, now);
 }
 
 /** Minutos que faltan: redondeado, nunca negativo. */

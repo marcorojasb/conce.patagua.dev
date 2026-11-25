@@ -31,6 +31,10 @@ describe('textos del tooltip de una micro', () => {
     expect(gpsTooltipLine({ code: '401', destination: 'Tomé', ageMs: null, plate: 'PRUE58' })).toBe(
       '401 hacia Tomé · GPS · patente PRUE58',
     );
+    // Su viaje todavía no sale de la cabecera.
+    expect(
+      gpsTooltipLine({ code: '201', destination: 'Concepción', ageMs: 10_000, plate: null, departsAt: '19:00' }),
+    ).toBe('201 hacia Concepción · aún no sale (sale 19:00) · GPS hace 10 s');
   });
 
   it('estimada: siempre dice que es según el programa, nunca GPS', () => {
