@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
   DENSE_NETWORK_STOPS,
+  casingColor,
   networkStopsMinZoom,
   planNetworkDiff,
   planNetworkState,
   routeStyleFor,
+  stopStyleForZoom,
+  topPaintedRef,
 } from '@/components/map/route-network-diff';
 
 const all = () => true;
@@ -96,18 +99,82 @@ describe('planNetworkDiff', () => {
 });
 
 describe('routeStyleFor', () => {
-  it('usa los pesos y opacidades del plan', () => {
-    expect(routeStyleFor({ focus: false, dim: false })).toEqual({
+  it('usa los pesos y opacidades del plan; el borde normal depende del tema', () => {
+    expect(routeStyleFor({ focus: false, dim: false }, 'light')).toEqual({
       casing: { weight: 7, opacity: 0.35 },
       line: { weight: 4, opacity: 0.82 },
       stopOpacity: 1,
     });
-    expect(routeStyleFor({ focus: true, dim: false }).line).toEqual({ weight: 6, opacity: 1 });
-    expect(routeStyleFor({ focus: false, dim: true })).toEqual({
-      casing: { weight: 7, opacity: 0.08 },
-      line: { weight: 4, opacity: 0.16 },
-      stopOpacity: 0.25,
+    expect(routeStyleFor({ focus: false, dim: false }, 'dark')).toEqual({
+      casing: { weight: 7, opacity: 0.5 },
+      line: { weight: 4, opacity: 0.82 },
+      stopOpacity: 1,
     });
+    for (const theme of ['light', 'dark'] as const) {
+      expect(routeStyleFor({ focus: true, dim: false }, theme)).toEqual({
+        casing: { weight: 10, opacity: 0.7 },
+        line: { weight: 6, opacity: 1 },
+        stopOpacity: 1,
+      });
+      expect(routeStyleFor({ focus: false, dim: true }, theme)).toEqual({
+        casing: { weight: 7, opacity: 0.08 },
+        line: { weight: 4, opacity: 0.16 },
+        stopOpacity: 0.25,
+      });
+    }
+  });
+
+  it('borde blanco en claro y casi negro en oscuro', () => {
+    expect(casingColor('light')).toBe('#ffffff');
+    expect(casingColor('dark')).toBe('#020617');
+  });
+});
+
+describe('stopStyleForZoom', () => {
+  it('parada de micro: 3/1,5 lejos, 4/2 a zoom 14 y 12 px por fuera desde 15', () => {
+    expect(stopStyleForZoom(11)).toEqual({ radius: 3, weight: 1.5 });
+    expect(stopStyleForZoom(12)).toEqual({ radius: 3, weight: 1.5 });
+    expect(stopStyleForZoom(13)).toEqual({ radius: 3, weight: 1.5 });
+    expect(stopStyleForZoom(14)).toEqual({ radius: 4, weight: 2 });
+    expect(stopStyleForZoom(15)).toEqual({ radius: 5, weight: 2 });
+    expect(stopStyleForZoom(18)).toEqual({ radius: 5, weight: 2 });
+    const outer = stopStyleForZoom(15);
+    expect(2 * (outer.radius + outer.weight / 2)).toBe(12);
+  });
+
+  it('estación del Biotrén: aro grueso y siempre más grande que la parada de micro', () => {
+    expect(stopStyleForZoom(11, true)).toEqual({ radius: 4, weight: 2.5 });
+    expect(stopStyleForZoom(12, true)).toEqual({ radius: 4, weight: 2.5 });
+    expect(stopStyleForZoom(13, true)).toEqual({ radius: 5, weight: 3 });
+    expect(stopStyleForZoom(14, true)).toEqual({ radius: 6, weight: 3 });
+    expect(stopStyleForZoom(15, true)).toEqual({ radius: 7, weight: 3 });
+    for (let zoom = 10; zoom <= 19; zoom++) {
+      const station = stopStyleForZoom(zoom, true);
+      const stop = stopStyleForZoom(zoom);
+      expect(station.radius).toBeGreaterThan(stop.radius);
+      expect(station.weight).toBeGreaterThan(stop.weight);
+    }
+  });
+});
+
+describe('topPaintedRef', () => {
+  it('elige el recorrido pintado más arriba, no el primero que trajo la parada', () => {
+    const rank = new Map([
+      ['a', 1],
+      ['b', 3],
+      ['c', 2],
+    ]);
+    expect(topPaintedRef(['a', 'b', 'c'], rank)).toBe('b');
+    expect(topPaintedRef(['c', 'a'], rank)).toBe('c');
+    // Subir un trazado al frente (foco) cambia el color del aro de sus paradas compartidas.
+    rank.set('a', 4);
+    expect(topPaintedRef(['a', 'b', 'c'], rank)).toBe('a');
+  });
+
+  it('ignora lo que no tiene rango y sin nada devuelve null', () => {
+    expect(topPaintedRef(['x', 'y'], new Map([['y', 1]]))).toBe('y');
+    expect(topPaintedRef(['x'], new Map())).toBeNull();
+    expect(topPaintedRef([], new Map([['a', 1]]))).toBeNull();
   });
 });
 

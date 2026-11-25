@@ -18,14 +18,17 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useEffect, useId, useMemo, useState, type ReactNode } from 'react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { Notice } from '@/components/ui/notice';
 import { RouteBadge } from '@/components/route-badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SectionLabel } from '@/components/ui/section-label';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StatTile } from '@/components/ui/stat-tile';
+import { StatusChip } from '@/components/ui/status-chip';
+import { StatusDot } from '@/components/ui/status-dot';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GTFS_CONCEPCION_SOURCE } from '@/data/gtfs-stops.generated';
 import { ROUTE_TYPES } from '@/data/routes';
@@ -41,6 +44,7 @@ import {
   type NextDeparture,
 } from '@/lib/route-schedule-summary';
 import { formatServiceClock } from '@/lib/stop-services';
+import { routeColorVars } from '@/lib/route-colors';
 import { directionCode, isInterurban, routePillCode, routeShortName } from '@/lib/route-labels';
 import { cn } from '@/lib/utils';
 import type { LatLngTuple, Route, RouteSchedule, Stop } from '@/types/transport';
@@ -333,14 +337,7 @@ export function RouteDetailSheet({
           <RouteBadge code={routePillCode(route)} color={route.color} />
           <TypeIcon />
           <span>{ROUTE_TYPES[route.type].label}</span>
-          {isInterurban(route) && (
-            <Badge
-              variant="outline"
-              className="border-teal-600/40 bg-teal-500/10 text-[10px] font-normal text-teal-900 dark:text-teal-200"
-            >
-              {route.network}
-            </Badge>
-          )}
+          {isInterurban(route) && <StatusChip tone="muted">{route.network}</StatusChip>}
         </div>
       }
       actions={<RouteActions route={route} membership={membership} onFocusRoute={onFocusRoute} />}
@@ -418,19 +415,15 @@ function MembershipChips({ onMap, hiddenByFilter }: { onMap: boolean; hiddenByFi
   if (onMap && !hiddenByFilter) return null;
   return (
     <span className="ml-1.5 inline-flex flex-wrap gap-1 align-middle">
-      {!onMap && (
-        <span className="inline-flex items-center rounded-full border border-dashed px-2 py-px text-[11px] text-muted-foreground">
-          No está en tu mapa
-        </span>
-      )}
+      {!onMap && <StatusChip tone="dashed">No está en tu mapa</StatusChip>}
       {hiddenByFilter && (
-        <span
-          className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-px text-[11px] font-medium text-amber-900 dark:bg-amber-500/20 dark:text-amber-200"
+        <StatusChip
+          tone="stale"
+          icon={<Clock aria-hidden />}
           title="«Operando ahora» la saca de la red; se dibuja igual mientras está abierta"
         >
-          <Clock className="size-3" aria-hidden />
           Fuera de horario ahora
-        </span>
+        </StatusChip>
       )}
     </span>
   );
@@ -457,27 +450,29 @@ function RouteActions({
     <div>
       <div className="flex items-center gap-1.5">
         <div className="-mx-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-1 py-0.5 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible [&::-webkit-scrollbar]:hidden">
+          {/* En el teléfono, padding más corto: con "Más acciones" (40 px) al
+              lado, "Centrar en el mapa" cabe entero en 390 px. */}
           {membership.onMap ? (
-            <Button size="sm" variant="outline" className="shrink-0" onClick={membership.onRemove}>
+            <Button size="sm" variant="outline" className="shrink-0 max-sm:gap-1.5 max-sm:px-2" onClick={membership.onRemove}>
               <EyeOff className="size-3.5" />
               Quitar del mapa
             </Button>
           ) : (
-            <Button size="sm" className="shrink-0" onClick={membership.onAdd}>
+            <Button size="sm" className="shrink-0 max-sm:gap-1.5 max-sm:px-2" onClick={membership.onAdd}>
               <Plus className="size-3.5" />
               Agregar al mapa
             </Button>
           )}
-          <Button size="sm" variant="outline" className="shrink-0" onClick={onFocusRoute}>
+          <Button size="sm" variant="outline" className="shrink-0 max-sm:gap-1.5 max-sm:px-2" onClick={onFocusRoute}>
             <Crosshair className="size-3.5" />
             Centrar en el mapa
           </Button>
           <span className="hidden sm:contents">
             <WikiLinkButton kind="route" code={route.code} />
             <Button
-              size="icon"
+              size="iconSm"
               variant="ghost"
-              className="size-8 text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground"
               aria-label="Reportar un problema con este recorrido"
               title="Reportar un problema con este recorrido"
               onClick={report}
@@ -487,9 +482,9 @@ function RouteActions({
           </span>
         </div>
         <Button
-          size="icon"
+          size="iconSm"
           variant="outline"
-          className="size-8 shrink-0 sm:hidden"
+          className="shrink-0 sm:hidden"
           aria-label="Más acciones"
           aria-expanded={moreOpen}
           aria-controls={moreOpen ? moreId : undefined}
@@ -523,67 +518,29 @@ function DirectionGroup({
   directionId: DirectionId | null;
   onChange: (directionId: DirectionId | null) => void;
 }) {
-  const buttonClass = (active: boolean) =>
-    cn(
-      'min-w-0 rounded-md px-2 py-1 text-xs font-medium transition-colors focus-ring',
-      active ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground/80',
-    );
+  // toggle (botones con aria-pressed), no radio: el smoke busca el sentido
+  // elegido como botón presionado dentro del grupo "Sentido".
   return (
-    <div
-      role="group"
-      aria-label="Sentido"
-      className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)] gap-1 rounded-lg bg-muted p-1"
-    >
-      <button
-        type="button"
-        aria-pressed={directionId === null}
-        onClick={() => onChange(null)}
-        className={buttonClass(directionId === null)}
-      >
-        Ambos
-      </button>
-      {directions.map((d) => (
-        <button
-          key={d.key}
-          type="button"
-          aria-pressed={d.directionId === directionId}
-          aria-label={`${d.code} → ${d.destination}`}
-          title={`${d.code} hacia ${d.destination}`}
-          onClick={() => onChange(d.directionId)}
-          className={buttonClass(d.directionId === directionId)}
-        >
-          <DirectionSign route={route} direction={d} />
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  detail,
-  indicator,
-}: {
-  label: string;
-  value: ReactNode;
-  detail?: ReactNode;
-  indicator?: ReactNode;
-}) {
-  return (
-    <div className="min-w-0 rounded-md border bg-card p-3">
-      <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        {indicator}
-        {label}
-      </div>
-      <div className="mt-1 truncate text-base font-semibold leading-tight tabular-nums">
-        {value}
-      </div>
-      {/* Hasta dos líneas: en pantallas angostas "próxima HH:MM" no se corta. */}
-      {detail && (
-        <div className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-muted-foreground">{detail}</div>
-      )}
-    </div>
+    <SegmentedControl
+      variant="toggle"
+      label="Sentido"
+      value={directionId === null ? 'both' : String(directionId)}
+      onChange={(value) => onChange(value === 'both' ? null : (Number(value) as DirectionId))}
+      options={[
+        { value: 'both', label: 'Ambos' },
+        ...directions.map((d) => ({
+          value: String(d.directionId),
+          label: <DirectionSign route={route} direction={d} />,
+          name: `${d.code} → ${d.destination}`,
+          title: `${d.code} hacia ${d.destination}`,
+        })),
+      ]}
+      // "Ambos" a su ancho, a la izquierda, y los dos sentidos uno bajo el
+      // otro a todo lo ancho que queda: en una fila el destino quedaba en
+      // 5–7 letras ("Higuer…") y no se leía hacia dónde va cada uno. En
+      // móvil la flecha cede su lugar al destino.
+      className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)] max-md:[&_svg]:hidden [&>button:first-child]:row-span-2 [&>button:first-child]:h-auto [&>button:not(:first-child)]:justify-start"
+    />
   );
 }
 
@@ -605,7 +562,8 @@ function DirectionSign({
   return (
     <span className={cn('flex min-w-0 items-center gap-1.5', className)}>
       <RouteBadge code={direction.code} color={route.color} />
-      <ArrowRight className="size-3.5 shrink-0 text-muted-foreground" aria-label="hacia" />
+      {/* currentColor atenuado: se lee también dentro de un sentido elegido (invertido). */}
+      <ArrowRight className="size-3.5 shrink-0 opacity-60" aria-label="hacia" />
       <span className="truncate">{direction.destination}</span>
     </span>
   );
@@ -632,7 +590,7 @@ function InfoTab({
   const today = chileClock(now).day;
   const routeCard =
     route.stops.length > 0 ? (
-      <StatCard
+      <StatTile
         label="Recorrido"
         value={`${route.stops.length} ${stopsNoun(route, route.stops.length)}`}
         detail={
@@ -642,7 +600,7 @@ function InfoTab({
         }
       />
     ) : (
-      <StatCard label="Recorrido" value={formatKm(routeKm)} detail="sin paraderos cargados" />
+      <StatTile label="Recorrido" value={formatKm(routeKm)} detail="sin paraderos cargados" />
     );
   const data = schedule.status === 'ready' ? schedule.data : null;
 
@@ -654,9 +612,9 @@ function InfoTab({
         </SectionLabel>
         {schedule.status === 'loading' ? (
           <div className="grid grid-cols-2 gap-2" aria-busy="true" aria-label="Cargando horario">
-            <Skeleton className="h-[74px]" />
-            <Skeleton className="h-[74px]" />
-            <Skeleton className="h-[74px]" />
+            <Skeleton className="h-[78px]" />
+            <Skeleton className="h-[78px]" />
+            <Skeleton className="h-[78px]" />
             {routeCard}
           </div>
         ) : schedule.status === 'error' ? (
@@ -802,17 +760,16 @@ function FareCard({ route }: { route: Route }) {
   return (
     <section>
       <SectionLabel icon={<Wallet />}>Tarifa</SectionLabel>
-      <div className="rounded-md border bg-card p-3">
+      <div className="rounded-md border bg-card p-2.5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <div className="flex items-baseline gap-1.5 text-sm font-medium">
-            {fare.value}
-            <span className="text-[11px] font-normal text-muted-foreground">{fare.unit}</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-mono text-sm font-semibold tabular-nums">{fare.value}</span>
+            <span className="text-[11px] text-muted-foreground">{fare.unit}</span>
           </div>
           {fare.payment && (
-            <Badge variant="outline" className="gap-1 font-normal">
-              <CreditCard className="size-3" />
+            <StatusChip tone="muted" icon={<CreditCard aria-hidden />}>
               {fare.payment}
-            </Badge>
+            </StatusChip>
           )}
         </div>
         <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">{fare.note}</p>
@@ -826,7 +783,7 @@ function ScheduleError({ retry }: { retry: () => void }) {
     <Notice tone="danger" icon={<AlertTriangle />}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span>No se pudo cargar el horario.</span>
-        <Button size="sm" variant="outline" className="h-7" onClick={retry}>
+        <Button size="sm" variant="outline" onClick={retry}>
           Reintentar
         </Button>
       </div>
@@ -869,12 +826,12 @@ function TodayCards({
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      <StatCard
+      <StatTile
         label="Horario"
         value={range ?? 'Sin servicio'}
         detail={range ? 'primera y última salida' : 'no hay salidas hoy'}
       />
-      <StatCard
+      <StatTile
         label="Salidas"
         value={summary.departures}
         detail={
@@ -887,19 +844,15 @@ function TodayCards({
               : 'programadas hoy'
         }
       />
-      <StatCard
-        label="Ahora"
+      <StatTile
+        label={
+          <span className="inline-flex items-center gap-1.5">
+            <StatusDot on={operatingNow} label={operatingNow ? 'Operando ahora' : 'Fuera de horario ahora'} />
+            Ahora
+          </span>
+        }
         value={nowValue}
         detail={nowDetail}
-        indicator={
-          <span
-            aria-hidden
-            className={cn(
-              'size-1.5 rounded-full',
-              operatingNow ? 'bg-emerald-500' : 'bg-muted-foreground/40',
-            )}
-          />
-        }
       />
       {routeCard}
     </div>
@@ -1015,7 +968,7 @@ function ScheduleTab({
     return (
       <div className="space-y-3" aria-busy="true" aria-label="Cargando horario">
         <Skeleton className="h-8 w-48" />
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Skeleton className="h-12" />
           <Skeleton className="h-12" />
           <Skeleton className="h-12" />
@@ -1048,44 +1001,34 @@ function ScheduleTab({
 
   return (
     <div className="space-y-4">
-      <div
-        role="group"
-        aria-label="Día de la semana"
-        className="inline-flex rounded-lg bg-muted p-1 text-muted-foreground"
-      >
-        {DAY_GROUPS.map((g) => (
-          <button
-            key={g.id}
-            type="button"
-            aria-pressed={g.id === group}
-            onClick={() => setPickedGroup(g.id)}
-            className={cn(
-              'rounded-md px-3 py-1 text-xs font-medium transition-colors focus-ring',
-              g.id === group
-                ? 'bg-background text-foreground shadow-sm'
-                : 'hover:text-foreground/80',
-            )}
-          >
-            {g.label}
-            {groupOfDay(clock.day) === g.id && (
+      <SegmentedControl
+        variant="toggle"
+        label="Día de la semana"
+        value={group}
+        onChange={setPickedGroup}
+        options={DAY_GROUPS.map((g) => ({
+          value: g.id,
+          label:
+            groupOfDay(clock.day) === g.id ? (
               <>
-                {' '}
-                <span className="text-[10px] font-normal text-muted-foreground">hoy</span>
+                {g.label} <span className="text-[11px] font-normal opacity-75">hoy</span>
               </>
-            )}
-          </button>
-        ))}
-      </div>
+            ) : (
+              g.label
+            ),
+        }))}
+      />
 
       {summary.departures === 0 ? (
         <Notice icon={<Info />}>Sin salidas el {DAY_NAMES[day]}.</Notice>
       ) : (
         <>
-          <div className="grid grid-cols-4 gap-2">
-            <MiniStat label="Primera" value={formatServiceClock(summary.first ?? 0)} />
-            <MiniStat label="Última" value={formatServiceClock(summary.last ?? 0)} />
-            <MiniStat label="Salidas" value={String(summary.departures)} />
-            <MiniStat
+          <div className="grid grid-cols-2 gap-2">
+            <StatTile compact label="Primera" value={formatServiceClock(summary.first ?? 0)} />
+            <StatTile compact label="Última" value={formatServiceClock(summary.last ?? 0)} />
+            <StatTile compact label="Salidas" value={summary.departures} />
+            <StatTile
+              compact
               label="Intervalo"
               value={summary.medianHeadway ? `~${formatHeadway(summary.medianHeadway)}` : '—'}
             />
@@ -1141,15 +1084,6 @@ function ScheduleTab({
       )}
 
       <SourceNote route={route} schedule={schedule} />
-    </div>
-  );
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0 rounded-md border bg-card px-2 py-1.5">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="truncate text-sm font-semibold tabular-nums">{value}</div>
     </div>
   );
 }
@@ -1231,7 +1165,7 @@ function HourlyChart({
           );
         })}
       </div>
-      <div className="mt-1 flex gap-[2px] font-mono text-[10px] text-muted-foreground" aria-hidden>
+      <div className="mt-1 flex gap-[2px] font-mono text-[11px] text-muted-foreground" aria-hidden>
         {hourly.map((_, hour) => (
           <span
             key={hour}
@@ -1289,24 +1223,13 @@ function StopsTab({
       )}
 
       {patterns.length > 1 && (
-        <div role="group" aria-label="Sentido" className="grid grid-cols-2 gap-1 rounded-lg bg-muted p-1">
-          {patterns.map((d) => (
-            <button
-              key={d.key}
-              type="button"
-              aria-pressed={d.key === activeKey}
-              onClick={() => onPickDirection(d.key)}
-              className={cn(
-                'min-w-0 rounded-md px-2 py-1 text-xs font-medium transition-colors focus-ring',
-                d.key === activeKey
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground/80',
-              )}
-            >
-              <DirectionSign route={route} direction={d} />
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          variant="toggle"
+          label="Sentido"
+          value={activeKey}
+          onChange={onPickDirection}
+          options={patterns.map((d) => ({ value: d.key, label: <DirectionSign route={route} direction={d} /> }))}
+        />
       )}
 
       {!direction && directions.length > 1 ? (
@@ -1354,7 +1277,7 @@ function StopsTab({
             {route.directions?.length === 1 && 'El GTFS oficial publica un solo sentido. '}
             Toca {place} para ver su ficha.
           </p>
-          <ol>
+          <ol style={routeColorVars(route.color)}>
             {stops.map((stop, i) => {
               const endpoint = i === 0 ? 'Origen' : i === last ? 'Destino' : null;
               return (
@@ -1362,30 +1285,27 @@ function StopsTab({
                   {i < last && (
                     <span
                       aria-hidden
-                      className="absolute left-[13px] top-4 h-full w-0.5"
-                      style={{ background: route.color, opacity: 0.45 }}
+                      className="absolute left-[13px] top-4 h-full w-0.5 bg-[var(--route)] opacity-45 dark:bg-[var(--route-dark)]"
                     />
                   )}
                   <button
                     type="button"
                     onClick={() => onSelectStop(stop.id)}
-                    className="relative flex w-full items-start gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted focus-ring"
+                    className="relative flex min-h-10 w-full items-start gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted focus-ring md:min-h-0"
                   >
                     <span className="flex w-4 shrink-0 justify-center pt-1" aria-hidden>
                       <span
                         className={cn(
-                          'rounded-full border-2 bg-background',
-                          endpoint ? 'size-3.5 -mt-px' : 'size-3',
+                          'rounded-full border-2 border-[color:var(--route)] dark:border-[color:var(--route-dark)]',
+                          endpoint
+                            ? 'size-3.5 -mt-px bg-[var(--route)] dark:bg-[var(--route-dark)]'
+                            : 'size-3 bg-background',
                         )}
-                        style={{
-                          borderColor: route.color,
-                          background: endpoint ? route.color : undefined,
-                        }}
                       />
                     </span>
                     <span className="min-w-0 flex-1">
                       {endpoint && (
-                        <span className="block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                        <span className="block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                           {endpoint}
                         </span>
                       )}

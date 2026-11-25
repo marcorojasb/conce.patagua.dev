@@ -5,8 +5,11 @@
 // único en los tres llamados: Electro-Cointer / Electro-Cointer II
 // (Cointer Concesiones S.L., Grupo Azvi, España).
 
+import { Info } from 'lucide-react';
+import { Notice } from '@/components/ui/notice';
 import {
   DataTable,
+  IssueNotice,
   KeyValueList,
   NewsPulse,
   PendingBanner,
@@ -39,7 +42,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
         operacional MTT al operador.
       </VerifiedBanner>
 
-      <p className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/30 px-3 py-2 text-[12px] leading-relaxed text-muted-foreground">
+      <Notice icon={<Info />}>
         <strong>Nota sobre el nombre.</strong> El wiki adopta{' '}
         <strong>"Corredores de Transporte Público MOP"</strong> como
         nombre canónico, siguiendo el uso del MTT y MOP. El término{' '}
@@ -48,7 +51,7 @@ export default function CorredoresTransportePublicoMOPBiobio() {
         se llaman Electro-Cointer y Electro-Cointer II). El SEREMI
         Patricio Fierro aclaró en nov-2025 que no se exige flota 100%
         eléctrica.
-      </p>
+      </Notice>
 
       <NewsPulse
         items={[
@@ -455,47 +458,27 @@ export default function CorredoresTransportePublicoMOPBiobio() {
 
       <Section title="Riesgos y críticas">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Oferta única en los tres llamados
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Electro-Cointer / Electro-Cointer II (Cointer / Grupo
-              Azvi) fue el único postulante. USD 250M concentrados en
-              una sola SPV; presión sobre el precio se pierde. Repite
-              el patrón "oferente único" de Red Norte de Aeropuertos.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Sobrecostos típicos en concesiones MOP
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Sobrecosto histórico promedio 15-30% por modificaciones
-              contractuales. Costo final podría acercarse a USD 300-325M.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Demanda inducida vs. real y gremio sin posición
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Estudios de demanda no son públicos. Los operadores del
-              Perímetro 2024 no han fijado posición sobre qué proporción
-              de flota usará los corredores ni si la entrada exige flota
-              nueva. Sin claridad regulatoria, hay riesgo de bloqueo.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Desplazamiento político del Biotrén
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Si los electrocorredores consumen el techo presupuestario
-              regional para la próxima década, las extensiones del
-              Biotrén a Penco, Lota y Carriel Sur quedan postergadas.
-            </p>
-          </div>
+          <IssueNotice title="Oferta única en los tres llamados">
+            Electro-Cointer / Electro-Cointer II (Cointer / Grupo
+            Azvi) fue el único postulante. USD 250M concentrados en
+            una sola SPV; presión sobre el precio se pierde. Repite
+            el patrón "oferente único" de Red Norte de Aeropuertos.
+          </IssueNotice>
+          <IssueNotice title="Sobrecostos típicos en concesiones MOP">
+            Sobrecosto histórico promedio 15-30% por modificaciones
+            contractuales. Costo final podría acercarse a USD 300-325M.
+          </IssueNotice>
+          <IssueNotice title="Demanda inducida vs. real y gremio sin posición">
+            Estudios de demanda no son públicos. Los operadores del
+            Perímetro 2024 no han fijado posición sobre qué proporción
+            de flota usará los corredores ni si la entrada exige flota
+            nueva. Sin claridad regulatoria, hay riesgo de bloqueo.
+          </IssueNotice>
+          <IssueNotice title="Desplazamiento político del Biotrén">
+            Si los electrocorredores consumen el techo presupuestario
+            regional para la próxima década, las extensiones del
+            Biotrén a Penco, Lota y Carriel Sur quedan postergadas.
+          </IssueNotice>
         </div>
       </Section>
 

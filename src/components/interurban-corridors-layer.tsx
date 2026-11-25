@@ -27,13 +27,19 @@ function corridorLabel(corridor: InterurbanCorridor): string {
   return corridor.title.match(/Ruta\s+(\w+)/i)?.[1] ?? destination.slice(0, 3).toUpperCase();
 }
 
-function corridorIcon(corridor: InterurbanCorridor, active: boolean): L.DivIcon {
+/** HTML del pin de un corredor: lo usan el mapa y la leyenda (map-swatches.tsx). */
+export function corridorPinHtml(corridor: InterurbanCorridor, active: boolean): string {
   const label = corridorLabel(corridor).replace(/[^\w-]/g, '');
-  const color = /^#[0-9a-f]{3,8}$/i.test(corridor.color) ? corridor.color : '#0f766e';
+  // Sin GTFS: neutro (zinc-600), nunca el color de una línea con trazado oficial.
+  const color = /^#[0-9a-f]{3,8}$/i.test(corridor.color) ? corridor.color : '#52525b';
+  return `<div class="interurban-pin${active ? ' is-active' : ''}" style="--pin-bg:${color}">${label}</div>`;
+}
+
+function corridorIcon(corridor: InterurbanCorridor, active: boolean): L.DivIcon {
   return cachedIcon(`corridor|${corridor.id}|${active}`, () =>
     L.divIcon({
       className: 'interurban-pin-wrap',
-      html: `<div class="interurban-pin${active ? ' is-active' : ''}" style="--pin-bg:${color}">${label}</div>`,
+      html: corridorPinHtml(corridor, active),
       iconSize: [36, 36],
       iconAnchor: [18, 36],
     }),

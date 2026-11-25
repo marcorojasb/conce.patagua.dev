@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { Database, ExternalLink } from 'lucide-react';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
+import { Notice } from '@/components/ui/notice';
+import { SectionLabel } from '@/components/ui/section-label';
 import { ROUTES, useRoutesVersion } from '@/data/routes';
 import { GTFS_CONCEPCION_SOURCE, GTFS_STOPS } from '@/data/gtfs-concepcion.generated';
 import { TERMINALS } from '@/data/terminals.generated';
@@ -51,7 +53,7 @@ function buildSources(): Source[] {
     {
       title: 'Micros según horario (estimación, no GPS)',
       detail:
-        'Con "Micros en el mapa: Horario" el visor proyecta dónde DEBERÍA estar cada bus o tren según su horario programado: GTFS oficial DTPR para los buses (interurbanos incluidos) e itinerarios oficiales de EFE para el Biotrén. Es una estimación: atrasos, cancelaciones y desvíos no se ven. Van redondas con borde punteado; las micros con GPS, cuadradas con anillo verde, y las dos nunca se dibujan juntas.',
+        'Con "Micros en el mapa: Horario" el visor proyecta dónde DEBERÍA estar cada bus o tren según su horario programado: GTFS oficial DTPR para los buses (interurbanos incluidos) e itinerarios oficiales de EFE para el Biotrén. Es una estimación: atrasos, cancelaciones y desvíos no se ven. Van redondas y planas, con aro blanco; las micros con GPS, cuadradas con anillo verde, y las dos nunca se dibujan juntas.',
       count: 'Calculado en el navegador cada 1 s desde los horarios programados',
       license: 'Capa derivada · GTFS DTPR + itinerarios EFE',
     },
@@ -73,7 +75,7 @@ function buildSources(): Source[] {
     {
       title: 'Esri · Gray Canvas basemaps',
       detail:
-        'Tiles del mapa base, en versiones clara (Light Gray Canvas) y oscura (Dark Gray Canvas). Cambia automáticamente con el tema de la app. Se usa en lugar de CARTO porque sus basemaps gratuitos exigen API key desde 2026.',
+        'Tiles del mapa base, en versiones clara (Light Gray Canvas) y oscura (Dark Gray Canvas), más su capa de rótulos (Gray Reference: comunas, lugares y calles). Cambia automáticamente con el tema de la app. Se usa en lugar de CARTO porque sus basemaps gratuitos exigen API key desde 2026.',
       link: { href: 'https://www.esri.com/en-us/arcgis/products/arcgis-online/overview', label: 'esri.com' },
       license: 'OpenStreetMap contributors © Esri · HERE, Garmin',
     },
@@ -129,7 +131,7 @@ export function DataSourcesSheet({ chrome }: DataSourcesSheetProps) {
       <SourceList title="En uso ahora" sources={sources} />
       <SourceList title="Pendientes (esperando publicación oficial)" sources={PENDING} />
 
-      <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+      <Notice>
         Si encuentras un error en un paradero o recorrido de micro, repórtalo a la
         DTPR, que publica el GTFS (tt@mtt.gob.cl). Para terminales, POIs o
         estaciones del Biotrén, sigue siendo útil{' '}
@@ -146,7 +148,7 @@ export function DataSourcesSheet({ chrome }: DataSourcesSheetProps) {
           npm run sync:all
         </code>
         ).
-      </div>
+      </Notice>
 
       <div className="text-[11px] text-muted-foreground">
         <a
@@ -165,16 +167,14 @@ export function DataSourcesSheet({ chrome }: DataSourcesSheetProps) {
 function SourceList({ title, sources }: { title: string; sources: Source[] }) {
   return (
     <div>
-      <div className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-        {title}
-      </div>
+      <SectionLabel>{title}</SectionLabel>
       <div className="space-y-2">
         {sources.map((s) => (
-          <div key={s.title} className="rounded-md border bg-card p-3">
+          <div key={s.title} className="rounded-md border bg-card p-2.5">
             <div className="text-sm font-medium">{s.title}</div>
             <p className="mt-1 break-words text-[12px] leading-snug text-muted-foreground">{s.detail}</p>
             {s.count && (
-              <div className="mt-1.5 font-mono text-[11px] text-muted-foreground">{s.count}</div>
+              <div className="mt-1.5 font-mono text-[11px] tabular-nums text-muted-foreground">{s.count}</div>
             )}
             <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
               {s.link && (

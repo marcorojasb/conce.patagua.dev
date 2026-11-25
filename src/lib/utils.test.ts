@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GTFS_BUS_ROUTES } from '@/data/gtfs-bus-routes.generated';
 import { ROUTES } from '@/data/routes';
+import { displayRouteColor, pillRouteColor } from '@/lib/route-colors';
 import { readableTextOn } from '@/lib/utils';
 
 /** Contraste WCAG entre dos colores hex de 6 dígitos. */
@@ -49,11 +50,20 @@ describe('readableTextOn', () => {
 
   it('el texto de cada píldora de recorrido llega a 4.5:1 (WCAG AA)', () => {
     // Incluye los tonos medios que con #111 quedaban cortos: oliva y naranjo.
+    // Y los colores de pantalla de cada tema y el fondo de la píldora (pillRouteColor).
     const colors = ['#598200', '#ce5504', '#007ab8', ...ROUTES.map((r) => r.color), ...GTFS_BUS_ROUTES.map((r) => r.colour ?? '')];
     expect(colors.length).toBeGreaterThan(100);
     for (const color of colors) {
       if (!/^#[0-9a-f]{6}$/i.test(color)) continue;
-      expect(contrast(color, full(readableTextOn(color))), color).toBeGreaterThanOrEqual(4.5);
+      for (const shown of [
+        color,
+        displayRouteColor(color, 'light'),
+        displayRouteColor(color, 'dark'),
+        pillRouteColor(color, 'light'),
+        pillRouteColor(color, 'dark'),
+      ]) {
+        expect(contrast(shown, full(readableTextOn(shown))), `${color} → ${shown}`).toBeGreaterThanOrEqual(4.5);
+      }
     }
   });
 });

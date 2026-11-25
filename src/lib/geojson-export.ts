@@ -66,7 +66,7 @@ export function buildExport(
           type: r.type,
           typeLabel: ROUTE_TYPES[r.type].label,
           operator: r.operator,
-          color: r.color,
+          color: r.officialColor ?? r.color,
           visibleInViewer: isVisible,
           stopsCount: r.stops.length,
         },

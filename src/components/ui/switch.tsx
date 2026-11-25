@@ -24,8 +24,11 @@ export const Switch = React.forwardRef<
   >
     <SwitchPrimitives.Thumb
       className={cn(
-        'pointer-events-none block size-4 rounded-full bg-background shadow-lg ring-0 transition-transform',
-        'data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0',
+        // Apagado, perilla gris más chica: con el color del fondo no se veía
+        // (1:1 contra la pista) y el interruptor parecía una píldora vacía.
+        'pointer-events-none block size-4 rounded-full ring-0 transition-transform',
+        'data-[state=checked]:translate-x-4 data-[state=checked]:bg-background data-[state=checked]:shadow-lg',
+        'data-[state=unchecked]:translate-x-0 data-[state=unchecked]:scale-75 data-[state=unchecked]:bg-muted-foreground',
       )}
     />
   </SwitchPrimitives.Root>

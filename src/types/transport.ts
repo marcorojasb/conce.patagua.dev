@@ -66,7 +66,13 @@ export interface Route {
   code: string;
   name: string;
   type: RouteTypeId;
+  /** Color de identidad en tema claro (route-colors.ts da el de cada tema). */
   color: string;
+  /**
+   * `route_color` del GTFS cuando la identidad curada lo reemplaza
+   * (interurbanos): es el que se exporta como dato oficial.
+   */
+  officialColor?: string;
   operator: string;
   headway: string;
   hours: string;

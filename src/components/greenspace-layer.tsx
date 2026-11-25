@@ -36,7 +36,7 @@ const STROKE_WIDTH = 0.8;
 /** Vértices a menos de esto (px) del anterior no se dibujan: lejos, un parque son pocos píxeles. */
 const MIN_STEP_PX = 0.75;
 
-const KIND_STYLE: Record<GreenKind, { fill: string; stroke: string }> = {
+export const GREEN_KIND_STYLE: Record<GreenKind, { fill: string; stroke: string }> = {
   // Parque "típico", verde frondoso.
   park: { fill: 'rgba(34, 197, 94, 0.45)', stroke: 'rgba(21, 128, 61, 0.85)' },
   // Jardines / centros botánicos, verde más oscuro.
@@ -152,7 +152,7 @@ class GreenspaceCanvasLayer extends L.Canvas {
     ctx.lineWidth = STROKE_WIDTH;
     ctx.lineJoin = 'round';
     for (const [kind, indices] of this.data.byKind) {
-      const style = KIND_STYLE[kind];
+      const style = GREEN_KIND_STYLE[kind];
       ctx.fillStyle = style.fill;
       ctx.strokeStyle = style.stroke;
       for (const i of indices) {

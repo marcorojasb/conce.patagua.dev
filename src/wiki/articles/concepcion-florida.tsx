@@ -12,6 +12,7 @@
 // regulatoria del corredor.
 
 import {
+  IssueNotice,
   KeyValueList,
   OperatorTable,
   PendingBanner,
@@ -370,75 +371,55 @@ export default function ConcepcionFlorida() {
 
       <Section title="Issues recientes y críticas">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              14-mar-2024 · Violencia entre conductores
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Pelea pública entre conductores de Biocosta y Los
-              Libertadores en el paradero Colo-Colo/Los Carrera. Pasajeros
-              grabaron la pelea. Conductor de Biocosta denunció amenazas
-              recurrentes ("nos van a quebrar los vidrios"). Los
-              Libertadores no entregó declaración pública.
-            </p>
+          <IssueNotice title="14-mar-2024 · Violencia entre conductores">
+            Pelea pública entre conductores de Biocosta y Los
+            Libertadores en el paradero Colo-Colo/Los Carrera. Pasajeros
+            grabaron la pelea. Conductor de Biocosta denunció amenazas
+            recurrentes ("nos van a quebrar los vidrios"). Los
+            Libertadores no entregó declaración pública.
             <Sources>
               <SourceLink href="https://www.biobiochile.cl/noticias/nacional/region-del-bio-bio/2024/03/14/pasajera-capta-violenta-pelea-entre-conductores-de-buses-que-unen-concepcion-con-florida.shtml">
                 BioBioChile · 14-mar-2024
               </SourceLink>
             </Sources>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Jul-2024 · Crimen de Daniela Olate y seguridad nocturna
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El crimen instaló en agenda pública la <strong>falta de
-              conectividad nocturna segura</strong> entre Florida y
-              Concepción. Llevó al acuerdo de mesa MTT-operadores
-              (jul-2024) y, eventualmente, al servicio nocturno
-              subvencionado anunciado en marzo 2025.
-            </p>
+          </IssueNotice>
+          <IssueNotice title="Jul-2024 · Crimen de Daniela Olate y seguridad nocturna">
+            El crimen instaló en agenda pública la <strong>falta de
+            conectividad nocturna segura</strong> entre Florida y
+            Concepción. Llevó al acuerdo de mesa MTT-operadores
+            (jul-2024) y, eventualmente, al servicio nocturno
+            subvencionado anunciado en marzo 2025.
             <Sources>
               <SourceLink href="https://sabes.cl/2024/07/23/transporte-publico-rural-entre-florida-y-concepcion-uno-de-los-tema-de-fondo-en-el-crimen-de-daniela-olate/">
                 Sabes.cl · 23-jul-2024
               </SourceLink>
             </Sources>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              27-jul-2024 · El MTT reconoce que no puede obligar a los privados
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El SEREMI Héctor Silva: <em>"La regulación es muy genérica y
-              no nos permite obligar a los operadores a cumplir ciertas
-              frecuencias"</em>. Acuerdos voluntarios: coordinación entre
-              los 40 buses, fiscalización municipal del paradero
-              Colo-Colo, GPS y cámaras financiadas por MTT, integración a
-              app Red Regional. Estado de cumplimiento: no verificado.
-            </p>
+          </IssueNotice>
+          <IssueNotice title="27-jul-2024 · El MTT reconoce que no puede obligar a los privados">
+            El SEREMI Héctor Silva: <em>"La regulación es muy genérica y
+            no nos permite obligar a los operadores a cumplir ciertas
+            frecuencias"</em>. Acuerdos voluntarios: coordinación entre
+            los 40 buses, fiscalización municipal del paradero
+            Colo-Colo, GPS y cámaras financiadas por MTT, integración a
+            app Red Regional. Estado de cumplimiento: no verificado.
             <Sources>
               <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2024/07/27/transportes-no-puede-obligar-a-buses-a-florida-para-que-aumenten-su-frecuencia.html">
                 Diario Concepción · 27-jul-2024
               </SourceLink>
             </Sources>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Suspendido temporalmente (mar-2025)
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              En marzo 2025 el SEREMI Fierro habló de{' '}
-              <em>"reponer el servicio a la brevedad"</em>, lo que
-              implica que algún servicio del corredor estaba caído al
-              momento del anuncio. La fuente no detalla cuál operador ni
-              por qué; queda como pendiente de aclaración.
-            </p>
+          </IssueNotice>
+          <IssueNotice title="Suspendido temporalmente (mar-2025)">
+            En marzo 2025 el SEREMI Fierro habló de{' '}
+            <em>"reponer el servicio a la brevedad"</em>, lo que
+            implica que algún servicio del corredor estaba caído al
+            momento del anuncio. La fuente no detalla cuál operador ni
+            por qué; queda como pendiente de aclaración.
             <Sources>
               <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/03/28/en-abril-comienza-nuevo-recorrido-nocturno-desde-concepcion-a-florida.html">
                 Diario Concepción · 28-mar-2025
               </SourceLink>
             </Sources>
-          </div>
+          </IssueNotice>
         </div>
       </Section>
 

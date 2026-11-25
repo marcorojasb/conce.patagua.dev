@@ -11,6 +11,7 @@
 //   SMOKE_PORT=5285 SMOKE_ONLY=N1,G3 npm run smoke:services
 
 import { spawn } from 'node:child_process';
+import { register } from 'node:module';
 import { chromium, devices, type Browser, type BrowserContextOptions, type Locator, type Page } from 'playwright';
 import { GTFS_BUS_ROUTES } from '../src/data/gtfs-bus-routes.generated.ts';
 import { GTFS_STOPS } from '../src/data/gtfs-stops.generated.ts';
@@ -31,8 +32,20 @@ const byRef = (ref: string) => {
   if (!route) throw new Error(`GTFS route ${ref} not found`);
   return route;
 };
+// route-colors.ts importa con el alias `@/` de Vite, que Node no entiende:
+// se traduce a src/ solo para esta importación.
+register(
+  `data:text/javascript,${encodeURIComponent(`
+    export async function resolve(specifier, context, next) {
+      if (!specifier.startsWith('@/')) return next(specifier, context);
+      return next(${JSON.stringify(new URL('../src/', import.meta.url).href)} + specifier.slice(2) + '.ts', context);
+    }`)}`,
+);
+const { displayRouteColor } = await import('../src/lib/route-colors.ts');
+
 const ROUTE_30QE = byRef('30QE');
-const COLOR_30QE = ROUTE_30QE.colour ?? '#0d7215';
+// El mapa pinta el color de pantalla (tono oficial, luminosidad del tema); el smoke corre en claro.
+const COLOR_30QE = displayRouteColor(ROUTE_30QE.colour ?? '#0d7215', 'light');
 
 // Un paradero que solo toca el regreso (sentido 1) de un recorrido debe
 // listarlo igual. Se elige uno sin otros recorridos para que el código se lea.
@@ -168,8 +181,9 @@ const TRANSPARENT_PNG = Buffer.from(
 
 async function open(options: OpenOptions = {}): Promise<Session> {
   if (!browser) throw new Error('Browser not started');
+  // Teléfono: el iPhone 13, o con `viewport` uno más angosto (360 × 740).
   const contextOptions: BrowserContextOptions = options.mobile
-    ? { ...devices['iPhone 13'] }
+    ? { ...devices['iPhone 13'], ...(options.viewport ? { viewport: options.viewport, screen: options.viewport } : {}) }
     : { viewport: options.viewport ?? { width: 1440, height: 900 } };
   delete (contextOptions as { defaultBrowserType?: string }).defaultBrowserType;
   const context = await browser.newContext({ ...contextOptions, acceptDownloads: true });
@@ -635,10 +649,35 @@ step('S10 herramientas: calidad de datos y fondo de pantalla con descarga', () =
   }),
 );
 
+/**
+ * En el teléfono la ficha a media altura no corta ningún botón del riel
+ * derecho: o se ve entero o queda del todo bajo la ficha (expandida).
+ */
+async function railClearOfSheet(page: Page, what: string): Promise<void> {
+  // La hoja cambia de alto con una transición de 300 ms.
+  await wait(450);
+  const clash = await page.evaluate(() => {
+    const sheet = document.querySelector('[data-surface] [role="dialog"]')?.getBoundingClientRect();
+    if (!sheet) return 'no sheet';
+    for (const el of document.querySelectorAll('[data-map-rail] button')) {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      const x = Math.min(r.right, sheet.right) - Math.max(r.left, sheet.left);
+      const y = Math.min(r.bottom, sheet.bottom) - Math.max(r.top, sheet.top);
+      if (x > 0 && y > 0 && y < r.height) {
+        return `${el.getAttribute('aria-label')} [${Math.round(r.top)}–${Math.round(r.bottom)}] vs sheet top ${Math.round(sheet.top)}`;
+      }
+    }
+    return null;
+  });
+  if (clash) fail(`Rail button cut by the sheet (${what}): ${clash}`);
+}
+
 step('S11 móvil: ficha de paradero, capas y menú de herramientas', () =>
   withSession({ mobile: true, url: '/?stop=gtfs-stop-37477' }, async ({ page }) => {
     await waitForBody(page, /Próximas pasadas|Cargando próximas pasadas programadas/, 'mobile stop panel');
     await visible(page.getByRole('button', { name: 'Cerrar' }), 'mobile sheet close button');
+    await railClearOfSheet(page, 'stop sheet');
     await page.getByRole('button', { name: 'Expandir panel' }).click();
     await visible(page.getByRole('button', { name: 'Reducir panel' }), 'expanded mobile sheet');
     await goto(page, '/');
@@ -650,6 +689,8 @@ step('S11 móvil: ficha de paradero, capas y menú de herramientas', () =>
     await page.getByRole('menuitemradio', { name: 'Calidad de datos' }).click();
     await visible(page.getByRole('dialog', { name: /Calidad de datos/ }), 'mobile data quality surface');
     if ((await page.getByRole('menu').count()) !== 0) fail('Mobile tools menu stayed open after choosing a tool.');
+    // "Más herramientas" queda encendido (herramienta del menú a la vista) y entero sobre la ficha.
+    await railClearOfSheet(page, 'tool from the overflow menu');
   }),
 );
 
@@ -1120,6 +1161,113 @@ for (const [label, options] of [
   );
 }
 
+step('G14 leyenda con muchas líneas a 1280×720: la micro estimada se ve sin desplazar', () =>
+  withSession({ viewport: { width: 1280, height: 720 }, url: `/?lineas=${TWENTY_LINES.slice(0, 14).join(',')},L1` }, async ({ page }) => {
+    const legend = page.getByRole('region', { name: 'Leyenda del mapa' });
+    await visible(legend, 'map legend');
+    const symbol = legend.locator('[data-legend-symbol="estimate"]');
+    await visible(symbol, 'estimate row in the legend');
+    const fits = await symbol.evaluate((row) => {
+      const list = row.closest('ul');
+      if (!list) return false;
+      const a = row.getBoundingClientRect();
+      const b = list.getBoundingClientRect();
+      return a.top >= b.top - 0.5 && a.bottom <= b.bottom + 0.5;
+    });
+    if (!fits) fail('The estimate symbol is below the fold of the legend list.');
+  }),
+);
+
+step('G13 móvil: "Micros en el mapa" plegado en una fila, con la cuenta a la vista', () =>
+  withSession({ mobile: true, url: '/' }, async ({ page }) => {
+    const control = page.locator('[data-micros-control]');
+    await visible(control, '"Micros en el mapa"');
+    const box = await control.boundingBox();
+    if (!box || box.height > 52) fail(`Collapsed micros control is ${box?.height} px tall (max 52).`);
+    // La cuenta de la elegida, siempre a la vista y sin cortar a 390 px.
+    const meta = control.locator('[data-micros-meta]');
+    await visible(meta.filter({ hasText: /\d+ estimadas?|cargando|sin horario/ }), 'micros meta of the chosen option');
+    const cut = await meta.evaluate((el) => el.scrollWidth > el.clientWidth);
+    if (cut) fail(`Micros meta is cut: ${await meta.textContent()}`);
+    // El estado completo y el alcance, tras "Estado de las micros".
+    const allNetwork = page.getByRole('radio', { name: 'Toda la red' });
+    if (await allNetwork.isVisible()) fail('"Toda la red" is visible with the micros control collapsed.');
+    const status = control.getByRole('button', { name: 'Estado de las micros' });
+    await status.click();
+    if ((await status.getAttribute('aria-expanded')) !== 'true') fail('"Estado de las micros" did not expand.');
+    await visible(allNetwork, '"Toda la red" after opening "Estado de las micros"');
+  }),
+);
+
+for (const [label, viewport] of [
+  ['390', undefined],
+  ['360×740', { width: 360, height: 740 }],
+] as const) {
+  step(`G13 móvil (${label}): en GPS la cuenta plegada no se corta y avisa del dato viejo`, () =>
+    withSession({ mobile: true, viewport, url: '/?micros=gps&lineas=24MF,401,421,L1,302' }, async ({ page }) => {
+      await waitForCanvas(page, (d) => d.mode === 'gps' && d.stale === '1', 'one stale GPS vehicle');
+      const control = page.locator('[data-micros-control]');
+      const box = await control.boundingBox();
+      if (!box || box.height > 52) fail(`Collapsed micros control is ${box?.height} px tall (max 52).`);
+      const meta = control.locator('[data-micros-meta]');
+      await visible(meta.filter({ hasText: /\d+ GPS/ }), 'GPS meta of the chosen option');
+      const cut = await meta.evaluate((el) => {
+        const text = el.querySelector('.truncate') ?? el;
+        return text.scrollWidth > text.clientWidth || el.scrollWidth > el.clientWidth;
+      });
+      if (cut) fail(`GPS meta is cut: ${await meta.textContent()}`);
+      // El dato viejo se ve sin el detalle: un ícono, y su texto para lectores de pantalla.
+      if ((await meta.getAttribute('data-stale')) !== 'true' || (await meta.locator('svg').count()) === 0) {
+        fail('The collapsed GPS meta does not flag the stale vehicle.');
+      }
+      const description = await page.getByRole('radio', { name: 'GPS en vivo' }).evaluate((radio) => {
+        const id = radio.getAttribute('aria-describedby');
+        return id ? document.getElementById(id)?.textContent ?? '' : '';
+      });
+      if (!/1 con dato viejo/.test(description)) fail(`GPS radio description lacks the stale count: "${description}"`);
+    }),
+  );
+}
+
+step('G15 leyenda: abierta y compacta en escritorio ancho, plegada a 768 px', async () => {
+  // Cuánto del mapa tapan los controles (micros, leyenda, riel, zoom, atribución).
+  const covered = (page: Page) =>
+    page.evaluate(() => {
+      const map = document.querySelector('.leaflet-container')!.getBoundingClientRect();
+      const selector =
+        'section[aria-label="Micros en el mapa"], section[aria-label="Leyenda del mapa"], [data-map-rail] button, .leaflet-control-zoom a, .leaflet-control-attribution';
+      let area = 0;
+      for (const el of document.querySelectorAll(selector)) {
+        const r = el.getBoundingClientRect();
+        const w = Math.max(0, Math.min(r.right, map.right) - Math.max(r.left, map.left));
+        const h = Math.max(0, Math.min(r.bottom, map.bottom) - Math.max(r.top, map.top));
+        area += w * h;
+      }
+      return (100 * area) / (map.width * map.height);
+    });
+  for (const [url, max, label] of [
+    ['/', 12, 'inicio'],
+    // En GPS "Detalle por línea" va abierto en escritorio (antes de este diseño, 13,9 %).
+    ['/?lineas=24MF,24TR,30QE,201-AU&micros=gps', 15, 'GPS'],
+  ] as const) {
+    await withSession({ viewport: { width: 1440, height: 900 }, url }, async ({ page }) => {
+      const legend = page.getByRole('region', { name: 'Leyenda del mapa' });
+      await visible(legend, 'map legend');
+      if ((await legend.getByRole('button', { name: 'Leyenda' }).getAttribute('aria-expanded')) !== 'true') {
+        fail(`Legend starts collapsed at 1440 px (${label}).`);
+      }
+      await wait(600);
+      const pct = await covered(page);
+      if (pct > max) fail(`Map controls cover ${pct.toFixed(1)} % of the map at 1440×900 (${label}, max ${max} %).`);
+    });
+  }
+  await withSession({ viewport: { width: 768, height: 1024 }, url: '/' }, async ({ page }) => {
+    const button = page.getByRole('region', { name: 'Leyenda del mapa' }).getByRole('button', { name: 'Leyenda' });
+    await visible(button, 'legend button at 768 px');
+    if ((await button.getAttribute('aria-expanded')) !== 'false') fail('Legend starts open at 768 px.');
+  });
+});
+
 step('G2 modo GPS en la URL, con replace', () =>
   withSession({ url: '/' }, async ({ page }) => {
     const before = await page.evaluate(() => history.length);
@@ -1229,7 +1377,7 @@ try {
     passed.push(name);
     console.log(`ok  ${name} (${((Date.now() - started) / 1000).toFixed(1)} s)`);
   }
-  console.log(`Browser smoke OK: ${passed.length} steps (navigation N1–N14, GPS G1–G6 and G12, services, wiki, mobile).`);
+  console.log(`Browser smoke OK: ${passed.length} steps (navigation N1–N14, GPS G1–G6, G12, G13 and G15, services, wiki, mobile).`);
 } catch (err) {
   console.error(serverOutput.trim());
   console.error(err);

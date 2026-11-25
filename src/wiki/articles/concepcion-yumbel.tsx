@@ -6,6 +6,7 @@
 
 import {
   DataTable,
+  IssueNotice,
   KeyValueList,
   OperatorTable,
   PendingBanner,
@@ -634,48 +635,28 @@ export default function ConcepcionYumbel() {
 
       <Section title="Issues conocidos">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Peregrinación San Sebastián colapsa el corredor (20-ene y 20-mar)
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              250-350 mil personas saturan Ruta 146, peaje Huinanco y
-              terminales de Yumbel. Sin plan de contingencia publicado
-              MOP-MTT-Carabineros más allá de 400 efectivos.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Régimen privado sin obligación de frecuencia
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El MTT no puede obligar a operadores privados a subir
-              frecuencia (SEREMI Héctor Silva sobre Florida, jul-2024).
-              Conce-Yumbel comparte el problema y no está entre las
-              prioridades de licitación.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Conflictos municipales por paraderos
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El caso Pullman Bus ↔ municipalidad de Yumbel (2023-2024)
-              muestra que la falta de marco regulatorio deja la operación
-              expuesta a ordenanzas locales.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Fuera de BusPay y sin GTFS público
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Yumbel queda fuera del perímetro BusPay 2026. Ningún
-              operador publica feed GTFS ni hay relaciones OSM{' '}
-              <code className="font-mono">route=bus</code>; integración
-              al visor requeriría digitalización manual.
-            </p>
-          </div>
+          <IssueNotice title="Peregrinación San Sebastián colapsa el corredor (20-ene y 20-mar)">
+            250-350 mil personas saturan Ruta 146, peaje Huinanco y
+            terminales de Yumbel. Sin plan de contingencia publicado
+            MOP-MTT-Carabineros más allá de 400 efectivos.
+          </IssueNotice>
+          <IssueNotice title="Régimen privado sin obligación de frecuencia">
+            El MTT no puede obligar a operadores privados a subir
+            frecuencia (SEREMI Héctor Silva sobre Florida, jul-2024).
+            Conce-Yumbel comparte el problema y no está entre las
+            prioridades de licitación.
+          </IssueNotice>
+          <IssueNotice title="Conflictos municipales por paraderos">
+            El caso Pullman Bus ↔ municipalidad de Yumbel (2023-2024)
+            muestra que la falta de marco regulatorio deja la operación
+            expuesta a ordenanzas locales.
+          </IssueNotice>
+          <IssueNotice title="Fuera de BusPay y sin GTFS público">
+            Yumbel queda fuera del perímetro BusPay 2026. Ningún
+            operador publica feed GTFS ni hay relaciones OSM{' '}
+            <code className="font-mono">route=bus</code>; integración
+            al visor requeriría digitalización manual.
+          </IssueNotice>
         </div>
       </Section>
 

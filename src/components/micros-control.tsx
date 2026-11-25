@@ -5,127 +5,144 @@
 //   queda sin micros y se nombra en el detalle; nunca se rellena con estimadas.
 // - Ocultar micros: ninguna.
 // Las formas del selector y del estado son las mismas del mapa y la leyenda.
+//
+// En el teléfono queda en una fila (≤ 52 px): Horario / GPS, la cuenta de la
+// elegida ("171 estimadas", "5 con GPS") siempre a la vista, ocultar y un
+// chevron que abre el estado completo y el alcance. En escritorio el estado
+// está siempre abierto.
 
-import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useId, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { AlertTriangle, ChevronDown, EyeOff, Loader2 } from 'lucide-react';
 import { GpsStatusList } from '@/components/gps-status-list';
-import { VehicleSwatch } from '@/components/map-legend';
+import { VehicleSwatch } from '@/components/map/map-swatches';
+import { SectionLabel } from '@/components/ui/section-label';
+import { SegmentedControl, type SegmentedOption } from '@/components/ui/segmented-control';
 import { ROUTES_BY_ID } from '@/data/routes';
 import { useClock } from '@/hooks/use-clock';
 import { routePillCode } from '@/lib/route-labels';
 import { formatAge } from '@/realtime/live-arrivals';
 import { compactGpsNotice, gpsHeadline, selectedLineNotice } from '@/realtime/gps-mode-summary';
 import { MAX_GPS_PAIRS } from '@/realtime/route-vehicles';
-import { useSimulationStatus } from '@/realtime/use-simulated-vehicles';
+import { useSimulationStatus, type SimulationStatus } from '@/realtime/use-simulated-vehicles';
 import { cn } from '@/lib/utils';
 import type { GpsLineStatus, GpsModeView, MicrosControlProps, MicrosMode, SimulationScope } from '@/types/ui-contracts';
 
 const AGE_TICK_MS = 5_000;
 
-// El detalle por línea arranca abierto en escritorio y plegado en móvil; lo
-// que elija la persona se recuerda mientras dure la visita.
+const DESKTOP_QUERY = '(min-width: 768px)';
+/** Bajo 380 px la elegida va sin su muestra: así la cuenta ("5 GPS · 1/5 líneas") no se corta a 360 px. */
+const NARROW_QUERY = '(max-width: 379px)';
+
+// Una suscripción estable por consulta (useSyncExternalStore se resuscribe si cambia).
+const mediaSubscribers = new Map<string, (listener: () => void) => () => void>();
+
+function subscribeMedia(media: string): (listener: () => void) => () => void {
+  let subscribe = mediaSubscribers.get(media);
+  if (!subscribe) {
+    subscribe = (listener) => {
+      const query = window.matchMedia(media);
+      query.addEventListener('change', listener);
+      return () => query.removeEventListener('change', listener);
+    };
+    mediaSubscribers.set(media, subscribe);
+  }
+  return subscribe;
+}
+
+function useMediaQuery(media: string, fallback: boolean): boolean {
+  return useSyncExternalStore(
+    subscribeMedia(media),
+    () => window.matchMedia(media).matches,
+    () => fallback,
+  );
+}
+
+/** Escritorio: el estado siempre abierto y los rótulos completos. */
+function useIsDesktop(): boolean {
+  return useMediaQuery(DESKTOP_QUERY, true);
+}
+
+// El detalle por línea arranca abierto en escritorio y plegado en móvil; en
+// el teléfono el estado completo también arranca plegado. Lo que elija la
+// persona se recuerda mientras dure la visita.
 let detailOpenChoice: boolean | null = null;
+let statusOpenChoice = false;
 
 function initialDetailOpen(): boolean {
   if (detailOpenChoice != null) return detailOpenChoice;
-  return typeof window === 'undefined' || window.matchMedia('(min-width: 768px)').matches;
+  return typeof window === 'undefined' || window.matchMedia(DESKTOP_QUERY).matches;
 }
 
 function plural(n: number, one: string, many: string): string {
   return `${n.toLocaleString('es-CL')} ${n === 1 ? one : many}`;
 }
 
-interface Option<T extends string> {
-  value: T;
-  label: ReactNode;
-  name: string;
-}
-
-/** Botones de opción con flechas (patrón radiogroup de ARIA). */
-function Segmented<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-  size = 'md',
-}: {
-  label: string;
-  value: T | null;
-  options: readonly Option<T>[];
-  onChange: (value: T) => void;
-  size?: 'sm' | 'md';
-}) {
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 0;
-    if (step === 0) return;
-    event.preventDefault();
-    const index = options.findIndex((o) => o.value === value);
-    const next = options[(index + step + options.length) % options.length];
-    onChange(next.value);
-    const radios = event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]');
-    radios[options.indexOf(next)]?.focus();
-  };
-  const focusable = value ?? options[0].value;
-  return (
-    <div
-      role="radiogroup"
-      aria-label={label}
-      onKeyDown={onKeyDown}
-      className={cn('flex min-w-0 rounded-md bg-muted p-0.5', size === 'sm' && 'text-[11px]')}
-    >
-      {options.map((option) => {
-        const checked = option.value === value;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            role="radio"
-            aria-checked={checked}
-            aria-label={option.name}
-            tabIndex={option.value === focusable ? 0 : -1}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              'flex min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded px-2 font-medium transition-colors focus-ring',
-              size === 'md' ? 'h-8' : 'h-6',
-              // Sin elegir: más oscuro que muted-foreground, que sobre bg-muted quedaba en 4.4:1.
-              checked ? 'bg-background text-foreground shadow-sm' : 'text-foreground/70 hover:text-foreground',
-            )}
-          >
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-const MODE_OPTIONS: readonly Option<'schedule' | 'gps'>[] = [
-  {
-    value: 'schedule',
-    name: 'Horario',
-    label: (
-      <>
-        <VehicleSwatch symbol="estimate" className="size-4" />
-        Horario
-      </>
-    ),
-  },
-  {
-    value: 'gps',
-    name: 'GPS en vivo',
-    label: (
-      <>
-        <VehicleSwatch symbol="gps" className="size-4" />
-        GPS en vivo
-      </>
-    ),
-  },
-];
-
-const SCOPE_OPTIONS: readonly Option<SimulationScope>[] = [
+const SCOPE_OPTIONS: readonly SegmentedOption<SimulationScope>[] = [
   { value: 'visible', name: 'Mis líneas', label: 'Mis líneas' },
   { value: 'all', name: 'Toda la red', label: 'Toda la red' },
 ];
+
+/** Cuenta corta de la opción elegida ("171 estimadas", "5 con GPS"): lo que se ve con el estado plegado. */
+export function scheduleMeta(simulation: SimulationStatus, noLines: boolean): string {
+  if (noLines) return 'sin líneas';
+  if (simulation.error) return 'sin horario';
+  if (simulation.loading) return 'cargando…';
+  return plural(simulation.count, 'estimada', 'estimadas');
+}
+
+export interface GpsMeta {
+  /** Lo que se ve (~18 letras: cabe a 360 px). */
+  text: string;
+  /** Lo que no cupo, solo para lectores de pantalla (el meta se enlaza con aria-describedby). */
+  note: string;
+  /** Hay micros con dato viejo: el meta lleva además un ícono de aviso. */
+  stale: boolean;
+}
+
+const short = (text: string): GpsMeta => ({ text, note: '', stale: false });
+
+/**
+ * Cuenta del modo GPS con el control plegado en el teléfono, donde es lo
+ * único que se ve. Primero la edad si el dato más nuevo tiene un minuto o
+ * más (todo el mapa está atrasado), si no las líneas sin GPS (quedan sin
+ * micros y nada más lo avisa); el dato viejo lleva además un ícono que no
+ * depende del texto. Lo que no cabe va en `note`.
+ */
+export function gpsMeta(gps: GpsModeView, now: number = Date.now()): GpsMeta {
+  const headline = gpsHeadline(gps);
+  switch (headline.state) {
+    case 'live': {
+      const count = gps.vehicles.toLocaleString('es-CL');
+      // El mismo total que la línea de estado: solo las líneas consultadas.
+      const total = headline.queried;
+      const partial = headline.liveLines > 0 && headline.liveLines < total;
+      const age = gps.fetchedAt != null ? Math.max(0, now - gps.fetchedAt) : 0;
+      const staleNote = gps.stale > 0 ? `${gps.stale.toLocaleString('es-CL')} con dato viejo` : '';
+      const linesNote = partial ? `${headline.liveLines} de ${plural(total, 'línea', 'líneas')} con GPS` : '';
+      const notes = (...parts: string[]) => parts.filter(Boolean).join(' · ');
+      if (age >= 60_000) {
+        return { text: `${count} GPS · ${formatAge(age)}`, note: notes(linesNote, staleNote), stale: gps.stale > 0 };
+      }
+      if (partial) {
+        return { text: `${count} GPS · ${headline.liveLines}/${total} líneas`, note: notes(linesNote, staleNote), stale: gps.stale > 0 };
+      }
+      if (gps.stale > 0) return { text: `${count} GPS · ${plural(gps.stale, 'viejo', 'viejos')}`, note: staleNote, stale: true };
+      return short(`${count} con GPS`);
+    }
+    case 'loading':
+      return short('buscando…');
+    case 'empty':
+      return short('sin GPS aún');
+    case 'untracked-only':
+      return short('sin GPS');
+    case 'no-lines':
+      return short('sin líneas');
+    case 'failed':
+      return short('reintentando…');
+    case 'unconfigured':
+      return short('no activado');
+  }
+}
 
 function StatusLine({ state, icon, children }: { state: string; icon?: ReactNode; children: ReactNode }) {
   return (
@@ -173,7 +190,7 @@ function ScheduleStatus({
     );
   } else if (simulation.error) {
     line = (
-      <StatusLine state="schedule-error" icon={<AlertTriangle className="mt-px size-3.5 shrink-0 text-amber-600" />}>
+      <StatusLine state="schedule-error" icon={<AlertTriangle className="mt-px size-3.5 shrink-0 text-stale" />}>
         No se pudo cargar el horario
         {onRetry && (
           <>
@@ -206,7 +223,14 @@ function ScheduleStatus({
   return (
     <>
       {line}
-      <Segmented label="Qué micros estimar" value={scope} options={SCOPE_OPTIONS} onChange={onScopeChange} size="sm" />
+      <SegmentedControl
+        variant="radio"
+        size="sm"
+        label="Qué micros estimar"
+        value={scope}
+        options={SCOPE_OPTIONS}
+        onChange={onScopeChange}
+      />
     </>
   );
 }
@@ -261,7 +285,7 @@ function GpsStatus({
   switch (headline.state) {
     case 'unconfigured':
       line = (
-        <StatusLine state="gps-unconfigured" icon={<AlertTriangle className="mt-px size-3.5 shrink-0 text-amber-600" />}>
+        <StatusLine state="gps-unconfigured" icon={<AlertTriangle className="mt-px size-3.5 shrink-0 text-stale" />}>
           El GPS en vivo no está activado en este servidor · {toHorario}
         </StatusLine>
       );
@@ -299,7 +323,7 @@ function GpsStatus({
           {gps.stale > 0 && <> · {gps.stale.toLocaleString('es-CL')} con dato viejo</>}
           {omittedSummary}
           {gps.failure && (
-            <span className="block text-amber-700 dark:text-amber-400">No se pudo actualizar · reintentando</span>
+            <span className="block text-stale">No se pudo actualizar · reintentando</span>
           )}
         </StatusLine>
       );
@@ -307,7 +331,7 @@ function GpsStatus({
     }
     case 'failed':
       line = (
-        <StatusLine state="gps-failed" icon={<AlertTriangle className="mt-px size-3.5 shrink-0 text-amber-600" />}>
+        <StatusLine state="gps-failed" icon={<AlertTriangle className="mt-px size-3.5 shrink-0 text-stale" />}>
           No se pudo consultar el GPS · reintentando
           {omittedSummary}
         </StatusLine>
@@ -353,7 +377,7 @@ function GpsStatus({
     <>
       {line}
       {selectedNotice && (
-        <p data-gps-selected-line className="font-medium text-amber-800 dark:text-amber-300">
+        <p data-gps-selected-line className="font-medium text-stale">
           {selectedNotice}
         </p>
       )}
@@ -364,7 +388,7 @@ function GpsStatus({
             onClick={toggleDetail}
             aria-expanded={open}
             aria-controls={open ? detailId : undefined}
-            className="flex items-center gap-1 self-start rounded text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-ring"
+            className="-mx-1 flex min-h-10 items-center gap-1 self-start rounded-md px-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground focus-ring md:min-h-7"
           >
             <ChevronDown className={cn('size-3.5 transition-transform', !open && '-rotate-90')} />
             Detalle por línea
@@ -372,7 +396,7 @@ function GpsStatus({
           {open && (
             <>
               <GpsStatusList id={detailId} lines={gps.lines} />
-              <p className="text-[10px]">Posiciones de Transapp/DTPR · fuente no oficial</p>
+              <p>Posiciones de Transapp/DTPR · fuente no oficial</p>
             </>
           )}
         </>
@@ -395,7 +419,7 @@ function CompactGpsNotice({ gps, selectedRouteId }: { gps: GpsModeView; selected
       data-state="gps-compact"
       className="flex items-start gap-1.5 border-t px-2.5 py-1.5 text-[11px] leading-snug text-muted-foreground"
     >
-      <AlertTriangle className="mt-px size-3.5 shrink-0 text-amber-600" aria-hidden />
+      <AlertTriangle className="mt-px size-3.5 shrink-0 text-stale" aria-hidden />
       <span className="min-w-0">{text}</span>
     </p>
   );
@@ -411,7 +435,7 @@ function CompactScheduleNotice({ onRetry }: { onRetry?: () => void }) {
       data-state="schedule-compact"
       className="flex items-start gap-1.5 border-t px-2.5 py-1.5 text-[11px] leading-snug text-muted-foreground"
     >
-      <AlertTriangle className="mt-px size-3.5 shrink-0 text-amber-600" aria-hidden />
+      <AlertTriangle className="mt-px size-3.5 shrink-0 text-stale" aria-hidden />
       <span className="min-w-0">
         No se pudo cargar el horario
         {onRetry && (
@@ -438,8 +462,15 @@ export function MicrosControl({
   linesOnMap,
   detailCollapsed = false,
 }: MicrosControlProps) {
+  const desktop = useIsDesktop();
+  const narrow = useMediaQuery(NARROW_QUERY, false);
+  const simulation = useSimulationStatus();
+  const statusId = useId();
+  // La edad del GPS en la cuenta plegada del teléfono.
+  const now = useClock(AGE_TICK_MS, !desktop && mode === 'gps' && gps.fetchedAt != null);
   // Lo que vuelve al quitar "Ocultar micros".
   const [shownMode, setShownMode] = useState<'schedule' | 'gps'>(mode === 'gps' ? 'gps' : 'schedule');
+  const [statusOpen, setStatusOpen] = useState(statusOpenChoice);
   const selectMode = (next: 'schedule' | 'gps') => {
     setShownMode(next);
     onModeChange(next);
@@ -451,42 +482,110 @@ export function MicrosControl({
       onModeChange('off');
     }
   };
+  const toggleStatus = () => {
+    statusOpenChoice = !statusOpen;
+    setStatusOpen(!statusOpen);
+  };
+
+  // Teléfono: la cuenta de la elegida va en su segunda línea y solo la elegida
+  // lleva su muestra; así la fila cabe en 360 px sin cortar "Horario" ni "GPS".
+  const meta = (value: 'schedule' | 'gps') => {
+    if (desktop || mode !== value) return undefined;
+    if (value === 'schedule') {
+      return (
+        <span data-micros-meta className="block truncate">
+          {scheduleMeta(simulation, scope === 'visible' && linesOnMap === 0)}
+        </span>
+      );
+    }
+    const { text, note, stale } = gpsMeta(gps, now);
+    return (
+      <span data-micros-meta data-stale={stale || undefined} className="flex min-w-0 items-center gap-1">
+        {stale && <AlertTriangle aria-hidden className="!size-3 shrink-0" />}
+        <span className="truncate">{text}</span>
+        {note && <span className="sr-only"> · {note}</span>}
+      </span>
+    );
+  };
+  const swatch = (value: 'schedule' | 'gps') =>
+    desktop || (mode === value && !narrow) ? (
+      <VehicleSwatch kind={value === 'schedule' ? 'estimate' : 'gps'} size={desktop ? 16 : 14} />
+    ) : undefined;
+  const modeOptions: SegmentedOption<'schedule' | 'gps'>[] = [
+    { value: 'schedule', name: 'Horario', label: 'Horario', icon: swatch('schedule'), meta: meta('schedule') },
+    {
+      value: 'gps',
+      name: 'GPS en vivo',
+      // El texto visible ("GPS") está dentro del nombre accesible ("GPS en vivo").
+      label: (
+        <>
+          <span className="md:hidden">GPS</span>
+          <span className="hidden md:inline">GPS en vivo</span>
+        </>
+      ),
+      icon: swatch('gps'),
+      meta: meta('gps'),
+    },
+  ];
+
+  const showStatus = !compact && (desktop || statusOpen);
 
   return (
     <section
       aria-label="Micros en el mapa"
       data-micros-control
       data-mode={mode}
-      className="w-[min(20rem,calc(100vw-5rem))] rounded-lg border bg-background/90 text-[12px] shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      className="surface-control w-[min(20rem,calc(100vw-4.5rem))] text-[12px] md:w-80"
     >
-      <div className="hidden px-2.5 pt-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground md:block">
-        Micros en el mapa
-      </div>
-      <div className="flex items-center gap-1 p-1 md:px-1.5">
-        <div className="min-w-0 flex-1">
-          <Segmented
+      <div className="p-1">
+        {desktop && (
+          <SectionLabel className="mb-1 px-1.5 pt-1">
+            <span aria-hidden>Micros en el mapa</span>
+          </SectionLabel>
+        )}
+        <div className="flex items-center gap-0.5">
+          <SegmentedControl
+            variant="radio"
+            size="md"
+            fit={desktop ? 'equal' : 'content'}
             label="Micros en el mapa"
             value={mode === 'off' ? null : mode}
-            options={MODE_OPTIONS}
+            options={modeOptions}
             onChange={selectMode}
+            className="min-w-0 flex-1"
           />
-        </div>
-        <button
-          type="button"
-          onClick={toggleHidden}
-          aria-pressed={mode === 'off'}
-          aria-label="Ocultar micros"
-          title={mode === 'off' ? 'Mostrar micros' : 'Ocultar micros'}
-          className={cn(
-            'grid size-9 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring',
-            mode === 'off' && 'bg-foreground text-background hover:bg-foreground/90 hover:text-background',
+          <button
+            type="button"
+            onClick={toggleHidden}
+            aria-pressed={mode === 'off'}
+            aria-label="Ocultar micros"
+            title={mode === 'off' ? 'Mostrar micros' : 'Ocultar micros'}
+            className={cn(
+              'grid size-10 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring md:size-8',
+              mode === 'off' && 'bg-foreground text-background hover:bg-foreground/90 hover:text-background',
+            )}
+          >
+            <EyeOff className="size-4" />
+          </button>
+          {!desktop && !compact && (
+            <button
+              type="button"
+              onClick={toggleStatus}
+              aria-expanded={statusOpen}
+              aria-controls={statusOpen ? statusId : undefined}
+              aria-label="Estado de las micros"
+              className="grid size-10 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring"
+            >
+              <ChevronDown className={cn('size-4 transition-transform', statusOpen && 'rotate-180')} />
+            </button>
           )}
-        >
-          <EyeOff className="size-4" />
-        </button>
+        </div>
       </div>
-      {mode !== 'off' && !compact && (
-        <div className="flex flex-col gap-1.5 border-t px-2.5 py-2 text-[11px] text-muted-foreground">
+      {showStatus && mode !== 'off' && (
+        <div
+          id={statusId}
+          className="thin-scroll flex max-h-[45vh] flex-col gap-1.5 overflow-y-auto border-t px-2.5 py-2 text-[11px] text-muted-foreground"
+        >
           {mode === 'schedule' ? (
             <ScheduleStatus
               scope={scope}
@@ -506,13 +605,18 @@ export function MicrosControl({
           )}
         </div>
       )}
-      {mode === 'gps' && compact && <CompactGpsNotice gps={gps} selectedRouteId={selectedRouteId} />}
-      {mode === 'schedule' && compact && <CompactScheduleNotice onRetry={onRetrySchedule} />}
-      {mode === 'off' && !compact && (
-        <p data-micros-status data-state="off" className="border-t px-2.5 py-1.5 text-[11px] text-muted-foreground">
+      {showStatus && mode === 'off' && (
+        <p
+          id={statusId}
+          data-micros-status
+          data-state="off"
+          className="border-t px-2.5 py-1.5 text-[11px] text-muted-foreground"
+        >
           Micros ocultas
         </p>
       )}
+      {mode === 'gps' && compact && <CompactGpsNotice gps={gps} selectedRouteId={selectedRouteId} />}
+      {mode === 'schedule' && compact && <CompactScheduleNotice onRetry={onRetrySchedule} />}
     </section>
   );
 }

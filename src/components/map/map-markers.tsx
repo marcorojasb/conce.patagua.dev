@@ -12,11 +12,12 @@
 import { memo, useMemo, type RefObject } from 'react';
 import { Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { STOPS, ROUTES_BY_ID } from '@/data/routes';
+import { STOPS } from '@/data/routes';
 import { GTFS_STOPS } from '@/data/gtfs-stops.generated';
 import { TERMINALS } from '@/data/terminals.generated';
 import { POIS } from '@/data/pois.generated';
 import { categorize } from '@/hooks/use-air-quality';
+import { POI_COLOR } from '@/lib/map-theme';
 import { hideMapTooltip, showMapTooltip } from '@/components/map/map-tooltip';
 import type { RoutingResult } from '@/lib/routing';
 import type { LatLng, MapLayersState, MapTarget, Selection } from '@/types/ui-contracts';
@@ -42,14 +43,7 @@ const POI_SVG: Record<PoiCategory, string> = {
   mall: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>',
 };
 
-const POI_COLOR: Record<PoiCategory, string> = {
-  hospital: '#DC2626',
-  university: '#2563EB',
-  college: '#7C3AED',
-  mall: '#EA580C',
-};
-
-const POI_LABEL: Record<PoiCategory, string> = {
+export const POI_LABEL: Record<PoiCategory, string> = {
   hospital: 'Hospital o clínica',
   university: 'Universidad',
   college: 'Instituto o CFT',
@@ -65,16 +59,12 @@ export function cachedIcon(key: string, make: () => L.DivIcon): L.DivIcon {
   return icon;
 }
 
-// Los colores vienen de datasets propios, pero igual se filtra lo que entra a un style="".
-function cssColor(color: string): string {
-  return /^(#[0-9a-f]{3,8}|hsla?\([\d\s.,%deg-]+\))$/i.test(color) ? color : '#334155';
-}
-
-function stopIcon(color: string): L.DivIcon {
-  return cachedIcon(`stop|${color}|active`, () =>
+/** Paradero abierto: neutro (no el color de una de sus líneas), con el estilo de `.stop-marker.is-active`. */
+function stopIcon(): L.DivIcon {
+  return cachedIcon('stop|active', () =>
     L.divIcon({
       className: 'stop-marker-wrap',
-      html: `<div class="stop-marker is-active" style="--stop-color:${cssColor(color)}"></div>`,
+      html: '<div class="stop-marker is-active"></div>',
       iconSize: [12, 12],
       iconAnchor: [6, 6],
     }),
@@ -82,7 +72,8 @@ function stopIcon(color: string): L.DivIcon {
 }
 
 function pinIcon(label: 'A' | 'B' | 'M'): L.DivIcon {
-  const color = label === 'A' ? '#16A34A' : label === 'B' ? '#DC2626' : '#7C3AED';
+  // A y B con los tokens --origin y --destination (los mismos del planificador).
+  const color = label === 'A' ? 'hsl(var(--origin))' : label === 'B' ? 'hsl(var(--destination))' : '#7C3AED';
   return cachedIcon(`pin|${label}`, () =>
     L.divIcon({
       className: 'planner-pin-wrap',
@@ -93,11 +84,20 @@ function pinIcon(label: 'A' | 'B' | 'M'): L.DivIcon {
   );
 }
 
+/** HTML de los pines de terminal y de lugar: lo usan el mapa y la leyenda (map-swatches.tsx). */
+export function terminalPinHtml(active: boolean): string {
+  return `<div class="terminal-marker${active ? ' is-active' : ''}">${BUILDING_SVG}</div>`;
+}
+
+export function poiPinHtml(category: PoiCategory, active: boolean): string {
+  return `<div class="poi-marker${active ? ' is-active' : ''}" style="--poi-bg:${POI_COLOR[category]};--poi-fg:#fff">${POI_SVG[category]}</div>`;
+}
+
 function terminalIcon(active: boolean): L.DivIcon {
   return cachedIcon(`terminal|${active}`, () =>
     L.divIcon({
       className: 'terminal-marker-wrap',
-      html: `<div class="terminal-marker${active ? ' is-active' : ''}">${BUILDING_SVG}</div>`,
+      html: terminalPinHtml(active),
       iconSize: [22, 22],
       iconAnchor: [11, 11],
     }),
@@ -108,7 +108,7 @@ function poiIcon(category: PoiCategory, active: boolean): L.DivIcon {
   return cachedIcon(`poi|${category}|${active}`, () =>
     L.divIcon({
       className: 'poi-marker-wrap',
-      html: `<div class="poi-marker${active ? ' is-active' : ''}" style="--poi-bg:${POI_COLOR[category]};--poi-fg:#fff">${POI_SVG[category]}</div>`,
+      html: poiPinHtml(category, active),
       iconSize: [22, 22],
       iconAnchor: [11, 11],
     }),
@@ -196,9 +196,7 @@ const StaticMarker = memo(function StaticMarker({
 function SelectedStopMarker({ stopId }: { stopId: string }) {
   const stop = STOPS.find((s) => s.id === stopId) ?? GTFS_STOPS.find((p) => p.id === stopId);
   if (!stop) return null;
-  const routeId = 'routes' in stop ? stop.routes[0] : undefined;
-  const color = (routeId && ROUTES_BY_ID.get(routeId)?.color) || '#334155';
-  return <StaticMarker lat={stop.lat} lng={stop.lng} icon={stopIcon(color)} zIndexOffset={500} />;
+  return <StaticMarker lat={stop.lat} lng={stop.lng} icon={stopIcon()} zIndexOffset={500} />;
 }
 
 const MIDPOINT_PATH_OPTIONS: L.PathOptions = {

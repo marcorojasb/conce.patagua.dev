@@ -1,16 +1,20 @@
 // Mapa del visor. Todo lo que es vector (trazados y paradas de recorrido,
 // paraderos, cobertura, ciclovías, áreas verdes, educación) va en el único
-// canvas por defecto del mapa (preferCanvas, sin `renderer` propio): un solo
-// canvas recibe los clics, así que tocar una línea funciona aunque se hayan
-// encendido otras capas antes. Las micros van en su propio canvas sin eventos
-// (vehicle-canvas-layer.ts) y quedan pocos marcadores DOM (map-markers.tsx).
+// canvas del mapa (preferCanvas con un solo `renderer`, creado una vez): un
+// solo canvas recibe los clics, así que tocar una línea funciona aunque se
+// hayan encendido otras capas antes. Ese canvas acepta el toque a 8 px de la
+// línea con puntero grueso (dedo) y a 3 px con mouse; se decide con
+// `(pointer: coarse)` y no con L.Browser.touch, que es verdadero en todo
+// navegador de escritorio con PointerEvent. Las micros van en su propio
+// canvas sin eventos (vehicle-canvas-layer.ts) y quedan pocos marcadores DOM
+// (map-markers.tsx). Colores y formas por tema: map-paint.ts y map-theme.ts.
 //
 // Zoom, encuadre y gestos no pasan por React: las capas escuchan a Leaflet y
 // el encuadre se publica en map-viewport.ts. El componente está envuelto en
 // memo y los callbacks se leen desde un ref, así una identidad nueva de un
 // callback nunca rearma capas.
 
-import { memo, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -39,6 +43,14 @@ const TILE_URL = {
   light:
     'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
   dark: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+};
+// Rótulos (calles, comunas, lugares) del mismo Gray Canvas, en su propia capa:
+// la base no los trae al zoom de inicio y sin ellos cuesta ubicarse. Va sobre
+// la base y bajo las líneas, que siguen mandando.
+const LABELS_URL = {
+  light:
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+  dark: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
 };
 
 // Esri corta los tiles reales en z16: más allá responde un placeholder, así que
@@ -268,12 +280,16 @@ function afterNextPaint(run: () => void): () => void {
 
 function Vehicles({
   feed,
+  dense,
   focus,
+  theme,
   picking,
   actions,
 }: {
   feed: VehicleFeed | null;
+  dense: boolean;
   focus: MapFocus | null;
+  theme: Theme;
   picking: boolean;
   actions: RefObject<MapActions>;
 }) {
@@ -286,7 +302,7 @@ function Vehicles({
     layerRef.current = layer;
     const interaction = attachMapInteraction(map, {
       onPick: (point) => actions.current.onPick(point),
-      hitVehicle: (point, radius) => layer.hitTest(point, radius),
+      hitVehicle: (point, touch) => layer.hitTest(point, touch),
       onSelectVehicle: (vehicle) =>
         actions.current.onSelect({ kind: 'vehicle', routeId: vehicle.routeId, directionId: vehicle.directionId }),
     });
@@ -298,6 +314,13 @@ function Vehicles({
       layerRef.current = null;
     };
   }, [map, actions]);
+  // Antes que la fuente: lo primero que se dibuja ya lleva los colores del tema.
+  useEffect(() => {
+    layerRef.current?.setTheme(theme);
+  }, [theme]);
+  useEffect(() => {
+    layerRef.current?.setDense(dense);
+  }, [dense]);
   useEffect(() => {
     layerRef.current?.setFeed(feed);
   }, [feed]);
@@ -321,6 +344,7 @@ function MapContent(props: ConceMapProps) {
     layerRetryKeys,
     airQuality,
     vehicleFeed,
+    vehiclesDense = false,
     planner,
     pick,
     flyTo,
@@ -361,20 +385,41 @@ function MapContent(props: ConceMapProps) {
       />
       <InterurbanCorridorsLayer enabled={layers.corridors} selectedId={selectedCorridorId} actions={actions} />
       <MapMarkers selection={selection} layers={layers} airQuality={airQuality} planner={plannerPoints} actions={actions} />
-      <Vehicles feed={vehicleFeed} focus={focus} picking={pick != null} actions={actions} />
+      <Vehicles feed={vehicleFeed} dense={vehiclesDense} focus={focus} theme={theme} picking={pick != null} actions={actions} />
     </>
   );
 }
 
+/** Tolerancia de toque del canvas de vectores: más holgada con el dedo. */
+function canvasTolerance(): number {
+  return typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches ? 8 : 3;
+}
+
 export const ConceMap = memo(function ConceMap(props: ConceMapProps) {
+  const [renderer] = useState(() => L.canvas({ tolerance: canvasTolerance() }));
   return (
-    <MapContainer center={MAP_CENTER} zoom={13} zoomControl={false} attributionControl preferCanvas className="absolute inset-0">
+    <MapContainer
+      center={MAP_CENTER}
+      zoom={13}
+      zoomControl={false}
+      attributionControl
+      preferCanvas
+      renderer={renderer}
+      className="absolute inset-0"
+    >
       <TileLayer
         key={props.theme}
         url={TILE_URL[props.theme]}
         attribution={ATTRIBUTION}
         maxNativeZoom={TILE_MAX_NATIVE_ZOOM}
         maxZoom={TILE_MAX_ZOOM}
+      />
+      <TileLayer
+        key={`labels-${props.theme}`}
+        url={LABELS_URL[props.theme]}
+        maxNativeZoom={TILE_MAX_NATIVE_ZOOM}
+        maxZoom={TILE_MAX_ZOOM}
+        zIndex={2}
       />
       <ZoomControl position="bottomright" />
       <MapContent {...props} />

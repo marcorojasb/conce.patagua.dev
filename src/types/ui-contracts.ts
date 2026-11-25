@@ -147,11 +147,17 @@ export interface VehicleFeed {
   subscribe(listener: (vehicles: readonly MapVehicle[]) => void): () => void;
 }
 
-/** Claves visuales compartidas por el canvas de micros (B) y la leyenda (C). */
+/**
+ * Forma y rótulo de cada tipo de micro, compartidos por el canvas, la leyenda
+ * y la interfaz. Lo dibuja map-paint.ts (los colores salen de MAP_THEME):
+ * estimada = círculo plano con aro blanco (la insignia de siempre); GPS =
+ * cuadrado con anillo verde separado y sombra; GPS viejo = cuadrado
+ * desteñido con flecha hueca y anillo ámbar cortado.
+ */
 export const VEHICLE_STYLE = {
-  estimate: { shape: 'circle', ring: '#ffffff', dash: [3, 2], alpha: 0.85, label: 'Micro estimada según horario' },
-  gps: { shape: 'square', ring: '#059669', dash: [], alpha: 1, label: 'Micro con GPS en vivo' },
-  gpsStale: { shape: 'square', ring: '#d97706', dash: [], alpha: 0.6, label: 'GPS de hace más de 2 min' },
+  estimate: { shape: 'circle', label: 'Micro estimada según horario' },
+  gps: { shape: 'square', label: 'Micro con GPS en vivo' },
+  gpsStale: { shape: 'square-hollow-arrow', label: 'GPS de hace más de 2 min' },
   dimmedAlpha: 0.25,
 } as const;
 
@@ -189,6 +195,8 @@ export interface ConceMapProps {
   airQuality: readonly AirQualityStation[];
   /** null con las micros ocultas. */
   vehicleFeed: VehicleFeed | null;
+  /** Estimadas de toda la red (miles): de lejos como puntos hasta zoom 13. */
+  vehiclesDense?: boolean;
   planner: { a: LatLng | null; b: LatLng | null; midpoint: RoutingResult | null };
   /** Eligiendo un punto del planificador: todo clic en el mapa es ese punto. */
   pick: 'a' | 'b' | null;
@@ -267,6 +275,8 @@ export interface MapLegendProps {
   collapsed: boolean;
   /** Hay puntos A o B del planificador en el mapa. */
   plannerPoints?: boolean;
+  /** Ids de los recorridos en el mapa, en orden de pintado. Sin ella la leyenda no lista líneas. */
+  lines?: readonly string[];
 }
 
 export interface MapNotice {

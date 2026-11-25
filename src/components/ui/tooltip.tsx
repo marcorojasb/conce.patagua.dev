@@ -31,7 +31,8 @@ const TooltipContent = React.forwardRef<
         if (!event.defaultPrevented) hintEscapes.add(event);
       }}
       className={cn(
-        'z-50 overflow-hidden rounded-md border bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95',
+        // Mismo estilo que el tooltip del mapa (.surface-tooltip).
+        'surface-tooltip z-50 overflow-hidden animate-in fade-in-0 zoom-in-95',
         'data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
         className,
       )}

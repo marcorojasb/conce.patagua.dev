@@ -22,10 +22,12 @@ function belowParaderosZoom(): boolean {
   return zoom != null && zoom < PARADEROS_MIN_ZOOM;
 }
 
-const CHIP =
-  'flex max-w-full items-center gap-2 rounded-lg border bg-background/90 px-2.5 py-1.5 text-[12px] shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/80';
+// Las acciones miden 40 px de alto en el teléfono (32 en escritorio) y se
+// comen el relleno vertical del aviso con -my-1.5: el toque es grande y el
+// aviso sigue en una línea delgada.
+const CHIP = 'surface-control flex max-w-full items-center gap-2 px-3 py-1.5 text-[12px]';
 const CHIP_ACTION =
-  'shrink-0 rounded px-1.5 py-0.5 font-medium text-foreground underline decoration-foreground/30 underline-offset-2 transition-colors hover:decoration-foreground focus-ring';
+  '-my-1.5 inline-flex min-h-10 shrink-0 items-center rounded-md px-1.5 font-medium text-foreground underline decoration-foreground/30 underline-offset-2 transition-colors hover:decoration-foreground focus-ring md:min-h-8';
 
 function ParaderosZoomChip({ onZoomIn }: { onZoomIn: () => void }) {
   const below = useSyncExternalStore(subscribeMapViewport, belowParaderosZoom, belowParaderosZoom);
@@ -35,7 +37,7 @@ function ParaderosZoomChip({ onZoomIn }: { onZoomIn: () => void }) {
       <MapPin className="size-3.5 shrink-0 text-muted-foreground" />
       <span className="min-w-0">Acércate para ver paraderos</span>
       <button type="button" onClick={onZoomIn} className={CHIP_ACTION}>
-        <ZoomIn className="mr-1 inline size-3.5 align-[-2px]" />
+        <ZoomIn className="mr-1 size-3.5" />
         Acercar
       </button>
     </div>
@@ -57,7 +59,7 @@ export function MapHints({
         <div
           role="status"
           data-map-hint="pick"
-          className={cn(CHIP, 'border-transparent bg-foreground text-background supports-[backdrop-filter]:bg-foreground')}
+          className={cn(CHIP, 'border-foreground bg-foreground text-background')}
         >
           <Crosshair className="size-4 shrink-0" />
           <span className="min-w-0 font-medium">
@@ -66,7 +68,7 @@ export function MapHints({
           <button
             type="button"
             onClick={pick.onCancel}
-            className="shrink-0 rounded border border-background/30 px-2 py-0.5 font-medium transition-colors hover:bg-background/15 focus-ring"
+            className="-my-1.5 inline-flex min-h-10 shrink-0 items-center rounded-md border border-background/30 px-2.5 font-medium transition-colors hover:bg-background/15 focus-ring md:min-h-8"
           >
             Cancelar
           </button>
@@ -102,7 +104,7 @@ export function MapHints({
         </div>
       )}
       {notice && (
-        <div key={notice.id} role="status" data-map-notice className={cn(CHIP, 'animate-fade-in pr-1')}>
+        <div key={notice.id} role="status" data-map-notice className={cn(CHIP, 'animate-fade-in pr-0.5')}>
           <span className="min-w-0">{notice.text}</span>
           {notice.action && (
             <button
@@ -120,7 +122,7 @@ export function MapHints({
             type="button"
             onClick={onDismissNotice}
             aria-label="Cerrar aviso"
-            className="grid size-6 shrink-0 place-items-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring"
+            className="-my-1.5 grid size-10 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring md:size-8"
           >
             <X className="size-3.5" />
           </button>

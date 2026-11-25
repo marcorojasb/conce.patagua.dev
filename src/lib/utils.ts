@@ -10,7 +10,7 @@ function channelLuminance(value: number): number {
 }
 
 /** "#rgb", "#rrggbb" o "hsl(h s% l%)" (con o sin comas) a [r, g, b] en 0..1. */
-function parseColor(color: string): [number, number, number] | null {
+export function parseColor(color: string): [number, number, number] | null {
   const text = color.trim();
   const hex = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(text)?.[1];
   if (hex) {

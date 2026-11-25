@@ -8,15 +8,9 @@ import L from 'leaflet';
 import type { School, SchoolKind } from '@/data/schools.generated';
 import type { LayerStatusControls } from '@/hooks/use-layer-status';
 import { bindMapTooltip } from '@/components/map/map-tooltip';
+import { SCHOOL_COLOR } from '@/lib/map-theme';
 
-const KIND_COLOR: Record<SchoolKind, string> = {
-  kindergarten: '#f59e0b', // amber
-  school: '#dc2626', // red, los más comunes y más relevantes para política
-  college: '#7c3aed', // violet
-  university: '#2563eb', // blue
-};
-
-const KIND_LABEL: Record<SchoolKind, string> = {
+export const SCHOOL_KIND_LABEL: Record<SchoolKind, string> = {
   kindergarten: 'Jardín infantil',
   school: 'Colegio',
   college: 'Liceo / técnico',
@@ -32,6 +26,17 @@ function loadSchools(): Promise<readonly School[]> {
     return dataCache;
   });
   return dataPromise;
+}
+
+/** Punto de un establecimiento (lo usan el mapa y la leyenda). Colores: SCHOOL_COLOR de map-theme.ts. */
+export function schoolMarkerStyle(kind: SchoolKind): { radius: number; color: string; weight: number; fillColor: string; fillOpacity: number } {
+  return {
+    radius: kind === 'university' ? 6 : kind === 'school' ? 4.5 : 3.5,
+    color: '#ffffff',
+    weight: 1.2,
+    fillColor: SCHOOL_COLOR[kind],
+    fillOpacity: 0.92,
+  };
 }
 
 interface Props {
@@ -55,17 +60,10 @@ export function SchoolsLayer({
     const draw = (items: readonly School[]) => {
       if (cancelled) return;
       for (const s of items) {
-        const color = KIND_COLOR[s.kind];
-        const secondary = `${KIND_LABEL[s.kind]}${s.operator ? ` · ${s.operator}` : ''}${
+        const secondary = `${SCHOOL_KIND_LABEL[s.kind]}${s.operator ? ` · ${s.operator}` : ''}${
           s.religion && s.religion !== 'none' ? ` · ${s.religion}` : ''
         }`;
-        const marker = L.circleMarker([s.lat, s.lng], {
-          radius: s.kind === 'university' ? 6 : s.kind === 'school' ? 4.5 : 3.5,
-          color: '#ffffff',
-          weight: 1.2,
-          fillColor: color,
-          fillOpacity: 0.92,
-        });
+        const marker = L.circleMarker([s.lat, s.lng], schoolMarkerStyle(s.kind));
         bindMapTooltip(marker, map, () => ({ primary: s.name, secondary, at: [s.lat, s.lng] }));
         group.addLayer(marker);
       }

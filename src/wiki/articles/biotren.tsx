@@ -10,6 +10,7 @@ import {
   CollapsibleSection,
   DataTable,
   FactStrip,
+  IssueNotice,
   KeyValueList,
   NewsPulse,
   PendingBanner,
@@ -632,49 +633,29 @@ export default function Biotren() {
 
       <CollapsibleSection title="Issues conocidos">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Frecuencia y cabotaje
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Según el itinerario EFE desde el 15-jul-2026, la L1 corre solo
-              2 o 3 trenes por sentido entre 10:00 y 15:00 en día hábil, sin
-              trenes en vía entre ~13:15 y 15:00, y el domingo corre solo 4
-              trenes por sentido. En
-              punta hay pasajeros en andén (Chiguayante, Concepción).
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Pasos a nivel sin segregar
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Lorenzo Arenas, Los Cóndores, Lomas Coloradas. Accidentes
-              recurrentes; desniveles requieren inversión MOP.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Conflicto con operadores de bus
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Gremios perciben al Biotrén como competencia desleal por el
-              subsidio. Tensión sube con cada extensión, ver{' '}
-              <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
-                Biotrén · extensiones y proyectos
-              </a>
-              .
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Integración tarifaria con BusPay
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Bus + tren paga dos veces. BusPay 2026 no incluye al Biotrén
-              en su perímetro inicial.
-            </p>
-          </div>
+          <IssueNotice title="Frecuencia y cabotaje">
+            Según el itinerario EFE desde el 15-jul-2026, la L1 corre solo
+            2 o 3 trenes por sentido entre 10:00 y 15:00 en día hábil, sin
+            trenes en vía entre ~13:15 y 15:00, y el domingo corre solo 4
+            trenes por sentido. En
+            punta hay pasajeros en andén (Chiguayante, Concepción).
+          </IssueNotice>
+          <IssueNotice title="Pasos a nivel sin segregar">
+            Lorenzo Arenas, Los Cóndores, Lomas Coloradas. Accidentes
+            recurrentes; desniveles requieren inversión MOP.
+          </IssueNotice>
+          <IssueNotice title="Conflicto con operadores de bus">
+            Gremios perciben al Biotrén como competencia desleal por el
+            subsidio. Tensión sube con cada extensión, ver{' '}
+            <a href="/wiki/biotren-extensiones-proyectos" className="underline underline-offset-2">
+              Biotrén · extensiones y proyectos
+            </a>
+            .
+          </IssueNotice>
+          <IssueNotice title="Integración tarifaria con BusPay">
+            Bus + tren paga dos veces. BusPay 2026 no incluye al Biotrén
+            en su perímetro inicial.
+          </IssueNotice>
         </div>
       </CollapsibleSection>
 

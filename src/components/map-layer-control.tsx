@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
+import { SegmentedControl, type SegmentedOption } from '@/components/ui/segmented-control';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip } from '@/components/ui/tooltip';
 import { useWelcomeCard } from '@/components/welcome-card';
@@ -58,8 +59,19 @@ const TOOLS: ToolButton[] = [
 const MOBILE_TOOL: ToolId = 'planner';
 const OVERFLOW_TOOLS = TOOLS.filter((t) => t.id !== MOBILE_TOOL);
 
+// Botones del riel: superficie de control de 40 px en todo tamaño, como el
+// zoom de Leaflet (index.css). Encendido (Capas abierta, herramienta a la
+// vista) va invertido, como toda opción elegida.
 const BTN_CLASS =
-  'pointer-events-auto size-9 border-border/80 bg-background/90 shadow-md backdrop-blur supports-[backdrop-filter]:bg-background/85 md:h-10 md:w-10';
+  'surface-control pointer-events-auto size-10 rounded-lg p-0 text-foreground md:size-10 [&_svg]:size-[18px]';
+const BTN_ON = 'border-foreground bg-foreground text-background hover:bg-foreground/90 hover:text-background';
+
+type CoverageThreshold = MapLayersState['coverageThreshold'];
+const COVERAGE_OPTIONS: readonly SegmentedOption<CoverageThreshold>[] = [
+  { value: 'all', name: 'Todas las zonas', label: 'Todas las zonas' },
+  // El texto visible está dentro del nombre accesible.
+  { value: 'underserved', name: 'Solo zonas mal servidas', label: 'Mal servidas' },
+];
 
 interface LayerRow {
   key: keyof MapLayersState;
@@ -167,7 +179,7 @@ function LayersPopover({
           <div key={row.key}>
             <label className="flex min-h-12 cursor-pointer items-center gap-2 rounded-md p-2 text-sm transition-colors hover:bg-accent/50">
               <span className="grid size-8 shrink-0 place-items-center rounded-md border bg-muted/40 text-muted-foreground">
-                <Icon className={cn('size-4', loading && 'animate-spin', error && 'text-amber-600')} />
+                <Icon className={cn('size-4', loading && 'animate-spin', error && 'text-stale')} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-medium leading-tight">{row.label}</span>
@@ -180,7 +192,7 @@ function LayersPopover({
                       event.stopPropagation();
                       onRetry(row.load!);
                     }}
-                    className="mt-1 inline-flex items-center gap-1 rounded border bg-background px-1.5 py-0.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground focus-ring"
+                    className="mt-1 inline-flex min-h-10 items-center gap-1 rounded-md border bg-background px-2 text-[11px] font-medium text-foreground/75 transition-colors hover:bg-accent hover:text-foreground focus-ring md:min-h-7"
                   >
                     <RotateCcw className="size-3" />
                     Reintentar
@@ -188,7 +200,7 @@ function LayersPopover({
                 )}
               </span>
               {checked && load?.ready && !loading && !error && (
-                <CheckCircle2 className="size-3.5 shrink-0 text-emerald-500" />
+                <CheckCircle2 className="size-3.5 shrink-0 text-live" />
               )}
               <Switch
                 checked={checked}
@@ -197,29 +209,15 @@ function LayersPopover({
               />
             </label>
             {row.key === 'coverage' && checked && (
-              <div role="group" aria-label="Qué zonas mostrar" className="ml-12 flex flex-wrap gap-1 pb-1">
-                {(
-                  [
-                    ['all', 'Todas las zonas'],
-                    ['underserved', 'Solo zonas mal servidas'],
-                  ] as const
-                ).map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    aria-pressed={layers.coverageThreshold === value}
-                    onClick={() => onLayersChange({ coverageThreshold: value })}
-                    className={cn(
-                      'rounded px-2 py-0.5 text-[11px] transition-colors focus-ring',
-                      layers.coverageThreshold === value
-                        ? 'bg-foreground text-background'
-                        : 'border bg-background text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                variant="radio"
+                size="sm"
+                label="Qué zonas mostrar"
+                value={layers.coverageThreshold}
+                options={COVERAGE_OPTIONS}
+                onChange={(value) => onLayersChange({ coverageThreshold: value })}
+                className="ml-12 mr-2 pb-1"
+              />
             )}
           </div>
         );
@@ -289,20 +287,22 @@ function ToolsOverflowMenu({ activePanel, onSelect }: { activePanel: MapLayerCon
   };
 
   return (
-    <div ref={wrapperRef} className="sm:hidden" onKeyDown={onKeyDown}>
+    // relative: el menú se abre junto a su botón (hacia arriba, sobre la ficha
+    // que pueda haber abajo), no junto al primer botón de la columna.
+    <div ref={wrapperRef} className="relative sm:hidden" onKeyDown={onKeyDown}>
       <Button
         ref={buttonRef}
         type="button"
-        variant="outline"
+        variant="ghost"
         size="icon"
         onClick={() => setOpen((value) => !value)}
         aria-label="Más herramientas"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
-        className={cn(BTN_CLASS, (open || activeInMenu) && 'bg-accent text-accent-foreground', activeInMenu && 'border-foreground/40')}
+        className={cn(BTN_CLASS, (open || activeInMenu) && BTN_ON)}
       >
-        <Ellipsis className="size-4" />
+        <Ellipsis />
       </Button>
       {open && (
         <div
@@ -310,7 +310,7 @@ function ToolsOverflowMenu({ activePanel, onSelect }: { activePanel: MapLayerCon
           id={menuId}
           role="menu"
           aria-label="Más herramientas"
-          className="pointer-events-auto absolute right-full top-0 mr-2 w-56 rounded-lg border bg-popover/95 p-1 text-popover-foreground shadow-xl backdrop-blur animate-fade-in supports-[backdrop-filter]:bg-popover/90"
+          className="surface-panel pointer-events-auto absolute bottom-0 right-full mr-2 w-56 p-1 animate-fade-in"
         >
           {OVERFLOW_TOOLS.map((t) => {
             const isActive = activePanel === t.id;
@@ -327,7 +327,7 @@ function ToolsOverflowMenu({ activePanel, onSelect }: { activePanel: MapLayerCon
                   onSelect(t.id);
                 }}
                 className={cn(
-                  'flex min-h-11 w-full items-center gap-3 rounded-md px-2.5 text-left text-sm outline-none transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring',
+                  'flex min-h-10 w-full items-center gap-3 rounded-md px-2.5 text-left text-sm outline-none transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-ring',
                   isActive && 'bg-accent font-medium text-accent-foreground',
                 )}
               >
@@ -428,10 +428,13 @@ export function MapLayerControl({
 
   return (
     <>
-      <div className="pointer-events-none absolute right-2 top-2 z-20 flex flex-col items-end gap-1.5 md:right-3 md:top-3 md:gap-2">
+      <div
+        data-map-rail
+        className="pointer-events-none absolute right-2 top-2 z-20 flex flex-col items-end gap-1.5 md:right-3 md:top-3 md:gap-2"
+      >
         <Tooltip content="Centrar Gran Concepción" side="left">
-          <Button type="button" variant="outline" size="icon" onClick={onRecenter} aria-label="Centrar Gran Concepción" className={BTN_CLASS}>
-            <Crosshair className="size-4" />
+          <Button type="button" variant="ghost" size="icon" onClick={onRecenter} aria-label="Centrar Gran Concepción" className={BTN_CLASS}>
+            <Crosshair />
           </Button>
         </Tooltip>
 
@@ -439,17 +442,18 @@ export function MapLayerControl({
           <Button
             ref={layersButtonRef}
             type="button"
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={() => onLayersOpenChange(!layersOpen)}
             aria-expanded={layersOpen}
             aria-controls={layersOpen ? popoverId : undefined}
             aria-label="Capas del mapa"
-            className={cn(BTN_CLASS, 'relative', layersOpen && 'bg-accent text-accent-foreground')}
+            className={cn(BTN_CLASS, 'relative', layersOpen && BTN_ON)}
           >
-            <Layers2 className="size-4" />
+            <Layers2 />
             {enabledCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 text-[10px] font-medium leading-none text-background">
+              // Aro del color de fondo: se separa del botón también cuando éste va invertido.
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-foreground px-1 font-mono text-[10px] font-medium leading-4 text-background ring-2 ring-background">
                 {enabledCount}
               </span>
             )}
@@ -459,13 +463,13 @@ export function MapLayerControl({
         <Tooltip content="Cómo usar el mapa" side="left">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="icon"
             onClick={welcome.show}
             aria-label="Cómo usar el mapa"
             className={BTN_CLASS}
           >
-            <CircleHelp className="size-4" />
+            <CircleHelp />
           </Button>
         </Tooltip>
 
@@ -477,7 +481,7 @@ export function MapLayerControl({
             <Tooltip key={t.id} content={t.label} side="left">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="icon"
                 onClick={() => onToggleTool(t.id)}
                 aria-label={t.label}
@@ -485,10 +489,10 @@ export function MapLayerControl({
                 className={cn(
                   BTN_CLASS,
                   t.id !== MOBILE_TOOL && 'hidden sm:inline-flex',
-                  isActive && 'border-foreground/40 bg-accent text-accent-foreground',
+                  isActive && BTN_ON,
                 )}
               >
-                <t.Icon className="size-4" />
+                <t.Icon />
               </Button>
             </Tooltip>
           );
@@ -517,24 +521,31 @@ export function MapLayerControl({
           style={anchorRight != null ? { right: anchorRight } : undefined}
           className={cn(
             // En móvil deja libre la columna de botones de la derecha.
-            'fixed bottom-2 left-2 right-[3.25rem] z-[36] flex max-h-[min(70dvh,36rem)] flex-col overflow-hidden rounded-xl border bg-popover/95 text-popover-foreground shadow-2xl outline-none backdrop-blur animate-fade-in supports-[backdrop-filter]:bg-popover/90',
+            'surface-panel fixed bottom-2 left-2 right-[3.25rem] z-[36] flex max-h-[min(70dvh,36rem)] flex-col overflow-hidden outline-none animate-fade-in',
             'sm:absolute sm:bottom-auto sm:left-auto sm:top-2 sm:max-h-[calc(100%-1rem)] sm:w-80 md:right-16 md:top-3 md:max-h-[calc(100%-1.5rem)]',
           )}
         >
-          <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
-            <h2 className="flex items-center gap-1.5 text-sm font-semibold">
-              <Layers2 className="size-4 text-muted-foreground" />
-              Capas del mapa
-            </h2>
+          {/* Encabezado como el de las fichas: rótulo, título y "×"; manija en el teléfono. */}
+          <div aria-hidden className="flex h-5 items-end justify-center sm:hidden">
+            <span className="h-1 w-10 rounded-full bg-muted-foreground/40" />
+          </div>
+          <div className="flex items-start justify-between gap-3 border-b px-5 pb-3 pt-2 sm:py-4">
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center gap-1.5 text-xs text-muted-foreground [&_svg]:size-3.5 [&_svg]:shrink-0">
+                <Layers2 aria-hidden />
+                Mapa
+              </div>
+              <h2 className="text-lg font-semibold leading-tight tracking-tight text-foreground">Capas</h2>
+            </div>
             <Button
               type="button"
               variant="ghost"
               size="icon"
               onClick={closeLayers}
               aria-label="Cerrar capas"
-              className="-mr-1 size-8 text-muted-foreground"
+              className="-mr-2.5 -mt-2 shrink-0 text-muted-foreground hover:text-foreground"
             >
-              <X className="size-4" />
+              <X className="size-5" />
             </Button>
           </div>
           <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">

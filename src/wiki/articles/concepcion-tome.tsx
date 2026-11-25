@@ -15,6 +15,7 @@
 
 import {
   DataTable,
+  IssueNotice,
   KeyValueList,
   PendingBanner,
   Section,
@@ -617,58 +618,38 @@ export default function ConcepcionTome() {
 
       <Section title="Issues operacionales conocidos">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Congestión Ruta 150 en hora punta
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El bypass Penco-Lirquén-Tomé tiene capacidad limitada y, al
-              ser doble vía sin pista exclusiva, se satura cuando los
-              buses del 401/411 acumulan demanda residencial con el flujo
-              comercial. Es la razón política del corredor MOP que se
-              licita ahora.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Estacionalidad turística vs. capacidad regular
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              En enero-febrero y fines de semana largos, los servicios
-              411 a Dichato/Pingueral colapsan. No hay refuerzo
-              documentado contractualmente para temporada alta, el
-              régimen no exige al operador único una flota o frecuencia
-              extra estival.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Biotrén no llega a Tomé
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              La terminal del Biotrén urbano está en Mercado de Talcahuano.
-              El alcalde de Penco Víctor Hugo Figueroa (2022) advirtió
-              que el corredor Ruta 150 puede <em>frenar</em> la extensión
-              a Penco/Tomé porque baja la demanda potencial del tren. EFE
-              Sur tiene un estudio de prefactibilidad en curso.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Operador único sin alternativa en el régimen
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Al ser un perímetro de exclusión con operador único, si
-              Transportes Tomé baja frecuencia o sube quejas, el
-              pasajero no tiene alternativa formal dentro del régimen.
-              La compensación es presión vecinal directa y
-              fiscalización DTPR. Lectura institucional del riesgo en{' '}
-              <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
-                PE Tomé · Fiscalización y riesgo monopólico
-              </a>
-              .
-            </p>
-          </div>
+          <IssueNotice title="Congestión Ruta 150 en hora punta">
+            El bypass Penco-Lirquén-Tomé tiene capacidad limitada y, al
+            ser doble vía sin pista exclusiva, se satura cuando los
+            buses del 401/411 acumulan demanda residencial con el flujo
+            comercial. Es la razón política del corredor MOP que se
+            licita ahora.
+          </IssueNotice>
+          <IssueNotice title="Estacionalidad turística vs. capacidad regular">
+            En enero-febrero y fines de semana largos, los servicios
+            411 a Dichato/Pingueral colapsan. No hay refuerzo
+            documentado contractualmente para temporada alta, el
+            régimen no exige al operador único una flota o frecuencia
+            extra estival.
+          </IssueNotice>
+          <IssueNotice title="Biotrén no llega a Tomé">
+            La terminal del Biotrén urbano está en Mercado de Talcahuano.
+            El alcalde de Penco Víctor Hugo Figueroa (2022) advirtió
+            que el corredor Ruta 150 puede <em>frenar</em> la extensión
+            a Penco/Tomé porque baja la demanda potencial del tren. EFE
+            Sur tiene un estudio de prefactibilidad en curso.
+          </IssueNotice>
+          <IssueNotice title="Operador único sin alternativa en el régimen">
+            Al ser un perímetro de exclusión con operador único, si
+            Transportes Tomé baja frecuencia o sube quejas, el
+            pasajero no tiene alternativa formal dentro del régimen.
+            La compensación es presión vecinal directa y
+            fiscalización DTPR. Lectura institucional del riesgo en{' '}
+            <a href="/wiki/perimetro-exclusion-tome" className="underline underline-offset-2">
+              PE Tomé · Fiscalización y riesgo monopólico
+            </a>
+            .
+          </IssueNotice>
         </div>
       </Section>
 

@@ -30,6 +30,7 @@
 
 import {
   DataTable,
+  IssueNotice,
   KeyValueList,
   PendingBanner,
   Section,
@@ -565,42 +566,27 @@ export default function PerimetroExclusionTome() {
           ).
         </p>
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Sanciones DTPR no publicadas
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              No hay registro público de multas o procesos
-              sancionatorios DTPR Biobío contra Transportes Tomé bajo
-              el perímetro. No significa que no existan: la DTPR no
-              publica un ranking de cumplimiento desagregado del PE
-              Tomé como sí existe en discusión para el PE Gran
-              Concepción. Vía de cierre: Ley de Transparencia.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Refuerzos de temporada alta no contractuales
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El régimen no exige al operador único una flota o
-              frecuencia extra estival. Los servicios 411 a Dichato y
-              Pingueral colapsan en enero-febrero y fines de semana
-              largos sin que existan refuerzos documentados
-              contractualmente.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Transparencia tarifaria menor que PE Gran Concepción
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              La forma matemática del polinomio de ajuste y el detalle
-              de descuentos TNE / adulto mayor no aparecen en fuente
-              abierta. El PE Gran Concepción publica un detalle algo
-              mayor del cálculo, no así el PE Tomé.
-            </p>
-          </div>
+          <IssueNotice title="Sanciones DTPR no publicadas">
+            No hay registro público de multas o procesos
+            sancionatorios DTPR Biobío contra Transportes Tomé bajo
+            el perímetro. No significa que no existan: la DTPR no
+            publica un ranking de cumplimiento desagregado del PE
+            Tomé como sí existe en discusión para el PE Gran
+            Concepción. Vía de cierre: Ley de Transparencia.
+          </IssueNotice>
+          <IssueNotice title="Refuerzos de temporada alta no contractuales">
+            El régimen no exige al operador único una flota o
+            frecuencia extra estival. Los servicios 411 a Dichato y
+            Pingueral colapsan en enero-febrero y fines de semana
+            largos sin que existan refuerzos documentados
+            contractualmente.
+          </IssueNotice>
+          <IssueNotice title="Transparencia tarifaria menor que PE Gran Concepción">
+            La forma matemática del polinomio de ajuste y el detalle
+            de descuentos TNE / adulto mayor no aparecen en fuente
+            abierta. El PE Gran Concepción publica un detalle algo
+            mayor del cálculo, no así el PE Tomé.
+          </IssueNotice>
         </div>
         <Sources>
           <SourceLink href="https://www.diarioconcepcion.cl/ciudad/2025/05/07/concepcion-tome-anuncian-nuevos-servicios-de-transporte-y-mas-frecuencias-en-horas-punta.html">

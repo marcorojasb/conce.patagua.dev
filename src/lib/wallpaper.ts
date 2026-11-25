@@ -7,6 +7,21 @@
 // on top.
 //
 // Outcome: deterministic, retina-sharp, no UI leakage, no extra deps.
+//
+// Líneas y micros van con el color de pantalla del tema en que se dibuja el
+// PNG (displayRouteColor, inkRouteColor), el mismo del mapa: el `route_color`
+// oficial crudo no se lee sobre las teselas. Las micros son siempre estimadas
+// según horario (el PNG no lleva GPS) y se pintan con la insignia del mapa
+// (map-paint.ts: círculo con aro blanco y flecha), o con su punto en una
+// imagen chica; la leyenda muestra la misma de las dos que se dibujó. Las
+// ciclovías van con el color y el trazo de su capa. Lugares y Educación
+// comparten colores a propósito (map-theme.ts): como en el mapa, los separa la
+// forma (el lugar es un pin con aro y pictograma, el establecimiento un punto).
+
+import { paintVehicleDot, paintVehicleSymbol } from '@/components/map/map-paint';
+import { MAP_SAMPLE_INK, MAP_THEME, POI_COLOR, SCHOOL_COLOR } from '@/lib/map-theme';
+import { displayRouteColor, inkRouteColor } from '@/lib/route-colors';
+import type { PoiCategory } from '@/types/transport';
 
 const TILE_SIZE = 256;
 // Esri sirve tiles reales hasta z16; más allá devuelve un placeholder, así que
@@ -26,6 +41,8 @@ export interface WallpaperRoute {
   path: Array<[number, number]>; // [lat, lng] vertices
   color: string;
   weight?: number;
+  /** Punteado en px a escala 1 (ciclovías compartidas). */
+  dash?: number[];
 }
 
 export interface WallpaperCoverageCell {
@@ -42,6 +59,11 @@ export interface WallpaperPoint {
 export interface WallpaperStyledPoint extends WallpaperPoint {
   color: string;
   radius?: number;
+}
+
+/** Lugar de la capa Centros de atracción: el color y el pictograma salen de la categoría. */
+export interface WallpaperPoi extends WallpaperPoint {
+  category: PoiCategory;
 }
 
 export interface WallpaperPolygon {
@@ -61,7 +83,7 @@ export interface WallpaperVehicle extends WallpaperPoint {
 export interface WallpaperLegendItem {
   label: string;
   color: string;
-  kind?: 'line' | 'dot' | 'square' | 'polygon' | 'vehicle';
+  kind?: 'line' | 'dot' | 'square' | 'polygon' | 'vehicle' | 'poi';
 }
 
 export interface WallpaperMidpoint {
@@ -85,7 +107,7 @@ export interface WallpaperConfig {
   paraderos?: WallpaperPoint[];
   /** Bus terminals to mark with squares. */
   terminales?: WallpaperPoint[];
-  pois?: WallpaperStyledPoint[];
+  pois?: WallpaperPoi[];
   schools?: WallpaperStyledPoint[];
   vehicles?: WallpaperVehicle[];
   legendItems?: WallpaperLegendItem[];
@@ -118,6 +140,27 @@ const COVERAGE_COLOR: Record<WallpaperCoverageCell['bucket'], string> = {
   'muy-pobre': 'rgba(239, 68, 68, 0.45)',
 };
 const COVERAGE_HALF_STEP = 0.0015; // matches the coverage grid generator
+
+// Insignia de micro: Ø18 en una imagen de 1280 px (el mapa la pinta de Ø20 a
+// zoom 13). Más chica que 10 px no se lee y va el punto del mapa de lejos.
+const VEHICLE_BADGE_DIAMETER = 18;
+const VEHICLE_BADGE_MIN_PX = 10;
+// Pin de lugar a escala de línea (como paraderos y establecimientos): con
+// 14 px el pictograma (8 px) todavía se reconoce y no tapa la red.
+const POI_PIN_DIAMETER = 14;
+
+// Pictogramas de los pines de lugar: los trazados de POI_SVG en map-markers.tsx
+// (íconos Lucide en una grilla de 24, trazo 2), repetidos porque ese módulo
+// trae Leaflet; wallpaper.test.ts comprueba que sigan iguales.
+const POI_GLYPH: Record<PoiCategory, string[]> = {
+  hospital: [
+    'M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z',
+    'M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27',
+  ],
+  university: ['M22 10v6M2 10l10-5 10 5-10 5z', 'M6 12v5c3 3 9 3 12 0v-5'],
+  college: ['M22 10v6M2 10l10-5 10 5-10 5z', 'M6 12v5c3 3 9 3 12 0v-5'],
+  mall: ['M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z', 'M3 6h18', 'M16 10a4 4 0 0 1-8 0'],
+};
 
 const STYLE_META: Record<
   WallpaperStyle,
@@ -204,28 +247,83 @@ export function selectWallpaperRoutes(
   });
 }
 
-export function buildWallpaperLegend(input: {
-  routesCount: number;
-  vehiclesCount: number;
-  paraderos: boolean;
-  terminales: boolean;
-  cobertura: boolean;
-  cycleways: boolean;
-  greenspace: boolean;
-  schools: boolean;
-  pois: boolean;
-}): WallpaperLegendItem[] {
+/** Tema en que se pinta el PNG: el nocturno siempre en oscuro. */
+export function wallpaperRenderTheme(theme: WallpaperTheme, style: WallpaperStyle = 'clean'): WallpaperTheme {
+  return style === 'night' ? 'dark' : theme;
+}
+
+/** Leyenda automática de las capas activas, con los colores del tema en que se pinta (wallpaperRenderTheme). */
+export function buildWallpaperLegend(
+  input: {
+    routesCount: number;
+    vehiclesCount: number;
+    paraderos: boolean;
+    terminales: boolean;
+    cobertura: boolean;
+    cycleways: boolean;
+    greenspace: boolean;
+    schools: boolean;
+    pois: boolean;
+  },
+  theme: WallpaperTheme = 'light',
+): WallpaperLegendItem[] {
+  const c = MAP_THEME[theme];
+  const ink = theme === 'dark' ? '#fafafa' : '#3f3f46';
   const items: WallpaperLegendItem[] = [];
-  if (input.routesCount > 0) items.push({ label: `${input.routesCount} recorridos`, color: '#0ea5e9', kind: 'line' });
-  if (input.vehiclesCount > 0) items.push({ label: `${input.vehiclesCount} servicios en curso`, color: '#f8fafc', kind: 'vehicle' });
-  if (input.paraderos) items.push({ label: 'Paraderos', color: '#f8fafc', kind: 'dot' });
-  if (input.terminales) items.push({ label: 'Terminales', color: '#f8fafc', kind: 'square' });
+  if (input.routesCount > 0) items.push({ label: `${input.routesCount} recorridos`, color: c.sample, kind: 'line' });
+  if (input.vehiclesCount > 0) {
+    // Lo mismo que dice el panel: son estimaciones según horario, no
+    // posiciones GPS. Corto para que "(no GPS)" quepa también en la vista previa.
+    const noun = input.vehiclesCount === 1 ? 'micro estimada' : 'micros estimadas';
+    items.push({ label: `${input.vehiclesCount} ${noun} (no GPS)`, color: MAP_SAMPLE_INK, kind: 'vehicle' });
+  }
+  if (input.paraderos) items.push({ label: 'Paraderos', color: ink, kind: 'dot' });
+  if (input.terminales) items.push({ label: 'Terminales', color: ink, kind: 'square' });
   if (input.cobertura) items.push({ label: 'Cobertura territorial', color: '#facc15', kind: 'polygon' });
-  if (input.cycleways) items.push({ label: 'Ciclovías', color: '#2563eb', kind: 'line' });
+  if (input.cycleways) items.push({ label: 'Ciclovías', color: c.cycleway, kind: 'line' });
   if (input.greenspace) items.push({ label: 'Áreas verdes', color: '#22c55e', kind: 'polygon' });
-  if (input.schools) items.push({ label: 'Educación', color: '#dc2626', kind: 'dot' });
-  if (input.pois) items.push({ label: 'Centros de atracción', color: '#7c3aed', kind: 'dot' });
+  if (input.schools) items.push({ label: 'Educación', color: SCHOOL_COLOR.school, kind: 'dot' });
+  if (input.pois) items.push({ label: 'Centros de atracción', color: POI_COLOR.hospital, kind: 'poi' });
   return items;
+}
+
+/**
+ * Pin de un lugar como `.poi-marker` del mapa (index.css): disco del color de
+ * la categoría con aro del fondo (2 de 22 px), sombra y el pictograma en
+ * blanco (13 de 22 px). Lo pintan la imagen y la muestra de la leyenda.
+ */
+function paintPoiPin(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  category: PoiCategory,
+  diameter: number,
+  theme: WallpaperTheme,
+) {
+  const unit = diameter / 22;
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.22)';
+  ctx.shadowBlur = 3 * unit;
+  ctx.shadowOffsetY = unit;
+  ctx.beginPath();
+  ctx.arc(cx, cy, diameter / 2, 0, Math.PI * 2);
+  // stopFill es el --background de cada tema, el color del aro del pin.
+  ctx.fillStyle = MAP_THEME[theme].stopFill;
+  ctx.fill();
+  ctx.shadowColor = 'rgba(0,0,0,0)';
+  ctx.beginPath();
+  ctx.arc(cx, cy, diameter / 2 - 2 * unit, 0, Math.PI * 2);
+  ctx.fillStyle = POI_COLOR[category];
+  ctx.fill();
+  const glyph = 13 * unit;
+  ctx.translate(cx - glyph / 2, cy - glyph / 2);
+  ctx.scale(glyph / 24, glyph / 24);
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (const d of POI_GLYPH[category]) ctx.stroke(new Path2D(d));
+  ctx.restore();
 }
 
 function projectAtZoom(lat: number, lng: number, zoom: number): [number, number] {
@@ -288,7 +386,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     subtitle,
   } = cfg;
   const styleMeta = STYLE_META[style];
-  const renderTheme: WallpaperTheme = style === 'night' ? 'dark' : theme;
+  const renderTheme = wallpaperRenderTheme(theme, style);
   const [[latMin, lngMin], [latMax, lngMax]] = bbox;
   const centerLat = (latMin + latMax) / 2;
   const centerLng = (lngMin + lngMax) / 2;
@@ -416,12 +514,14 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     ctx.restore();
   };
 
+  // Ciclovías como en el mapa: un solo color del tema, sin borde, y el tipo
+  // por el trazo (grosor y punteado de cada una).
   if (cycleways && cycleways.length > 0) {
-    for (const r of cycleways) drawPath(r, { alpha: 0.78, dash: [5, 4] });
+    for (const r of cycleways) drawPath({ ...r, color: MAP_THEME[renderTheme].cycleway }, { dash: r.dash });
   }
 
   for (const r of routes) drawPath(r, { halo: true, alpha: styleMeta.routeHaloAlpha });
-  for (const r of routes) drawPath(r);
+  for (const r of routes) drawPath({ ...r, color: displayRouteColor(r.color, renderTheme) });
 
   // Paraderos as small filled circles. Skipped at very low zoom — wouldn't
   // be readable anyway and they'd just blanket the map.
@@ -455,44 +555,59 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
     }
   }
 
-  const drawStyledPoints = (points: WallpaperStyledPoint[] | undefined, fallbackRadius: number) => {
-    if (!points || points.length === 0 || zoom < 11) return;
+  // Establecimientos como punto chico; los lugares encima, como el pin del
+  // mapa. En oscuro el aro va oscuro, como antes: blanco, en la vista previa
+  // se confundía con el punto de una micro estimada del mismo azul.
+  if (schools && schools.length > 0 && zoom >= 11) {
     ctx.lineWidth = 1.1 * lineScale;
-    for (const p of points) {
-      const radius = (p.radius ?? fallbackRadius) * lineScale;
+    ctx.strokeStyle = renderTheme === 'dark' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.9)';
+    for (const p of schools) {
+      const radius = (p.radius ?? 2.4) * lineScale;
       const [x, y] = toCanvas(p.lat, p.lng);
       if (x < -radius || x > width + radius || y < -radius || y > height + radius) continue;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fillStyle = p.color;
       ctx.fill();
-      ctx.strokeStyle = renderTheme === 'dark' ? 'rgba(0,0,0,0.65)' : 'rgba(255,255,255,0.9)';
       ctx.stroke();
     }
-  };
+  }
+  if (pois && pois.length > 0 && zoom >= 11) {
+    const diameter = POI_PIN_DIAMETER * lineScale;
+    for (const p of pois) {
+      const [x, y] = toCanvas(p.lat, p.lng);
+      if (x < -diameter || x > width + diameter || y < -diameter || y > height + diameter) continue;
+      paintPoiPin(ctx, x, y, p.category, diameter, renderTheme);
+    }
+  }
 
-  drawStyledPoints(schools, 2.4);
-  drawStyledPoints(pois, 3.1);
-
+  // Micros estimadas: la insignia del mapa (aro blanco y flecha) a escala de
+  // la imagen. En una imagen chica (la vista previa) no se leería: van como
+  // el punto redondo del mapa de lejos, que tampoco se confunde con un GPS.
+  // La leyenda usa la misma decisión.
+  const vehicleScale = Math.min(width, height) / 1280;
+  const vehicleBadges = VEHICLE_BADGE_DIAMETER * vehicleScale >= VEHICLE_BADGE_MIN_PX;
   if (vehicles && vehicles.length > 0) {
-    const markerSize = 7.2 * lineScale;
+    const reach = vehicleBadges ? (VEHICLE_BADGE_DIAMETER / 2 + 1) * vehicleScale : 5;
     for (const v of vehicles) {
       const [x, y] = toCanvas(v.lat, v.lng);
-      if (x < -markerSize || x > width + markerSize || y < -markerSize || y > height + markerSize) continue;
+      if (x < -reach || x > width + reach || y < -reach || y > height + reach) continue;
+      const ink = inkRouteColor(v.color, renderTheme);
+      if (!vehicleBadges) {
+        paintVehicleDot(ctx, x, y, { kind: 'estimate', stale: false, ink, theme: renderTheme });
+        continue;
+      }
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate((v.bearing * Math.PI) / 180);
-      ctx.beginPath();
-      ctx.moveTo(0, -markerSize);
-      ctx.lineTo(markerSize * 0.78, markerSize * 0.82);
-      ctx.lineTo(0, markerSize * 0.42);
-      ctx.lineTo(-markerSize * 0.78, markerSize * 0.82);
-      ctx.closePath();
-      ctx.fillStyle = v.color;
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = Math.max(1.4, 1.8 * lineScale);
-      ctx.fill();
-      ctx.stroke();
+      ctx.scale(vehicleScale, vehicleScale);
+      paintVehicleSymbol(ctx, 0, 0, {
+        kind: 'estimate',
+        stale: false,
+        ink,
+        diameter: VEHICLE_BADGE_DIAMETER,
+        bucket: Number.isFinite(v.bearing) ? Math.round((((v.bearing % 360) + 360) % 360) / 22.5) % 16 : null,
+        theme: renderTheme,
+      });
       ctx.restore();
     }
   }
@@ -537,7 +652,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
       ctx.textBaseline = 'alphabetic';
     };
 
-    if (midpoint.origin) drawLabeledPin(midpoint.origin.lat, midpoint.origin.lng, 'A', '#16A34A');
+    if (midpoint.origin) drawLabeledPin(midpoint.origin.lat, midpoint.origin.lng, 'A', '#15803d');
     if (midpoint.destination) drawLabeledPin(midpoint.destination.lat, midpoint.destination.lng, 'B', '#DC2626');
     drawLabeledPin(midpoint.midpoint[0], midpoint.midpoint[1], 'M', '#7C3AED');
   }
@@ -576,6 +691,7 @@ export async function buildWallpaper(cfg: WallpaperConfig): Promise<Blob> {
       renderTheme,
       padX,
       padY,
+      vehicleBadges,
     });
   }
 
@@ -659,11 +775,18 @@ function drawLegend(
     renderTheme: WallpaperTheme;
     padX: number;
     padY: number;
+    /** La misma decisión de la imagen: insignia o, en una imagen chica, punto. */
+    vehicleBadges: boolean;
   },
 ) {
   const fontSize = Math.round(11 * opts.lineScale);
   const rowH = Math.round(18 * opts.lineScale);
-  const panelW = Math.min(opts.width * 0.46, 280 * opts.lineScale);
+  // Ancho según el rótulo más largo, sin pasar del ancho de la imagen.
+  ctx.save();
+  ctx.font = `500 ${fontSize}px Inter, system-ui, sans-serif`;
+  const longest = Math.max(0, ...items.map((item) => ctx.measureText(item.label).width));
+  ctx.restore();
+  const panelW = Math.min(opts.width - 2 * opts.padX, Math.max(160 * opts.lineScale, longest + 56 * opts.lineScale));
   const panelH = 18 * opts.lineScale + items.length * rowH;
   const x = opts.width - opts.padX - panelW;
   const y = opts.padY;
@@ -694,14 +817,26 @@ function drawLegend(
     } else if (item.kind === 'square' || item.kind === 'polygon') {
       ctx.fillRect(iconX, iconY - 5 * opts.lineScale, 10 * opts.lineScale, 10 * opts.lineScale);
     } else if (item.kind === 'vehicle') {
-      ctx.beginPath();
-      ctx.moveTo(iconX + 5 * opts.lineScale, iconY - 7 * opts.lineScale);
-      ctx.lineTo(iconX + 11 * opts.lineScale, iconY + 6 * opts.lineScale);
-      ctx.lineTo(iconX - 1 * opts.lineScale, iconY + 6 * opts.lineScale);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = opts.renderTheme === 'dark' ? '#111827' : '#fff';
-      ctx.stroke();
+      // Lo mismo que se dibujó en la imagen (insignia o punto), con la tinta de ejemplo.
+      ctx.save();
+      ctx.translate(iconX + 7 * opts.lineScale, iconY);
+      ctx.scale(opts.lineScale, opts.lineScale);
+      if (opts.vehicleBadges) {
+        paintVehicleSymbol(ctx, 0, 0, {
+          kind: 'estimate',
+          stale: false,
+          ink: item.color,
+          diameter: 14,
+          bucket: 2,
+          theme: opts.renderTheme,
+        });
+      } else {
+        paintVehicleDot(ctx, 0, 0, { kind: 'estimate', stale: false, ink: item.color, theme: opts.renderTheme });
+      }
+      ctx.restore();
+    } else if (item.kind === 'poi') {
+      // El pin de hospital (el primero de la leyenda del mapa), del tamaño de la imagen.
+      paintPoiPin(ctx, iconX + 7 * opts.lineScale, iconY, 'hospital', POI_PIN_DIAMETER * opts.lineScale, opts.renderTheme);
     } else {
       ctx.beginPath();
       ctx.arc(iconX + 5 * opts.lineScale, iconY, 4 * opts.lineScale, 0, Math.PI * 2);

@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 import { AlertTriangle, CheckCircle2, Info, Route as RouteIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Notice } from '@/components/ui/notice';
+import { SegmentedControl } from '@/components/ui/segmented-control';
+import { StatTile } from '@/components/ui/stat-tile';
+import { StatusChip } from '@/components/ui/status-chip';
 import { useStickyState } from '@/hooks/use-sticky-state';
 import { buildDataQualityReport, type DataQualityIssue, type DataQualitySeverity } from '@/lib/data-quality';
 
@@ -14,6 +17,17 @@ const SEVERITY_LABEL: Record<DataQualitySeverity, string> = {
   warning: 'Alertas',
   info: 'Info',
 };
+
+const SEVERITY_TONE: Record<DataQualitySeverity, string> = {
+  error: 'text-destructive',
+  warning: 'text-stale',
+  info: 'text-muted-foreground',
+};
+
+const FILTER_OPTIONS = (['all', 'error', 'warning', 'info'] as const).map((value) => ({
+  value,
+  label: value === 'all' ? 'Todo' : SEVERITY_LABEL[value],
+}));
 
 export default function DataQualityTool({ onSelectRoute }: Props) {
   const report = useMemo(() => buildDataQualityReport(), []);
@@ -30,26 +44,19 @@ export default function DataQualityTool({ onSelectRoute }: Props) {
       </p>
 
       <div className="grid grid-cols-3 gap-2">
-        <Metric label="rutas" value={report.routeCount} />
-        <Metric label="paraderos" value={report.stopCount} />
-        <Metric label="simulables" value={report.simulatedRouteCount} />
+        <StatTile compact label="rutas" value={report.routeCount.toLocaleString('es-CL')} />
+        <StatTile compact label="paraderos" value={report.stopCount.toLocaleString('es-CL')} />
+        <StatTile compact label="simulables" value={report.simulatedRouteCount.toLocaleString('es-CL')} />
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5">
-        {(['all', 'error', 'warning', 'info'] as const).map((id) => (
-          <Button
-            key={id}
-            type="button"
-            variant={filter === id ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter(id)}
-            aria-pressed={filter === id}
-            className="h-8 px-2 text-[11px]"
-          >
-            {id === 'all' ? 'Todo' : SEVERITY_LABEL[id]}
-          </Button>
-        ))}
-      </div>
+      <SegmentedControl
+        variant="toggle"
+        size="sm"
+        label="Filtrar hallazgos"
+        value={filter}
+        options={FILTER_OPTIONS}
+        onChange={setFilter}
+      />
 
       <div className="grid grid-cols-3 gap-2">
         <SeverityCard severity="error" count={report.summary.error} />
@@ -74,39 +81,25 @@ export default function DataQualityTool({ onSelectRoute }: Props) {
       </div>
 
       {visible.length > 80 && (
-        <div className="rounded-md border bg-muted/40 p-2 text-[11px] text-muted-foreground">
-          Mostrando 80 de {visible.length} hallazgos para mantener el panel liviano.
-        </div>
+        <Notice>Mostrando 80 de {visible.length} hallazgos para mantener el panel liviano.</Notice>
       )}
     </div>
   );
 }
 
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-md border bg-muted/30 p-2">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="font-mono text-base font-semibold">{value.toLocaleString('es-CL')}</div>
-    </div>
-  );
-}
-
 function SeverityCard({ severity, count }: { severity: DataQualitySeverity; count: number }) {
-  const Icon = severity === 'error' ? AlertTriangle : severity === 'warning' ? AlertTriangle : Info;
-  const color =
-    severity === 'error'
-      ? 'text-destructive'
-      : severity === 'warning'
-        ? 'text-amber-600'
-        : 'text-muted-foreground';
+  const Icon = severity === 'info' ? Info : AlertTriangle;
   return (
-    <div className="rounded-md border bg-card p-2">
-      <div className={`flex items-center gap-1 text-[10px] uppercase tracking-wider ${color}`}>
-        <Icon className="size-3" />
-        {SEVERITY_LABEL[severity]}
-      </div>
-      <div className="font-mono text-base font-semibold">{count}</div>
-    </div>
+    <StatTile
+      compact
+      label={
+        <span className={`inline-flex items-center gap-1 ${SEVERITY_TONE[severity]}`}>
+          <Icon className="size-3" />
+          {SEVERITY_LABEL[severity]}
+        </span>
+      }
+      value={count}
+    />
   );
 }
 
@@ -119,12 +112,7 @@ function IssueRow({
 }) {
   const okInfo = issue.severity === 'info' && issue.category === 'simulation';
   const Icon = okInfo ? CheckCircle2 : issue.severity === 'info' ? Info : AlertTriangle;
-  const tone =
-    issue.severity === 'error'
-      ? 'text-destructive'
-      : issue.severity === 'warning'
-        ? 'text-amber-600'
-        : 'text-muted-foreground';
+  const tone = SEVERITY_TONE[issue.severity];
   return (
     <div className="p-3">
       <div className="flex items-start gap-2">
@@ -132,9 +120,7 @@ function IssueRow({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-sm font-medium">{issue.title}</span>
-            <Badge variant="outline" className="text-[10px]">
-              {issue.category}
-            </Badge>
+            <StatusChip tone="muted">{issue.category}</StatusChip>
           </div>
           <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
             {issue.detail}
@@ -144,8 +130,8 @@ function IssueRow({
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className="size-7 shrink-0"
+            size="iconSm"
+            className="shrink-0"
             onClick={() => onSelectRoute(issue.routeId!)}
             aria-label={`Ver la ficha del recorrido de «${issue.title}»`}
           >

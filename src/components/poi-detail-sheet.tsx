@@ -8,6 +8,8 @@ import {
   ShoppingBag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Notice } from '@/components/ui/notice';
+import { SectionLabel } from '@/components/ui/section-label';
 import { FloatingInfoPanel } from '@/components/floating-info-panel';
 import { RouteBadge } from '@/components/route-badge';
 import { ROUTES, ROUTE_TYPES, useRoutesVersion } from '@/data/routes';
@@ -89,18 +91,14 @@ export function PoiDetailSheet({ chrome, poi, onFocus, onSelectRoute }: PoiDetai
       }
     >
       <div>
-        <div className="mb-2 flex items-center justify-between text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          <span>
-            <RouteIcon className="mr-1 inline size-3" />
-            Recorridos a ≤{NEARBY_RADIUS_M} m
-          </span>
-          <span className="font-mono">{nearby.length} encontrados</span>
-        </div>
+        <SectionLabel icon={<RouteIcon />} aside={`${nearby.length} encontrados`}>
+          Recorridos a ≤{NEARBY_RADIUS_M} m
+        </SectionLabel>
         {nearby.length === 0 ? (
-          <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+          <Notice>
             Ningún recorrido del visor pasa a menos de {NEARBY_RADIUS_M} m. Se buscó en
             todas las líneas, no solo en las que tienes en el mapa.
-          </div>
+          </Notice>
         ) : (
           <div className="space-y-1.5">
             {nearby.slice(0, 20).map(({ route, minDistance }) => {
@@ -110,16 +108,16 @@ export function PoiDetailSheet({ chrome, poi, onFocus, onSelectRoute }: PoiDetai
                   key={route.id}
                   type="button"
                   onClick={() => onSelectRoute(route.id)}
-                  className="flex w-full items-center gap-2 rounded-md border bg-card p-2 text-left transition-colors hover:bg-accent focus-ring"
+                  className="flex w-full items-center gap-2 rounded-md border bg-card p-2.5 text-left transition-colors hover:bg-accent focus-ring"
                 >
-                  <RouteBadge code={routePillCode(route)} color={route.color} className="min-w-[2.75rem] justify-center" />
+                  <RouteBadge code={routePillCode(route)} color={route.color} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{routeShortName(route)}</div>
                     <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                       <Icon className="size-[11px]" />
                       {ROUTE_TYPES[route.type].short}
                       <span aria-hidden>·</span>
-                      <span>{Math.round(minDistance)} m</span>
+                      <span className="tabular-nums">{Math.round(minDistance)} m</span>
                     </div>
                   </div>
                 </button>
@@ -134,10 +132,10 @@ export function PoiDetailSheet({ chrome, poi, onFocus, onSelectRoute }: PoiDetai
         )}
       </div>
 
-      <div className="rounded-md border bg-muted/40 p-3 text-[12px] text-muted-foreground">
+      <Notice>
         Cálculo de proximidad por vértice del trazado. No considera distancia caminable
         ni accesibilidad peatonal, solo proximidad euclidiana al polyline.
-      </div>
+      </Notice>
     </FloatingInfoPanel>
   );
 }

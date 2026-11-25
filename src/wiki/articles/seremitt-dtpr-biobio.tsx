@@ -17,6 +17,7 @@ import {
   CollapsibleSection,
   DataTable,
   FactStrip,
+  IssueNotice,
   KeyValueList,
   NewsPulse,
   PendingBanner,
@@ -424,54 +425,34 @@ export default function SeremittDtprBiobio() {
 
       <Section title="Críticas y desafíos">
         <div className="space-y-2">
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Atraso histórico en licitar
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              La licitación 2002 operó 22 años antes del PE 2024.
-              ELC0007 Santa Juana fue la primera licitación pública en{' '}
-              <strong>más de 10 años</strong> en el Biobío. Conce ↔
-              Florida sigue sin licitación moderna en 2026 pese a
-              recibir subsidios anuales.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Capacidad sancionatoria limitada
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Sanciones administrativas en plazos largos. El ranking de
-              cumplimiento del PE 2024 , la palanca más fuerte, no se
-              publica desagregado.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Falta de GTFS-Realtime
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              El feed es estático. No hay GTFS-Realtime publicado pese a
-              que el PE 2024 exige GPS online; el dato existe en la
-              DTPR pero no se abre como feed oficial. Lo más cercano es
-              la fuente que usa la app de Transapp para la DTPR, no
-              oficial ni documentada, que el visor consulta paradero por
-              paradero.
-            </p>
-          </div>
-          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-            <div className="text-[12px] font-medium text-amber-900 dark:text-amber-200">
-              Recorridos interurbanos sin licitación y rotación SEREMITT
-            </div>
-            <p className="mt-1 text-[12px] text-amber-900/90 dark:text-amber-100/90">
-              Conce ↔ Florida (El Pimentón) y Conce ↔ Yumbel siguen bajo
-              régimen privado con autorización individual; SEREMITT sumó
-              capas subsidiadas en Florida pero no licitó. Dos
-              rotaciones SEREMI en 2025 (Silva→Fierro→Cautivo) generan
-              discontinuidades de vocería; la continuidad recae en la
-              DTPR.
-            </p>
-          </div>
+          <IssueNotice title="Atraso histórico en licitar">
+            La licitación 2002 operó 22 años antes del PE 2024.
+            ELC0007 Santa Juana fue la primera licitación pública en{' '}
+            <strong>más de 10 años</strong> en el Biobío. Conce ↔
+            Florida sigue sin licitación moderna en 2026 pese a
+            recibir subsidios anuales.
+          </IssueNotice>
+          <IssueNotice title="Capacidad sancionatoria limitada">
+            Sanciones administrativas en plazos largos. El ranking de
+            cumplimiento del PE 2024 , la palanca más fuerte, no se
+            publica desagregado.
+          </IssueNotice>
+          <IssueNotice title="Falta de GTFS-Realtime">
+            El feed es estático. No hay GTFS-Realtime publicado pese a
+            que el PE 2024 exige GPS online; el dato existe en la
+            DTPR pero no se abre como feed oficial. Lo más cercano es
+            la fuente que usa la app de Transapp para la DTPR, no
+            oficial ni documentada, que el visor consulta paradero por
+            paradero.
+          </IssueNotice>
+          <IssueNotice title="Recorridos interurbanos sin licitación y rotación SEREMITT">
+            Conce ↔ Florida (El Pimentón) y Conce ↔ Yumbel siguen bajo
+            régimen privado con autorización individual; SEREMITT sumó
+            capas subsidiadas en Florida pero no licitó. Dos
+            rotaciones SEREMI en 2025 (Silva→Fierro→Cautivo) generan
+            discontinuidades de vocería; la continuidad recae en la
+            DTPR.
+          </IssueNotice>
         </div>
       </Section>
 
